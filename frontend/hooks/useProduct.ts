@@ -1,9 +1,9 @@
 'use client';
 
 import useSWR from 'swr';
-import { productApi, ProductDetail } from '@/lib/product-api';
+import { productApi, Product } from '@/lib/product-api';
 
-const fetcher = async (slug: string): Promise<ProductDetail> => {
+const fetcher = async (slug: string): Promise<Product> => {
   return productApi.getProductBySlug(slug);
 };
 

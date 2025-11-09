@@ -68,11 +68,17 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <nav 
+      className="flex items-center justify-center gap-2 mt-8"
+      role="navigation"
+      aria-label={locale === 'vi' ? 'Phân trang' : 'Pagination'}
+    >
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label={locale === 'vi' ? 'Trang trước' : 'Previous page'}
+        aria-disabled={currentPage === 1}
       >
         {locale === 'vi' ? 'Trước' : 'Previous'}
       </button>
@@ -80,7 +86,7 @@ export default function Pagination({
       {getPageNumbers().map((page, index) => {
         if (page === '...') {
           return (
-            <span key={`ellipsis-${index}`} className="px-2 text-gray-500">
+            <span key={`ellipsis-${index}`} className="px-2 text-gray-500" aria-hidden="true">
               ...
             </span>
           );
@@ -95,6 +101,8 @@ export default function Pagination({
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'border-gray-300 hover:bg-gray-50'
             }`}
+            aria-label={`${locale === 'vi' ? 'Trang' : 'Page'} ${page}`}
+            aria-current={currentPage === page ? 'page' : undefined}
           >
             {page}
           </button>
@@ -105,9 +113,11 @@ export default function Pagination({
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        aria-label={locale === 'vi' ? 'Trang sau' : 'Next page'}
+        aria-disabled={currentPage === totalPages}
       >
         {locale === 'vi' ? 'Sau' : 'Next'}
       </button>
-    </div>
+    </nav>
   );
 }

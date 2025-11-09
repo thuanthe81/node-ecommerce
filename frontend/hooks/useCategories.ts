@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { categoryApi, Category } from '@/lib/category-api';
 
 const fetcher = async (): Promise<Category[]> => {
-  return categoryApi.getCategoryTree();
+  return categoryApi.getCategories();
 };
 
 export function useCategories() {

@@ -18,23 +18,27 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm" role="banner">
       {/* Top Bar */}
       <div className="border-b">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href={`/${locale}`} className="text-2xl font-bold text-gray-900">
+            <Link 
+              href={`/${locale}`} 
+              className="text-2xl font-bold text-gray-900"
+              aria-label={t('nav.home') || 'Home'}
+            >
               Handmade
             </Link>
 
             {/* Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <div className="hidden md:flex flex-1 max-w-md mx-8" role="search">
               <SearchBar />
             </div>
 
             {/* Right Side Navigation */}
-            <div className="flex items-center space-x-4">
+            <nav className="flex items-center space-x-4" aria-label={t('nav.main') || 'Main navigation'}>
               <LocaleSwitcher />
               
               <MiniCart />
@@ -44,12 +48,14 @@ export default function Header() {
                   <Link
                     href={`/${locale}/account`}
                     className="text-gray-700 hover:text-blue-600 transition-colors"
+                    aria-label={t('nav.account') || 'Account'}
                   >
                     {t('nav.account')}
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="text-gray-700 hover:text-blue-600 transition-colors"
+                    aria-label={t('auth.logout') || 'Logout'}
                   >
                     {t('auth.logout')}
                   </button>
@@ -59,18 +65,20 @@ export default function Header() {
                   <Link
                     href={`/${locale}/login`}
                     className="text-gray-700 hover:text-blue-600 transition-colors"
+                    aria-label={t('auth.login') || 'Login'}
                   >
                     {t('auth.login')}
                   </Link>
                   <Link
                     href={`/${locale}/register`}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    aria-label={t('auth.register') || 'Register'}
                   >
                     {t('auth.register')}
                   </Link>
                 </>
               )}
-            </div>
+            </nav>
           </div>
         </div>
       </div>

@@ -90,7 +90,7 @@ export default function FilterPanel() {
     minPrice || maxPrice || selectedCategory || inStock || sortBy !== 'createdAt';
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
+    <aside className="bg-white p-6 rounded-lg shadow-sm space-y-6" aria-label={locale === 'vi' ? 'Bộ lọc sản phẩm' : 'Product filters'}>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">
           {locale === 'vi' ? 'Bộ lọc' : 'Filters'}
@@ -99,6 +99,7 @@ export default function FilterPanel() {
           <button
             onClick={clearFilters}
             className="text-sm text-blue-600 hover:text-blue-700"
+            aria-label={locale === 'vi' ? 'Xóa tất cả bộ lọc' : 'Clear all filters'}
           >
             {locale === 'vi' ? 'Xóa bộ lọc' : 'Clear all'}
           </button>
@@ -107,13 +108,15 @@ export default function FilterPanel() {
 
       {/* Category Filter */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="category-filter" className="block text-sm font-medium text-gray-700 mb-2">
           {locale === 'vi' ? 'Danh mục' : 'Category'}
         </label>
         <select
+          id="category-filter"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={locale === 'vi' ? 'Chọn danh mục' : 'Select category'}
         >
           <option value="">{locale === 'vi' ? 'Tất cả' : 'All categories'}</option>
           {categories.map((category) => (
@@ -125,36 +128,48 @@ export default function FilterPanel() {
       </div>
 
       {/* Price Range Filter */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <fieldset>
+        <legend className="block text-sm font-medium text-gray-700 mb-2">
           {locale === 'vi' ? 'Khoảng giá' : 'Price Range'}
-        </label>
+        </legend>
         <div className="space-y-2">
+          <label htmlFor="min-price" className="sr-only">
+            {locale === 'vi' ? 'Giá tối thiểu' : 'Minimum price'}
+          </label>
           <input
+            id="min-price"
             type="number"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             placeholder={locale === 'vi' ? 'Giá tối thiểu' : 'Min price'}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={locale === 'vi' ? 'Giá tối thiểu' : 'Minimum price'}
           />
+          <label htmlFor="max-price" className="sr-only">
+            {locale === 'vi' ? 'Giá tối đa' : 'Maximum price'}
+          </label>
           <input
+            id="max-price"
             type="number"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             placeholder={locale === 'vi' ? 'Giá tối đa' : 'Max price'}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={locale === 'vi' ? 'Giá tối đa' : 'Maximum price'}
           />
         </div>
-      </div>
+      </fieldset>
 
       {/* Availability Filter */}
       <div>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label htmlFor="in-stock-filter" className="flex items-center gap-2 cursor-pointer">
           <input
+            id="in-stock-filter"
             type="checkbox"
             checked={inStock}
             onChange={(e) => setInStock(e.target.checked)}
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            aria-label={locale === 'vi' ? 'Chỉ hiển thị sản phẩm còn hàng' : 'Show only in-stock products'}
           />
           <span className="text-sm text-gray-700">
             {locale === 'vi' ? 'Chỉ hiển thị sản phẩm còn hàng' : 'In stock only'}
@@ -164,10 +179,11 @@ export default function FilterPanel() {
 
       {/* Sort Options */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="sort-filter" className="block text-sm font-medium text-gray-700 mb-2">
           {locale === 'vi' ? 'Sắp xếp theo' : 'Sort by'}
         </label>
         <select
+          id="sort-filter"
           value={`${sortBy}-${sortOrder}`}
           onChange={(e) => {
             const [newSortBy, newSortOrder] = e.target.value.split('-');
@@ -175,6 +191,7 @@ export default function FilterPanel() {
             setSortOrder(newSortOrder);
           }}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={locale === 'vi' ? 'Sắp xếp sản phẩm' : 'Sort products'}
         >
           <option value="createdAt-desc">
             {locale === 'vi' ? 'Mới nhất' : 'Newest'}
@@ -201,9 +218,10 @@ export default function FilterPanel() {
       <button
         onClick={applyFilters}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+        aria-label={locale === 'vi' ? 'Áp dụng bộ lọc' : 'Apply filters'}
       >
         {locale === 'vi' ? 'Áp dụng bộ lọc' : 'Apply Filters'}
       </button>
-    </div>
+    </aside>
   );
 }
