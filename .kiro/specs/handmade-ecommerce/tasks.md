@@ -343,15 +343,15 @@
 
 ## Content Management System
 
-- [ ] 16. Implement CMS for static pages
-  - [ ] 16.1 Create content backend functionality
+- [x] 16. Implement CMS for static pages
+  - [x] 16.1 Create content backend functionality
     - Write Content entity with bilingual fields
     - Create admin endpoints for content CRUD
     - Create GET /content/pages/:slug endpoint
     - Implement content publishing workflow
     - _Requirements: 7.3, 7.4, 7.5_
   
-  - [ ] 16.2 Build CMS admin interface
+  - [x] 16.2 Build CMS admin interface
     - Create content list page
     - Create content editor with rich text editor (TipTap or similar)
     - Implement bilingual content editing
@@ -359,7 +359,7 @@
     - Create publish/unpublish toggle
     - _Requirements: 7.3, 7.4_
   
-  - [ ] 16.3 Create static pages
+  - [x] 16.3 Create static pages
     - Create dynamic page route for CMS content
     - Create FAQ page with accordion component
     - Create contact page with contact form
@@ -367,7 +367,7 @@
     - Create privacy policy, terms of service, shipping policy, returns policy pages
     - _Requirements: 17.1, 17.3, 17.4, 19.1, 19.2, 19.3, 19.4_
   
-  - [ ] 16.4 Implement contact form
+  - [x] 16.4 Implement contact form
     - Create POST /contact endpoint
     - Implement email sending for contact form submissions
     - Add form validation and spam protection

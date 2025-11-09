@@ -72,3 +72,13 @@ export const contentApi = {
     await apiClient.delete(`/content/${id}`);
   },
 };
+
+// Helper functions for easier usage
+export const getContents = (type?: string) => contentApi.getAll(type);
+export const getPublishedContents = (type?: string) => contentApi.getPublished(type);
+export const getBanners = () => contentApi.getBanners();
+export const getContentById = (id: string) => contentApi.getById(id);
+export const getContentBySlug = (slug: string) => contentApi.getBySlug(slug);
+export const createContent = (data: CreateContentData) => contentApi.create(data);
+export const updateContent = (id: string, data: Partial<CreateContentData>) => contentApi.update(id, data);
+export const deleteContent = (id: string) => contentApi.delete(id);
