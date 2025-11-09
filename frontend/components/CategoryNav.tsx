@@ -1,36 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { categoryApi, Category } from '@/lib/category-api';
+import { Category } from '@/lib/category-api';
+import { useCategories } from '@/hooks/useCategories';
 
 export default function CategoryNav() {
   const locale = useLocale();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { categories, isLoading } = useCategories();
   const [openCategory, setOpenCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await categoryApi.getCategories();
-        setCategories(data);
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   const getCategoryName = (category: Category) => {
     return locale === 'vi' ? category.nameVi : category.nameEn;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <nav className="bg-gray-100 border-b">
         <div className="container mx-auto px-4 py-3">

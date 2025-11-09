@@ -2,7 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -11,7 +14,10 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(createProductDto: CreateProductDto) {
     // Check if slug already exists
@@ -41,7 +47,7 @@ export class ProductsService {
       throw new NotFoundException('Category not found');
     }
 
-    return this.prisma.product.create({
+    const product = await this.prisma.product.create({
       data: createProductDto,
       include: {
         category: true,
@@ -50,6 +56,11 @@ export class ProductsService {
         },
       },
     });
+
+    // Invalidate product list cache
+    await this.invalidateProductCache();
+
+    return product;
   }
 
   async findAll(query: QueryProductsDto) {
@@ -65,6 +76,15 @@ export class ProductsService {
       page = 1,
       limit = 20,
     } = query;
+
+    // Generate cache key based on query parameters
+    const cacheKey = `products:list:${JSON.stringify(query)}`;
+    
+    // Try to get from cache
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     const where: Prisma.ProductWhereInput = {
       isActive: true,
@@ -145,7 +165,7 @@ export class ProductsService {
       this.prisma.product.count({ where }),
     ]);
 
-    return {
+    const result = {
       data: products,
       meta: {
         total,
@@ -154,6 +174,11 @@ export class ProductsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+
+    // Cache for 5 minutes
+    await this.cacheManager.set(cacheKey, result, 300000);
+
+    return result;
   }
 
   async findOne(id: string) {
@@ -206,6 +231,13 @@ export class ProductsService {
   }
 
   async findBySlug(slug: string) {
+    // Try to get from cache
+    const cacheKey = `product:slug:${slug}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const product = await this.prisma.product.findUnique({
       where: { slug },
       include: {
@@ -265,11 +297,16 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return {
+    const result = {
       ...product,
       averageRating: avgRating._avg.rating || 0,
       relatedProducts,
     };
+
+    // Cache for 10 minutes
+    await this.cacheManager.set(cacheKey, result, 600000);
+
+    return result;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
@@ -321,7 +358,7 @@ export class ProductsService {
       }
     }
 
-    return this.prisma.product.update({
+    const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: updateProductDto,
       include: {
@@ -331,6 +368,13 @@ export class ProductsService {
         },
       },
     });
+
+    // Invalidate cache for this product
+    await this.cacheManager.del(`product:slug:${product.slug}`);
+    await this.cacheManager.del(`product:id:${id}`);
+    await this.invalidateProductCache();
+
+    return updatedProduct;
   }
 
   async remove(id: string) {
@@ -365,9 +409,16 @@ export class ProductsService {
       });
     }
 
-    return this.prisma.product.delete({
+    const deleted = await this.prisma.product.delete({
       where: { id },
     });
+
+    // Invalidate cache
+    await this.cacheManager.del(`product:slug:${product.slug}`);
+    await this.cacheManager.del(`product:id:${id}`);
+    await this.invalidateProductCache();
+
+    return deleted;
   }
 
   async search(searchTerm: string, limit: number = 10) {
@@ -388,5 +439,15 @@ export class ProductsService {
       },
       take: limit,
     });
+  }
+
+  // Helper method to invalidate product list cache
+  // Note: This is a simplified approach. In production, consider using:
+  // - Cache tags for better invalidation
+  // - A separate cache namespace for products
+  // - Redis SCAN command for pattern-based deletion
+  private async invalidateProductCache() {
+    // For now, we rely on TTL expiration for list caches
+    // Individual product caches are deleted explicitly in update/delete methods
   }
 }

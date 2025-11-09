@@ -2,14 +2,20 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
     // Check if slug already exists
@@ -32,13 +38,18 @@ export class CategoriesService {
       }
     }
 
-    return this.prisma.category.create({
+    const category = await this.prisma.category.create({
       data: createCategoryDto,
       include: {
         parent: true,
         children: true,
       },
     });
+
+    // Invalidate category cache
+    await this.invalidateCategoryCache();
+
+    return category;
   }
 
   async findAll() {
@@ -59,6 +70,13 @@ export class CategoriesService {
   }
 
   async findAllTree() {
+    // Try to get from cache
+    const cacheKey = 'categories:tree';
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     // Get all root categories (no parent)
     const rootCategories = await this.prisma.category.findMany({
       where: {
@@ -86,6 +104,9 @@ export class CategoriesService {
       orderBy: { displayOrder: 'asc' },
     });
 
+    // Cache for 30 minutes
+    await this.cacheManager.set(cacheKey, rootCategories, 1800000);
+
     return rootCategories;
   }
 
@@ -112,6 +133,13 @@ export class CategoriesService {
   }
 
   async findBySlug(slug: string) {
+    // Try to get from cache
+    const cacheKey = `category:slug:${slug}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const category = await this.prisma.category.findUnique({
       where: { slug },
       include: {
@@ -129,6 +157,9 @@ export class CategoriesService {
     if (!category) {
       throw new NotFoundException('Category not found');
     }
+
+    // Cache for 30 minutes
+    await this.cacheManager.set(cacheKey, category, 1800000);
 
     return category;
   }
@@ -183,7 +214,7 @@ export class CategoriesService {
       }
     }
 
-    return this.prisma.category.update({
+    const updated = await this.prisma.category.update({
       where: { id },
       data: updateCategoryDto,
       include: {
@@ -191,6 +222,13 @@ export class CategoriesService {
         children: true,
       },
     });
+
+    // Invalidate cache
+    await this.cacheManager.del(`category:slug:${category.slug}`);
+    await this.cacheManager.del(`category:id:${id}`);
+    await this.invalidateCategoryCache();
+
+    return updated;
   }
 
   async remove(id: string) {
@@ -221,9 +259,16 @@ export class CategoriesService {
       throw new BadRequestException('Cannot delete category with products');
     }
 
-    return this.prisma.category.delete({
+    const deleted = await this.prisma.category.delete({
       where: { id },
     });
+
+    // Invalidate cache
+    await this.cacheManager.del(`category:slug:${category.slug}`);
+    await this.cacheManager.del(`category:id:${id}`);
+    await this.invalidateCategoryCache();
+
+    return deleted;
   }
 
   // Helper method to check if a category is a descendant of another
@@ -249,5 +294,13 @@ export class CategoriesService {
     }
 
     return this.isDescendant(ancestorId, descendant.parentId);
+  }
+
+  // Helper method to invalidate category cache
+  private async invalidateCategoryCache() {
+    // Delete the main category tree cache
+    await this.cacheManager.del('categories:tree');
+    // Note: Individual category caches are deleted explicitly in update/delete methods
+    // In production, consider using cache tags or Redis SCAN for pattern-based deletion
   }
 }

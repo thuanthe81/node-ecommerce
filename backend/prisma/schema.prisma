@@ -123,6 +123,10 @@ model Product {
   @@index([isActive])
   @@index([isFeatured])
   @@index([stockQuantity])
+  @@index([isActive, categoryId])
+  @@index([isActive, isFeatured])
+  @@index([isActive, price])
+  @@index([isActive, createdAt])
   @@map("products")
 }
 
@@ -214,6 +218,9 @@ model Order {
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
   @@map("orders")
 }
 
@@ -276,6 +283,8 @@ model Review {
   @@index([userId])
   @@index([isApproved])
   @@index([rating])
+  @@index([productId, isApproved])
+  @@index([productId, isApproved, createdAt])
   @@map("reviews")
 }
 
