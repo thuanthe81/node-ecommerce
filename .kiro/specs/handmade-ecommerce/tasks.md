@@ -74,23 +74,23 @@
 
 ## Product Catalog System
 
-- [ ] 6. Implement category management
-  - [ ] 6.1 Create category backend functionality
+- [x] 6. Implement category management
+  - [x] 6.1 Create category backend functionality
     - Write Category entity with bilingual fields (nameEn, nameVi)
     - Implement hierarchical category structure (parent-child relationships)
     - Create GET /categories endpoint returning category tree
     - Create admin endpoints for category CRUD operations
     - _Requirements: 1.2, 1.3_
   
-  - [ ] 6.2 Build category navigation UI
+  - [x] 6.2 Build category navigation UI
     - Create CategoryNav component with dropdown/mega menu
     - Implement category page with product listings
     - Create breadcrumb component for navigation
     - Add category filtering to product listings
     - _Requirements: 1.2, 1.3_
 
-- [ ] 7. Implement product catalog
-  - [ ] 7.1 Create product backend functionality
+- [x] 7. Implement product catalog
+  - [x] 7.1 Create product backend functionality
     - Write Product entity with bilingual fields and relationships
     - Write ProductImage entity for multiple product images
     - Create GET /products endpoint with pagination, filtering, and sorting
@@ -99,7 +99,7 @@
     - Create admin endpoints for product CRUD operations
     - _Requirements: 1.1, 1.4, 2.2, 2.3, 2.4, 7.1, 7.2_
   
-  - [ ] 7.2 Implement product image upload
+  - [x] 7.2 Implement product image upload
     - Configure multer or similar for file uploads
     - Implement image validation (type, size)
     - Create POST /products/:id/images endpoint
@@ -107,7 +107,7 @@
     - Generate image thumbnails for performance
     - _Requirements: 7.1_
   
-  - [ ] 7.3 Build product listing pages
+  - [x] 7.3 Build product listing pages
     - Create product grid component with responsive layout
     - Create product card component displaying image, title, price
     - Implement products listing page with pagination
@@ -115,7 +115,7 @@
     - Implement "out of stock" badge display
     - _Requirements: 1.1, 6.2_
   
-  - [ ] 7.4 Build product detail page
+  - [x] 7.4 Build product detail page
     - Create product detail page layout
     - Implement image gallery with zoom and thumbnails
     - Display product information (description, price, stock status)
@@ -124,7 +124,7 @@
     - Implement locale-based content display
     - _Requirements: 1.4, 1.5_
   
-  - [ ] 7.5 Implement search and filtering UI
+  - [x] 7.5 Implement search and filtering UI
     - Create search bar component with autocomplete
     - Implement search results page
     - Create filter panel with price range, category, availability filters
