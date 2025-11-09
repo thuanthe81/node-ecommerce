@@ -1,0 +1,552 @@
+{
+  "common": {
+    "addToCart": {
+      "en": "Add to Cart",
+      "vi": "Thêm vào giỏ"
+    },
+    "search": {
+      "en": "Search",
+      "vi": "Tìm kiếm"
+    },
+    "login": {
+      "en": "Login",
+      "vi": "Đăng nhập"
+    },
+    "logout": {
+      "en": "Logout",
+      "vi": "Đăng xuất"
+    },
+    "register": {
+      "en": "Register",
+      "vi": "Đăng ký"
+    },
+    "cart": {
+      "en": "Cart",
+      "vi": "Giỏ hàng"
+    },
+    "wishlist": {
+      "en": "Wishlist",
+      "vi": "Yêu thích"
+    },
+    "account": {
+      "en": "Account",
+      "vi": "Tài khoản"
+    },
+    "home": {
+      "en": "Home",
+      "vi": "Trang chủ"
+    },
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
+    },
+    "about": {
+      "en": "About",
+      "vi": "Giới thiệu"
+    },
+    "contact": {
+      "en": "Contact",
+      "vi": "Liên hệ"
+    },
+    "faq": {
+      "en": "FAQ",
+      "vi": "Câu hỏi thường gặp"
+    },
+    "loading": {
+      "en": "Loading...",
+      "vi": "Đang tải..."
+    },
+    "error": {
+      "en": "Error",
+      "vi": "Lỗi"
+    },
+    "success": {
+      "en": "Success",
+      "vi": "Thành công"
+    },
+    "cancel": {
+      "en": "Cancel",
+      "vi": "Hủy"
+    },
+    "save": {
+      "en": "Save",
+      "vi": "Lưu"
+    },
+    "delete": {
+      "en": "Delete",
+      "vi": "Xóa"
+    },
+    "edit": {
+      "en": "Edit",
+      "vi": "Sửa"
+    },
+    "view": {
+      "en": "View",
+      "vi": "Xem"
+    },
+    "back": {
+      "en": "Back",
+      "vi": "Quay lại"
+    },
+    "next": {
+      "en": "Next",
+      "vi": "Tiếp theo"
+    },
+    "previous": {
+      "en": "Previous",
+      "vi": "Trước"
+    },
+    "submit": {
+      "en": "Submit",
+      "vi": "Gửi"
+    },
+    "close": {
+      "en": "Close",
+      "vi": "Đóng"
+    }
+  },
+  "nav": {
+    "home": {
+      "en": "Home",
+      "vi": "Trang chủ"
+    },
+    "shop": {
+      "en": "Shop",
+      "vi": "Cửa hàng"
+    },
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
+    },
+    "about": {
+      "en": "About Us",
+      "vi": "Về chúng tôi"
+    },
+    "contact": {
+      "en": "Contact",
+      "vi": "Liên hệ"
+    },
+    "account": {
+      "en": "My Account",
+      "vi": "Tài khoản của tôi"
+    },
+    "cart": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
+    },
+    "wishlist": {
+      "en": "Wishlist",
+      "vi": "Yêu thích"
+    },
+    "admin": {
+      "en": "Admin Panel",
+      "vi": "Quản trị"
+    }
+  },
+  "product": {
+    "price": {
+      "en": "Price",
+      "vi": "Giá"
+    },
+    "inStock": {
+      "en": "In Stock",
+      "vi": "Còn hàng"
+    },
+    "outOfStock": {
+      "en": "Out of Stock",
+      "vi": "Hết hàng"
+    },
+    "lowStock": {
+      "en": "Low Stock",
+      "vi": "Sắp hết hàng"
+    },
+    "addToCart": {
+      "en": "Add to Cart",
+      "vi": "Thêm vào giỏ"
+    },
+    "addToWishlist": {
+      "en": "Add to Wishlist",
+      "vi": "Thêm vào yêu thích"
+    },
+    "viewDetails": {
+      "en": "View Details",
+      "vi": "Xem chi tiết"
+    },
+    "quantity": {
+      "en": "Quantity",
+      "vi": "Số lượng"
+    },
+    "sku": {
+      "en": "SKU",
+      "vi": "Mã SP"
+    },
+    "category": {
+      "en": "Category",
+      "vi": "Danh mục"
+    },
+    "description": {
+      "en": "Description",
+      "vi": "Mô tả"
+    },
+    "specifications": {
+      "en": "Specifications",
+      "vi": "Thông số"
+    },
+    "reviews": {
+      "en": "Reviews",
+      "vi": "Đánh giá"
+    },
+    "relatedProducts": {
+      "en": "Related Products",
+      "vi": "Sản phẩm liên quan"
+    },
+    "newArrival": {
+      "en": "New Arrival",
+      "vi": "Hàng mới"
+    },
+    "featured": {
+      "en": "Featured",
+      "vi": "Nổi bật"
+    },
+    "sale": {
+      "en": "Sale",
+      "vi": "Giảm giá"
+    }
+  },
+  "search": {
+    "placeholder": {
+      "en": "Search products...",
+      "vi": "Tìm kiếm sản phẩm..."
+    },
+    "results": {
+      "en": "Search Results",
+      "vi": "Kết quả tìm kiếm"
+    },
+    "noResults": {
+      "en": "No products found",
+      "vi": "Không tìm thấy sản phẩm"
+    },
+    "showing": {
+      "en": "Showing {count} results",
+      "vi": "Hiển thị {count} kết quả"
+    },
+    "filters": {
+      "en": "Filters",
+      "vi": "Bộ lọc"
+    },
+    "sortBy": {
+      "en": "Sort By",
+      "vi": "Sắp xếp theo"
+    },
+    "priceRange": {
+      "en": "Price Range",
+      "vi": "Khoảng giá"
+    },
+    "availability": {
+      "en": "Availability",
+      "vi": "Tình trạng"
+    },
+    "clearFilters": {
+      "en": "Clear Filters",
+      "vi": "Xóa bộ lọc"
+    }
+  },
+  "cart": {
+    "title": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
+    },
+    "empty": {
+      "en": "Your cart is empty",
+      "vi": "Giỏ hàng trống"
+    },
+    "subtotal": {
+      "en": "Subtotal",
+      "vi": "Tạm tính"
+    },
+    "total": {
+      "en": "Total",
+      "vi": "Tổng cộng"
+    },
+    "checkout": {
+      "en": "Proceed to Checkout",
+      "vi": "Thanh toán"
+    },
+    "continueShopping": {
+      "en": "Continue Shopping",
+      "vi": "Tiếp tục mua sắm"
+    },
+    "remove": {
+      "en": "Remove",
+      "vi": "Xóa"
+    },
+    "updateQuantity": {
+      "en": "Update Quantity",
+      "vi": "Cập nhật số lượng"
+    },
+    "itemCount": {
+      "en": "{count} items",
+      "vi": "{count} sản phẩm"
+    }
+  },
+  "checkout": {
+    "title": {
+      "en": "Checkout",
+      "vi": "Thanh toán"
+    },
+    "shippingAddress": {
+      "en": "Shipping Address",
+      "vi": "Địa chỉ giao hàng"
+    },
+    "billingAddress": {
+      "en": "Billing Address",
+      "vi": "Địa chỉ thanh toán"
+    },
+    "shippingMethod": {
+      "en": "Shipping Method",
+      "vi": "Phương thức vận chuyển"
+    },
+    "paymentMethod": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "orderSummary": {
+      "en": "Order Summary",
+      "vi": "Tóm tắt đơn hàng"
+    },
+    "placeOrder": {
+      "en": "Place Order",
+      "vi": "Đặt hàng"
+    },
+    "processing": {
+      "en": "Processing...",
+      "vi": "Đang xử lý..."
+    },
+    "success": {
+      "en": "Order placed successfully!",
+      "vi": "Đặt hàng thành công!"
+    },
+    "error": {
+      "en": "Failed to place order. Please try again.",
+      "vi": "Đặt hàng thất bại. Vui lòng thử lại."
+    },
+    "guestCheckout": {
+      "en": "Guest Checkout",
+      "vi": "Thanh toán không cần đăng ký"
+    },
+    "steps": {
+      "shipping": {
+        "en": "Shipping",
+        "vi": "Giao hàng"
+      },
+      "payment": {
+        "en": "Payment",
+        "vi": "Thanh toán"
+      },
+      "review": {
+        "en": "Review",
+        "vi": "Xem lại"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "en": "Login",
+      "vi": "Đăng nhập"
+    },
+    "register": {
+      "en": "Register",
+      "vi": "Đăng ký"
+    },
+    "logout": {
+      "en": "Logout",
+      "vi": "Đăng xuất"
+    },
+    "email": {
+      "en": "Email",
+      "vi": "Email"
+    },
+    "password": {
+      "en": "Password",
+      "vi": "Mật khẩu"
+    },
+    "confirmPassword": {
+      "en": "Confirm Password",
+      "vi": "Xác nhận mật khẩu"
+    },
+    "firstName": {
+      "en": "First Name",
+      "vi": "Tên"
+    },
+    "lastName": {
+      "en": "Last Name",
+      "vi": "Họ"
+    },
+    "forgotPassword": {
+      "en": "Forgot Password?",
+      "vi": "Quên mật khẩu?"
+    },
+    "rememberMe": {
+      "en": "Remember Me",
+      "vi": "Ghi nhớ đăng nhập"
+    },
+    "noAccount": {
+      "en": "Don't have an account?",
+      "vi": "Chưa có tài khoản?"
+    },
+    "hasAccount": {
+      "en": "Already have an account?",
+      "vi": "Đã có tài khoản?"
+    },
+    "loginSuccess": {
+      "en": "Logged in successfully",
+      "vi": "Đăng nhập thành công"
+    },
+    "registerSuccess": {
+      "en": "Registration successful",
+      "vi": "Đăng ký thành công"
+    },
+    "loginError": {
+      "en": "Invalid email or password",
+      "vi": "Email hoặc mật khẩu không đúng"
+    },
+    "registerError": {
+      "en": "Registration failed",
+      "vi": "Đăng ký thất bại"
+    }
+  },
+  "account": {
+    "dashboard": {
+      "en": "Dashboard",
+      "vi": "Bảng điều khiển"
+    },
+    "profile": {
+      "en": "Profile",
+      "vi": "Hồ sơ"
+    },
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
+    "addresses": {
+      "en": "Addresses",
+      "vi": "Địa chỉ"
+    },
+    "wishlist": {
+      "en": "Wishlist",
+      "vi": "Yêu thích"
+    },
+    "settings": {
+      "en": "Settings",
+      "vi": "Cài đặt"
+    },
+    "orderHistory": {
+      "en": "Order History",
+      "vi": "Lịch sử đơn hàng"
+    },
+    "noOrders": {
+      "en": "No orders yet",
+      "vi": "Chưa có đơn hàng"
+    },
+    "viewOrder": {
+      "en": "View Order",
+      "vi": "Xem đơn hàng"
+    },
+    "orderNumber": {
+      "en": "Order Number",
+      "vi": "Mã đơn hàng"
+    },
+    "orderDate": {
+      "en": "Order Date",
+      "vi": "Ngày đặt"
+    },
+    "orderStatus": {
+      "en": "Status",
+      "vi": "Trạng thái"
+    },
+    "orderTotal": {
+      "en": "Total",
+      "vi": "Tổng tiền"
+    }
+  },
+  "footer": {
+    "aboutUs": {
+      "en": "About Us",
+      "vi": "Về chúng tôi"
+    },
+    "contactUs": {
+      "en": "Contact Us",
+      "vi": "Liên hệ"
+    },
+    "privacyPolicy": {
+      "en": "Privacy Policy",
+      "vi": "Chính sách bảo mật"
+    },
+    "termsOfService": {
+      "en": "Terms of Service",
+      "vi": "Điều khoản dịch vụ"
+    },
+    "shippingPolicy": {
+      "en": "Shipping Policy",
+      "vi": "Chính sách vận chuyển"
+    },
+    "returnPolicy": {
+      "en": "Return Policy",
+      "vi": "Chính sách đổi trả"
+    },
+    "followUs": {
+      "en": "Follow Us",
+      "vi": "Theo dõi chúng tôi"
+    },
+    "newsletter": {
+      "en": "Newsletter",
+      "vi": "Bản tin"
+    },
+    "subscribeNewsletter": {
+      "en": "Subscribe to our newsletter",
+      "vi": "Đăng ký nhận bản tin"
+    },
+    "copyright": {
+      "en": "© {year} All rights reserved",
+      "vi": "© {year} Bản quyền thuộc về"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "en": "Dashboard",
+      "vi": "Bảng điều khiển"
+    },
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
+    "customers": {
+      "en": "Customers",
+      "vi": "Khách hàng"
+    },
+    "content": {
+      "en": "Content",
+      "vi": "Nội dung"
+    },
+    "promotions": {
+      "en": "Promotions",
+      "vi": "Khuyến mãi"
+    },
+    "analytics": {
+      "en": "Analytics",
+      "vi": "Phân tích"
+    },
+    "settings": {
+      "en": "Settings",
+      "vi": "Cài đặt"
+    }
+  }
+}
