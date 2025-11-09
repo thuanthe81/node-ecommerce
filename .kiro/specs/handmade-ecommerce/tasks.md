@@ -55,8 +55,8 @@
     - Store tokens securely (httpOnly cookies or secure storage)
     - _Requirements: 10.1, 10.2_
 
-- [ ] 5. Implement user profile management
-  - [ ] 5.1 Create user profile backend endpoints
+- [x] 5. Implement user profile management
+  - [x] 5.1 Create user profile backend endpoints
     - Create GET /users/profile endpoint
     - Create PUT /users/profile endpoint with validation
     - Create PUT /users/password endpoint with old password verification
@@ -64,7 +64,7 @@
     - Create CRUD endpoints for user addresses
     - _Requirements: 10.3, 10.4, 10.5_
   
-  - [ ] 5.2 Build user profile frontend pages
+  - [x] 5.2 Build user profile frontend pages
     - Create account dashboard page layout
     - Create profile edit form with validation
     - Create password change form
