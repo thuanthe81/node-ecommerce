@@ -38,4 +38,8 @@ export class RefreshTokenStore {
       }
     }
   }
+
+  static clear(): void {
+    this.tokens.clear();
+  }
 }

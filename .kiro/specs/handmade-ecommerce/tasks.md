@@ -571,8 +571,8 @@
 
 ## Testing
 
-- [ ] 25. Write automated tests
-  - [ ] 25.1 Write backend unit tests
+- [x] 25. Write automated tests
+  - [x] 25.1 Write backend unit tests
     - Write unit tests for authentication service
     - Write unit tests for product service
     - Write unit tests for order service
@@ -580,21 +580,21 @@
     - Target 80% code coverage
     - _Requirements: All_
   
-  - [ ] 25.2 Write backend integration tests
+  - [x] 25.2 Write backend integration tests
     - Write API integration tests for authentication endpoints
     - Write API integration tests for product endpoints
     - Write API integration tests for order endpoints
     - Write API integration tests for payment endpoints
     - _Requirements: All_
   
-  - [ ] 25.3 Write frontend unit tests
+  - [x] 25.3 Write frontend unit tests
     - Write unit tests for key components (ProductCard, CartItem, etc.)
     - Write unit tests for utility functions
     - Write unit tests for custom hooks
     - Target 70% code coverage
     - _Requirements: All_
   
-  - [ ] 25.4 Write E2E tests
+  - [x] 25.4 Write E2E tests
     - Write E2E test for product browsing and search
     - Write E2E test for add to cart and checkout flow
     - Write E2E test for user registration and login
