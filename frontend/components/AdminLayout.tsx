@@ -7,12 +7,12 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminLayoutProps {
   children: ReactNode;
-  locale: string;
 }
 
-export default function AdminLayout({ children, locale }: AdminLayoutProps) {
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const locale = pathname.split('/')[1] || 'en';
   const router = useRouter();
   const { user, logout } = useAuth();
 

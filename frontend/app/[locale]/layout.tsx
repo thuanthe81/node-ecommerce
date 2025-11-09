@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import '../globals.css';
 
 const geistSans = Geist({
@@ -69,6 +70,7 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <CartProvider>

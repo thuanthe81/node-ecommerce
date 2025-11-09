@@ -19,6 +19,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { ContentModule } from './content/content.module';
 import { ContactModule } from './contact/contact.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ContactModule } from './contact/contact.module';
     PromotionsModule,
     ContentModule,
     ContactModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

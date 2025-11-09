@@ -376,15 +376,15 @@
 
 ## Analytics and Reporting
 
-- [ ] 17. Implement analytics system
-  - [ ] 17.1 Create analytics tracking backend
+- [x] 17. Implement analytics system
+  - [x] 17.1 Create analytics tracking backend
     - Write AnalyticsEvent entity
     - Create POST /analytics/events endpoint
     - Implement event tracking for page views, product views, add to cart, purchases
     - Create analytics aggregation queries
     - _Requirements: 14.1, 14.2, 14.3, 14.5_
   
-  - [ ] 17.2 Build analytics dashboard
+  - [x] 17.2 Build analytics dashboard
     - Create admin analytics dashboard page
     - Display sales revenue charts (daily, weekly, monthly)
     - Show product performance metrics (views, conversion rate)
@@ -393,7 +393,7 @@
     - Implement date range selector for reports
     - _Requirements: 14.1, 14.2, 14.4, 14.5_
   
-  - [ ] 17.3 Integrate Google Analytics
+  - [x] 17.3 Integrate Google Analytics
     - Install Google Analytics 4 or Google Tag Manager
     - Implement event tracking for e-commerce events
     - Track enhanced e-commerce data
