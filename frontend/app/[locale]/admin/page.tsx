@@ -93,7 +93,7 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminProtectedRoute locale={locale}>
-      <AdminLayout locale={locale}>
+      <AdminLayout>
         <div className="space-y-6">
           {/* Page Header */}
           <div>

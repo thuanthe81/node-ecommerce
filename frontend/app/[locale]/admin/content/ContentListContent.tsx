@@ -3,19 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getContents, deleteContent } from '@/lib/content-api';
-
-interface Content {
-  id: string;
-  slug: string;
-  type: 'PAGE' | 'FAQ' | 'BANNER';
-  titleEn: string;
-  titleVi: string;
-  isPublished: boolean;
-  publishedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { getContents, deleteContent, Content } from '@/lib/content-api';
 
 export default function ContentListContent() {
   const router = useRouter();

@@ -14,8 +14,8 @@ export default function AdminOrderDetailPage({
   params: { locale: string; id: string };
 }) {
   return (
-    <AdminProtectedRoute>
-      <AdminLayout locale={params.locale}>
+    <AdminProtectedRoute locale={params.locale}>
+      <AdminLayout>
         <OrderDetailContent locale={params.locale} orderId={params.id} />
       </AdminLayout>
     </AdminProtectedRoute>

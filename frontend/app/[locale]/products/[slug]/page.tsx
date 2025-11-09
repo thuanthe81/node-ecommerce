@@ -2,25 +2,36 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import ProductDetailContent from './ProductDetailContent';
+import { generateSEOMetadata } from '@/lib/seo';
 
+// This would ideally fetch product data for metadata
+// For now, we'll use a simplified version
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string; slug: string };
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const t = await getTranslations({ locale: params.locale });
+  const { locale, slug } = await params;
+  const t = await getTranslations({ locale });
 
-  return {
-    title: `${params.slug} | ${t('common.products')}`,
-    description: t('products.detail.description'),
-  };
+  // In a real implementation, you would fetch the product here
+  // const product = await productApi.getProductBySlug(slug);
+  
+  return generateSEOMetadata({
+    title: `${slug.replace(/-/g, ' ')} | ${t('common.products')}`,
+    description: t('seo.product.description'),
+    locale,
+    path: `/products/${slug}`,
+    type: 'product',
+  });
 }
 
-export default function ProductDetailPage({
+export default async function ProductDetailPage({
   params,
 }: {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: string }>;
 }) {
+  const { slug, locale } = await params;
   return (
     <div className="container mx-auto px-4 py-8">
       <Suspense
@@ -37,7 +48,7 @@ export default function ProductDetailPage({
           </div>
         }
       >
-        <ProductDetailContent slug={params.slug} locale={params.locale} />
+        <ProductDetailContent slug={slug} locale={locale} />
       </Suspense>
     </div>
   );

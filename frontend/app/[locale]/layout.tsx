@@ -20,10 +20,11 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Handmade E-commerce',
-  description: 'Shop unique handmade products',
-};
+// Metadata is now generated per page
+// export const metadata: Metadata = {
+//   title: 'Handmade E-commerce',
+//   description: 'Shop unique handmade products',
+// };
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

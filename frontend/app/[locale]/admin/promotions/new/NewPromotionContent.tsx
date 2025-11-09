@@ -10,7 +10,7 @@ export default function NewPromotionContent({ locale }: { locale: string }) {
   };
 
   return (
-    <AdminLayout locale={locale}>
+    <AdminLayout>
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Create Promotion</h1>
         <div className="bg-white shadow-md rounded-lg p-6">

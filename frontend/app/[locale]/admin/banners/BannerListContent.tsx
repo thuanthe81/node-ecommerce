@@ -40,7 +40,7 @@ export default function BannerListContent({ locale }: { locale: string }) {
   };
 
   return (
-    <AdminLayout locale={locale}>
+    <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

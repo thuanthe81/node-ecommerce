@@ -4,14 +4,23 @@ import ProductsContent from './ProductsContent';
 import ProductGridSkeleton from '@/components/ProductGridSkeleton';
 import FilterPanel from '@/components/FilterPanel';
 import SearchBar from '@/components/SearchBar';
+import { generateSEOMetadata } from '@/lib/seo';
 
-export async function generateMetadata({ params }: { params: { locale: string } }) {
-  const t = await getTranslations({ locale: params.locale });
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
 
-  return {
-    title: t('products.title') || 'Products',
-    description: t('products.description') || 'Browse our handmade products',
-  };
+  return generateSEOMetadata({
+    title: t('seo.products.title'),
+    description: t('seo.products.description'),
+    locale,
+    path: '/products',
+    type: 'website',
+  });
 }
 
 export default function ProductsPage() {

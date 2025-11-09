@@ -38,7 +38,7 @@ export default function EditPromotionContent({
 
   if (loading) {
     return (
-      <AdminLayout locale={locale}>
+      <AdminLayout>
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
           <p className="mt-2 text-gray-600">Loading promotion...</p>
@@ -49,7 +49,7 @@ export default function EditPromotionContent({
 
   if (error || !promotion) {
     return (
-      <AdminLayout locale={locale}>
+      <AdminLayout>
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error || 'Promotion not found'}
         </div>
@@ -58,7 +58,7 @@ export default function EditPromotionContent({
   }
 
   return (
-    <AdminLayout locale={locale}>
+    <AdminLayout>
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Promotion</h1>
         

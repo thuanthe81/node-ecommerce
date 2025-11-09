@@ -153,7 +153,7 @@ export default function AdminCategoriesPage() {
 
   return (
     <AdminProtectedRoute locale={locale}>
-      <AdminLayout locale={locale}>
+      <AdminLayout>
         <div className="space-y-6">
           {/* Page Header */}
           <div className="flex justify-between items-center">

@@ -14,8 +14,8 @@ export default function AdminOrdersPage({
   params: { locale: string };
 }) {
   return (
-    <AdminProtectedRoute>
-      <AdminLayout locale={params.locale}>
+    <AdminProtectedRoute locale={params.locale}>
+      <AdminLayout>
         <OrderListContent locale={params.locale} />
       </AdminLayout>
     </AdminProtectedRoute>

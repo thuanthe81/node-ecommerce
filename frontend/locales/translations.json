@@ -886,5 +886,63 @@
       "en": "View Label",
       "vi": "Xem nhãn"
     }
+  },
+  "seo": {
+    "home": {
+      "title": {
+        "en": "Handmade E-commerce - Unique Artisan Products",
+        "vi": "Handmade E-commerce - Sản phẩm thủ công độc đáo"
+      },
+      "description": {
+        "en": "Shop unique handmade products crafted by artisans. Browse our collection of authentic, high-quality handcrafted items.",
+        "vi": "Mua sắm các sản phẩm thủ công độc đáo được làm bởi nghệ nhân. Khám phá bộ sưu tập các sản phẩm thủ công chất lượng cao."
+      }
+    },
+    "products": {
+      "title": {
+        "en": "Products - Handmade E-commerce",
+        "vi": "Sản phẩm - Handmade E-commerce"
+      },
+      "description": {
+        "en": "Browse our complete collection of handmade products. Find unique artisan crafted items for every occasion.",
+        "vi": "Duyệt qua bộ sưu tập đầy đủ các sản phẩm thủ công. Tìm các sản phẩm thủ công độc đáo cho mọi dịp."
+      }
+    },
+    "product": {
+      "description": {
+        "en": "View detailed information about this handmade product including images, pricing, and availability.",
+        "vi": "Xem thông tin chi tiết về sản phẩm thủ công này bao gồm hình ảnh, giá cả và tình trạng còn hàng."
+      }
+    },
+    "cart": {
+      "title": {
+        "en": "Shopping Cart - Handmade E-commerce",
+        "vi": "Giỏ hàng - Handmade E-commerce"
+      },
+      "description": {
+        "en": "Review your shopping cart and proceed to checkout.",
+        "vi": "Xem lại giỏ hàng của bạn và tiến hành thanh toán."
+      }
+    },
+    "checkout": {
+      "title": {
+        "en": "Checkout - Handmade E-commerce",
+        "vi": "Thanh toán - Handmade E-commerce"
+      },
+      "description": {
+        "en": "Complete your purchase securely with our checkout process.",
+        "vi": "Hoàn tất mua hàng an toàn với quy trình thanh toán của chúng tôi."
+      }
+    },
+    "account": {
+      "title": {
+        "en": "My Account - Handmade E-commerce",
+        "vi": "Tài khoản của tôi - Handmade E-commerce"
+      },
+      "description": {
+        "en": "Manage your account, orders, and preferences.",
+        "vi": "Quản lý tài khoản, đơn hàng và tùy chọn của bạn."
+      }
+    }
   }
 }

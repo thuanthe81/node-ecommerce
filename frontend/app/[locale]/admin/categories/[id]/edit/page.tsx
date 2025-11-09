@@ -35,7 +35,7 @@ export default function EditCategoryPage() {
 
   return (
     <AdminProtectedRoute locale={locale}>
-      <AdminLayout locale={locale}>
+      <AdminLayout>
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
