@@ -256,13 +256,33 @@
     }
   },
   "cart": {
-    "title": {
+    "pageTitle": {
       "en": "Shopping Cart",
       "vi": "Giỏ hàng"
     },
-    "empty": {
+    "pageDescription": {
+      "en": "Review your cart and proceed to checkout",
+      "vi": "Xem lại giỏ hàng và tiến hành thanh toán"
+    },
+    "shoppingCart": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
+    },
+    "cart": {
+      "en": "Cart",
+      "vi": "Giỏ hàng"
+    },
+    "emptyCart": {
       "en": "Your cart is empty",
-      "vi": "Giỏ hàng trống"
+      "vi": "Giỏ hàng của bạn đang trống"
+    },
+    "emptyCartMessage": {
+      "en": "Add some products to get started",
+      "vi": "Thêm sản phẩm để bắt đầu mua sắm"
+    },
+    "startShopping": {
+      "en": "Start Shopping",
+      "vi": "Bắt đầu mua sắm"
     },
     "subtotal": {
       "en": "Subtotal",
@@ -272,9 +292,29 @@
       "en": "Total",
       "vi": "Tổng cộng"
     },
-    "checkout": {
+    "items": {
+      "en": "Items",
+      "vi": "Sản phẩm"
+    },
+    "item": {
+      "en": "item",
+      "vi": "sản phẩm"
+    },
+    "shipping": {
+      "en": "Shipping",
+      "vi": "Phí vận chuyển"
+    },
+    "tax": {
+      "en": "Tax",
+      "vi": "Thuế"
+    },
+    "calculatedAtCheckout": {
+      "en": "Calculated at checkout",
+      "vi": "Tính khi thanh toán"
+    },
+    "proceedToCheckout": {
       "en": "Proceed to Checkout",
-      "vi": "Thanh toán"
+      "vi": "Tiến hành thanh toán"
     },
     "continueShopping": {
       "en": "Continue Shopping",
@@ -284,13 +324,37 @@
       "en": "Remove",
       "vi": "Xóa"
     },
+    "clearCart": {
+      "en": "Clear Cart",
+      "vi": "Xóa giỏ hàng"
+    },
+    "confirmClearCart": {
+      "en": "Are you sure you want to clear your cart?",
+      "vi": "Bạn có chắc muốn xóa toàn bộ giỏ hàng?"
+    },
     "updateQuantity": {
       "en": "Update Quantity",
       "vi": "Cập nhật số lượng"
     },
-    "itemCount": {
-      "en": "{count} items",
-      "vi": "{count} sản phẩm"
+    "increaseQuantity": {
+      "en": "Increase quantity",
+      "vi": "Tăng số lượng"
+    },
+    "decreaseQuantity": {
+      "en": "Decrease quantity",
+      "vi": "Giảm số lượng"
+    },
+    "lowStock": {
+      "en": "Only {count} left in stock",
+      "vi": "Chỉ còn {count} sản phẩm"
+    },
+    "orderSummary": {
+      "en": "Order Summary",
+      "vi": "Tóm tắt đơn hàng"
+    },
+    "viewCart": {
+      "en": "View Cart",
+      "vi": "Xem giỏ hàng"
     }
   },
   "checkout": {

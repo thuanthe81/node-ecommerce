@@ -135,8 +135,8 @@
 
 ## Shopping Cart System
 
-- [ ] 8. Implement shopping cart functionality
-  - [ ] 8.1 Create cart backend functionality
+- [x] 8. Implement shopping cart functionality
+  - [x] 8.1 Create cart backend functionality
     - Write Cart and CartItem entities
     - Implement cart storage in Redis for performance
     - Create GET /cart endpoint (session-based or user-based)
@@ -146,7 +146,7 @@
     - Implement cart expiration logic
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
   
-  - [ ] 8.2 Build cart UI components
+  - [x] 8.2 Build cart UI components
     - Create cart page with item list
     - Create cart item component with quantity controls and remove button
     - Create cart summary component showing subtotal and total
@@ -155,7 +155,7 @@
     - Implement optimistic UI updates for cart operations
     - _Requirements: 3.1, 3.3, 3.4, 3.5_
   
-  - [ ] 8.3 Implement cart persistence
+  - [x] 8.3 Implement cart persistence
     - Store guest cart in localStorage with session ID
     - Merge guest cart with user cart on login
     - Sync cart state across browser tabs

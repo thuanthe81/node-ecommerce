@@ -27,6 +27,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -36,10 +37,15 @@
     "@nestjs/platform-express": "^11.1.8",
     "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^6.19.0",
+    "@types/cookie-parser": "^1.4.10",
     "bcrypt": "^6.0.0",
+    "cache-manager": "^7.2.4",
+    "cache-manager-ioredis-yet": "^2.1.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.6.1",
+    "ioredis": "^5.8.2",
     "multer": "^2.0.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

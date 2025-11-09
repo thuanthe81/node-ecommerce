@@ -5,12 +5,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { ProductsModule } from './products/products.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -25,10 +27,12 @@ import { ProductsModule } from './products/products.module';
       },
     ]),
     PrismaModule,
+    RedisModule,
     AuthModule,
     UsersModule,
     CategoriesModule,
     ProductsModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [

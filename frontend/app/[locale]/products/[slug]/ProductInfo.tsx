@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { Product } from '@/lib/product-api';
+import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 
 interface ProductInfoProps {
@@ -11,7 +12,10 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
   const locale = useLocale();
+  const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [adding, setAdding] = useState(false);
+  const [addedMessage, setAddedMessage] = useState(false);
 
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
   const description = locale === 'vi' ? product.descriptionVi : product.descriptionEn;
@@ -25,9 +29,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     setQuantity(newQuantity);
   };
 
-  const handleAddToCart = () => {
-    // TODO: Implement add to cart functionality
-    console.log('Add to cart:', { productId: product.id, quantity });
+  const handleAddToCart = async () => {
+    setAdding(true);
+    try {
+      await addToCart(product.id, quantity);
+      setAddedMessage(true);
+      setTimeout(() => setAddedMessage(false), 3000);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert(locale === 'vi' ? 'Không thể thêm vào giỏ hàng' : 'Failed to add to cart');
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -163,9 +176,20 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
           <button
             onClick={handleAddToCart}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+            disabled={adding}
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {locale === 'vi' ? 'Thêm vào giỏ hàng' : 'Add to Cart'}
+            {adding
+              ? locale === 'vi'
+                ? 'Đang thêm...'
+                : 'Adding...'
+              : addedMessage
+              ? locale === 'vi'
+                ? '✓ Đã thêm vào giỏ hàng'
+                : '✓ Added to Cart'
+              : locale === 'vi'
+              ? 'Thêm vào giỏ hàng'
+              : 'Add to Cart'}
           </button>
         </div>
       )}

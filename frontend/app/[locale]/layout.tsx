@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import '../globals.css';
 
@@ -70,8 +71,10 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
-            <Header />
-            <main>{children}</main>
+            <CartProvider>
+              <Header />
+              <main>{children}</main>
+            </CartProvider>
           </AuthProvider>
         </NextIntlClientProvider>
       </body>

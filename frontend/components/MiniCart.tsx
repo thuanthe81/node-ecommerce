@@ -1,0 +1,163 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { useCart } from '@/contexts/CartContext';
+
+export default function MiniCart() {
+  const locale = useLocale();
+  const t = useTranslations('cart');
+  const { cart, itemCount, subtotal, removeItem } = useCart();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const handleRemoveItem = async (itemId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await removeItem(itemId);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    }
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+        aria-label={t('cart')}
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+        {itemCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {itemCount > 99 ? '99+' : itemCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50">
+          <div className="p-4 border-b">
+            <h3 className="font-semibold">{t('shoppingCart')}</h3>
+            <p className="text-sm text-gray-600">
+              {itemCount} {itemCount === 1 ? t('item') : t('items')}
+            </p>
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {!cart || cart.items.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <svg
+                  className="w-16 h-16 mx-auto mb-4 text-gray-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <p>{t('emptyCart')}</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {cart.items.map((item) => {
+                  const productName = locale === 'vi' ? item.product.nameVi : item.product.nameEn;
+                  const imageUrl = item.product.images[0]?.url || '/placeholder.png';
+                  const imageAlt = locale === 'vi'
+                    ? item.product.images[0]?.altTextVi || productName
+                    : item.product.images[0]?.altTextEn || productName;
+
+                  return (
+                    <Link
+                      key={item.id}
+                      href={`/${locale}/products/${item.product.slug}`}
+                      className="flex gap-3 p-4 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt={imageAlt}
+                        width={60}
+                        height={60}
+                        className="object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium line-clamp-2">{productName}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item.quantity} × ${parseFloat(item.price).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end justify-between">
+                        <button
+                          onClick={(e) => handleRemoveItem(item.id, e)}
+                          className="text-gray-400 hover:text-red-600 transition-colors"
+                          aria-label={t('remove')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        <p className="text-sm font-semibold">
+                          ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {cart && cart.items.length > 0 && (
+            <div className="p-4 border-t bg-gray-50">
+              <div className="flex justify-between mb-3">
+                <span className="font-semibold">{t('subtotal')}</span>
+                <span className="font-semibold">${subtotal.toFixed(2)}</span>
+              </div>
+              <Link
+                href={`/${locale}/cart`}
+                className="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                {t('viewCart')}
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
