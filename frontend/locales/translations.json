@@ -612,5 +612,259 @@
       "en": "Settings",
       "vi": "Cài đặt"
     }
+  },
+  "orders": {
+    "orderManagement": {
+      "en": "Order Management",
+      "vi": "Quản lý đơn hàng"
+    },
+    "orderList": {
+      "en": "Order List",
+      "vi": "Danh sách đơn hàng"
+    },
+    "orderDetails": {
+      "en": "Order Details",
+      "vi": "Chi tiết đơn hàng"
+    },
+    "orderNumber": {
+      "en": "Order Number",
+      "vi": "Mã đơn hàng"
+    },
+    "customer": {
+      "en": "Customer",
+      "vi": "Khách hàng"
+    },
+    "date": {
+      "en": "Date",
+      "vi": "Ngày"
+    },
+    "status": {
+      "en": "Status",
+      "vi": "Trạng thái"
+    },
+    "total": {
+      "en": "Total",
+      "vi": "Tổng tiền"
+    },
+    "actions": {
+      "en": "Actions",
+      "vi": "Thao tác"
+    },
+    "viewDetails": {
+      "en": "View Details",
+      "vi": "Xem chi tiết"
+    },
+    "updateStatus": {
+      "en": "Update Status",
+      "vi": "Cập nhật trạng thái"
+    },
+    "searchPlaceholder": {
+      "en": "Search by order number or email...",
+      "vi": "Tìm theo mã đơn hàng hoặc email..."
+    },
+    "filterByStatus": {
+      "en": "Filter by Status",
+      "vi": "Lọc theo trạng thái"
+    },
+    "allStatuses": {
+      "en": "All Statuses",
+      "vi": "Tất cả trạng thái"
+    },
+    "dateRange": {
+      "en": "Date Range",
+      "vi": "Khoảng thời gian"
+    },
+    "from": {
+      "en": "From",
+      "vi": "Từ"
+    },
+    "to": {
+      "en": "To",
+      "vi": "Đến"
+    },
+    "clearFilters": {
+      "en": "Clear Filters",
+      "vi": "Xóa bộ lọc"
+    },
+    "noOrders": {
+      "en": "No orders found",
+      "vi": "Không tìm thấy đơn hàng"
+    },
+    "orderInfo": {
+      "en": "Order Information",
+      "vi": "Thông tin đơn hàng"
+    },
+    "customerInfo": {
+      "en": "Customer Information",
+      "vi": "Thông tin khách hàng"
+    },
+    "shippingInfo": {
+      "en": "Shipping Information",
+      "vi": "Thông tin giao hàng"
+    },
+    "billingInfo": {
+      "en": "Billing Information",
+      "vi": "Thông tin thanh toán"
+    },
+    "orderItems": {
+      "en": "Order Items",
+      "vi": "Sản phẩm đã đặt"
+    },
+    "paymentInfo": {
+      "en": "Payment Information",
+      "vi": "Thông tin thanh toán"
+    },
+    "paymentStatus": {
+      "en": "Payment Status",
+      "vi": "Trạng thái thanh toán"
+    },
+    "paymentMethod": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "shippingMethod": {
+      "en": "Shipping Method",
+      "vi": "Phương thức vận chuyển"
+    },
+    "subtotal": {
+      "en": "Subtotal",
+      "vi": "Tạm tính"
+    },
+    "shipping": {
+      "en": "Shipping",
+      "vi": "Phí vận chuyển"
+    },
+    "tax": {
+      "en": "Tax",
+      "vi": "Thuế"
+    },
+    "discount": {
+      "en": "Discount",
+      "vi": "Giảm giá"
+    },
+    "notes": {
+      "en": "Notes",
+      "vi": "Ghi chú"
+    },
+    "statusPending": {
+      "en": "Pending",
+      "vi": "Chờ xử lý"
+    },
+    "statusProcessing": {
+      "en": "Processing",
+      "vi": "Đang xử lý"
+    },
+    "statusShipped": {
+      "en": "Shipped",
+      "vi": "Đã gửi hàng"
+    },
+    "statusDelivered": {
+      "en": "Delivered",
+      "vi": "Đã giao hàng"
+    },
+    "statusCancelled": {
+      "en": "Cancelled",
+      "vi": "Đã hủy"
+    },
+    "statusRefunded": {
+      "en": "Refunded",
+      "vi": "Đã hoàn tiền"
+    },
+    "paymentPending": {
+      "en": "Pending",
+      "vi": "Chờ thanh toán"
+    },
+    "paymentPaid": {
+      "en": "Paid",
+      "vi": "Đã thanh toán"
+    },
+    "paymentFailed": {
+      "en": "Failed",
+      "vi": "Thất bại"
+    },
+    "paymentRefunded": {
+      "en": "Refunded",
+      "vi": "Đã hoàn tiền"
+    },
+    "updateSuccess": {
+      "en": "Order status updated successfully",
+      "vi": "Cập nhật trạng thái đơn hàng thành công"
+    },
+    "updateError": {
+      "en": "Failed to update order status",
+      "vi": "Cập nhật trạng thái đơn hàng thất bại"
+    },
+    "refund": {
+      "en": "Refund",
+      "vi": "Hoàn tiền"
+    },
+    "processRefund": {
+      "en": "Process Refund",
+      "vi": "Xử lý hoàn tiền"
+    },
+    "refundAmount": {
+      "en": "Refund Amount",
+      "vi": "Số tiền hoàn"
+    },
+    "refundReason": {
+      "en": "Refund Reason",
+      "vi": "Lý do hoàn tiền"
+    },
+    "fullRefund": {
+      "en": "Full Refund",
+      "vi": "Hoàn tiền toàn bộ"
+    },
+    "partialRefund": {
+      "en": "Partial Refund",
+      "vi": "Hoàn tiền một phần"
+    },
+    "refundSuccess": {
+      "en": "Refund processed successfully",
+      "vi": "Hoàn tiền thành công"
+    },
+    "refundError": {
+      "en": "Failed to process refund",
+      "vi": "Hoàn tiền thất bại"
+    },
+    "confirmRefund": {
+      "en": "Are you sure you want to process this refund?",
+      "vi": "Bạn có chắc muốn hoàn tiền cho đơn hàng này?"
+    },
+    "cannotRefund": {
+      "en": "This order cannot be refunded",
+      "vi": "Đơn hàng này không thể hoàn tiền"
+    },
+    "generateLabel": {
+      "en": "Generate Shipping Label",
+      "vi": "Tạo nhãn vận chuyển"
+    },
+    "trackingNumber": {
+      "en": "Tracking Number",
+      "vi": "Mã vận đơn"
+    },
+    "carrier": {
+      "en": "Carrier",
+      "vi": "Đơn vị vận chuyển"
+    },
+    "selectCarrier": {
+      "en": "Select Carrier",
+      "vi": "Chọn đơn vị vận chuyển"
+    },
+    "labelGenerated": {
+      "en": "Shipping label generated successfully",
+      "vi": "Tạo nhãn vận chuyển thành công"
+    },
+    "labelError": {
+      "en": "Failed to generate shipping label",
+      "vi": "Tạo nhãn vận chuyển thất bại"
+    },
+    "downloadLabel": {
+      "en": "Download Label",
+      "vi": "Tải nhãn"
+    },
+    "viewLabel": {
+      "en": "View Label",
+      "vi": "Xem nhãn"
+    }
   }
 }

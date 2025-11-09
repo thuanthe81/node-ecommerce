@@ -70,6 +70,18 @@ export interface Address {
   country: string;
 }
 
+export interface AdminOrderFilters {
+  status?: string;
+  paymentStatus?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
+export interface UpdateOrderStatusData {
+  status: string;
+}
+
 export const orderApi = {
   /**
    * Create a new order
@@ -92,6 +104,29 @@ export const orderApi = {
    */
   async getOrder(id: string): Promise<Order> {
     const response = await apiClient.get(`/orders/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Get all orders (admin only)
+   */
+  async getAllOrders(filters?: AdminOrderFilters): Promise<Order[]> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.search) params.append('search', filters.search);
+
+    const response = await apiClient.get(`/orders/admin/all?${params.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Update order status (admin only)
+   */
+  async updateOrderStatus(id: string, data: UpdateOrderStatusData): Promise<Order> {
+    const response = await apiClient.patch(`/orders/${id}/status`, data);
     return response.data;
   },
 };

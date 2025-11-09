@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CalculateShippingDto } from './dto/calculate-shipping.dto';
+import { GenerateLabelDto } from './dto/generate-label.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { OrderStatus } from '@prisma/client';
 
 export interface ShippingRate {
   method: string;
@@ -10,8 +13,18 @@ export interface ShippingRate {
   carrier?: string;
 }
 
+export interface ShippingLabel {
+  trackingNumber: string;
+  labelUrl: string;
+  carrier: string;
+  orderId: string;
+  orderNumber: string;
+  createdAt: Date;
+}
+
 @Injectable()
 export class ShippingService {
+  constructor(private prisma: PrismaService) {}
   /**
    * Calculate shipping rates based on destination and package details
    */
@@ -254,5 +267,101 @@ export class ShippingService {
         description: 'Standard delivery',
       }
     );
+  }
+
+  /**
+   * Generate shipping label for an order
+   * Note: This is a simplified implementation. In production, integrate with shipping provider API
+   * (e.g., ShipStation, EasyPost, or carrier-specific APIs like USPS, FedEx, UPS)
+   */
+  async generateShippingLabel(
+    generateLabelDto: GenerateLabelDto,
+  ): Promise<ShippingLabel> {
+    const { orderId, carrier } = generateLabelDto;
+
+    // Find the order
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        shippingAddress: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Check if order can have a shipping label generated
+    if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.REFUNDED) {
+      throw new BadRequestException(
+        'Cannot generate shipping label for cancelled or refunded orders',
+      );
+    }
+
+    // Generate a tracking number (in production, this would come from the shipping provider API)
+    const trackingNumber = this.generateTrackingNumber(carrier);
+
+    // In production, integrate with shipping provider API here:
+    // const shipstation = new ShipStation(process.env.SHIPSTATION_API_KEY);
+    // const label = await shipstation.createLabel({
+    //   orderId: order.orderNumber,
+    //   carrier: carrier,
+    //   service: order.shippingMethod,
+    //   shipTo: order.shippingAddress,
+    //   weight: calculateTotalWeight(order.items),
+    //   dimensions: calculateDimensions(order.items),
+    // });
+    // trackingNumber = label.trackingNumber;
+    // labelUrl = label.labelUrl;
+
+    // For demo purposes, generate a mock label URL
+    const labelUrl = `https://example.com/labels/${trackingNumber}.pdf`;
+
+    // Update order with tracking number and status
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.SHIPPED,
+        notes: order.notes
+          ? `${order.notes}\n\nShipping label generated. Tracking: ${trackingNumber}`
+          : `Shipping label generated. Tracking: ${trackingNumber}`,
+      },
+    });
+
+    // In production, send shipping notification email here
+    // await this.emailService.sendShippingNotification(order.email, {
+    //   orderNumber: order.orderNumber,
+    //   trackingNumber,
+    //   carrier,
+    //   estimatedDelivery: calculateEstimatedDelivery(order.shippingMethod),
+    // });
+
+    return {
+      trackingNumber,
+      labelUrl,
+      carrier,
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      createdAt: new Date(),
+    };
+  }
+
+  /**
+   * Generate a mock tracking number
+   * In production, this would come from the shipping provider
+   */
+  private generateTrackingNumber(carrier: string): string {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 10000)
+      .toString()
+      .padStart(4, '0');
+    
+    const prefix = carrier.substring(0, 3).toUpperCase();
+    return `${prefix}${timestamp}${random}`;
   }
 }

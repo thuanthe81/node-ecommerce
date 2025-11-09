@@ -1,39 +1,25 @@
 import apiClient from './api-client';
 
-export interface ShippingItem {
-  weight: number;
-  length?: number;
-  width?: number;
-  height?: number;
-  quantity: number;
+export interface GenerateLabelData {
+  orderId: string;
+  carrier: string;
 }
 
-export interface CalculateShippingRequest {
-  destinationCity: string;
-  destinationState: string;
-  destinationPostalCode: string;
-  destinationCountry: string;
-  items: ShippingItem[];
-  orderValue?: number;
-}
-
-export interface ShippingRate {
-  method: string;
-  name: string;
-  description: string;
-  cost: number;
-  estimatedDays: string;
-  carrier?: string;
+export interface ShippingLabel {
+  trackingNumber: string;
+  labelUrl: string;
+  carrier: string;
+  orderId: string;
+  orderNumber: string;
+  createdAt: string;
 }
 
 export const shippingApi = {
   /**
-   * Calculate shipping rates
+   * Generate a shipping label for an order
    */
-  async calculateShipping(
-    data: CalculateShippingRequest,
-  ): Promise<ShippingRate[]> {
-    const response = await apiClient.post('/shipping/calculate', data);
+  async generateLabel(data: GenerateLabelData): Promise<ShippingLabel> {
+    const response = await apiClient.post('/shipping/generate-label', data);
     return response.data;
   },
 };

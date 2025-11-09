@@ -47,6 +47,7 @@ export class OrdersController {
     @Query('paymentStatus') paymentStatus?: PaymentStatus,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('search') search?: string,
   ) {
     const filters: any = {};
 
@@ -64,6 +65,10 @@ export class OrdersController {
 
     if (endDate) {
       filters.endDate = new Date(endDate);
+    }
+
+    if (search) {
+      filters.search = search;
     }
 
     return this.ordersService.findAll(filters);

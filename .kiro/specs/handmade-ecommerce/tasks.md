@@ -283,8 +283,8 @@
 
 ## Admin Panel - Order Management
 
-- [ ] 14. Build admin order management
-  - [ ] 14.1 Create order management interface
+- [x] 14. Build admin order management
+  - [x] 14.1 Create order management interface
     - Create order list page with filters (status, date range)
     - Create order detail page showing all order information
     - Implement order status update dropdown
@@ -292,14 +292,14 @@
     - Display customer and shipping information
     - _Requirements: 6.3, 6.4_
   
-  - [ ] 14.2 Implement refund processing
+  - [x] 14.2 Implement refund processing
     - Create refund initiation interface
     - Integrate with Stripe refund API
     - Update order status to refunded
     - Send refund confirmation email
     - _Requirements: 6.5_
   
-  - [ ] 14.3 Implement shipping label generation
+  - [x] 14.3 Implement shipping label generation
     - Create shipping label generation interface
     - Integrate with shipping provider API
     - Store tracking number with order

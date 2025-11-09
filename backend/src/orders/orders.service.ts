@@ -313,6 +313,7 @@ export class OrdersService {
     paymentStatus?: PaymentStatus;
     startDate?: Date;
     endDate?: Date;
+    search?: string;
   }) {
     const where: any = {};
 
@@ -332,6 +333,14 @@ export class OrdersService {
       if (filters.endDate) {
         where.createdAt.lte = filters.endDate;
       }
+    }
+
+    // Add search functionality for order number or email
+    if (filters?.search) {
+      where.OR = [
+        { orderNumber: { contains: filters.search, mode: 'insensitive' } },
+        { email: { contains: filters.search, mode: 'insensitive' } },
+      ];
     }
 
     return this.prisma.order.findMany({
