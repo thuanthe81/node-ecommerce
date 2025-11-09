@@ -8,10 +8,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
+import { EmailService } from '../notifications/services/email.service';
+import { EmailTemplateService } from '../notifications/services/email-template.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+    private emailTemplateService: EmailTemplateService,
+  ) {}
 
   /**
    * Generate a unique order number
@@ -234,7 +240,51 @@ export class OrdersService {
       return newOrder;
     });
 
+    // Send order confirmation email
+    await this.sendOrderConfirmationEmail(order);
+
     return order;
+  }
+
+  /**
+   * Send order confirmation email
+   */
+  private async sendOrderConfirmationEmail(order: any) {
+    try {
+      const customerName = order.shippingAddress.fullName;
+      const locale = 'en'; // Default to English, can be determined from user preferences
+
+      const emailData = {
+        orderNumber: order.orderNumber,
+        customerName,
+        orderDate: order.createdAt.toLocaleDateString(),
+        items: order.items.map((item) => ({
+          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+          quantity: item.quantity,
+          price: Number(item.price),
+        })),
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        total: Number(order.total),
+        shippingAddress: order.shippingAddress,
+      };
+
+      const template =
+        this.emailTemplateService.getOrderConfirmationTemplate(
+          emailData,
+          locale,
+        );
+
+      await this.emailService.sendEmail({
+        to: order.email,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+    } catch (error) {
+      // Log error but don't fail the order creation
+      console.error('Failed to send order confirmation email:', error);
+    }
   }
 
   /**
@@ -415,16 +465,22 @@ export class OrdersService {
   async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto) {
     const order = await this.prisma.order.findUnique({
       where: { id },
+      include: {
+        items: true,
+        shippingAddress: true,
+        billingAddress: true,
+      },
     });
 
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
-    return this.prisma.order.update({
+    const updatedOrder = await this.prisma.order.update({
       where: { id },
       data: {
         status: updateOrderStatusDto.status,
+        trackingNumber: updateOrderStatusDto.trackingNumber,
       },
       include: {
         items: {
@@ -436,5 +492,96 @@ export class OrdersService {
         billingAddress: true,
       },
     });
+
+    // Send appropriate email based on status
+    if (updateOrderStatusDto.status === OrderStatus.SHIPPED) {
+      await this.sendShippingNotificationEmail(updatedOrder);
+    } else {
+      await this.sendOrderStatusUpdateEmail(updatedOrder);
+    }
+
+    return updatedOrder;
+  }
+
+  /**
+   * Send shipping notification email
+   */
+  private async sendShippingNotificationEmail(order: any) {
+    try {
+      const customerName = order.shippingAddress.fullName;
+      const locale = 'en'; // Default to English
+
+      const emailData = {
+        orderNumber: order.orderNumber,
+        customerName,
+        orderDate: order.createdAt.toLocaleDateString(),
+        items: order.items.map((item) => ({
+          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+          quantity: item.quantity,
+          price: Number(item.price),
+        })),
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        total: Number(order.total),
+        shippingAddress: order.shippingAddress,
+        trackingNumber: order.trackingNumber,
+      };
+
+      const template =
+        this.emailTemplateService.getShippingNotificationTemplate(
+          emailData,
+          locale,
+        );
+
+      await this.emailService.sendEmail({
+        to: order.email,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+    } catch (error) {
+      console.error('Failed to send shipping notification email:', error);
+    }
+  }
+
+  /**
+   * Send order status update email
+   */
+  private async sendOrderStatusUpdateEmail(order: any) {
+    try {
+      const customerName = order.shippingAddress.fullName;
+      const locale = 'en'; // Default to English
+
+      const emailData = {
+        orderNumber: order.orderNumber,
+        customerName,
+        orderDate: order.createdAt.toLocaleDateString(),
+        items: order.items.map((item) => ({
+          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+          quantity: item.quantity,
+          price: Number(item.price),
+        })),
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        total: Number(order.total),
+        shippingAddress: order.shippingAddress,
+        status: order.status,
+      };
+
+      const template =
+        this.emailTemplateService.getOrderStatusUpdateTemplate(
+          emailData,
+          locale,
+        );
+
+      await this.emailService.sendEmail({
+        to: order.email,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+    } catch (error) {
+      console.error('Failed to send order status update email:', error);
+    }
   }
 }

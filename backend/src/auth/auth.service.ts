@@ -15,6 +15,8 @@ import {
   RefreshTokenStore,
 } from './entities/refresh-token.entity';
 import { User, UserRole } from '@prisma/client';
+import { EmailService } from '../notifications/services/email.service';
+import { EmailTemplateService } from '../notifications/services/email-template.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +24,8 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
+    private emailTemplateService: EmailTemplateService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -54,10 +58,40 @@ export class AuthService {
     // Generate tokens
     const tokens = await this.generateTokens(user);
 
+    // Send welcome email
+    await this.sendWelcomeEmail(user);
+
     return {
       user: this.sanitizeUser(user),
       ...tokens,
     };
+  }
+
+  /**
+   * Send welcome email to new user
+   */
+  private async sendWelcomeEmail(user: User) {
+    try {
+      const locale = 'en'; // Default to English
+      const emailData = {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+      };
+
+      const template = this.emailTemplateService.getWelcomeEmailTemplate(
+        emailData,
+        locale,
+      );
+
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+    }
   }
 
   async login(loginDto: LoginDto) {
@@ -178,5 +212,61 @@ export class AuthService {
     return this.prisma.user.findUnique({
       where: { id: userId },
     });
+  }
+
+  /**
+   * Request password reset
+   */
+  async requestPasswordReset(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Don't reveal if user exists
+      return { message: 'If the email exists, a reset link has been sent' };
+    }
+
+    // Generate reset token (in production, store this in database with expiry)
+    const resetToken = this.jwtService.sign(
+      { sub: user.id, email: user.email, type: 'password-reset' },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '1h',
+      },
+    );
+
+    // Send password reset email
+    await this.sendPasswordResetEmail(user, resetToken);
+
+    return { message: 'If the email exists, a reset link has been sent' };
+  }
+
+  /**
+   * Send password reset email
+   */
+  private async sendPasswordResetEmail(user: User, resetToken: string) {
+    try {
+      const locale = 'en'; // Default to English
+      const emailData = {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        resetToken,
+      };
+
+      const template = this.emailTemplateService.getPasswordResetTemplate(
+        emailData,
+        locale,
+      );
+
+      await this.emailService.sendEmail({
+        to: user.email,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+    }
   }
 }

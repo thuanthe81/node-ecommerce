@@ -21,6 +21,7 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { ContentModule } from './content/content.module';
 import { ContactModule } from './contact/contact.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     ContentModule,
     ContactModule,
     AnalyticsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

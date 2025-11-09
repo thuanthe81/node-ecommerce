@@ -1,9 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ContactFormDto } from './dto/contact-form.dto';
+import { EmailService } from '../notifications/services/email.service';
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
+
+  constructor(
+    private emailService: EmailService,
+    private configService: ConfigService,
+  ) {}
 
   async submitContactForm(contactFormDto: ContactFormDto) {
     // Log the contact form submission
@@ -11,16 +18,12 @@ export class ContactService {
     this.logger.log(`Subject: ${contactFormDto.subject}`);
     this.logger.log(`Message: ${contactFormDto.message}`);
 
-    // TODO: In a production environment, you would:
-    // 1. Send an email to the admin using a service like SendGrid, AWS SES, or Nodemailer
-    // 2. Store the contact form submission in the database for tracking
-    // 3. Send an auto-reply email to the customer confirming receipt
+    // Send email to admin
+    const adminEmail =
+      this.configService.get('ADMIN_EMAIL') || 'admin@example.com';
 
-    // For now, we'll just return a success response
-    // Example email sending code (commented out):
-    /*
-    await this.emailService.send({
-      to: process.env.ADMIN_EMAIL,
+    await this.emailService.sendEmail({
+      to: adminEmail,
       subject: `Contact Form: ${contactFormDto.subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
@@ -31,7 +34,6 @@ export class ContactService {
         <p>${contactFormDto.message}</p>
       `,
     });
-    */
 
     return {
       success: true,
