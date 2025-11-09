@@ -49,9 +49,7 @@ export class PaymentsService {
     const refundAmount = amount || Number(order.total);
 
     if (refundAmount > Number(order.total)) {
-      throw new BadRequestException(
-        'Refund amount cannot exceed order total',
-      );
+      throw new BadRequestException('Refund amount cannot exceed order total');
     }
 
     // In production, integrate with Stripe API here:

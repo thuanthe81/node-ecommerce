@@ -50,7 +50,12 @@ export class CartController {
   ) {
     const userId = user?.id;
     const sessionId = this.getSessionId(req);
-    return this.cartService.updateItem(id, updateCartItemDto, userId, sessionId);
+    return this.cartService.updateItem(
+      id,
+      updateCartItemDto,
+      userId,
+      sessionId,
+    );
   }
 
   @Public()

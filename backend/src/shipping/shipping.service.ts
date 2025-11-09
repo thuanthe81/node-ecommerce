@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CalculateShippingDto } from './dto/calculate-shipping.dto';
 import { GenerateLabelDto } from './dto/generate-label.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -297,7 +301,10 @@ export class ShippingService {
     }
 
     // Check if order can have a shipping label generated
-    if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.REFUNDED) {
+    if (
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REFUNDED
+    ) {
       throw new BadRequestException(
         'Cannot generate shipping label for cancelled or refunded orders',
       );
@@ -360,7 +367,7 @@ export class ShippingService {
     const random = Math.floor(Math.random() * 10000)
       .toString()
       .padStart(4, '0');
-    
+
     const prefix = carrier.substring(0, 3).toUpperCase();
     return `${prefix}${timestamp}${random}`;
   }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
@@ -29,7 +33,10 @@ export class PromotionsService {
     }
 
     // Validate percentage value
-    if (createPromotionDto.type === PromotionType.PERCENTAGE && createPromotionDto.value > 100) {
+    if (
+      createPromotionDto.type === PromotionType.PERCENTAGE &&
+      createPromotionDto.value > 100
+    ) {
       throw new BadRequestException('Percentage discount cannot exceed 100%');
     }
 
@@ -38,11 +45,11 @@ export class PromotionsService {
         code: createPromotionDto.code,
         type: createPromotionDto.type,
         value: new Decimal(createPromotionDto.value),
-        minOrderAmount: createPromotionDto.minOrderAmount 
-          ? new Decimal(createPromotionDto.minOrderAmount) 
+        minOrderAmount: createPromotionDto.minOrderAmount
+          ? new Decimal(createPromotionDto.minOrderAmount)
           : null,
-        maxDiscountAmount: createPromotionDto.maxDiscountAmount 
-          ? new Decimal(createPromotionDto.maxDiscountAmount) 
+        maxDiscountAmount: createPromotionDto.maxDiscountAmount
+          ? new Decimal(createPromotionDto.maxDiscountAmount)
           : null,
         usageLimit: createPromotionDto.usageLimit,
         perCustomerLimit: createPromotionDto.perCustomerLimit,
@@ -83,7 +90,10 @@ export class PromotionsService {
     return promotion;
   }
 
-  async update(id: string, updatePromotionDto: UpdatePromotionDto): Promise<Promotion> {
+  async update(
+    id: string,
+    updatePromotionDto: UpdatePromotionDto,
+  ): Promise<Promotion> {
     const promotion = await this.prisma.promotion.findUnique({
       where: { id },
     });
@@ -105,11 +115,11 @@ export class PromotionsService {
 
     // Validate dates if provided
     if (updatePromotionDto.startDate || updatePromotionDto.endDate) {
-      const startDate = updatePromotionDto.startDate 
-        ? new Date(updatePromotionDto.startDate) 
+      const startDate = updatePromotionDto.startDate
+        ? new Date(updatePromotionDto.startDate)
         : promotion.startDate;
-      const endDate = updatePromotionDto.endDate 
-        ? new Date(updatePromotionDto.endDate) 
+      const endDate = updatePromotionDto.endDate
+        ? new Date(updatePromotionDto.endDate)
         : promotion.endDate;
 
       if (endDate <= startDate) {
@@ -118,32 +128,40 @@ export class PromotionsService {
     }
 
     // Validate percentage value
-    if (updatePromotionDto.type === PromotionType.PERCENTAGE && 
-        updatePromotionDto.value && 
-        updatePromotionDto.value > 100) {
+    if (
+      updatePromotionDto.type === PromotionType.PERCENTAGE &&
+      updatePromotionDto.value &&
+      updatePromotionDto.value > 100
+    ) {
       throw new BadRequestException('Percentage discount cannot exceed 100%');
     }
 
     const updateData: any = {};
-    
+
     if (updatePromotionDto.code) updateData.code = updatePromotionDto.code;
     if (updatePromotionDto.type) updateData.type = updatePromotionDto.type;
-    if (updatePromotionDto.value !== undefined) updateData.value = new Decimal(updatePromotionDto.value);
+    if (updatePromotionDto.value !== undefined)
+      updateData.value = new Decimal(updatePromotionDto.value);
     if (updatePromotionDto.minOrderAmount !== undefined) {
-      updateData.minOrderAmount = updatePromotionDto.minOrderAmount 
-        ? new Decimal(updatePromotionDto.minOrderAmount) 
+      updateData.minOrderAmount = updatePromotionDto.minOrderAmount
+        ? new Decimal(updatePromotionDto.minOrderAmount)
         : null;
     }
     if (updatePromotionDto.maxDiscountAmount !== undefined) {
-      updateData.maxDiscountAmount = updatePromotionDto.maxDiscountAmount 
-        ? new Decimal(updatePromotionDto.maxDiscountAmount) 
+      updateData.maxDiscountAmount = updatePromotionDto.maxDiscountAmount
+        ? new Decimal(updatePromotionDto.maxDiscountAmount)
         : null;
     }
-    if (updatePromotionDto.usageLimit !== undefined) updateData.usageLimit = updatePromotionDto.usageLimit;
-    if (updatePromotionDto.perCustomerLimit !== undefined) updateData.perCustomerLimit = updatePromotionDto.perCustomerLimit;
-    if (updatePromotionDto.startDate) updateData.startDate = new Date(updatePromotionDto.startDate);
-    if (updatePromotionDto.endDate) updateData.endDate = new Date(updatePromotionDto.endDate);
-    if (updatePromotionDto.isActive !== undefined) updateData.isActive = updatePromotionDto.isActive;
+    if (updatePromotionDto.usageLimit !== undefined)
+      updateData.usageLimit = updatePromotionDto.usageLimit;
+    if (updatePromotionDto.perCustomerLimit !== undefined)
+      updateData.perCustomerLimit = updatePromotionDto.perCustomerLimit;
+    if (updatePromotionDto.startDate)
+      updateData.startDate = new Date(updatePromotionDto.startDate);
+    if (updatePromotionDto.endDate)
+      updateData.endDate = new Date(updatePromotionDto.endDate);
+    if (updatePromotionDto.isActive !== undefined)
+      updateData.isActive = updatePromotionDto.isActive;
 
     return this.prisma.promotion.update({
       where: { id },
@@ -235,7 +253,10 @@ export class PromotionsService {
     }
 
     // Check minimum order amount
-    if (promotion.minOrderAmount && orderAmount < Number(promotion.minOrderAmount)) {
+    if (
+      promotion.minOrderAmount &&
+      orderAmount < Number(promotion.minOrderAmount)
+    ) {
       return {
         valid: false,
         message: `Minimum order amount of $${promotion.minOrderAmount} required`,
@@ -243,10 +264,7 @@ export class PromotionsService {
     }
 
     // Calculate discount
-    const discountAmount = this.calculateDiscount(
-      promotion,
-      orderAmount,
-    );
+    const discountAmount = this.calculateDiscount(promotion, orderAmount);
 
     return {
       valid: true,
@@ -265,7 +283,10 @@ export class PromotionsService {
     }
 
     // Apply max discount limit if set
-    if (promotion.maxDiscountAmount && discount > Number(promotion.maxDiscountAmount)) {
+    if (
+      promotion.maxDiscountAmount &&
+      discount > Number(promotion.maxDiscountAmount)
+    ) {
       discount = Number(promotion.maxDiscountAmount);
     }
 

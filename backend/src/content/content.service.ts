@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
@@ -29,10 +33,7 @@ export class ContentService {
   async findAll(type?: ContentType): Promise<Content[]> {
     return this.prisma.content.findMany({
       where: type ? { type } : undefined,
-      orderBy: [
-        { displayOrder: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -42,10 +43,7 @@ export class ContentService {
         isPublished: true,
         type: type || undefined,
       },
-      orderBy: [
-        { displayOrder: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -73,7 +71,10 @@ export class ContentService {
     return content;
   }
 
-  async update(id: string, updateContentDto: UpdateContentDto): Promise<Content> {
+  async update(
+    id: string,
+    updateContentDto: UpdateContentDto,
+  ): Promise<Content> {
     const content = await this.prisma.content.findUnique({
       where: { id },
     });

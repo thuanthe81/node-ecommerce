@@ -8,10 +8,7 @@ import { AnalyticsEventType } from '@prisma/client';
 export class AnalyticsService {
   constructor(private prisma: PrismaService) {}
 
-  async trackEvent(
-    createEventDto: CreateAnalyticsEventDto,
-    userId?: string,
-  ) {
+  async trackEvent(createEventDto: CreateAnalyticsEventDto, userId?: string) {
     return this.prisma.analyticsEvent.create({
       data: {
         ...createEventDto,
@@ -118,7 +115,8 @@ export class AnalyticsService {
       }),
     ]);
 
-    const conversionRate = views > 0 ? (purchases._sum.quantity || 0) / views : 0;
+    const conversionRate =
+      views > 0 ? (purchases._sum.quantity || 0) / views : 0;
 
     return {
       productId,
@@ -239,11 +237,7 @@ export class AnalyticsService {
     return result._sum.total || 0;
   }
 
-  private async getTopProducts(
-    startDate: Date,
-    endDate: Date,
-    limit: number,
-  ) {
+  private async getTopProducts(startDate: Date, endDate: Date, limit: number) {
     const topProducts = await this.prisma.$queryRaw<
       Array<{
         product_id: string;

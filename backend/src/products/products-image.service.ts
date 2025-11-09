@@ -91,7 +91,8 @@ export class ProductsImageService {
         orderBy: { displayOrder: 'desc' },
       });
 
-      const displayOrder = imageDto?.displayOrder ?? (lastImage?.displayOrder ?? -1) + 1;
+      const displayOrder =
+        imageDto?.displayOrder ?? (lastImage?.displayOrder ?? -1) + 1;
 
       // Save to database
       const imageUrl = `/uploads/products/${filename}`;

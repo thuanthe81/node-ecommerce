@@ -1,4 +1,13 @@
-import { IsString, IsEnum, IsNumber, IsOptional, IsDateString, IsBoolean, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsDateString,
+  IsBoolean,
+  Min,
+  Max,
+} from 'class-validator';
 import { PromotionType } from '@prisma/client';
 
 export class CreatePromotionDto {

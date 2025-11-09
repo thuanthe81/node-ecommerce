@@ -12,7 +12,7 @@ import { redisStore } from 'cache-manager-ioredis-yet';
       useFactory: async (configService: ConfigService) => {
         const redisHost = configService.get('REDIS_HOST', 'localhost');
         const redisPort = configService.get('REDIS_PORT', 6379);
-        
+
         return {
           store: await redisStore({
             host: redisHost,

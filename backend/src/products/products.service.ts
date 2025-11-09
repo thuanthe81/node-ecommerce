@@ -79,7 +79,7 @@ export class ProductsService {
 
     // Generate cache key based on query parameters
     const cacheKey = `products:list:${JSON.stringify(query)}`;
-    
+
     // Try to get from cache
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {

@@ -66,7 +66,11 @@ export class UsersController {
     @Param('id') addressId: string,
     @Body() updateAddressDto: UpdateAddressDto,
   ) {
-    return this.usersService.updateAddress(user.userId, addressId, updateAddressDto);
+    return this.usersService.updateAddress(
+      user.userId,
+      addressId,
+      updateAddressDto,
+    );
   }
 
   @Delete('addresses/:id')

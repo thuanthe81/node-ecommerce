@@ -13,7 +13,10 @@ export class PrismaService
           url: process.env.DATABASE_URL,
         },
       },
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      log:
+        process.env.NODE_ENV === 'development'
+          ? ['query', 'error', 'warn']
+          : ['error'],
     });
   }
 
@@ -30,12 +33,10 @@ export class PrismaService
       throw new Error('Cannot clean database in production');
     }
 
-    const models = Reflect.ownKeys(this).filter(
-      (key) => {
-        const keyStr = String(key);
-        return keyStr[0] !== '_' && keyStr !== 'constructor';
-      },
-    );
+    const models = Reflect.ownKeys(this).filter((key) => {
+      const keyStr = String(key);
+      return keyStr[0] !== '_' && keyStr !== 'constructor';
+    });
 
     return Promise.all(
       models.map((modelKey) => {

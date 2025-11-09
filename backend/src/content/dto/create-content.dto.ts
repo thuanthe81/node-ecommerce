@@ -1,4 +1,11 @@
-import { IsString, IsEnum, IsOptional, IsBoolean, IsInt, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsUrl,
+} from 'class-validator';
 import { ContentType } from '@prisma/client';
 
 export class CreateContentDto {

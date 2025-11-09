@@ -61,9 +61,7 @@ export class OrdersService {
     }
 
     if (userId && shippingAddress.userId !== userId) {
-      throw new ForbiddenException(
-        'Shipping address does not belong to user',
-      );
+      throw new ForbiddenException('Shipping address does not belong to user');
     }
 
     const billingAddress = await this.prisma.address.findUnique({

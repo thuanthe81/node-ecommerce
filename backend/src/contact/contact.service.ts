@@ -15,7 +15,7 @@ export class ContactService {
     // 1. Send an email to the admin using a service like SendGrid, AWS SES, or Nodemailer
     // 2. Store the contact form submission in the database for tracking
     // 3. Send an auto-reply email to the customer confirming receipt
-    
+
     // For now, we'll just return a success response
     // Example email sending code (commented out):
     /*
