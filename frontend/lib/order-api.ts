@@ -13,6 +13,7 @@ export interface CreateOrderData {
   paymentMethod: string;
   items: CreateOrderItem[];
   promotionCode?: string;
+  promotionId?: string;
   notes?: string;
 }
 

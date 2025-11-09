@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderApi, CreateOrderData } from '@/lib/order-api';
 import { userApi } from '@/lib/user-api';
+import { promotionApi } from '@/lib/promotion-api';
 import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
@@ -112,6 +113,40 @@ export default function CheckoutContent() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    
+    setPromoLoading(true);
+    setPromoError('');
+    
+    try {
+      const result = await promotionApi.validate({
+        code: promoCode.trim(),
+        orderAmount: subtotal,
+      });
+      
+      if (result.valid && result.discountAmount && result.promotion) {
+        setAppliedPromo({
+          code: promoCode.trim().toUpperCase(),
+          discountAmount: result.discountAmount,
+          promotionId: result.promotion.id,
+        });
+        setPromoCode('');
+      } else {
+        setPromoError(result.message || 'Invalid promotion code');
+      }
+    } catch (err: any) {
+      setPromoError(err.response?.data?.message || 'Failed to validate promotion code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError('');
+  };
+
   const handlePlaceOrder = async () => {
     if (!cart) return;
 
@@ -152,6 +187,7 @@ export default function CheckoutContent() {
           quantity: item.quantity,
         })),
         notes: notes || undefined,
+        promotionId: appliedPromo?.promotionId,
       };
 
       const order = await orderApi.createOrder(orderData);
@@ -176,6 +212,16 @@ export default function CheckoutContent() {
     return null;
   }
 
+  // Promotion state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    promotionId: string;
+  } | null>(null);
+
   const subtotal = cart.items.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
     0,
@@ -187,7 +233,8 @@ export default function CheckoutContent() {
         ? 15.0
         : 25.0;
   const tax = subtotal * 0.1;
-  const total = subtotal + shippingCost + tax;
+  const discountAmount = appliedPromo?.discountAmount || 0;
+  const total = Math.max(0, subtotal + shippingCost + tax - discountAmount);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -368,6 +415,50 @@ export default function CheckoutContent() {
               {tCart('orderSummary')}
             </h3>
 
+            {/* Promotion Code Input */}
+            <div className="mb-4">
+              <label htmlFor="checkoutPromoCode" className="block text-sm font-medium text-gray-700 mb-2">
+                {tCart('promoCode')}
+              </label>
+              {appliedPromo ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
+                  </div>
+                  <button
+                    onClick={handleRemovePromo}
+                    className="text-sm text-red-600 hover:text-red-700"
+                  >
+                    {tCommon('delete')}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="checkoutPromoCode"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder={tCart('enterPromoCode')}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase text-sm"
+                  />
+                  <button
+                    onClick={handleApplyPromo}
+                    disabled={promoLoading || !promoCode.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                  >
+                    {promoLoading ? tCart('applying') : tCart('apply')}
+                  </button>
+                </div>
+              )}
+              {promoError && (
+                <p className="mt-1 text-sm text-red-600">{promoError}</p>
+              )}
+            </div>
+
             <div className="space-y-3 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">{tCart('subtotal')}</span>
@@ -381,6 +472,12 @@ export default function CheckoutContent() {
                 <span className="text-gray-600">{tCart('tax')}</span>
                 <span className="font-medium">${tax.toFixed(2)}</span>
               </div>
+              {appliedPromo && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>{tCart('discount')} ({appliedPromo.code})</span>
+                  <span>-${appliedPromo.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t pt-3 flex justify-between">
                 <span className="font-semibold">{tCart('total')}</span>
                 <span className="font-bold text-lg">${total.toFixed(2)}</span>

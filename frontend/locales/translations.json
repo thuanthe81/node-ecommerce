@@ -355,6 +355,26 @@
     "viewCart": {
       "en": "View Cart",
       "vi": "Xem giỏ hàng"
+    },
+    "promoCode": {
+      "en": "Promotion Code",
+      "vi": "Mã khuyến mãi"
+    },
+    "enterPromoCode": {
+      "en": "Enter code",
+      "vi": "Nhập mã"
+    },
+    "apply": {
+      "en": "Apply",
+      "vi": "Áp dụng"
+    },
+    "applying": {
+      "en": "Applying...",
+      "vi": "Đang áp dụng..."
+    },
+    "discount": {
+      "en": "Discount",
+      "vi": "Giảm giá"
     }
   },
   "checkout": {

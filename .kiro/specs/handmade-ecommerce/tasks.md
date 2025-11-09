@@ -308,8 +308,8 @@
 
 ## Admin Panel - Promotions and Discounts
 
-- [ ] 15. Implement promotion system
-  - [ ] 15.1 Create promotion backend functionality
+- [x] 15. Implement promotion system
+  - [x] 15.1 Create promotion backend functionality
     - Write Promotion entity
     - Create admin endpoints for promotion CRUD
     - Create POST /promotions/validate endpoint
@@ -318,7 +318,7 @@
     - Track promotion usage count
     - _Requirements: 15.1, 15.2, 15.3, 15.4_
   
-  - [ ] 15.2 Build promotion management UI
+  - [x] 15.2 Build promotion management UI
     - Create promotion list page
     - Create promotion form with all configuration options
     - Add date range picker for validity period
@@ -326,7 +326,7 @@
     - Show promotion usage statistics
     - _Requirements: 15.1, 15.2, 15.3_
   
-  - [ ] 15.3 Integrate promotions in checkout
+  - [x] 15.3 Integrate promotions in checkout
     - Add discount code input field in cart/checkout
     - Implement discount code validation on frontend
     - Display discount amount in order summary
@@ -334,7 +334,7 @@
     - Apply discount to order total
     - _Requirements: 15.4_
   
-  - [ ] 15.4 Create promotional banner system
+  - [x] 15.4 Create promotional banner system
     - Write Banner entity for homepage/category banners
     - Create admin interface for banner management
     - Implement banner display on frontend
