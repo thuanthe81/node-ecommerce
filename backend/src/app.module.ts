@@ -13,6 +13,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { ProductsModule } from './products/products.module';
 import { CartModule } from './cart/cart.module';
+import { OrdersModule } from './orders/orders.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CartModule } from './cart/cart.module';
     CategoriesModule,
     ProductsModule,
     CartModule,
+    OrdersModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [

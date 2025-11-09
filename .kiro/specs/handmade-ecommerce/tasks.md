@@ -164,8 +164,8 @@
 
 ## Checkout and Payment System
 
-- [ ] 9. Implement checkout process
-  - [ ] 9.1 Create order backend functionality
+- [x] 9. Implement checkout process
+  - [x] 9.1 Create order backend functionality
     - Write Order and OrderItem entities
     - Create POST /orders endpoint to create orders
     - Implement order number generation
@@ -174,7 +174,7 @@
     - Create order status update endpoint for admins
     - _Requirements: 4.5, 6.3, 6.4_
   
-  - [ ] 9.2 Build checkout flow UI
+  - [x] 9.2 Build checkout flow UI
     - Create multi-step checkout page (shipping, payment, review)
     - Implement checkout stepper component
     - Create shipping address form (with saved addresses for logged-in users)
@@ -183,7 +183,7 @@
     - Add order review step showing all details
     - _Requirements: 4.1, 4.2, 4.3_
   
-  - [ ] 9.3 Implement shipping calculation
+  - [x] 9.3 Implement shipping calculation
     - Create shipping rate calculation logic
     - Integrate with shipping provider API for real-time rates (optional)
     - Create POST /shipping/calculate endpoint
@@ -257,14 +257,14 @@
 
 ## Admin Panel - Product and Inventory Management
 
-- [ ] 13. Build admin product management
-  - [ ] 13.1 Create admin layout and navigation
+- [x] 13. Build admin product management
+  - [x] 13.1 Create admin layout and navigation
     - Create admin layout component with sidebar navigation
     - Implement admin route protection
     - Create admin dashboard page
     - _Requirements: 6.3, 6.4, 7.1, 7.2_
   
-  - [ ] 13.2 Build product management interface
+  - [x] 13.2 Build product management interface
     - Create product list page with search and filters
     - Create product form for creating/editing products
     - Implement bilingual content input (tabs or side-by-side)
@@ -274,7 +274,7 @@
     - Implement product delete with confirmation
     - _Requirements: 6.1, 7.1, 7.2_
   
-  - [ ] 13.3 Build category management interface
+  - [x] 13.3 Build category management interface
     - Create category list page with tree view
     - Create category form for creating/editing categories
     - Implement drag-and-drop for category reordering
