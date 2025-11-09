@@ -7,9 +7,10 @@ import { Product } from '@/lib/product-api';
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const locale = useLocale();
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
   const imageUrl = product.images[0]?.url || '/placeholder-product.png';
@@ -29,6 +30,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           style: 'currency',
           currency: 'VND',
         }).format(Number(product.price))}`}
+        className="touch-manipulation"
       >
         <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
           <Image
@@ -37,6 +39,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            quality={75}
           />
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="status">

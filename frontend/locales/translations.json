@@ -138,6 +138,22 @@
       "en": "Shopping Cart",
       "vi": "Giỏ hàng"
     },
+    "openMenu": {
+      "en": "Open menu",
+      "vi": "Mở menu"
+    },
+    "closeMenu": {
+      "en": "Close menu",
+      "vi": "Đóng menu"
+    },
+    "mobileMenu": {
+      "en": "Mobile menu",
+      "vi": "Menu di động"
+    },
+    "main": {
+      "en": "Main navigation",
+      "vi": "Điều hướng chính"
+    },
     "wishlist": {
       "en": "Wishlist",
       "vi": "Yêu thích"

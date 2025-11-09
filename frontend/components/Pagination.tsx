@@ -69,16 +69,17 @@ export default function Pagination({
 
   return (
     <nav 
-      className="flex items-center justify-center gap-2 mt-8"
+      className="flex flex-wrap items-center justify-center gap-2 mt-8"
       role="navigation"
       aria-label={locale === 'vi' ? 'Phân trang' : 'Pagination'}
     >
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         aria-label={locale === 'vi' ? 'Trang trước' : 'Previous page'}
         aria-disabled={currentPage === 1}
+        style={{ minHeight: '44px' }}
       >
         {locale === 'vi' ? 'Trước' : 'Previous'}
       </button>
@@ -96,13 +97,14 @@ export default function Pagination({
           <button
             key={page}
             onClick={() => handlePageChange(page as number)}
-            className={`px-4 py-2 border rounded-md ${
+            className={`px-4 py-3 border rounded-md touch-manipulation ${
               currentPage === page
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'border-gray-300 hover:bg-gray-50'
             }`}
             aria-label={`${locale === 'vi' ? 'Trang' : 'Page'} ${page}`}
             aria-current={currentPage === page ? 'page' : undefined}
+            style={{ minHeight: '44px', minWidth: '44px' }}
           >
             {page}
           </button>
@@ -112,9 +114,10 @@ export default function Pagination({
       <button
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
         aria-label={locale === 'vi' ? 'Trang sau' : 'Next page'}
         aria-disabled={currentPage === totalPages}
+        style={{ minHeight: '44px' }}
       >
         {locale === 'vi' ? 'Sau' : 'Next'}
       </button>
