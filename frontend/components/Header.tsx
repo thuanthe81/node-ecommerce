@@ -12,7 +12,7 @@ import CategoryNav from './CategoryNav';
 export default function Header() {
   const locale = useLocale();
   const t = useTranslations();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -43,10 +43,10 @@ export default function Header() {
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="bg-white shadow-sm" role="banner">
+    <header className="bg-white shadow-sm overflow-visible" role="banner">
       {/* Top Bar */}
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-3">
+      <div className="border-b overflow-visible">
+        <div className="container mx-auto px-4 py-3 overflow-visible">
           <div className="flex items-center justify-between">
             {/* Mobile Menu Button */}
             <button
@@ -69,8 +69,8 @@ export default function Header() {
             </button>
 
             {/* Logo */}
-            <Link 
-              href={`/${locale}`} 
+            <Link
+              href={`/${locale}`}
               className="text-xl sm:text-2xl font-bold text-gray-900 touch-manipulation"
               aria-label={t('nav.home') || 'Home'}
               style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
@@ -78,15 +78,40 @@ export default function Header() {
               Handmade
             </Link>
 
+            {/* Main Navigation Links - Desktop */}
+            <nav className="hidden lg:flex items-center space-x-6 flex-1 ml-8" aria-label={t('nav.main') || 'Main navigation'}>
+              <Link
+                href={`/${locale}`}
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+              >
+                {t('nav.home') || 'Home'}
+              </Link>
+              <Link
+                href={`/${locale}/products`}
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+              >
+                {t('nav.products') || 'Products'}
+              </Link>
+              <Link
+                href={`/${locale}/contact`}
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+              >
+                {t('nav.contact') || 'Contact'}
+              </Link>
+            </nav>
+
             {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8" role="search">
-              <SearchBar />
-            </div>
+            {/* <div className="hidden lg:flex flex-1 max-w-md mx-8" role="search"> */}
+              {/* <SearchBar /> */}
+            {/* </div> */}
 
             {/* Right Side Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center space-x-4" aria-label={t('nav.main') || 'Main navigation'}>
+            <div className="hidden lg:flex items-center space-x-4 relative">
               <LocaleSwitcher />
-              
+
               <MiniCart />
 
               {isAuthenticated ? (
@@ -109,26 +134,16 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link
-                    href={`/${locale}/login`}
-                    className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
-                    aria-label={t('auth.login') || 'Login'}
-                    style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
-                  >
-                    {t('auth.login')}
-                  </Link>
-                  <Link
-                    href={`/${locale}/register`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors touch-manipulation"
-                    aria-label={t('auth.register') || 'Register'}
-                    style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
-                  >
-                    {t('auth.register')}
-                  </Link>
-                </>
+                <Link
+                  href={`/${locale}/login`}
+                  className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
+                  aria-label={t('auth.login') || 'Login'}
+                  style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                >
+                  {t('auth.login')}
+                </Link>
               )}
-            </nav>
+            </div>
 
             {/* Mobile Cart Icon */}
             <div className="lg:hidden">
@@ -184,6 +199,42 @@ export default function Header() {
           {/* Mobile Menu Content */}
           <nav className="flex-1 overflow-y-auto p-4" aria-label={t('nav.main') || 'Main navigation'}>
             <ul className="space-y-2">
+              {/* Main Navigation Links */}
+              <li>
+                <Link
+                  href={`/${locale}`}
+                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ minHeight: '44px' }}
+                >
+                  {t('nav.home') || 'Home'}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/products`}
+                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ minHeight: '44px' }}
+                >
+                  {t('nav.products') || 'Products'}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/contact`}
+                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{ minHeight: '44px' }}
+                >
+                  {t('nav.contact') || 'Contact'}
+                </Link>
+              </li>
+
+              {/* Divider */}
+              <li className="pt-4 border-t"></li>
+
+              {/* User Account Links */}
               {isAuthenticated ? (
                 <>
                   <li>
@@ -207,30 +258,19 @@ export default function Header() {
                   </li>
                 </>
               ) : (
-                <>
-                  <li>
-                    <Link
-                      href={`/${locale}/login`}
-                      className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors touch-manipulation"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      style={{ minHeight: '44px' }}
-                    >
-                      {t('auth.login')}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={`/${locale}/register`}
-                      className="block px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center touch-manipulation"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      style={{ minHeight: '44px' }}
-                    >
-                      {t('auth.register')}
-                    </Link>
-                  </li>
-                </>
+                <li>
+                  <Link
+                    href={`/${locale}/login`}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors touch-manipulation"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    style={{ minHeight: '44px' }}
+                  >
+                    {t('auth.login')}
+                  </Link>
+                </li>
               )}
-              
+
+              {/* Language Switcher */}
               <li className="pt-4 border-t">
                 <div className="px-4 py-2">
                   <LocaleSwitcher />
