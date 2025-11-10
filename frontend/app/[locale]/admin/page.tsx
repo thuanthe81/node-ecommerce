@@ -4,14 +4,16 @@ import { useParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function AdminDashboardPage() {
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations();
 
   const stats = [
     {
-      name: locale === 'vi' ? 'Tổng doanh thu' : 'Total Revenue',
+      name: t('dashboard.totalRevenue'),
       value: '$0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +23,7 @@ export default function AdminDashboardPage() {
       color: 'bg-blue-500',
     },
     {
-      name: locale === 'vi' ? 'Đơn hàng' : 'Orders',
+      name: t('admin.orders'),
       value: '0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +33,7 @@ export default function AdminDashboardPage() {
       color: 'bg-green-500',
     },
     {
-      name: locale === 'vi' ? 'Sản phẩm' : 'Products',
+      name: t('common.products'),
       value: '0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,9 +103,7 @@ export default function AdminDashboardPage() {
               {locale === 'vi' ? 'Tổng quan' : 'Dashboard'}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              {locale === 'vi'
-                ? 'Chào mừng đến với bảng điều khiển quản trị'
-                : 'Welcome to your admin dashboard'}
+              {t('admin.dashboard.welcome')}
             </p>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import LocaleSwitcher from './LocaleSwitcher';
 import SearchBar from './SearchBar';
@@ -14,10 +15,33 @@ export default function Header() {
   const t = useTranslations();
   const { isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
     setIsMobileMenuOpen(false);
+  };
+
+  // Helper function to check if a link is active
+  const isActiveLink = (href: string) => {
+    const currentPath = pathname.replace(`/${locale}`, '') || '/';
+    const linkPath = href.replace(`/${locale}`, '') || '/';
+    
+    // Exact match for home page
+    if (linkPath === '/' && currentPath === '/') {
+      return true;
+    }
+    // For other pages, check if current path starts with the link path
+    return linkPath !== '/' && currentPath.startsWith(linkPath);
+  };
+
+  // Helper function to get active link classes
+  const getLinkClasses = (href: string, baseClasses: string = '') => {
+    const isActive = isActiveLink(href);
+    const activeClasses = isActive 
+      ? 'text-blue-600 border-b-2 border-blue-600' 
+      : 'text-gray-700 hover:text-blue-600';
+    return `${baseClasses} ${activeClasses} transition-colors font-medium touch-manipulation`;
   };
 
   // Close mobile menu on escape key
@@ -82,21 +106,21 @@ export default function Header() {
             <nav className="hidden lg:flex items-center space-x-6 flex-1 ml-8" aria-label={t('nav.main') || 'Main navigation'}>
               <Link
                 href={`/${locale}`}
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                className={getLinkClasses(`/${locale}`, 'pb-1')}
                 style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
               >
                 {t('nav.home') || 'Home'}
               </Link>
               <Link
                 href={`/${locale}/products`}
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                className={getLinkClasses(`/${locale}/products`, 'pb-1')}
                 style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
               >
                 {t('nav.products') || 'Products'}
               </Link>
               <Link
                 href={`/${locale}/contact`}
-                className="text-gray-700 hover:text-blue-600 transition-colors font-medium touch-manipulation"
+                className={getLinkClasses(`/${locale}/contact`, 'pb-1')}
                 style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
               >
                 {t('nav.contact') || 'Contact'}
@@ -118,7 +142,7 @@ export default function Header() {
                 <>
                   <Link
                     href={`/${locale}/account`}
-                    className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
+                    className={getLinkClasses(`/${locale}/account`)}
                     aria-label={t('nav.account') || 'Account'}
                     style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
                   >
@@ -136,7 +160,7 @@ export default function Header() {
               ) : (
                 <Link
                   href={`/${locale}/login`}
-                  className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
+                  className={getLinkClasses(`/${locale}/login`)}
                   aria-label={t('auth.login') || 'Login'}
                   style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
                 >
@@ -203,7 +227,11 @@ export default function Header() {
               <li>
                 <Link
                   href={`/${locale}`}
-                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  className={`block px-4 py-3 rounded-md transition-colors font-medium touch-manipulation ${
+                    isActiveLink(`/${locale}`) 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                   style={{ minHeight: '44px' }}
                 >
@@ -213,7 +241,11 @@ export default function Header() {
               <li>
                 <Link
                   href={`/${locale}/products`}
-                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  className={`block px-4 py-3 rounded-md transition-colors font-medium touch-manipulation ${
+                    isActiveLink(`/${locale}/products`) 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                   style={{ minHeight: '44px' }}
                 >
@@ -223,7 +255,11 @@ export default function Header() {
               <li>
                 <Link
                   href={`/${locale}/contact`}
-                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors font-medium touch-manipulation"
+                  className={`block px-4 py-3 rounded-md transition-colors font-medium touch-manipulation ${
+                    isActiveLink(`/${locale}/contact`) 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                   style={{ minHeight: '44px' }}
                 >
@@ -240,7 +276,11 @@ export default function Header() {
                   <li>
                     <Link
                       href={`/${locale}/account`}
-                      className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors touch-manipulation"
+                      className={`block px-4 py-3 rounded-md transition-colors touch-manipulation ${
+                        isActiveLink(`/${locale}/account`) 
+                          ? 'bg-blue-50 text-blue-600' 
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                      }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                       style={{ minHeight: '44px' }}
                     >
@@ -261,7 +301,11 @@ export default function Header() {
                 <li>
                   <Link
                     href={`/${locale}/login`}
-                    className="block px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-md transition-colors touch-manipulation"
+                    className={`block px-4 py-3 rounded-md transition-colors touch-manipulation ${
+                      isActiveLink(`/${locale}/login`) 
+                        ? 'bg-blue-50 text-blue-600' 
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                    }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                     style={{ minHeight: '44px' }}
                   >

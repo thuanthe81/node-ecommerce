@@ -622,7 +622,11 @@
   "admin": {
     "dashboard": {
       "en": "Dashboard",
-      "vi": "Bảng điều khiển"
+      "vi": "Bảng điều khiển",
+      "welcome": {
+        "en": "Welcome to your admin dashboard",
+        "vi": "Chào mừng đến với bảng điều khiển quản trị"
+      }
     },
     "products": {
       "en": "Products",
@@ -631,6 +635,10 @@
     "orders": {
       "en": "Orders",
       "vi": "Đơn hàng"
+    },
+    "totalRevenue": {
+      "en": "Total Revenue",
+      "vi": "Tổng doanh thu"
     },
     "customers": {
       "en": "Customers",

@@ -41,7 +41,7 @@ apiClient.interceptors.response.use(
 
         // Try to refresh the token
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/refresh`,
+          `${apiClient.defaults.baseURL}/auth/refresh`,
           { refreshToken }
         );
 
@@ -59,11 +59,11 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        
+
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(refreshError);
       }
     }
