@@ -159,9 +159,9 @@ export default function Header() {
       </div>
 
       {/* Category Navigation - Desktop */}
-      <div className="hidden lg:block">
-        <CategoryNav />
-      </div>
+      {/*<div className="hidden lg:block">*/}
+      {/*  <CategoryNav />*/}
+      {/*</div>*/}
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
