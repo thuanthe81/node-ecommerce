@@ -182,8 +182,8 @@ export class EmailTemplateService {
       },
     };
 
-    const statusText =
-      statusTranslations[locale][data.status] || data.status;
+    const translations = statusTranslations[locale] || statusTranslations.en;
+    const statusText = (translations as any)[data.status as string] || data.status;
 
     if (locale === 'vi') {
       return {

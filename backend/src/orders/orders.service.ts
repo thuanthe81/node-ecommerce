@@ -252,13 +252,13 @@ export class OrdersService {
   private async sendOrderConfirmationEmail(order: any) {
     try {
       const customerName = order.shippingAddress.fullName;
-      const locale = 'en'; // Default to English, can be determined from user preferences
+      const locale = 'en' as 'en' | 'vi'; // Default to English, can be determined from user preferences
 
       const emailData = {
         orderNumber: order.orderNumber,
         customerName,
         orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item) => ({
+        items: order.items.map((item: any) => ({
           name: locale === 'vi' ? item.productNameVi : item.productNameEn,
           quantity: item.quantity,
           price: Number(item.price),
@@ -480,7 +480,6 @@ export class OrdersService {
       where: { id },
       data: {
         status: updateOrderStatusDto.status,
-        trackingNumber: updateOrderStatusDto.trackingNumber,
       },
       include: {
         items: {
@@ -509,14 +508,15 @@ export class OrdersService {
   private async sendShippingNotificationEmail(order: any) {
     try {
       const customerName = order.shippingAddress.fullName;
-      const locale = 'en'; // Default to English
+      const locale = 'en' as 'en' | 'vi'; // Default to English
+      const isVietnamese = locale === 'vi';
 
       const emailData = {
         orderNumber: order.orderNumber,
         customerName,
         orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item) => ({
-          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+        items: order.items.map((item: any) => ({
+          name: isVietnamese ? item.productNameVi : item.productNameEn,
           quantity: item.quantity,
           price: Number(item.price),
         })),
@@ -524,7 +524,7 @@ export class OrdersService {
         shippingCost: Number(order.shippingCost),
         total: Number(order.total),
         shippingAddress: order.shippingAddress,
-        trackingNumber: order.trackingNumber,
+        trackingNumber: undefined,
       };
 
       const template =
@@ -550,14 +550,15 @@ export class OrdersService {
   private async sendOrderStatusUpdateEmail(order: any) {
     try {
       const customerName = order.shippingAddress.fullName;
-      const locale = 'en'; // Default to English
+      const locale = 'en' as 'en' | 'vi'; // Default to English
+      const isVietnamese = locale === 'vi';
 
       const emailData = {
         orderNumber: order.orderNumber,
         customerName,
         orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item) => ({
-          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+        items: order.items.map((item: any) => ({
+          name: isVietnamese ? item.productNameVi : item.productNameEn,
           quantity: item.quantity,
           price: Number(item.price),
         })),
