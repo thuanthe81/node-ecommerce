@@ -1,26 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
 import { Category, categoryApi } from '@/lib/category-api';
 import { adminCategoryApi } from '@/lib/admin-category-api';
+import { useLocale } from 'next-intl';
 
 export default function AdminCategoriesPage() {
-  const params = useParams();
-  const router = useRouter();
-  const locale = params.locale as string;
-
+  const locale = useLocale();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
 
   const loadCategories = async () => {
     try {
@@ -46,11 +39,19 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  // Prevent duplicate execution in React Strict Mode (dev) causing double renders
+  const didInitRef = useRef(false);
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+    loadCategories().then();
+  }, []);
+
   const handleDelete = async (id: string) => {
     try {
       await adminCategoryApi.deleteCategory(id);
       setDeleteConfirm(null);
-      loadCategories();
+      loadCategories().then();
     } catch (error) {
       console.error('Failed to delete category:', error);
       alert(locale === 'vi' ? 'Không thể xóa danh mục' : 'Failed to delete category');

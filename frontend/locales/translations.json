@@ -36,6 +36,10 @@
       "en": "Home",
       "vi": "Trang chủ"
     },
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
     "products": {
       "en": "Products",
       "vi": "Sản phẩm"
@@ -43,6 +47,10 @@
     "categories": {
       "en": "Categories",
       "vi": "Danh mục"
+    },
+    "customers": {
+      "en": "Customers",
+      "vi": "Khách hàng"
     },
     "about": {
       "en": "About",
@@ -107,6 +115,10 @@
     "close": {
       "en": "Close",
       "vi": "Đóng"
+    },
+    "no": {
+      "en": "No",
+      "vi": "Không"
     }
   },
   "nav": {
@@ -532,10 +544,6 @@
       "en": "Profile",
       "vi": "Hồ sơ"
     },
-    "orders": {
-      "en": "Orders",
-      "vi": "Đơn hàng"
-    },
     "addresses": {
       "en": "Addresses",
       "vi": "Địa chỉ"
@@ -622,22 +630,18 @@
   "admin": {
     "dashboard": {
       "en": "Dashboard",
-      "vi": "Bảng điều khiển",
-      "welcome": {
-        "en": "Welcome to your admin dashboard",
-        "vi": "Chào mừng đến với bảng điều khiển quản trị"
-      }
+      "vi": "Bảng điều khiển"
     },
-    "products": {
-      "en": "Products",
-      "vi": "Sản phẩm"
+    "dashboardWelcome": {
+      "en": "Welcome to your admin dashboard",
+      "vi": "Chào mừng đến với bảng điều khiển quản trị"
     },
-    "orders": {
-      "en": "Orders",
-      "vi": "Đơn hàng"
+    "addProduct": {
+      "en": "Add product",
+      "vi": "Thêm sản phẩm"
     },
     "totalRevenue": {
-      "en": "Total Revenue",
+      "en": "Total revenue",
       "vi": "Tổng doanh thu"
     },
     "customers": {
@@ -648,9 +652,25 @@
       "en": "Content",
       "vi": "Nội dung"
     },
+    "viewOrders": {
+      "en": "View orders",
+      "vi": "Xem đơn hàng"
+    },
+    "manageCategories": {
+      "en": "Manage categories",
+      "vi": "Quản lý danh mục"
+    },
     "promotions": {
       "en": "Promotions",
       "vi": "Khuyến mãi"
+    },
+    "createPromotion": {
+      "en": "Create promotion",
+      "vi": "Tạo khuyến mãi"
+    },
+    "recentActivity": {
+      "en": "Recent activity",
+      "vi": "Hoạt động gần đây"
     },
     "analytics": {
       "en": "Analytics",

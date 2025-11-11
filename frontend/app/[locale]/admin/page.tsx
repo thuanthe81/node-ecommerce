@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
 
   const stats = [
     {
-      name: t('dashboard.totalRevenue'),
+      name: t('admin.totalRevenue'),
       value: '$0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +23,7 @@ export default function AdminDashboardPage() {
       color: 'bg-blue-500',
     },
     {
-      name: t('admin.orders'),
+      name: t('common.orders'),
       value: '0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@ export default function AdminDashboardPage() {
       color: 'bg-purple-500',
     },
     {
-      name: locale === 'vi' ? 'Khách hàng' : 'Customers',
+      name: t('common.customers'),
       value: '0',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
 
   const quickActions = [
     {
-      name: locale === 'vi' ? 'Thêm sản phẩm' : 'Add Product',
+      name: t('admin.addProduct'),
       href: `/${locale}/admin/products/new`,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
       ),
     },
     {
-      name: locale === 'vi' ? 'Xem đơn hàng' : 'View Orders',
+      name: t('admin.viewOrders'),
       href: `/${locale}/admin/orders`,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
       ),
     },
     {
-      name: locale === 'vi' ? 'Quản lý danh mục' : 'Manage Categories',
+      name: t('admin.manageCategories'),
       href: `/${locale}/admin/categories`,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
       ),
     },
     {
-      name: locale === 'vi' ? 'Tạo khuyến mãi' : 'Create Promotion',
+      name: t('admin.createPromotion'),
       href: `/${locale}/admin/promotions/new`,
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,10 +100,10 @@ export default function AdminDashboardPage() {
           {/* Page Header */}
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {locale === 'vi' ? 'Tổng quan' : 'Dashboard'}
+              {t('admin.dashboard')}
             </h1>
             <p className="mt-1 text-sm text-gray-600">
-              {t('admin.dashboard.welcome')}
+              {t('admin.dashboardWelcome')}
             </p>
           </div>
 
@@ -162,12 +162,10 @@ export default function AdminDashboardPage() {
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">
-                {locale === 'vi' ? 'Hoạt động gần đây' : 'Recent Activity'}
+                {t('admin.recentActivity')}
               </h2>
               <p className="text-sm text-gray-500">
-                {locale === 'vi'
-                  ? 'Chưa có hoạt động nào'
-                  : 'No recent activity'}
+                {t('common.no') + ' ' + t('admin.recentActivity').toLowerCase()}
               </p>
             </div>
           </div>
