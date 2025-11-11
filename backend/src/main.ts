@@ -59,7 +59,12 @@ async function bootstrap() {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      // In development, allow any localhost origin to simplify local testing
+      const isLocalhostDev =
+        process.env.NODE_ENV !== 'production' &&
+        /^https?:\/\/localhost:\d{2,5}$/.test(origin);
+
+      if (allowedOrigins.includes(origin) || isLocalhostDev) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -67,7 +72,13 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    // Include custom headers used by the app (e.g., x-session-id)
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'x-session-id',
+    ],
     exposedHeaders: ['X-Total-Count'],
     maxAge: 3600, // Cache preflight requests for 1 hour
   });
