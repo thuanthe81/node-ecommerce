@@ -2,9 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { Request, Response, NextFunction } from 'express';
+import { isAbsolute, join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -85,7 +86,7 @@ async function bootstrap() {
 
   // HTTPS redirect middleware (only in production)
   if (process.env.NODE_ENV === 'production') {
-    app.use((req: any, res: any, next: any) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
       if (req.header('x-forwarded-proto') !== 'https') {
         res.redirect(`https://${req.header('host')}${req.url}`);
       } else {
@@ -95,9 +96,14 @@ async function bootstrap() {
   }
 
   // Serve static files
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
-  });
+  // const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+  // const uploadDirPath = isAbsolute(uploadDirEnv)
+  //   ? uploadDirEnv
+  //   : join(process.cwd(), uploadDirEnv);
+  //
+  // app.useStaticAssets(uploadDirPath, {
+  //   prefix: '/uploads/',
+  // });
 
   // Global prefix
   app.setGlobalPrefix('api');

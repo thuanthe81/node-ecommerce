@@ -23,8 +23,8 @@ export default function ProductsContent() {
       ? parseInt(searchParams.get('maxPrice')!)
       : undefined,
     inStock: searchParams.get('inStock') === 'true' ? true : undefined,
-    sortBy: (searchParams.get('sortBy') as any) || 'createdAt',
-    sortOrder: (searchParams.get('sortOrder') as any) || 'desc',
+    sortBy: (searchParams.get('sortBy') as never) || 'createdAt',
+    sortOrder: (searchParams.get('sortOrder') as never) || 'desc',
   }), [searchParams]);
 
   const { products, meta, isLoading } = useProducts(params);

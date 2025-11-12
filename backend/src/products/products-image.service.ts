@@ -11,15 +11,18 @@ import * as path from 'path';
 
 @Injectable()
 export class ProductsImageService {
-  private readonly uploadDir = path.join(process.cwd(), 'uploads', 'products');
-  private readonly thumbnailDir = path.join(
-    process.cwd(),
-    'uploads',
-    'products',
-    'thumbnails',
-  );
+  private uploadDir: string;
+  private thumbnailDir: string;
 
   constructor(private prisma: PrismaService) {
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    const baseUploadPath = path.isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
+
+    this.uploadDir = path.join(baseUploadPath, 'products');
+    this.thumbnailDir = path.join(baseUploadPath, 'products', 'thumbnails');
+
     this.ensureUploadDirectories();
   }
 

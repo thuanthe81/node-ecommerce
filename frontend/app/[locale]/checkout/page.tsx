@@ -1,12 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import CheckoutContent from './CheckoutContent';
 import { generateSEOMetadata } from '@/lib/seo';
+import { Metadata } from 'next';
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}): Promise<Metadata>  {
   const { locale } = await params;
   const t = await getTranslations({ locale });
 

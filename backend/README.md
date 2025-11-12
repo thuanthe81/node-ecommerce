@@ -27,6 +27,9 @@ Copy `.env.example` to `.env` and configure:
 cp .env.example .env
 ```
 
+Key variables:
+- `UPLOAD_DIR` — directory for static uploads served at `/uploads/*`. Accepts absolute paths or project-relative (default `uploads`).
+
 ### Database Setup
 
 Make sure PostgreSQL and Redis are running locally:

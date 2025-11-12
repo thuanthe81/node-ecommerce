@@ -14,7 +14,7 @@ export default function PageContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadContent();
+    loadContent().then();
   }, [slug]);
 
   const loadContent = async () => {

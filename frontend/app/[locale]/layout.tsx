@@ -9,6 +9,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import '../globals.css';
+import { ShopInfo } from '@/app/constants';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,10 +36,10 @@ export const viewport: Viewport = {
 };
 
 // Metadata is now generated per page
-// export const metadata: Metadata = {
-//   title: 'Handmade E-commerce',
-//   description: 'Shop unique handmade products',
-// };
+export const metadata: Metadata = {
+  title: ShopInfo.name,
+  description: ShopInfo.desc,
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

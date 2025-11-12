@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import ProductDetailContent from './ProductDetailContent';
 import { generateSEOMetadata } from '@/lib/seo';
+import { Metadata } from 'next';
 
 // This would ideally fetch product data for metadata
 // For now, we'll use a simplified version
@@ -10,13 +11,13 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-}) {
+}): Promise<Metadata>  {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale });
 
   // In a real implementation, you would fetch the product here
   // const product = await productApi.getProductBySlug(slug);
-  
+
   return generateSEOMetadata({
     title: `${slug.replace(/-/g, ' ')} | ${t('common.products')}`,
     description: t('seo.product.description'),

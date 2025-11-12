@@ -1,360 +1,190 @@
 {
-  "common": {
-    "addToCart": {
-      "en": "Add to Cart",
-      "vi": "Thêm vào giỏ"
+  "account": {
+    "addresses": {
+      "en": "Addresses",
+      "vi": "Địa chỉ"
     },
-    "search": {
-      "en": "Search",
-      "vi": "Tìm kiếm"
+    "dashboard": {
+      "en": "Dashboard",
+      "vi": "Bảng điều khiển"
     },
-    "login": {
-      "en": "Login",
-      "vi": "Đăng nhập"
+    "noOrders": {
+      "en": "No orders yet",
+      "vi": "Chưa có đơn hàng"
     },
-    "logout": {
-      "en": "Logout",
-      "vi": "Đăng xuất"
+    "orderDate": {
+      "en": "Order Date",
+      "vi": "Ngày đặt"
     },
-    "register": {
-      "en": "Register",
-      "vi": "Đăng ký"
+    "orderHistory": {
+      "en": "Order History",
+      "vi": "Lịch sử đơn hàng"
     },
-    "cart": {
-      "en": "Cart",
-      "vi": "Giỏ hàng"
+    "orderNumber": {
+      "en": "Order Number",
+      "vi": "Mã đơn hàng"
+    },
+    "orderStatus": {
+      "en": "Status",
+      "vi": "Trạng thái"
+    },
+    "orderTotal": {
+      "en": "Total",
+      "vi": "Tổng tiền"
+    },
+    "profile": {
+      "en": "Profile",
+      "vi": "Hồ sơ"
+    },
+    "settings": {
+      "en": "Settings",
+      "vi": "Cài đặt"
+    },
+    "viewOrder": {
+      "en": "View Order",
+      "vi": "Xem đơn hàng"
     },
     "wishlist": {
       "en": "Wishlist",
       "vi": "Yêu thích"
+    }
+  },
+  "admin": {
+    "addProduct": {
+      "en": "Add product",
+      "vi": "Thêm sản phẩm"
     },
-    "account": {
-      "en": "Account",
-      "vi": "Tài khoản"
+    "analytics": {
+      "en": "Analytics",
+      "vi": "Phân tích"
     },
-    "home": {
-      "en": "Home",
-      "vi": "Trang chủ"
+    "content": {
+      "en": "Content",
+      "vi": "Nội dung"
     },
-    "orders": {
-      "en": "Orders",
-      "vi": "Đơn hàng"
-    },
-    "products": {
-      "en": "Products",
-      "vi": "Sản phẩm"
-    },
-    "categories": {
-      "en": "Categories",
-      "vi": "Danh mục"
+    "createPromotion": {
+      "en": "Create promotion",
+      "vi": "Tạo khuyến mãi"
     },
     "customers": {
       "en": "Customers",
       "vi": "Khách hàng"
     },
-    "about": {
-      "en": "About",
-      "vi": "Giới thiệu"
+    "dashboard": {
+      "en": "Dashboard",
+      "vi": "Bảng điều khiển"
     },
-    "contact": {
-      "en": "Contact",
-      "vi": "Liên hệ"
+    "dashboardWelcome": {
+      "en": "Welcome to your admin dashboard",
+      "vi": "Chào mừng đến với bảng điều khiển quản trị"
     },
-    "faq": {
-      "en": "FAQ",
-      "vi": "Câu hỏi thường gặp"
+    "manageCategories": {
+      "en": "Manage categories",
+      "vi": "Quản lý danh mục"
     },
-    "loading": {
-      "en": "Loading...",
-      "vi": "Đang tải..."
+    "promotions": {
+      "en": "Promotions",
+      "vi": "Khuyến mãi"
     },
-    "error": {
-      "en": "Error",
-      "vi": "Lỗi"
+    "recentActivity": {
+      "en": "Recent activity",
+      "vi": "Hoạt động gần đây"
     },
-    "success": {
-      "en": "Success",
-      "vi": "Thành công"
+    "settings": {
+      "en": "Settings",
+      "vi": "Cài đặt"
     },
-    "cancel": {
-      "en": "Cancel",
-      "vi": "Hủy"
+    "totalRevenue": {
+      "en": "Total revenue",
+      "vi": "Tổng doanh thu"
     },
-    "save": {
-      "en": "Save",
-      "vi": "Lưu"
-    },
-    "delete": {
-      "en": "Delete",
-      "vi": "Xóa"
-    },
-    "edit": {
-      "en": "Edit",
-      "vi": "Sửa"
-    },
-    "view": {
-      "en": "View",
-      "vi": "Xem"
-    },
-    "back": {
-      "en": "Back",
-      "vi": "Quay lại"
-    },
-    "next": {
-      "en": "Next",
-      "vi": "Tiếp theo"
-    },
-    "previous": {
-      "en": "Previous",
-      "vi": "Trước"
-    },
-    "submit": {
-      "en": "Submit",
-      "vi": "Gửi"
-    },
-    "close": {
-      "en": "Close",
-      "vi": "Đóng"
-    },
-    "no": {
-      "en": "No",
-      "vi": "Không"
+    "viewOrders": {
+      "en": "View orders",
+      "vi": "Xem đơn hàng"
     }
   },
-  "nav": {
-    "home": {
-      "en": "Home",
-      "vi": "Trang chủ"
+  "auth": {
+    "confirmPassword": {
+      "en": "Confirm Password",
+      "vi": "Xác nhận mật khẩu"
     },
-    "products": {
-      "en": "Products",
-      "vi": "Sản phẩm"
+    "email": {
+      "en": "Email",
+      "vi": "Email"
     },
-    "shop": {
-      "en": "Shop",
-      "vi": "Cửa hàng"
+    "firstName": {
+      "en": "First Name",
+      "vi": "Tên"
     },
-    "categories": {
-      "en": "Categories",
-      "vi": "Danh mục"
+    "forgotPassword": {
+      "en": "Forgot Password?",
+      "vi": "Quên mật khẩu?"
     },
-    "about": {
-      "en": "About Us",
-      "vi": "Về chúng tôi"
+    "hasAccount": {
+      "en": "Already have an account?",
+      "vi": "Đã có tài khoản?"
     },
-    "contact": {
-      "en": "Contact",
-      "vi": "Liên hệ"
+    "lastName": {
+      "en": "Last Name",
+      "vi": "Họ"
     },
-    "account": {
-      "en": "My Account",
-      "vi": "Tài khoản của tôi"
+    "login": {
+      "en": "Login",
+      "vi": "Đăng nhập"
     },
-    "cart": {
-      "en": "Shopping Cart",
-      "vi": "Giỏ hàng"
+    "loginError": {
+      "en": "Invalid email or password",
+      "vi": "Email hoặc mật khẩu không đúng"
     },
-    "openMenu": {
-      "en": "Open menu",
-      "vi": "Mở menu"
+    "loginSuccess": {
+      "en": "Logged in successfully",
+      "vi": "Đăng nhập thành công"
     },
-    "closeMenu": {
-      "en": "Close menu",
-      "vi": "Đóng menu"
+    "logout": {
+      "en": "Logout",
+      "vi": "Đăng xuất"
     },
-    "mobileMenu": {
-      "en": "Mobile menu",
-      "vi": "Menu di động"
+    "noAccount": {
+      "en": "Don't have an account?",
+      "vi": "Chưa có tài khoản?"
     },
-    "main": {
-      "en": "Main navigation",
-      "vi": "Điều hướng chính"
+    "password": {
+      "en": "Password",
+      "vi": "Mật khẩu"
     },
-    "wishlist": {
-      "en": "Wishlist",
-      "vi": "Yêu thích"
+    "register": {
+      "en": "Register",
+      "vi": "Đăng ký"
     },
-    "admin": {
-      "en": "Admin Panel",
-      "vi": "Quản trị"
-    }
-  },
-  "product": {
-    "price": {
-      "en": "Price",
-      "vi": "Giá"
+    "registerError": {
+      "en": "Registration failed",
+      "vi": "Đăng ký thất bại"
     },
-    "inStock": {
-      "en": "In Stock",
-      "vi": "Còn hàng"
+    "registerSuccess": {
+      "en": "Registration successful",
+      "vi": "Đăng ký thành công"
     },
-    "outOfStock": {
-      "en": "Out of Stock",
-      "vi": "Hết hàng"
-    },
-    "lowStock": {
-      "en": "Low Stock",
-      "vi": "Sắp hết hàng"
-    },
-    "addToCart": {
-      "en": "Add to Cart",
-      "vi": "Thêm vào giỏ"
-    },
-    "addToWishlist": {
-      "en": "Add to Wishlist",
-      "vi": "Thêm vào yêu thích"
-    },
-    "viewDetails": {
-      "en": "View Details",
-      "vi": "Xem chi tiết"
-    },
-    "quantity": {
-      "en": "Quantity",
-      "vi": "Số lượng"
-    },
-    "sku": {
-      "en": "SKU",
-      "vi": "Mã SP"
-    },
-    "category": {
-      "en": "Category",
-      "vi": "Danh mục"
-    },
-    "description": {
-      "en": "Description",
-      "vi": "Mô tả"
-    },
-    "specifications": {
-      "en": "Specifications",
-      "vi": "Thông số"
-    },
-    "reviews": {
-      "en": "Reviews",
-      "vi": "Đánh giá"
-    },
-    "relatedProducts": {
-      "en": "Related Products",
-      "vi": "Sản phẩm liên quan"
-    },
-    "newArrival": {
-      "en": "New Arrival",
-      "vi": "Hàng mới"
-    },
-    "featured": {
-      "en": "Featured",
-      "vi": "Nổi bật"
-    },
-    "sale": {
-      "en": "Sale",
-      "vi": "Giảm giá"
-    }
-  },
-  "search": {
-    "placeholder": {
-      "en": "Search products...",
-      "vi": "Tìm kiếm sản phẩm..."
-    },
-    "results": {
-      "en": "Search Results",
-      "vi": "Kết quả tìm kiếm"
-    },
-    "noResults": {
-      "en": "No products found",
-      "vi": "Không tìm thấy sản phẩm"
-    },
-    "showing": {
-      "en": "Showing {count} results",
-      "vi": "Hiển thị {count} kết quả"
-    },
-    "filters": {
-      "en": "Filters",
-      "vi": "Bộ lọc"
-    },
-    "sortBy": {
-      "en": "Sort By",
-      "vi": "Sắp xếp theo"
-    },
-    "priceRange": {
-      "en": "Price Range",
-      "vi": "Khoảng giá"
-    },
-    "availability": {
-      "en": "Availability",
-      "vi": "Tình trạng"
-    },
-    "clearFilters": {
-      "en": "Clear Filters",
-      "vi": "Xóa bộ lọc"
+    "rememberMe": {
+      "en": "Remember Me",
+      "vi": "Ghi nhớ đăng nhập"
     }
   },
   "cart": {
-    "pageTitle": {
-      "en": "Shopping Cart",
-      "vi": "Giỏ hàng"
+    "apply": {
+      "en": "Apply",
+      "vi": "Áp dụng"
     },
-    "pageDescription": {
-      "en": "Review your cart and proceed to checkout",
-      "vi": "Xem lại giỏ hàng và tiến hành thanh toán"
-    },
-    "shoppingCart": {
-      "en": "Shopping Cart",
-      "vi": "Giỏ hàng"
-    },
-    "cart": {
-      "en": "Cart",
-      "vi": "Giỏ hàng"
-    },
-    "emptyCart": {
-      "en": "Your cart is empty",
-      "vi": "Giỏ hàng của bạn đang trống"
-    },
-    "emptyCartMessage": {
-      "en": "Add some products to get started",
-      "vi": "Thêm sản phẩm để bắt đầu mua sắm"
-    },
-    "startShopping": {
-      "en": "Start Shopping",
-      "vi": "Bắt đầu mua sắm"
-    },
-    "subtotal": {
-      "en": "Subtotal",
-      "vi": "Tạm tính"
-    },
-    "total": {
-      "en": "Total",
-      "vi": "Tổng cộng"
-    },
-    "items": {
-      "en": "Items",
-      "vi": "Sản phẩm"
-    },
-    "item": {
-      "en": "item",
-      "vi": "sản phẩm"
-    },
-    "shipping": {
-      "en": "Shipping",
-      "vi": "Phí vận chuyển"
-    },
-    "tax": {
-      "en": "Tax",
-      "vi": "Thuế"
+    "applying": {
+      "en": "Applying...",
+      "vi": "Đang áp dụng..."
     },
     "calculatedAtCheckout": {
       "en": "Calculated at checkout",
       "vi": "Tính khi thanh toán"
     },
-    "proceedToCheckout": {
-      "en": "Proceed to Checkout",
-      "vi": "Tiến hành thanh toán"
-    },
-    "continueShopping": {
-      "en": "Continue Shopping",
-      "vi": "Tiếp tục mua sắm"
-    },
-    "remove": {
-      "en": "Remove",
-      "vi": "Xóa"
+    "cart": {
+      "en": "Cart",
+      "vi": "Giỏ hàng"
     },
     "clearCart": {
       "en": "Clear Cart",
@@ -364,17 +194,45 @@
       "en": "Are you sure you want to clear your cart?",
       "vi": "Bạn có chắc muốn xóa toàn bộ giỏ hàng?"
     },
-    "updateQuantity": {
-      "en": "Update Quantity",
-      "vi": "Cập nhật số lượng"
+    "continueShopping": {
+      "en": "Continue Shopping",
+      "vi": "Tiếp tục mua sắm"
+    },
+    "decreaseQuantity": {
+      "en": "Decrease quantity",
+      "vi": "Giảm số lượng"
+    },
+    "discount": {
+      "en": "Discount",
+      "vi": "Giảm giá"
+    },
+    "emptyCart": {
+      "en": "Your cart is empty",
+      "vi": "Giỏ hàng của bạn đang trống"
+    },
+    "emptyCartMessage": {
+      "en": "Add some products to get started",
+      "vi": "Thêm sản phẩm để bắt đầu mua sắm"
+    },
+    "enterPromoCode": {
+      "en": "Enter code",
+      "vi": "Nhập mã"
+    },
+    "failedAddToCart": {
+      "en": "Failed to add product to cart",
+      "vi": "Thêm sản phẩm vào giỏ hàng thất bại"
     },
     "increaseQuantity": {
       "en": "Increase quantity",
       "vi": "Tăng số lượng"
     },
-    "decreaseQuantity": {
-      "en": "Decrease quantity",
-      "vi": "Giảm số lượng"
+    "item": {
+      "en": "item",
+      "vi": "sản phẩm"
+    },
+    "items": {
+      "en": "Items",
+      "vi": "Sản phẩm"
     },
     "lowStock": {
       "en": "Only {count} left in stock",
@@ -384,67 +242,63 @@
       "en": "Order Summary",
       "vi": "Tóm tắt đơn hàng"
     },
-    "viewCart": {
-      "en": "View Cart",
-      "vi": "Xem giỏ hàng"
+    "pageDescription": {
+      "en": "Review your cart and proceed to checkout",
+      "vi": "Xem lại giỏ hàng và tiến hành thanh toán"
+    },
+    "pageTitle": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
+    },
+    "proceedToCheckout": {
+      "en": "Proceed to Checkout",
+      "vi": "Tiến hành thanh toán"
     },
     "promoCode": {
       "en": "Promotion Code",
       "vi": "Mã khuyến mãi"
     },
-    "enterPromoCode": {
-      "en": "Enter code",
-      "vi": "Nhập mã"
+    "remove": {
+      "en": "Remove",
+      "vi": "Xóa"
     },
-    "apply": {
-      "en": "Apply",
-      "vi": "Áp dụng"
+    "shipping": {
+      "en": "Shipping",
+      "vi": "Phí vận chuyển"
     },
-    "applying": {
-      "en": "Applying...",
-      "vi": "Đang áp dụng..."
+    "shoppingCart": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
     },
-    "discount": {
-      "en": "Discount",
-      "vi": "Giảm giá"
+    "startShopping": {
+      "en": "Start Shopping",
+      "vi": "Bắt đầu mua sắm"
+    },
+    "subtotal": {
+      "en": "Subtotal",
+      "vi": "Tạm tính"
+    },
+    "tax": {
+      "en": "Tax",
+      "vi": "Thuế"
+    },
+    "total": {
+      "en": "Total",
+      "vi": "Tổng cộng"
+    },
+    "updateQuantity": {
+      "en": "Update Quantity",
+      "vi": "Cập nhật số lượng"
+    },
+    "viewCart": {
+      "en": "View Cart",
+      "vi": "Xem giỏ hàng"
     }
   },
   "checkout": {
-    "title": {
-      "en": "Checkout",
-      "vi": "Thanh toán"
-    },
-    "shippingAddress": {
-      "en": "Shipping Address",
-      "vi": "Địa chỉ giao hàng"
-    },
     "billingAddress": {
       "en": "Billing Address",
       "vi": "Địa chỉ thanh toán"
-    },
-    "shippingMethod": {
-      "en": "Shipping Method",
-      "vi": "Phương thức vận chuyển"
-    },
-    "paymentMethod": {
-      "en": "Payment Method",
-      "vi": "Phương thức thanh toán"
-    },
-    "orderSummary": {
-      "en": "Order Summary",
-      "vi": "Tóm tắt đơn hàng"
-    },
-    "placeOrder": {
-      "en": "Place Order",
-      "vi": "Đặt hàng"
-    },
-    "processing": {
-      "en": "Processing...",
-      "vi": "Đang xử lý..."
-    },
-    "success": {
-      "en": "Order placed successfully!",
-      "vi": "Đặt hàng thành công!"
     },
     "error": {
       "en": "Failed to place order. Please try again.",
@@ -454,11 +308,31 @@
       "en": "Guest Checkout",
       "vi": "Thanh toán không cần đăng ký"
     },
+    "orderSummary": {
+      "en": "Order Summary",
+      "vi": "Tóm tắt đơn hàng"
+    },
+    "paymentMethod": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "placeOrder": {
+      "en": "Place Order",
+      "vi": "Đặt hàng"
+    },
+    "processing": {
+      "en": "Processing...",
+      "vi": "Đang xử lý..."
+    },
+    "shippingAddress": {
+      "en": "Shipping Address",
+      "vi": "Địa chỉ giao hàng"
+    },
+    "shippingMethod": {
+      "en": "Shipping Method",
+      "vi": "Phương thức vận chuyển"
+    },
     "steps": {
-      "shipping": {
-        "en": "Shipping",
-        "vi": "Giao hàng"
-      },
       "payment": {
         "en": "Payment",
         "vi": "Thanh toán"
@@ -466,123 +340,269 @@
       "review": {
         "en": "Review",
         "vi": "Xem lại"
+      },
+      "shipping": {
+        "en": "Shipping",
+        "vi": "Giao hàng"
       }
+    },
+    "success": {
+      "en": "Order placed successfully!",
+      "vi": "Đặt hàng thành công!"
+    },
+    "title": {
+      "en": "Checkout",
+      "vi": "Thanh toán"
     }
   },
-  "auth": {
+  "common": {
+    "about": {
+      "en": "About",
+      "vi": "Giới thiệu"
+    },
+    "account": {
+      "en": "Account",
+      "vi": "Tài khoản"
+    },
+    "addToCart": {
+      "en": "Add to Cart",
+      "vi": "Thêm vào giỏ"
+    },
+    "allCategories": {
+      "en": "All categories",
+      "vi": "Tất cả danh mục"
+    },
+    "applyFilters": {
+      "en": "Apply Filters",
+      "vi": "Áp dụng bộ lọc"
+    },
+    "back": {
+      "en": "Back",
+      "vi": "Quay lại"
+    },
+    "cancel": {
+      "en": "Cancel",
+      "vi": "Hủy"
+    },
+    "cart": {
+      "en": "Cart",
+      "vi": "Giỏ hàng"
+    },
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
+    },
+    "category": {
+      "en": "Category",
+      "vi": "Danh mục"
+    },
+    "clearAll": {
+      "en": "Clear All",
+      "vi": "Xóa tất cả"
+    },
+    "clearAllFilters": {
+      "en": "Clear all filters",
+      "vi": "Xóa tất cả bộ lọc"
+    },
+    "close": {
+      "en": "Close",
+      "vi": "Đóng"
+    },
+    "contact": {
+      "en": "Contact",
+      "vi": "Liên hệ"
+    },
+    "customers": {
+      "en": "Customers",
+      "vi": "Khách hàng"
+    },
+    "delete": {
+      "en": "Delete",
+      "vi": "Xóa"
+    },
+    "discount": {
+      "en": "Discount",
+      "vi": "Giảm giá"
+    },
+    "edit": {
+      "en": "Edit",
+      "vi": "Sửa"
+    },
+    "error": {
+      "en": "Error",
+      "vi": "Lỗi"
+    },
+    "faq": {
+      "en": "FAQ",
+      "vi": "Câu hỏi thường gặp"
+    },
+    "filterAndSorting": {
+      "en": "Filter and Sorting",
+      "vi": "Bộ lọc và sắp xếp"
+    },
+    "filters": {
+      "en": "Filters",
+      "vi": "Bộ lọc"
+    },
+    "home": {
+      "en": "Home",
+      "vi": "Trang chủ"
+    },
+    "inStock": {
+      "en": "In stock",
+      "vi": "Còn hàng"
+    },
+    "items": {
+      "en": "Items",
+      "vi": "Sản phẩm"
+    },
+    "loading": {
+      "en": "Loading...",
+      "vi": "Đang tải..."
+    },
+    "loggedInAs": {
+      "en": "✓ You are logged in as",
+      "vi": "✓ Bạn đã đăng nhập tài khoản"
+    },
     "login": {
       "en": "Login",
       "vi": "Đăng nhập"
-    },
-    "register": {
-      "en": "Register",
-      "vi": "Đăng ký"
     },
     "logout": {
       "en": "Logout",
       "vi": "Đăng xuất"
     },
-    "email": {
-      "en": "Email",
-      "vi": "Email"
+    "maxPrice": {
+      "en": "Max price",
+      "vi": "Giá tối đa"
     },
-    "password": {
-      "en": "Password",
-      "vi": "Mật khẩu"
+    "minPrice": {
+      "en": "Min price",
+      "vi": "Giá tối thiểu"
     },
-    "confirmPassword": {
-      "en": "Confirm Password",
-      "vi": "Xác nhận mật khẩu"
+    "namAZ": {
+      "en": "Name: A-Z",
+      "vi": "Tên: A-Z"
     },
-    "firstName": {
-      "en": "First Name",
-      "vi": "Tên"
+    "namZA": {
+      "en": "Name: Z-A",
+      "vi": "Tên: Z-A"
     },
-    "lastName": {
-      "en": "Last Name",
-      "vi": "Họ"
+    "newest": {
+      "en": "Newest",
+      "vi": "Mới nhất"
     },
-    "forgotPassword": {
-      "en": "Forgot Password?",
-      "vi": "Quên mật khẩu?"
+    "next": {
+      "en": "Next",
+      "vi": "Tiếp theo"
     },
-    "rememberMe": {
-      "en": "Remember Me",
-      "vi": "Ghi nhớ đăng nhập"
+    "nextPage": {
+      "en": "Next page",
+      "vi": "Trang tiếp theo"
     },
-    "noAccount": {
-      "en": "Don't have an account?",
-      "vi": "Chưa có tài khoản?"
+    "no": {
+      "en": "No",
+      "vi": "Không"
     },
-    "hasAccount": {
-      "en": "Already have an account?",
-      "vi": "Đã có tài khoản?"
+    "oldest": {
+      "en": "Oldest",
+      "vi": "Cũ nhất"
     },
-    "loginSuccess": {
-      "en": "Logged in successfully",
-      "vi": "Đăng nhập thành công"
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
     },
-    "registerSuccess": {
-      "en": "Registration successful",
-      "vi": "Đăng ký thành công"
+    "outOfStock": {
+      "en": "Out of stock",
+      "vi": "Hết hàng"
     },
-    "loginError": {
-      "en": "Invalid email or password",
-      "vi": "Email hoặc mật khẩu không đúng"
+    "page": {
+      "en": "Page",
+      "vi": "Trang"
     },
-    "registerError": {
-      "en": "Registration failed",
-      "vi": "Đăng ký thất bại"
-    }
-  },
-  "account": {
-    "dashboard": {
-      "en": "Dashboard",
-      "vi": "Bảng điều khiển"
+    "pagination": {
+      "en": "Pagination",
+      "vi": "Phân trang"
     },
-    "profile": {
-      "en": "Profile",
-      "vi": "Hồ sơ"
+    "previous": {
+      "en": "Previous",
+      "vi": "Trước"
     },
-    "addresses": {
-      "en": "Addresses",
-      "vi": "Địa chỉ"
+    "previousPage": {
+      "en": "Previous page",
+      "vi": "Trang trước"
+    },
+    "priceHighToLow": {
+      "en": "Price: High to low",
+      "vi": "Giá: Cao đến thấp"
+    },
+    "priceLowToHigh": {
+      "en": "Price: Low to high",
+      "vi": "Giá: Thấp đến cao"
+    },
+    "priceRange": {
+      "en": "Price range",
+      "vi": "Khoảng giá"
+    },
+    "productDesc": {
+      "en": "Product description",
+      "vi": "Mô tả sản phẩm"
+    },
+    "productFilters": {
+      "en": "Product filters",
+      "vi": "Bộ lọc sản phẩm"
+    },
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "register": {
+      "en": "Register",
+      "vi": "Đăng ký"
+    },
+    "save": {
+      "en": "Save",
+      "vi": "Lưu"
+    },
+    "search": {
+      "en": "Search",
+      "vi": "Tìm kiếm"
+    },
+    "selectCategory": {
+      "en": "Select Category",
+      "vi": "Chọn danh mục"
+    },
+    "showInStockOnly": {
+      "en": "Show in stock only",
+      "vi": "Chỉ hiển thị sản phẩm còn hàng"
+    },
+    "signup": {
+      "en": "Sign up",
+      "vi": "Đăng Ký"
+    },
+    "sortBy": {
+      "en": "Sort By",
+      "vi": "Sắp xếp theo"
+    },
+    "sortProducts": {
+      "en": "Sort Products",
+      "vi": "Sắp xếp sản phẩm"
+    },
+    "submit": {
+      "en": "Submit",
+      "vi": "Gửi"
+    },
+    "success": {
+      "en": "Success",
+      "vi": "Thành công"
+    },
+    "view": {
+      "en": "View",
+      "vi": "Xem"
     },
     "wishlist": {
       "en": "Wishlist",
       "vi": "Yêu thích"
-    },
-    "settings": {
-      "en": "Settings",
-      "vi": "Cài đặt"
-    },
-    "orderHistory": {
-      "en": "Order History",
-      "vi": "Lịch sử đơn hàng"
-    },
-    "noOrders": {
-      "en": "No orders yet",
-      "vi": "Chưa có đơn hàng"
-    },
-    "viewOrder": {
-      "en": "View Order",
-      "vi": "Xem đơn hàng"
-    },
-    "orderNumber": {
-      "en": "Order Number",
-      "vi": "Mã đơn hàng"
-    },
-    "orderDate": {
-      "en": "Order Date",
-      "vi": "Ngày đặt"
-    },
-    "orderStatus": {
-      "en": "Status",
-      "vi": "Trạng thái"
-    },
-    "orderTotal": {
-      "en": "Total",
-      "vi": "Tổng tiền"
     }
   },
   "footer": {
@@ -594,21 +614,9 @@
       "en": "Contact Us",
       "vi": "Liên hệ"
     },
-    "privacyPolicy": {
-      "en": "Privacy Policy",
-      "vi": "Chính sách bảo mật"
-    },
-    "termsOfService": {
-      "en": "Terms of Service",
-      "vi": "Điều khoản dịch vụ"
-    },
-    "shippingPolicy": {
-      "en": "Shipping Policy",
-      "vi": "Chính sách vận chuyển"
-    },
-    "returnPolicy": {
-      "en": "Return Policy",
-      "vi": "Chính sách đổi trả"
+    "copyright": {
+      "en": "© {year} All rights reserved",
+      "vi": "© {year} Bản quyền thuộc về"
     },
     "followUs": {
       "en": "Follow Us",
@@ -618,201 +626,281 @@
       "en": "Newsletter",
       "vi": "Bản tin"
     },
+    "privacyPolicy": {
+      "en": "Privacy Policy",
+      "vi": "Chính sách bảo mật"
+    },
+    "returnPolicy": {
+      "en": "Return Policy",
+      "vi": "Chính sách đổi trả"
+    },
+    "shippingPolicy": {
+      "en": "Shipping Policy",
+      "vi": "Chính sách vận chuyển"
+    },
     "subscribeNewsletter": {
       "en": "Subscribe to our newsletter",
       "vi": "Đăng ký nhận bản tin"
     },
-    "copyright": {
-      "en": "© {year} All rights reserved",
-      "vi": "© {year} Bản quyền thuộc về"
+    "termsOfService": {
+      "en": "Terms of Service",
+      "vi": "Điều khoản dịch vụ"
     }
   },
-  "admin": {
-    "dashboard": {
-      "en": "Dashboard",
-      "vi": "Bảng điều khiển"
+  "nav": {
+    "about": {
+      "en": "About Us",
+      "vi": "Về chúng tôi"
     },
-    "dashboardWelcome": {
-      "en": "Welcome to your admin dashboard",
-      "vi": "Chào mừng đến với bảng điều khiển quản trị"
+    "account": {
+      "en": "My Account",
+      "vi": "Tài khoản của tôi"
     },
-    "addProduct": {
-      "en": "Add product",
-      "vi": "Thêm sản phẩm"
+    "admin": {
+      "en": "Admin Panel",
+      "vi": "Quản trị"
     },
-    "totalRevenue": {
-      "en": "Total revenue",
-      "vi": "Tổng doanh thu"
+    "cart": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
     },
-    "customers": {
-      "en": "Customers",
-      "vi": "Khách hàng"
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
     },
-    "content": {
-      "en": "Content",
-      "vi": "Nội dung"
+    "closeMenu": {
+      "en": "Close menu",
+      "vi": "Đóng menu"
     },
-    "viewOrders": {
-      "en": "View orders",
-      "vi": "Xem đơn hàng"
+    "contact": {
+      "en": "Contact",
+      "vi": "Liên hệ"
     },
-    "manageCategories": {
-      "en": "Manage categories",
-      "vi": "Quản lý danh mục"
+    "home": {
+      "en": "Home",
+      "vi": "Trang chủ"
     },
-    "promotions": {
-      "en": "Promotions",
-      "vi": "Khuyến mãi"
+    "main": {
+      "en": "Main navigation",
+      "vi": "Điều hướng chính"
     },
-    "createPromotion": {
-      "en": "Create promotion",
-      "vi": "Tạo khuyến mãi"
+    "mobileMenu": {
+      "en": "Mobile menu",
+      "vi": "Menu di động"
     },
-    "recentActivity": {
-      "en": "Recent activity",
-      "vi": "Hoạt động gần đây"
+    "openMenu": {
+      "en": "Open menu",
+      "vi": "Mở menu"
     },
-    "analytics": {
-      "en": "Analytics",
-      "vi": "Phân tích"
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
     },
-    "settings": {
-      "en": "Settings",
-      "vi": "Cài đặt"
+    "shop": {
+      "en": "Shop",
+      "vi": "Cửa hàng"
+    },
+    "wishlist": {
+      "en": "Wishlist",
+      "vi": "Yêu thích"
     }
   },
   "orders": {
-    "orderManagement": {
-      "en": "Order Management",
-      "vi": "Quản lý đơn hàng"
-    },
-    "orderList": {
-      "en": "Order List",
-      "vi": "Danh sách đơn hàng"
-    },
-    "orderDetails": {
-      "en": "Order Details",
-      "vi": "Chi tiết đơn hàng"
-    },
-    "orderNumber": {
-      "en": "Order Number",
-      "vi": "Mã đơn hàng"
-    },
-    "customer": {
-      "en": "Customer",
-      "vi": "Khách hàng"
-    },
-    "date": {
-      "en": "Date",
-      "vi": "Ngày"
-    },
-    "status": {
-      "en": "Status",
-      "vi": "Trạng thái"
-    },
-    "total": {
-      "en": "Total",
-      "vi": "Tổng tiền"
-    },
     "actions": {
       "en": "Actions",
       "vi": "Thao tác"
-    },
-    "viewDetails": {
-      "en": "View Details",
-      "vi": "Xem chi tiết"
-    },
-    "updateStatus": {
-      "en": "Update Status",
-      "vi": "Cập nhật trạng thái"
-    },
-    "searchPlaceholder": {
-      "en": "Search by order number or email...",
-      "vi": "Tìm theo mã đơn hàng hoặc email..."
-    },
-    "filterByStatus": {
-      "en": "Filter by Status",
-      "vi": "Lọc theo trạng thái"
     },
     "allStatuses": {
       "en": "All Statuses",
       "vi": "Tất cả trạng thái"
     },
-    "dateRange": {
-      "en": "Date Range",
-      "vi": "Khoảng thời gian"
+    "billingInfo": {
+      "en": "Billing Information",
+      "vi": "Thông tin thanh toán"
     },
-    "from": {
-      "en": "From",
-      "vi": "Từ"
+    "cannotRefund": {
+      "en": "This order cannot be refunded",
+      "vi": "Đơn hàng này không thể hoàn tiền"
     },
-    "to": {
-      "en": "To",
-      "vi": "Đến"
+    "carrier": {
+      "en": "Carrier",
+      "vi": "Đơn vị vận chuyển"
     },
     "clearFilters": {
       "en": "Clear Filters",
       "vi": "Xóa bộ lọc"
     },
-    "noOrders": {
-      "en": "No orders found",
-      "vi": "Không tìm thấy đơn hàng"
+    "confirmRefund": {
+      "en": "Are you sure you want to process this refund?",
+      "vi": "Bạn có chắc muốn hoàn tiền cho đơn hàng này?"
     },
-    "orderInfo": {
-      "en": "Order Information",
-      "vi": "Thông tin đơn hàng"
+    "customer": {
+      "en": "Customer",
+      "vi": "Khách hàng"
     },
     "customerInfo": {
       "en": "Customer Information",
       "vi": "Thông tin khách hàng"
     },
-    "shippingInfo": {
-      "en": "Shipping Information",
-      "vi": "Thông tin giao hàng"
+    "date": {
+      "en": "Date",
+      "vi": "Ngày"
     },
-    "billingInfo": {
-      "en": "Billing Information",
-      "vi": "Thông tin thanh toán"
-    },
-    "orderItems": {
-      "en": "Order Items",
-      "vi": "Sản phẩm đã đặt"
-    },
-    "paymentInfo": {
-      "en": "Payment Information",
-      "vi": "Thông tin thanh toán"
-    },
-    "paymentStatus": {
-      "en": "Payment Status",
-      "vi": "Trạng thái thanh toán"
-    },
-    "paymentMethod": {
-      "en": "Payment Method",
-      "vi": "Phương thức thanh toán"
-    },
-    "shippingMethod": {
-      "en": "Shipping Method",
-      "vi": "Phương thức vận chuyển"
-    },
-    "subtotal": {
-      "en": "Subtotal",
-      "vi": "Tạm tính"
-    },
-    "shipping": {
-      "en": "Shipping",
-      "vi": "Phí vận chuyển"
-    },
-    "tax": {
-      "en": "Tax",
-      "vi": "Thuế"
+    "dateRange": {
+      "en": "Date Range",
+      "vi": "Khoảng thời gian"
     },
     "discount": {
       "en": "Discount",
       "vi": "Giảm giá"
     },
+    "downloadLabel": {
+      "en": "Download Label",
+      "vi": "Tải nhãn"
+    },
+    "filterByStatus": {
+      "en": "Filter by Status",
+      "vi": "Lọc theo trạng thái"
+    },
+    "from": {
+      "en": "From",
+      "vi": "Từ"
+    },
+    "fullRefund": {
+      "en": "Full Refund",
+      "vi": "Hoàn tiền toàn bộ"
+    },
+    "generateLabel": {
+      "en": "Generate Shipping Label",
+      "vi": "Tạo nhãn vận chuyển"
+    },
+    "labelError": {
+      "en": "Failed to generate shipping label",
+      "vi": "Tạo nhãn vận chuyển thất bại"
+    },
+    "labelGenerated": {
+      "en": "Shipping label generated successfully",
+      "vi": "Tạo nhãn vận chuyển thành công"
+    },
+    "noOrders": {
+      "en": "No orders found",
+      "vi": "Không tìm thấy đơn hàng"
+    },
     "notes": {
       "en": "Notes",
       "vi": "Ghi chú"
+    },
+    "orderDetails": {
+      "en": "Order Details",
+      "vi": "Chi tiết đơn hàng"
+    },
+    "orderInfo": {
+      "en": "Order Information",
+      "vi": "Thông tin đơn hàng"
+    },
+    "orderItems": {
+      "en": "Order Items",
+      "vi": "Sản phẩm đã đặt"
+    },
+    "orderList": {
+      "en": "Order List",
+      "vi": "Danh sách đơn hàng"
+    },
+    "orderManagement": {
+      "en": "Order Management",
+      "vi": "Quản lý đơn hàng"
+    },
+    "orderNumber": {
+      "en": "Order Number",
+      "vi": "Mã đơn hàng"
+    },
+    "partialRefund": {
+      "en": "Partial Refund",
+      "vi": "Hoàn tiền một phần"
+    },
+    "paymentFailed": {
+      "en": "Failed",
+      "vi": "Thất bại"
+    },
+    "paymentInfo": {
+      "en": "Payment Information",
+      "vi": "Thông tin thanh toán"
+    },
+    "paymentMethod": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "paymentPaid": {
+      "en": "Paid",
+      "vi": "Đã thanh toán"
+    },
+    "paymentPending": {
+      "en": "Pending",
+      "vi": "Chờ thanh toán"
+    },
+    "paymentRefunded": {
+      "en": "Refunded",
+      "vi": "Đã hoàn tiền"
+    },
+    "paymentStatus": {
+      "en": "Payment Status",
+      "vi": "Trạng thái thanh toán"
+    },
+    "processRefund": {
+      "en": "Process Refund",
+      "vi": "Xử lý hoàn tiền"
+    },
+    "refund": {
+      "en": "Refund",
+      "vi": "Hoàn tiền"
+    },
+    "refundAmount": {
+      "en": "Refund Amount",
+      "vi": "Số tiền hoàn"
+    },
+    "refundError": {
+      "en": "Failed to process refund",
+      "vi": "Hoàn tiền thất bại"
+    },
+    "refundReason": {
+      "en": "Refund Reason",
+      "vi": "Lý do hoàn tiền"
+    },
+    "refundSuccess": {
+      "en": "Refund processed successfully",
+      "vi": "Hoàn tiền thành công"
+    },
+    "searchPlaceholder": {
+      "en": "Search by order number or email...",
+      "vi": "Tìm theo mã đơn hàng hoặc email..."
+    },
+    "selectCarrier": {
+      "en": "Select Carrier",
+      "vi": "Chọn đơn vị vận chuyển"
+    },
+    "shipping": {
+      "en": "Shipping",
+      "vi": "Phí vận chuyển"
+    },
+    "shippingInfo": {
+      "en": "Shipping Information",
+      "vi": "Thông tin giao hàng"
+    },
+    "shippingMethod": {
+      "en": "Shipping Method",
+      "vi": "Phương thức vận chuyển"
+    },
+    "status": {
+      "en": "Status",
+      "vi": "Trạng thái"
+    },
+    "statusCancelled": {
+      "en": "Cancelled",
+      "vi": "Đã hủy"
+    },
+    "statusDelivered": {
+      "en": "Delivered",
+      "vi": "Đã giao hàng"
     },
     "statusPending": {
       "en": "Pending",
@@ -822,138 +910,218 @@
       "en": "Processing",
       "vi": "Đang xử lý"
     },
-    "statusShipped": {
-      "en": "Shipped",
-      "vi": "Đã gửi hàng"
-    },
-    "statusDelivered": {
-      "en": "Delivered",
-      "vi": "Đã giao hàng"
-    },
-    "statusCancelled": {
-      "en": "Cancelled",
-      "vi": "Đã hủy"
-    },
     "statusRefunded": {
       "en": "Refunded",
       "vi": "Đã hoàn tiền"
     },
-    "paymentPending": {
-      "en": "Pending",
-      "vi": "Chờ thanh toán"
+    "statusShipped": {
+      "en": "Shipped",
+      "vi": "Đã gửi hàng"
     },
-    "paymentPaid": {
-      "en": "Paid",
-      "vi": "Đã thanh toán"
+    "subtotal": {
+      "en": "Subtotal",
+      "vi": "Tạm tính"
     },
-    "paymentFailed": {
-      "en": "Failed",
-      "vi": "Thất bại"
+    "tax": {
+      "en": "Tax",
+      "vi": "Thuế"
     },
-    "paymentRefunded": {
-      "en": "Refunded",
-      "vi": "Đã hoàn tiền"
+    "to": {
+      "en": "To",
+      "vi": "Đến"
     },
-    "updateSuccess": {
-      "en": "Order status updated successfully",
-      "vi": "Cập nhật trạng thái đơn hàng thành công"
-    },
-    "updateError": {
-      "en": "Failed to update order status",
-      "vi": "Cập nhật trạng thái đơn hàng thất bại"
-    },
-    "refund": {
-      "en": "Refund",
-      "vi": "Hoàn tiền"
-    },
-    "processRefund": {
-      "en": "Process Refund",
-      "vi": "Xử lý hoàn tiền"
-    },
-    "refundAmount": {
-      "en": "Refund Amount",
-      "vi": "Số tiền hoàn"
-    },
-    "refundReason": {
-      "en": "Refund Reason",
-      "vi": "Lý do hoàn tiền"
-    },
-    "fullRefund": {
-      "en": "Full Refund",
-      "vi": "Hoàn tiền toàn bộ"
-    },
-    "partialRefund": {
-      "en": "Partial Refund",
-      "vi": "Hoàn tiền một phần"
-    },
-    "refundSuccess": {
-      "en": "Refund processed successfully",
-      "vi": "Hoàn tiền thành công"
-    },
-    "refundError": {
-      "en": "Failed to process refund",
-      "vi": "Hoàn tiền thất bại"
-    },
-    "confirmRefund": {
-      "en": "Are you sure you want to process this refund?",
-      "vi": "Bạn có chắc muốn hoàn tiền cho đơn hàng này?"
-    },
-    "cannotRefund": {
-      "en": "This order cannot be refunded",
-      "vi": "Đơn hàng này không thể hoàn tiền"
-    },
-    "generateLabel": {
-      "en": "Generate Shipping Label",
-      "vi": "Tạo nhãn vận chuyển"
+    "total": {
+      "en": "Total",
+      "vi": "Tổng tiền"
     },
     "trackingNumber": {
       "en": "Tracking Number",
       "vi": "Mã vận đơn"
     },
-    "carrier": {
-      "en": "Carrier",
-      "vi": "Đơn vị vận chuyển"
+    "updateError": {
+      "en": "Failed to update order status",
+      "vi": "Cập nhật trạng thái đơn hàng thất bại"
     },
-    "selectCarrier": {
-      "en": "Select Carrier",
-      "vi": "Chọn đơn vị vận chuyển"
+    "updateStatus": {
+      "en": "Update Status",
+      "vi": "Cập nhật trạng thái"
     },
-    "labelGenerated": {
-      "en": "Shipping label generated successfully",
-      "vi": "Tạo nhãn vận chuyển thành công"
+    "updateSuccess": {
+      "en": "Order status updated successfully",
+      "vi": "Cập nhật trạng thái đơn hàng thành công"
     },
-    "labelError": {
-      "en": "Failed to generate shipping label",
-      "vi": "Tạo nhãn vận chuyển thất bại"
-    },
-    "downloadLabel": {
-      "en": "Download Label",
-      "vi": "Tải nhãn"
+    "viewDetails": {
+      "en": "View Details",
+      "vi": "Xem chi tiết"
     },
     "viewLabel": {
       "en": "View Label",
       "vi": "Xem nhãn"
     }
   },
+  "product": {
+    "addToCart": {
+      "en": "Add to Cart",
+      "vi": "Thêm vào giỏ"
+    },
+    "addToWishlist": {
+      "en": "Add to Wishlist",
+      "vi": "Thêm vào yêu thích"
+    },
+    "description": {
+      "en": "Description",
+      "vi": "Mô tả"
+    },
+    "details": {
+      "en": "Product details",
+      "vi": "Chi tiết"
+    },
+    "featured": {
+      "en": "Featured",
+      "vi": "Nổi bật"
+    },
+    "inStock": {
+      "en": "In Stock",
+      "vi": "Còn hàng"
+    },
+    "lowStock": {
+      "en": "Low Stock",
+      "vi": "Sắp hết hàng"
+    },
+    "newArrival": {
+      "en": "New Arrival",
+      "vi": "Hàng mới"
+    },
+    "outOfStock": {
+      "en": "Out of Stock",
+      "vi": "Hết hàng"
+    },
+    "price": {
+      "en": "Price",
+      "vi": "Giá"
+    },
+    "quantity": {
+      "en": "Quantity",
+      "vi": "Số lượng"
+    },
+    "related": {
+      "en": "Related products",
+      "vi": "Sản phẩm liên quan"
+    },
+    "relatedProducts": {
+      "en": "Related Products",
+      "vi": "Sản phẩm liên quan"
+    },
+    "reviews": {
+      "en": "Reviews",
+      "vi": "Đánh giá"
+    },
+    "sale": {
+      "en": "Sale",
+      "vi": "Giảm giá"
+    },
+    "sku": {
+      "en": "SKU",
+      "vi": "Mã SP"
+    },
+    "specifications": {
+      "en": "Specifications",
+      "vi": "Thông số"
+    },
+    "viewDetails": {
+      "en": "View Details",
+      "vi": "Xem chi tiết"
+    }
+  },
+  "search": {
+    "availability": {
+      "en": "Availability",
+      "vi": "Tình trạng"
+    },
+    "clearFilters": {
+      "en": "Clear Filters",
+      "vi": "Xóa bộ lọc"
+    },
+    "filters": {
+      "en": "Filters",
+      "vi": "Bộ lọc"
+    },
+    "noResults": {
+      "en": "No products found",
+      "vi": "Không tìm thấy sản phẩm"
+    },
+    "placeholder": {
+      "en": "Search products...",
+      "vi": "Tìm kiếm sản phẩm..."
+    },
+    "priceRange": {
+      "en": "Price Range",
+      "vi": "Khoảng giá"
+    },
+    "results": {
+      "en": "Search Results",
+      "vi": "Kết quả tìm kiếm"
+    },
+    "showing": {
+      "en": "Showing {count} results",
+      "vi": "Hiển thị {count} kết quả"
+    },
+    "sortBy": {
+      "en": "Sort By",
+      "vi": "Sắp xếp theo"
+    }
+  },
   "seo": {
-    "home": {
-      "title": {
-        "en": "Handmade E-commerce - Unique Artisan Products",
-        "vi": "Handmade E-commerce - Sản phẩm thủ công độc đáo"
+    "account": {
+      "description": {
+        "en": "Manage your account, orders, and preferences.",
+        "vi": "Quản lý tài khoản, đơn hàng và tùy chọn của bạn."
       },
+      "title": {
+        "en": "My Account - Handmade E-commerce",
+        "vi": "Tài khoản của tôi - Handmade E-commerce"
+      }
+    },
+    "cart": {
+      "addToCart": {
+        "en": "Add to Cart",
+        "vi": "Thêm vào giỏ hàng"
+      },
+      "added": {
+        "en": "✓ Added to Cart",
+        "vi": "✓ Đã thêm vào giỏ hàng"
+      },
+      "addingggg": {
+        "en": "Adding...",
+        "vi": "Đang thêm..."
+      },
+      "description": {
+        "en": "Review your shopping cart and proceed to checkout.",
+        "vi": "Xem lại giỏ hàng của bạn và tiến hành thanh toán."
+      },
+      "title": {
+        "en": "Shopping Cart - Handmade E-commerce",
+        "vi": "Giỏ hàng - Handmade E-commerce"
+      }
+    },
+    "checkout": {
+      "description": {
+        "en": "Complete your purchase securely with our checkout process.",
+        "vi": "Hoàn tất mua hàng an toàn với quy trình thanh toán của chúng tôi."
+      },
+      "title": {
+        "en": "Checkout - Handmade E-commerce",
+        "vi": "Thanh toán - Handmade E-commerce"
+      }
+    },
+    "home": {
       "description": {
         "en": "Shop unique handmade products crafted by artisans. Browse our collection of authentic, high-quality handcrafted items.",
         "vi": "Mua sắm các sản phẩm thủ công độc đáo được làm bởi nghệ nhân. Khám phá bộ sưu tập các sản phẩm thủ công chất lượng cao."
-      }
-    },
-    "products": {
-      "title": {
-        "en": "Products - Handmade E-commerce",
-        "vi": "Sản phẩm - Handmade E-commerce"
       },
-      "description": {
-        "en": "Browse our complete collection of handmade products. Find unique artisan crafted items for every occasion.",
-        "vi": "Duyệt qua bộ sưu tập đầy đủ các sản phẩm thủ công. Tìm các sản phẩm thủ công độc đáo cho mọi dịp."
+      "title": {
+        "en": "Handmade E-commerce - Unique Artisan Products",
+        "vi": "Handmade E-commerce - Sản phẩm thủ công độc đáo"
       }
     },
     "product": {
@@ -962,34 +1130,14 @@
         "vi": "Xem thông tin chi tiết về sản phẩm thủ công này bao gồm hình ảnh, giá cả và tình trạng còn hàng."
       }
     },
-    "cart": {
-      "title": {
-        "en": "Shopping Cart - Handmade E-commerce",
-        "vi": "Giỏ hàng - Handmade E-commerce"
-      },
+    "products": {
       "description": {
-        "en": "Review your shopping cart and proceed to checkout.",
-        "vi": "Xem lại giỏ hàng của bạn và tiến hành thanh toán."
-      }
-    },
-    "checkout": {
-      "title": {
-        "en": "Checkout - Handmade E-commerce",
-        "vi": "Thanh toán - Handmade E-commerce"
+        "en": "Browse our complete collection of handmade products. Find unique artisan crafted items for every occasion.",
+        "vi": "Duyệt qua bộ sưu tập đầy đủ các sản phẩm thủ công. Tìm các sản phẩm thủ công độc đáo cho mọi dịp."
       },
-      "description": {
-        "en": "Complete your purchase securely with our checkout process.",
-        "vi": "Hoàn tất mua hàng an toàn với quy trình thanh toán của chúng tôi."
-      }
-    },
-    "account": {
       "title": {
-        "en": "My Account - Handmade E-commerce",
-        "vi": "Tài khoản của tôi - Handmade E-commerce"
-      },
-      "description": {
-        "en": "Manage your account, orders, and preferences.",
-        "vi": "Quản lý tài khoản, đơn hàng và tùy chọn của bạn."
+        "en": "Products - Handmade E-commerce",
+        "vi": "Sản phẩm - Handmade E-commerce"
       }
     }
   }

@@ -40,8 +40,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Load cart on mount and when user changes
+  const didMountRef = React.useRef(false);
   useEffect(() => {
-    refreshCart();
+    if (didMountRef.current) return;
+    didMountRef.current = true;
+    refreshCart().then();
   }, [refreshCart]);
 
   // Merge guest cart with user cart on login

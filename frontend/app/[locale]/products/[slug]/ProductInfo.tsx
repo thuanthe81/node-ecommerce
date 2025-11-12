@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Product } from '@/lib/product-api';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [addedMessage, setAddedMessage] = useState(false);
+  const t = useTranslations();
 
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
   const description = locale === 'vi' ? product.descriptionVi : product.descriptionEn;
@@ -37,7 +38,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       setTimeout(() => setAddedMessage(false), 3000);
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      alert(locale === 'vi' ? 'Không thể thêm vào giỏ hàng' : 'Failed to add to cart');
+      alert(t('cart.failedAddToCart'));
     } finally {
       setAdding(false);
     }
@@ -48,7 +49,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500">
         <Link href={`/${locale}`} className="hover:text-gray-700">
-          {locale === 'vi' ? 'Trang chủ' : 'Home'}
+          {t('common.home')}
         </Link>
         <span className="mx-2">/</span>
         <Link
@@ -83,7 +84,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           </div>
           <span className="text-gray-600">
             {product.averageRating.toFixed(1)} ({product._count.reviews}{' '}
-            {locale === 'vi' ? 'đánh giá' : 'reviews'})
+            {t('product.reviews')})
           </span>
         </div>
       )}
@@ -106,7 +107,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 }).format(Number(product.compareAtPrice))}
               </span>
               <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-semibold">
-                {locale === 'vi' ? 'Giảm' : 'Save'}{' '}
+                {t('common.discount')}{' '}
                 {Math.round(
                   ((Number(product.compareAtPrice) - Number(product.price)) /
                     Number(product.compareAtPrice)) *
@@ -123,12 +124,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div>
         {isOutOfStock ? (
           <span className="text-red-600 font-semibold">
-            {locale === 'vi' ? 'Hết hàng' : 'Out of Stock'}
+            {t('common.outOfStock')}
           </span>
         ) : (
           <span className="text-green-600 font-semibold">
-            {locale === 'vi' ? 'Còn hàng' : 'In Stock'} ({product.stockQuantity}{' '}
-            {locale === 'vi' ? 'sản phẩm' : 'items'})
+            {t('common.inStock')} ({product.stockQuantity}{' '}
+            {t('common.items').toLowerCase()})
           </span>
         )}
       </div>
@@ -136,7 +137,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Description */}
       <div className="prose max-w-none">
         <h2 className="text-xl font-semibold mb-2">
-          {locale === 'vi' ? 'Mô tả sản phẩm' : 'Product Description'}
+          {t('common.productDesc')}
         </h2>
         <p className="text-gray-700 whitespace-pre-line">{description}</p>
       </div>
@@ -146,7 +147,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <label className="font-semibold">
-              {locale === 'vi' ? 'Số lượng:' : 'Quantity:'}
+              {t('product.quantity')}
             </label>
             <div className="flex items-center border border-gray-300 rounded-md">
               <button
@@ -180,16 +181,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {adding
-              ? locale === 'vi'
-                ? 'Đang thêm...'
-                : 'Adding...'
+              ? t('cart.addingggg')
               : addedMessage
-              ? locale === 'vi'
-                ? '✓ Đã thêm vào giỏ hàng'
-                : '✓ Added to Cart'
-              : locale === 'vi'
-              ? 'Thêm vào giỏ hàng'
-              : 'Add to Cart'}
+              ? t('cart.added')
+              : t('cart.addToCart')}
           </button>
         </div>
       )}
@@ -197,14 +192,14 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Product Details */}
       <div className="border-t pt-6 space-y-2">
         <h3 className="font-semibold text-lg mb-3">
-          {locale === 'vi' ? 'Thông tin chi tiết' : 'Product Details'}
+          {t('product.details')}
         </h3>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <span className="text-gray-600">{locale === 'vi' ? 'SKU:' : 'SKU:'}</span>
           <span className="font-medium">{product.sku}</span>
 
           <span className="text-gray-600">
-            {locale === 'vi' ? 'Danh mục:' : 'Category:'}
+            {t('common.category')}
           </span>
           <Link
             href={`/${locale}/categories/${product.category.slug}`}

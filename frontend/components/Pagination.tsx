@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 interface PaginationProps {
   currentPage: number;
@@ -16,7 +16,7 @@ export default function Pagination({
 }: PaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const locale = useLocale();
+  const t = useTranslations();
 
   const handlePageChange = (page: number) => {
     if (onPageChange) {
@@ -68,20 +68,20 @@ export default function Pagination({
   }
 
   return (
-    <nav 
+    <nav
       className="flex flex-wrap items-center justify-center gap-2 mt-8"
       role="navigation"
-      aria-label={locale === 'vi' ? 'Phân trang' : 'Pagination'}
+      aria-label={t('common.pagination')}
     >
       <button
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-        aria-label={locale === 'vi' ? 'Trang trước' : 'Previous page'}
+        aria-label={t('common.previousPage')}
         aria-disabled={currentPage === 1}
         style={{ minHeight: '44px' }}
       >
-        {locale === 'vi' ? 'Trước' : 'Previous'}
+        {t('common.previous')}
       </button>
 
       {getPageNumbers().map((page, index) => {
@@ -102,7 +102,7 @@ export default function Pagination({
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'border-gray-300 hover:bg-gray-50'
             }`}
-            aria-label={`${locale === 'vi' ? 'Trang' : 'Page'} ${page}`}
+            aria-label={`${t('common.page')} ${page}`}
             aria-current={currentPage === page ? 'page' : undefined}
             style={{ minHeight: '44px', minWidth: '44px' }}
           >
@@ -115,11 +115,11 @@ export default function Pagination({
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="px-4 py-3 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-        aria-label={locale === 'vi' ? 'Trang sau' : 'Next page'}
+        aria-label={t('common.nextPage')}
         aria-disabled={currentPage === totalPages}
         style={{ minHeight: '44px' }}
       >
-        {locale === 'vi' ? 'Sau' : 'Next'}
+        {t('common.next')}
       </button>
     </nav>
   );
