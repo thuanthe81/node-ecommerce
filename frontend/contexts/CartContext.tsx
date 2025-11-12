@@ -50,23 +50,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Merge guest cart with user cart on login
   useEffect(() => {
     const mergeCart = async () => {
-      if (user && cart && !cart.userId) {
-        try {
-          await cartApi.mergeGuestCart();
-          await refreshCart();
-        } catch (err) {
-          console.error('Error merging cart:', err);
-        }
+      try {
+        await cartApi.mergeGuestCart();
+        await refreshCart();
+      } catch (err) {
+        console.error('Error merging cart:', err);
       }
     };
-    mergeCart();
+    if (user && cart && !cart.userId) {
+      mergeCart().then();
+    }
   }, [user, cart, refreshCart]);
 
   // Sync cart across browser tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'cart-updated') {
-        refreshCart();
+        refreshCart().then();
       }
     };
 

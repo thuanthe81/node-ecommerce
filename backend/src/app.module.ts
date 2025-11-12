@@ -32,7 +32,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 seconds
-        limit: 10, // 10 requests per minute (default)
+        limit: 2000, // 200 requests per minute (default)
       },
     ]),
     CommonModule,

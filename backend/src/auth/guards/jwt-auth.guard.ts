@@ -16,6 +16,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) {
+      // Optional auth: if a Bearer token is present, try to authenticate
+      const req = context.switchToHttp().getRequest();
+      const authHeader = req.headers?.authorization || req.headers?.Authorization as string | undefined;
+
+      const hasBearer = typeof authHeader === 'string' && authHeader.startsWith('Bearer ');
+      if (hasBearer) {
+        try {
+          const result = super.canActivate(context);
+          if (result instanceof Promise) {
+            return result
+              .then(() => true)
+              .catch(() => true);
+          }
+          return true;
+        } catch {
+          // Ignore auth errors for public routes; proceed without user
+          return true;
+        }
+      }
+      // No auth header; treat as anonymous
       return true;
     }
 
