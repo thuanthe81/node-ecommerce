@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, productApi, ProductImage } from '@/lib/product-api';
+import { SvgClose } from '@/components/Svgs';
 import { Category, categoryApi } from '@/lib/category-api';
 
 interface ProductFormProps {
@@ -381,14 +382,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
                     onClick={() => handleRemoveExistingImage(image.id)}
                     className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <SvgClose className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -415,14 +409,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
                     onClick={() => handleRemoveNewImage(index)}
                     className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <SvgClose className="w-4 h-4" />
                   </button>
                 </div>
               ))}

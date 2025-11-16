@@ -6,6 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { promotionApi } from '@/lib/promotion-api';
+import { SvgCheck } from '@/components/Svgs';
 
 export default function CartSummary() {
   const locale = useLocale();
@@ -69,9 +70,7 @@ export default function CartSummary() {
         {appliedPromo ? (
           <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <SvgCheck className="w-5 h-5 text-green-600 mr-2" />
               <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
             </div>
             <button

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
+import { SvgCart, SvgClose } from '@/components/Svgs';
 
 export default function MiniCart() {
   const locale = useLocale();
@@ -56,20 +57,7 @@ export default function MiniCart() {
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
+        <SvgCart className="w-6 h-6" aria-hidden="true" />
         {itemCount > 0 && (
           <span
             className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
@@ -96,20 +84,7 @@ export default function MiniCart() {
           <div className="max-h-96 overflow-y-auto">
             {!cart || cart.items.length === 0 ? (
               <div className="p-8 text-center text-gray-500" role="status">
-                <svg
-                  className="w-16 h-16 mx-auto mb-4 text-gray-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
+                <SvgCart className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
                 <p>{t('emptyCart')}</p>
               </div>
             ) : (
@@ -148,9 +123,7 @@ export default function MiniCart() {
                             className="text-gray-400 hover:text-red-600 transition-colors"
                             aria-label={`${t('remove')} ${productName}`}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <SvgClose className="w-4 h-4" aria-hidden="true" />
                           </button>
                           <p className="text-sm font-semibold">
                             ${(parseFloat(item.price) * item.quantity).toFixed(2)}

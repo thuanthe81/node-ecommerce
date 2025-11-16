@@ -11,6 +11,7 @@ import { promotionApi } from '@/lib/promotion-api';
 import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
+import { SvgCheck } from '@/components/Svgs';
 
 export default function CheckoutContent() {
   const tCheckout = useTranslations('checkout');
@@ -420,15 +421,13 @@ export default function CheckoutContent() {
               <label htmlFor="checkoutPromoCode" className="block text-sm font-medium text-gray-700 mb-2">
                 {tCart('promoCode')}
               </label>
-              {appliedPromo ? (
-                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
-                  </div>
-                  <button
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    <div className="flex items-center">
+                      <SvgCheck className="w-5 h-5 text-green-600 mr-2" />
+                      <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
+                    </div>
+                    <button
                     onClick={handleRemovePromo}
                     className="text-sm text-red-600 hover:text-red-700"
                   >

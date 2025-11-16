@@ -7,6 +7,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { Category, categoryApi } from '@/lib/category-api';
 import { adminCategoryApi } from '@/lib/admin-category-api';
 import { useLocale } from 'next-intl';
+import { SvgChevronRight, SvgPlus, SvgInfo } from '@/components/Svgs';
 
 export default function AdminCategoriesPage() {
   const locale = useLocale();
@@ -87,19 +88,7 @@ export default function AdminCategoriesPage() {
                   onClick={() => toggleExpand(category.id)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <svg
-                    className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                  <SvgChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                 </button>
               )}
               {!hasChildren && <div className="w-4" />}
@@ -172,9 +161,7 @@ export default function AdminCategoriesPage() {
               href={`/${locale}/admin/categories/new`}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <SvgPlus className="w-5 h-5" />
               <span>{locale === 'vi' ? 'Thêm danh mục' : 'Add Category'}</span>
             </Link>
           </div>
@@ -201,19 +188,7 @@ export default function AdminCategoriesPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <SvgInfo className="h-5 w-5 text-blue-400" />
               </div>
               <div className="ml-3">
                 <p className="text-sm text-blue-700">

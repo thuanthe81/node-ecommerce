@@ -9,6 +9,7 @@ import SearchBar from './SearchBar';
 import MiniCart from './MiniCart';
 import { useAuth } from '@/contexts/AuthContext';
 import CategoryNav from './CategoryNav';
+import { SvgClose, SvgMenu } from '@/components/Svgs';
 
 export default function Header() {
   const locale = useLocale();
@@ -83,13 +84,9 @@ export default function Header() {
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
               {isMobileMenuOpen ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <SvgClose className="w-6 h-6" aria-hidden="true" />
               ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <SvgMenu className="w-6 h-6" aria-hidden="true" />
               )}
             </button>
 
@@ -216,9 +213,7 @@ export default function Header() {
               aria-label={t('nav.closeMenu') || 'Close menu'}
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <SvgClose className="w-6 h-6" aria-hidden="true" />
             </button>
           </div>
 
