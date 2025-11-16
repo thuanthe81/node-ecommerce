@@ -103,7 +103,7 @@ export default async function LocaleLayout({
                 <div className="absolute z-10 w-full">
                   <Header />
                 </div>
-                <div className="h-[69px]"/>
+                <div className="border-b h-[69px]"/>
                 <main id="main-content" role="main">{children}</main>
               </div>
             </CartProvider>

@@ -16,6 +16,7 @@ export default function Header() {
   const { isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const {user} = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -26,7 +27,7 @@ export default function Header() {
   const isActiveLink = (href: string) => {
     const currentPath = pathname.replace(`/${locale}`, '') || '/';
     const linkPath = href.replace(`/${locale}`, '') || '/';
-    
+
     // Exact match for home page
     if (linkPath === '/' && currentPath === '/') {
       return true;
@@ -38,8 +39,8 @@ export default function Header() {
   // Helper function to get active link classes
   const getLinkClasses = (href: string, baseClasses: string = '') => {
     const isActive = isActiveLink(href);
-    const activeClasses = isActive 
-      ? 'text-blue-600 border-b-2 border-blue-600' 
+    const activeClasses = isActive
+      ? 'text-blue-600 border-b-2 border-blue-600'
       : 'text-gray-700 hover:text-blue-600';
     return `${baseClasses} ${activeClasses} transition-colors font-medium touch-manipulation`;
   };
@@ -69,9 +70,9 @@ export default function Header() {
   return (
     <header className="bg-white shadow-sm overflow-visible" role="banner">
       {/* Top Bar */}
-      <div className="border-b overflow-visible">
-        <div className="container mx-auto px-4 py-3 overflow-visible">
-          <div className="flex items-center justify-between">
+      <div className="overflow-visible">
+        <div className="overflow-visible px-4 w-full">
+          <div className="flex items-stretch justify-between h-[70px]">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -95,33 +96,37 @@ export default function Header() {
             {/* Logo */}
             <Link
               href={`/${locale}`}
-              className="text-xl sm:text-2xl font-bold text-gray-900 touch-manipulation"
+              className="flex items-center border-b-transparent text-xl sm:text-2xl font-bold text-gray-900 touch-manipulation"
               aria-label={t('nav.home') || 'Home'}
-              style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
             >
               Handmade
             </Link>
 
             {/* Main Navigation Links - Desktop */}
-            <nav className="hidden lg:flex items-center space-x-6 flex-1 ml-8" aria-label={t('nav.main') || 'Main navigation'}>
+            <nav className="hidden lg:flex items-stretch flex-1 ml-8" aria-label={t('nav.main') || 'Main navigation'}>
+              {user?.role === 'ADMIN' && (
+                <Link
+                  href={`/${locale}/admin`}
+                  className={getLinkClasses(`/${locale}/admin`, 'flex items-center h-full px-4')}
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href={`/${locale}`}
-                className={getLinkClasses(`/${locale}`, 'pb-1')}
-                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                className={getLinkClasses(`/${locale}`, 'flex items-center h-full px-4')}
               >
                 {t('nav.home') || 'Home'}
               </Link>
               <Link
                 href={`/${locale}/products`}
-                className={getLinkClasses(`/${locale}/products`, 'pb-1')}
-                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                className={getLinkClasses(`/${locale}/products`, 'flex items-center h-full px-4')}
               >
                 {t('nav.products') || 'Products'}
               </Link>
               <Link
                 href={`/${locale}/contact`}
-                className={getLinkClasses(`/${locale}/contact`, 'pb-1')}
-                style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
+                className={getLinkClasses(`/${locale}/contact`, 'flex items-center h-full px-4')}
               >
                 {t('nav.contact') || 'Contact'}
               </Link>
@@ -142,9 +147,8 @@ export default function Header() {
                 <>
                   <Link
                     href={`/${locale}/account`}
-                    className={getLinkClasses(`/${locale}/account`)}
+                    className={getLinkClasses(`/${locale}/account`, 'flex items-center')}
                     aria-label={t('nav.account') || 'Account'}
-                    style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
                   >
                     {t('nav.account')}
                   </Link>
@@ -152,7 +156,6 @@ export default function Header() {
                     onClick={handleLogout}
                     className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
                     aria-label={t('auth.logout') || 'Logout'}
-                    style={{ minWidth: '44px', minHeight: '44px' }}
                   >
                     {t('auth.logout')}
                   </button>
@@ -162,7 +165,6 @@ export default function Header() {
                   href={`/${locale}/login`}
                   className={getLinkClasses(`/${locale}/login`)}
                   aria-label={t('auth.login') || 'Login'}
-                  style={{ minHeight: '44px', display: 'flex', alignItems: 'center' }}
                 >
                   {t('auth.login')}
                 </Link>

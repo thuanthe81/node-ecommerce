@@ -572,6 +572,10 @@
       "en": "Select Category",
       "vi": "Chọn danh mục"
     },
+    "shopping": {
+      "en": "Shopping",
+      "vi": "Mua sắm"
+    },
     "showInStockOnly": {
       "en": "Show in stock only",
       "vi": "Chỉ hiển thị sản phẩm còn hàng"

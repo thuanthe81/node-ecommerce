@@ -71,7 +71,7 @@ export default function MiniCart() {
           />
         </svg>
         {itemCount > 0 && (
-          <span 
+          <span
             className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
             aria-label={`${itemCount} ${itemCount === 1 ? t('item') : t('items')} in cart`}
           >
@@ -81,7 +81,7 @@ export default function MiniCart() {
       </button>
 
       {isOpen && (
-        <div 
+        <div
           className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50"
           role="dialog"
           aria-label={t('shoppingCart')}

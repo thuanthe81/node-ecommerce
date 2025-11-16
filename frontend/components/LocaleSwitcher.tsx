@@ -79,7 +79,7 @@ export default function LocaleSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-[100]">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200">
           <div className="py-1" role="menu" aria-orientation="vertical">
             {locales.map((loc) => (
               <button
