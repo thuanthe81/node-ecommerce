@@ -308,13 +308,41 @@
     }
   },
   "checkout": {
+    "addNewAddress": {
+      "en": "Add New Address",
+      "vi": "Thêm địa chỉ mới"
+    },
+    "address": {
+      "en": "Address",
+      "vi": "Địa chỉ"
+    },
+    "agreeServiceAndPolicy": {
+      "en": "By placing your order, you agree to our terms of service and privacy policy.",
+      "vi": "Sau khi đặt hàng, bạn đồng ý với các điều khoản dịch vụ và chính sách bảo mật."
+    },
+    "backToSavedAddress": {
+      "en": "Back to saved address",
+      "vi": "Quay lại địa chỉ đã lưu"
+    },
+    "billingAddessSame": {
+      "en": "Billing address same as shipping address",
+      "vi": "Địa chỉ thanh toán giống với địa chỉ giao hàng"
+    },
     "billingAddress": {
       "en": "Billing Address",
       "vi": "Địa chỉ thanh toán"
     },
+    "city": {
+      "en": "City",
+      "vi": "Thành phố"
+    },
     "error": {
       "en": "Failed to place order. Please try again.",
       "vi": "Đặt hàng thất bại. Vui lòng thử lại."
+    },
+    "fullName": {
+      "en": "Full name",
+      "vi": "Họ và tên"
     },
     "guestCheckout": {
       "en": "Guest Checkout",
@@ -332,9 +360,17 @@
       "en": "Place Order",
       "vi": "Đặt hàng"
     },
+    "postalCode": {
+      "en": "Postal Code",
+      "vi": "Mã bưu điện"
+    },
     "processing": {
       "en": "Processing...",
       "vi": "Đang xử lý..."
+    },
+    "selectShippingAddress": {
+      "en": "Select shipping address",
+      "vi": "Chọn địa chỉ giao hàng"
     },
     "shippingAddress": {
       "en": "Shipping Address",
@@ -343,6 +379,10 @@
     "shippingMethod": {
       "en": "Shipping Method",
       "vi": "Phương thức vận chuyển"
+    },
+    "stateOrProvince": {
+      "en": "State/Province",
+      "vi": "Tiểu bang/Tỉnh"
     },
     "steps": {
       "payment": {
@@ -535,6 +575,10 @@
     "pagination": {
       "en": "Pagination",
       "vi": "Phân trang"
+    },
+    "phone": {
+      "en": "Phone",
+      "vi": "Điện thoại"
     },
     "previous": {
       "en": "Previous",

@@ -12,6 +12,7 @@ import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
 import { SvgCheck } from '@/components/Svgs';
+import { formatMoney } from '@/app/utils';
 
 export default function CheckoutContent() {
   const tCheckout = useTranslations('checkout');
@@ -286,7 +287,7 @@ export default function CheckoutContent() {
                       className="mr-2"
                     />
                     <span className="text-sm text-gray-700">
-                      Billing address same as shipping
+                      {tCheckout('billingAddessSame')}
                     </span>
                   </label>
                 </div>
@@ -461,32 +462,31 @@ export default function CheckoutContent() {
             <div className="space-y-3 mb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">{tCart('subtotal')}</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">{formatMoney(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">{tCart('shipping')}</span>
-                <span className="font-medium">${shippingCost.toFixed(2)}</span>
+                <span className="font-medium">{formatMoney(shippingCost)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">{tCart('tax')}</span>
-                <span className="font-medium">${tax.toFixed(2)}</span>
+                <span className="font-medium">{formatMoney(tax)}</span>
               </div>
               {appliedPromo && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>{tCart('discount')} ({appliedPromo.code})</span>
-                  <span>-${appliedPromo.discountAmount.toFixed(2)}</span>
+                  <span>-{formatMoney(appliedPromo.discountAmount)}</span>
                 </div>
               )}
               <div className="border-t pt-3 flex justify-between">
                 <span className="font-semibold">{tCart('total')}</span>
-                <span className="font-bold text-lg">${total.toFixed(2)}</span>
+                <span className="font-bold text-lg">{formatMoney(total)}</span>
               </div>
             </div>
 
             <div className="text-xs text-gray-500 mt-4">
               <p>
-                By placing your order, you agree to our terms of service and
-                privacy policy.
+                {tCheckout('agreeServiceAndPolicy')}
               </p>
             </div>
           </div>

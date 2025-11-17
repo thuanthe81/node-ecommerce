@@ -29,7 +29,7 @@ export default function ShippingAddressForm({
   onNewAddress,
   selectedAddressId,
 }: ShippingAddressFormProps) {
-  const t = useTranslations('common');
+  const t = useTranslations();
   const { user } = useAuth();
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
@@ -58,7 +58,7 @@ export default function ShippingAddressForm({
       setLoading(true);
       const addresses = await userApi.getAddresses();
       setSavedAddresses(addresses);
-      
+
       // Auto-select default address
       const defaultAddress = addresses.find((addr) => addr.isDefault);
       if (defaultAddress && !selectedAddressId) {
@@ -91,9 +91,7 @@ export default function ShippingAddressForm({
     <div className="space-y-6">
       {user && savedAddresses.length > 0 && !showNewAddressForm && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">
-            Select Shipping Address
-          </h3>
+          <h3 className="text-lg font-semibold mb-4">{t('checkout.selectShippingAddress')}</h3>
           <div className="space-y-3">
             {savedAddresses.map((address) => (
               <label
@@ -136,22 +134,19 @@ export default function ShippingAddressForm({
             onClick={() => setShowNewAddressForm(true)}
             className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
           >
-            + Add New Address
+            + {t('checkout.addNewAddress')}
           </button>
         </div>
       )}
 
       {(showNewAddressForm || !user || savedAddresses.length === 0) && (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <h3 className="text-lg font-semibold mb-4">
-            {t('checkout.shippingAddress')}
-          </h3>
+          <h3 className="text-lg font-semibold mb-4">{t('checkout.shippingAddress')}</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name *
-              </label>
+                {t('checkout.fullName')} *</label>
               <input
                 type="text"
                 name="fullName"
@@ -164,7 +159,7 @@ export default function ShippingAddressForm({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone *
+                {t('common.phone')} *
               </label>
               <input
                 type="tel"
@@ -179,8 +174,7 @@ export default function ShippingAddressForm({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address Line 1 *
-            </label>
+              {t('checkout.address')} 1 *</label>
             <input
               type="text"
               name="addressLine1"
@@ -193,8 +187,7 @@ export default function ShippingAddressForm({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address Line 2
-            </label>
+              {t('checkout.address')} 2</label>
             <input
               type="text"
               name="addressLine2"
@@ -207,8 +200,7 @@ export default function ShippingAddressForm({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City *
-              </label>
+                {t('checkout.city')} *</label>
               <input
                 type="text"
                 name="city"
@@ -221,7 +213,7 @@ export default function ShippingAddressForm({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State/Province *
+                {t('checkout.stateOrProvince')} *
               </label>
               <input
                 type="text"
@@ -235,8 +227,7 @@ export default function ShippingAddressForm({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code *
-              </label>
+                {t('checkout.postalCode')} *</label>
               <input
                 type="text"
                 name="postalCode"
@@ -254,7 +245,7 @@ export default function ShippingAddressForm({
               onClick={() => setShowNewAddressForm(false)}
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
-              ← Back to saved addresses
+              ← {t('checkout.backToSavedAddress')}
             </button>
           )}
         </form>
