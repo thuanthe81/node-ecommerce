@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
 import { SvgCart, SvgClose } from '@/components/Svgs';
+import { formatMoney } from '@/app/utils';
 
 export default function MiniCart() {
   const locale = useLocale();
@@ -102,19 +103,20 @@ export default function MiniCart() {
                         href={`/${locale}/products/${item.product.slug}`}
                         className="flex gap-3 p-4 hover:bg-gray-50 transition-colors"
                         onClick={() => setIsOpen(false)}
-                        aria-label={`${productName} - ${item.quantity} × $${parseFloat(item.price).toFixed(2)}`}
+                        aria-label={`${productName} - ${item.quantity} × ${parseFloat(item.price).toFixed(2)}`}
                       >
                         <Image
                           src={imageUrl}
                           alt={imageAlt}
                           width={60}
                           height={60}
+                          priority={true}
                           className="object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium line-clamp-2">{productName}</p>
                           <p className="text-sm text-gray-600 mt-1">
-                            {item.quantity} × ${parseFloat(item.price).toFixed(2)}
+                            {item.quantity} × {formatMoney(item.price)}
                           </p>
                         </div>
                         <div className="flex flex-col items-end justify-between">
@@ -126,7 +128,7 @@ export default function MiniCart() {
                             <SvgClose className="w-4 h-4" aria-hidden="true" />
                           </button>
                           <p className="text-sm font-semibold">
-                            ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                            {formatMoney(parseFloat(item.price) * item.quantity)}
                           </p>
                         </div>
                       </Link>
@@ -138,11 +140,11 @@ export default function MiniCart() {
           </div>
 
           {cart && cart.items.length > 0 && (
-            <div className="p-4 border-t bg-gray-50">
+            <div className="p-4 border-t bg-gray-50 rounded-b-lg">
               <div className="flex justify-between mb-3">
                 <span className="font-semibold">{t('subtotal')}</span>
                 <span className="font-semibold" aria-label={`${t('subtotal')} $${subtotal.toFixed(2)}`}>
-                  ${subtotal.toFixed(2)}
+                  {formatMoney(subtotal)}
                 </span>
               </div>
               <Link
@@ -150,6 +152,7 @@ export default function MiniCart() {
                 className="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 onClick={() => setIsOpen(false)}
                 aria-label={t('viewCart')}
+                style={{color: 'white'}}
               >
                 {t('viewCart')}
               </Link>

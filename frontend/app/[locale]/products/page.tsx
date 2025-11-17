@@ -6,6 +6,7 @@ import FilterPanel from '@/components/FilterPanel';
 import SearchBar from '@/components/SearchBar';
 import { generateSEOMetadata } from '@/lib/seo';
 import { Metadata } from 'next';
+import {useTranslations} from 'next-intl';
 
 export async function generateMetadata({
   params,
@@ -25,10 +26,12 @@ export async function generateMetadata({
 }
 
 export default function ProductsPage() {
+  const t = useTranslations();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex space-x-8 justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Products</h1>
+        <h1 className="text-3xl font-bold">{t('common.products')}</h1>
         <SearchBar />
       </div>
 

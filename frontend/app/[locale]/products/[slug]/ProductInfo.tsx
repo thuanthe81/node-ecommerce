@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Product } from '@/lib/product-api';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
+import { formatMoney } from '@/app/utils';
 
 interface ProductInfoProps {
   product: Product;
@@ -93,18 +94,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <span className="text-3xl font-bold text-gray-900">
-            {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-              style: 'currency',
-              currency: 'VND',
-            }).format(Number(product.price))}
+            {formatMoney(product.price)}
           </span>
           {hasDiscount && (
             <>
               <span className="text-xl text-gray-500 line-through">
-                {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(Number(product.compareAtPrice))}
+                {formatMoney(product.compareAtPrice)}
               </span>
               <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-semibold">
                 {t('common.discount')}{' '}
