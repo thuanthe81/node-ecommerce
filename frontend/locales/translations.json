@@ -170,6 +170,18 @@
     }
   },
   "cart": {
+    "addToCart": {
+      "en": "Add to Cart",
+      "vi": "Thêm vào giỏ hàng"
+    },
+    "added": {
+      "en": "✓ Added to Cart",
+      "vi": "✓ Đã thêm vào giỏ hàng"
+    },
+    "addingggg": {
+      "en": "Adding...",
+      "vi": "Đang thêm..."
+    },
     "apply": {
       "en": "Apply",
       "vi": "Áp dụng"
@@ -964,10 +976,6 @@
     }
   },
   "product": {
-    "addToCart": {
-      "en": "Add to Cart",
-      "vi": "Thêm vào giỏ"
-    },
     "addToWishlist": {
       "en": "Add to Wishlist",
       "vi": "Thêm vào yêu thích"
@@ -1087,18 +1095,6 @@
       }
     },
     "cart": {
-      "addToCart": {
-        "en": "Add to Cart",
-        "vi": "Thêm vào giỏ hàng"
-      },
-      "added": {
-        "en": "✓ Added to Cart",
-        "vi": "✓ Đã thêm vào giỏ hàng"
-      },
-      "addingggg": {
-        "en": "Adding...",
-        "vi": "Đang thêm..."
-      },
       "description": {
         "en": "Review your shopping cart and proceed to checkout.",
         "vi": "Xem lại giỏ hàng của bạn và tiến hành thanh toán."
