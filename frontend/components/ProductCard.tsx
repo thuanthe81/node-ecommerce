@@ -40,7 +40,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            priority={priority}
+            preload={priority}
             loading={priority ? 'eager' : 'lazy'}
             quality={75}
           />

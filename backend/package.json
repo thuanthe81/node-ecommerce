@@ -21,7 +21,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "generate:images": "ts-node scripts/generate-product-images.ts",
+    "verify:images": "ts-node scripts/verify-images.ts",
+    "cleanup:images": "ts-node scripts/cleanup-old-images.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

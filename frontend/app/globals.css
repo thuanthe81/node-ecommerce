@@ -182,11 +182,11 @@ textarea:disabled {
   * {
     border-color: currentColor !important;
   }
-  
+
   a {
     text-decoration: underline;
   }
-  
+
   button {
     border: 2px solid currentColor;
   }
@@ -353,7 +353,7 @@ img {
   select {
     font-size: 16px; /* Prevent zoom on focus */
   }
-  
+
   /* Smooth scrolling on iOS */
   * {
     -webkit-overflow-scrolling: touch;
@@ -367,5 +367,398 @@ img {
   textarea,
   input {
     font-size: 16px;
+  }
+}
+
+/* ============================================================================
+   3D Carousel Responsive Styles
+   ============================================================================ */
+
+/* Base carousel styles */
+.carousel-3d-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom; /* Allow vertical scroll but enable horizontal drag */
+  position: relative;
+}
+
+.carousel-3d-wrapper {
+  position: relative;
+  width: 100%;
+  /* 3D perspective for depth effect */
+  -webkit-perspective-origin: 50% 50%;
+  perspective-origin: 50% 50%;
+}
+
+.carousel-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Enable 3D transforms */
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  /* Hardware acceleration */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Carousel item 3D positioning */
+.carousel-item {
+  /* Preserve 3D transforms for nested elements */
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Smooth transitions */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Carousel item content styling */
+.carousel-item-content {
+  /* Enable hardware acceleration */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* Smooth shadow transitions */
+.carousel-item-content > div {
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom animation for fade-in */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Enhanced shadow for 3D effect */
+.shadow-3xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+              0 10px 20px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode shadow adjustments */
+@media (prefers-color-scheme: dark) {
+  .shadow-3xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 10px 20px -5px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Carousel controls styling */
+.carousel-control-btn {
+  /* Smooth transform transitions */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.3s ease,
+              box-shadow 0.3s ease,
+              opacity 0.3s ease;
+}
+
+/* Carousel indicators styling */
+.carousel-indicator {
+  /* Smooth size and color transitions */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.3s ease,
+              transform 0.2s ease;
+}
+
+/* Mobile-specific carousel optimizations */
+@media (max-width: 767px) {
+  .carousel-3d-container {
+    padding: 0.5rem 0;
+  }
+
+  .carousel-3d-wrapper {
+    /* Reduce perspective for mobile to make items more visible */
+    perspective: 800px !important;
+    -webkit-perspective: 800px !important;
+  }
+
+  /* Optimize touch interactions */
+  .carousel-ring {
+    cursor: grab;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .carousel-ring:active {
+    cursor: grabbing;
+  }
+
+  /* Ensure carousel controls are touch-friendly */
+  .carousel-controls button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.75rem;
+  }
+
+  /* Reduce animation complexity on mobile for better performance */
+  .carousel-ring {
+    will-change: transform;
+  }
+
+  /* Optimize carousel items for mobile */
+  .carousel-item {
+    /* Reduce transition duration on mobile */
+    transition-duration: 0.2s;
+  }
+}
+
+/* Tablet-specific carousel styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .carousel-3d-container {
+    padding: 1rem 0;
+  }
+
+  .carousel-3d-wrapper {
+    perspective: 1000px !important;
+    -webkit-perspective: 1000px !important;
+  }
+
+  .carousel-controls button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* Desktop-specific carousel styles */
+@media (min-width: 1024px) {
+  .carousel-3d-container {
+    padding: 1.5rem 0;
+  }
+
+  .carousel-3d-wrapper {
+    perspective: 1200px !important;
+    -webkit-perspective: 1200px !important;
+  }
+
+  /* Enhanced hover effects on desktop */
+  .carousel-ring {
+    cursor: grab;
+  }
+
+  .carousel-ring:active {
+    cursor: grabbing;
+  }
+
+  /* Smooth hover transitions for controls */
+  .carousel-control-btn:hover {
+    transform: scale(1.1);
+  }
+
+  .carousel-control-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Landscape orientation optimizations for mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+  .carousel-3d-wrapper {
+    /* Adjust height for landscape mode */
+    max-height: 80vh;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .carousel-ring {
+    /* Ensure crisp rendering on retina displays */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Sharper shadows on high DPI */
+  .carousel-item-content > div {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2),
+                0 8px 16px -4px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Reduced motion for carousel */
+@media (prefers-reduced-motion: reduce) {
+  .carousel-ring {
+    transition: none !important;
+  }
+
+  .carousel-item {
+    transition: none !important;
+  }
+
+  .carousel-item-content {
+    transition: none !important;
+  }
+
+  .carousel-control-btn {
+    transition: none !important;
+  }
+
+  .carousel-indicator {
+    transition: none !important;
+  }
+
+  .animate-fade-in {
+    animation: none !important;
+  }
+
+  /* Instant transforms for reduced motion */
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Optimize for touch devices */
+  .carousel-3d-container {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .carousel-ring {
+    /* Improve touch responsiveness */
+    touch-action: pan-y;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Larger touch targets for controls */
+  .carousel-controls button {
+    min-width: 48px;
+    min-height: 48px;
+    padding: 1rem;
+  }
+
+  /* Remove hover effects on touch devices */
+  .carousel-item-content:hover {
+    transform: none;
+  }
+}
+
+/* Pointer device optimizations */
+@media (hover: hover) and (pointer: fine) {
+  /* Optimize for mouse/trackpad */
+  .carousel-ring {
+    cursor: grab;
+  }
+
+  .carousel-ring:active {
+    cursor: grabbing;
+  }
+
+  /* Smaller controls for precise pointing devices */
+  .carousel-controls button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* Enhanced hover effects */
+  .carousel-item-content:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* Dark mode specific carousel styles */
+@media (prefers-color-scheme: dark) {
+  .carousel-3d-container {
+    /* Darker gradient background */
+    background: linear-gradient(to bottom, #111827, #1f2937);
+  }
+
+  /* Adjust shadows for dark mode */
+  .carousel-item-content > div {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+                0 8px 16px -4px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Darker overlays */
+  .carousel-item-content .absolute.inset-0 {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  }
+}
+
+/* Focus visible styles for keyboard navigation */
+.carousel-3d-container:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 4px;
+}
+
+.carousel-item-content:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Loading state optimization */
+.carousel-item img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.carousel-item img[loading="lazy"].loaded {
+  opacity: 1;
+}
+
+/* Prevent layout shift during image loading */
+.carousel-item img {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Smooth gradient backgrounds */
+.bg-gradient-to-b,
+.bg-gradient-to-t,
+.bg-gradient-to-br {
+  background-size: 100% 100%;
+  transition: background 0.3s ease;
+}
+
+/* Enhanced backdrop blur support */
+@supports (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px)) {
+  .backdrop-blur-sm {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Print styles - hide carousel controls */
+@media print {
+  .carousel-controls,
+  .carousel-indicators {
+    display: none !important;
+  }
+
+  .carousel-3d-container {
+    page-break-inside: avoid;
   }
 }

@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Request, Response, NextFunction } from 'express';
+import { join, isAbsolute } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -95,14 +96,14 @@ async function bootstrap() {
   }
 
   // Serve static files
-  // const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
-  // const uploadDirPath = isAbsolute(uploadDirEnv)
-  //   ? uploadDirEnv
-  //   : join(process.cwd(), uploadDirEnv);
-  //
-  // app.useStaticAssets(uploadDirPath, {
-  //   prefix: '/uploads/',
-  // });
+  const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+  const uploadDirPath = isAbsolute(uploadDirEnv)
+    ? uploadDirEnv
+    : join(process.cwd(), uploadDirEnv);
+
+  app.useStaticAssets(uploadDirPath, {
+    prefix: '/uploads/',
+  });
 
   // Global prefix
   app.setGlobalPrefix('api');
