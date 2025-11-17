@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { CartItem as CartItemType } from '@/lib/cart-api';
 import { useCart } from '@/contexts/CartContext';
+import { formatMoney } from '@/app/utils';
 
 interface CartItemProps {
   item: CartItemType;
@@ -19,13 +20,13 @@ export default function CartItem({ item }: CartItemProps) {
 
   const productName = locale === 'vi' ? item.product.nameVi : item.product.nameEn;
   const imageUrl = item.product.images[0]?.url || '/placeholder.png';
-  const imageAlt = locale === 'vi' 
+  const imageAlt = locale === 'vi'
     ? item.product.images[0]?.altTextVi || productName
     : item.product.images[0]?.altTextEn || productName;
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity < 1 || newQuantity > item.product.stockQuantity) return;
-    
+
     setUpdating(true);
     try {
       await updateQuantity(item.id, newQuantity);
@@ -56,20 +57,21 @@ export default function CartItem({ item }: CartItemProps) {
           alt={imageAlt}
           width={100}
           height={100}
+          priority={true}
           className="object-cover rounded"
         />
       </Link>
 
       <div className="flex-1 min-w-0">
-        <Link 
+        <Link
           href={`/${locale}/products/${item.product.slug}`}
           className="font-medium hover:text-blue-600 line-clamp-2"
         >
           {productName}
         </Link>
-        
+
         <p className="text-sm text-gray-600 mt-1">
-          ${parseFloat(item.price).toFixed(2)}
+          {formatMoney(item.price)}
         </p>
 
         {item.product.stockQuantity < 10 && (
@@ -112,7 +114,7 @@ export default function CartItem({ item }: CartItemProps) {
       </div>
 
       <div className="text-right">
-        <p className="font-semibold">${itemTotal.toFixed(2)}</p>
+        <p className="font-semibold">{formatMoney(itemTotal)}</p>
       </div>
     </div>
   );

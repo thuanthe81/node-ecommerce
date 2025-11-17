@@ -58,7 +58,7 @@ export default function CheckoutContent() {
 
   const handleNewShippingAddress = async (address: any) => {
     setNewShippingAddress(address);
-    
+
     // If user is logged in, save the address
     if (user) {
       try {
@@ -75,7 +75,7 @@ export default function CheckoutContent() {
 
   const handleNewBillingAddress = async (address: any) => {
     setNewBillingAddress(address);
-    
+
     // If user is logged in, save the address
     if (user) {
       try {
@@ -116,16 +116,16 @@ export default function CheckoutContent() {
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
-    
+
     setPromoLoading(true);
     setPromoError('');
-    
+
     try {
       const result = await promotionApi.validate({
         code: promoCode.trim(),
         orderAmount: subtotal,
       });
-      
+
       if (result.valid && result.discountAmount && result.promotion) {
         setAppliedPromo({
           code: promoCode.trim().toUpperCase(),
@@ -209,10 +209,6 @@ export default function CheckoutContent() {
     }
   };
 
-  if (!cart || cart.items.length === 0) {
-    return null;
-  }
-
   // Promotion state
   const [promoCode, setPromoCode] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
@@ -222,6 +218,10 @@ export default function CheckoutContent() {
     discountAmount: number;
     promotionId: string;
   } | null>(null);
+
+  if (!cart || cart.items.length === 0) {
+    return null;
+  }
 
   const subtotal = cart.items.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
