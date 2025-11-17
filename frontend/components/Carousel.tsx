@@ -1216,7 +1216,7 @@ export function Carousel2D(props: Carousel3DProps){
     itemWidth: propItemWidth,
     itemHeight: propItemHeight,
     autoRotate = true,
-    autoRotateInterval = 5000,
+    autoRotateInterval = 3000,
   } = props;
   const items = useMemo(() => validateCarouselItems(rawItems), [rawItems]);
   const responsiveConfig = useResponsiveConfig();

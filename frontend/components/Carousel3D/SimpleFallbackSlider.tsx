@@ -32,7 +32,7 @@ export default function SimpleFallbackSlider({
   itemWidth = 300,
   itemHeight = 600,
   autoSlide = true,
-  autoSlideInterval = 5000,
+  autoSlideInterval = 3000,
   fullWidth = true,
 }: SimpleFallbackSliderProps) {
   const router = useRouter();
