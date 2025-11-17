@@ -13,8 +13,7 @@ interface ProductCardProps {
 export default function ProductCard({ product, priority = false }: ProductCardProps) {
   const locale = useLocale();
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
-  // const imageUrl = product.images[0]?.url || '/placeholder-product.png';
-  const imageUrl = '/placeholder-product.png';
+  const imageUrl = product.images[0]?.url || '/placeholder-product.png';
   const altText =
     locale === 'vi'
       ? product.images[0]?.altTextVi || name

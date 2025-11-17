@@ -8,7 +8,6 @@ import LocaleSwitcher from './LocaleSwitcher';
 import SearchBar from './SearchBar';
 import MiniCart from './MiniCart';
 import { useAuth } from '@/contexts/AuthContext';
-import CategoryNav from './CategoryNav';
 import { SvgClose, SvgMenu } from '@/components/Svgs';
 
 export default function Header() {
@@ -175,9 +174,9 @@ export default function Header() {
           </div>
 
           {/* Mobile Search Bar */}
-          <div className="md:hidden mt-3" role="search">
-            <SearchBar />
-          </div>
+          {/*<div className="md:hidden mt-3" role="search">*/}
+          {/*  <SearchBar />*/}
+          {/*</div>*/}
         </div>
       </div>
 
