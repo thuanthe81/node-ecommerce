@@ -10,7 +10,7 @@ interface ProductCardProps {
   priority?: boolean;
 }
 
-export default function ProductCard({ product, priority = false }: ProductCardProps) {
+export default function ProductCard({ product, priority = true }: ProductCardProps) {
   const locale = useLocale();
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
   const imageUrl = product.images[0]?.url || '/placeholder-product.png';
@@ -39,9 +39,9 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-200"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            preload={priority}
-            loading={priority ? 'eager' : 'lazy'}
+            priority={priority}
             quality={75}
+            loading={priority? 'eager' : 'lazy'}
           />
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="status">
