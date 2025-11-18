@@ -7,7 +7,7 @@ interface CheckoutStepperProps {
   currentStep: number;
 }
 
-const steps = ['shipping', 'payment', 'review'] as const;
+const steps = ['shipping', 'shippingMethod', 'review'] as const;
 
 export default function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
   const t = useTranslations('checkout');

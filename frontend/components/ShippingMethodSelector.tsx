@@ -1,13 +1,16 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface ShippingMethod {
   id: string;
-  name: string;
-  description: string;
+  nameEn: string;
+  nameVi: string;
+  descriptionEn: string;
+  descriptionVi: string;
   cost: number;
-  estimatedDays: string;
+  estimatedDaysEn: string;
+  estimatedDaysVi: string;
 }
 
 interface ShippingMethodSelectorProps {
@@ -18,31 +21,35 @@ interface ShippingMethodSelectorProps {
 const shippingMethods: ShippingMethod[] = [
   {
     id: 'standard',
-    name: 'Standard Shipping',
-    description: 'Delivery in 5-7 business days',
-    cost: 5.0,
-    estimatedDays: '5-7 days',
+    nameEn: 'Standard Shipping',
+    nameVi: 'Tiêu Chuẩn',
+    descriptionEn: 'Delivery in 5-7 business days after all products of this order are finished',
+    descriptionVi: 'Giao hàng trong 5-7 ngày làm việc kể từ ngày tất cả sản phẩm của đơn hàng đã hoàn thành',
+    cost: 30000,
+    estimatedDaysEn: '5-7 days',
+    estimatedDaysVi: '5-7 ngày'
   },
-  {
-    id: 'express',
-    name: 'Express Shipping',
-    description: 'Delivery in 2-3 business days',
-    cost: 15.0,
-    estimatedDays: '2-3 days',
-  },
-  {
-    id: 'overnight',
-    name: 'Overnight Shipping',
-    description: 'Next business day delivery',
-    cost: 25.0,
-    estimatedDays: '1 day',
-  },
+  // {
+  //   id: 'express',
+  //   name: 'Express Shipping',
+  //   description: 'Delivery in 2-3 business days',
+  //   cost: 15.0,
+  //   estimatedDays: '2-3 days',
+  // },
+  // {
+  //   id: 'overnight',
+  //   name: 'Overnight Shipping',
+  //   description: 'Next business day delivery',
+  //   cost: 25.0,
+  //   estimatedDays: '1 day',
+  // },
 ];
 
 export default function ShippingMethodSelector({
   selectedMethod,
   onMethodSelect,
 }: ShippingMethodSelectorProps) {
+  const locale = useLocale();
   const t = useTranslations('checkout');
 
   return (
@@ -72,16 +79,16 @@ export default function ShippingMethodSelector({
                   className="mr-3"
                 />
                 <div>
-                  <div className="font-semibold">{method.name}</div>
+                  <div className="font-semibold">{locale == 'vi'? method.nameVi : method.nameEn}</div>
                   <div className="text-sm text-gray-600">
-                    {method.description}
+                    {locale == 'vi'? method.descriptionVi : method.descriptionEn}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-semibold">${method.cost.toFixed(2)}</div>
                 <div className="text-sm text-gray-600">
-                  {method.estimatedDays}
+                  {locale == 'vi'? method.estimatedDaysVi : method.estimatedDaysEn}
                 </div>
               </div>
             </div>

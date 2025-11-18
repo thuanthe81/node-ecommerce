@@ -1,264 +1,116 @@
-# Task 2 Verification: Enhance Form Submission Handling for Guest Users
+# Task 2 Verification: Update Payment Method State Management
 
-## Implementation Status: ✅ COMPLETE
+## Changes Made
 
-Task 2 requirements have been fully implemented in the existing codebase. The implementation was completed as part of Task 1.
+### 1. Changed Payment Method from State to Constant
+**File:** `frontend/app/[locale]/checkout/CheckoutContent.tsx`
 
-## Verification Checklist
-
-### 1. ✅ Ensure `handleSubmit` properly calls `onNewAddress` with complete form data
-
-**Location:** `frontend/components/ShippingAddressForm.tsx` (Lines 101-127)
-
+**Before:**
 ```typescript
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!isFormValid()) {
-    return;
-  }
-
-  try {
-    setSubmitting(true);
-
-    if (user) {
-      // Authenticated user flow
-      const newAddress = await userApi.createAddress(formData);
-      setSavedAddresses((prev) => [...prev, newAddress]);
-      onAddressSelect(newAddress.id);
-      setShowNewAddressForm(false);
-      // Reset form...
-    } else {
-      // Guest user flow - Line 119
-      onNewAddress(formData); // ✅ Calls onNewAddress with complete formData
-    }
-  } catch (error) {
-    console.error('Failed to save address:', error);
-    alert(t('checkout.addressSaveError') || 'Failed to save address. Please try again.');
-  } finally {
-    setSubmitting(false);
-  }
-};
+const [paymentMethod, setPaymentMethod] = useState('card');
 ```
 
-**Verification:** ✅ For guest users, `handleSubmit` correctly calls `onNewAddress(formData)` with the complete form data object.
-
----
-
-### 2. ✅ Verify form data structure matches the expected `NewAddressData` type
-
-**Location:** `frontend/components/ShippingAddressForm.tsx` (Lines 46-54)
-
+**After:**
 ```typescript
-const [formData, setFormData] = useState({
-  fullName: '',
-  phone: '',
-  addressLine1: '',
-  addressLine2: '',
-  city: '',
-  state: '',
-  postalCode: '',
-  country: 'Vietnam',
-});
+const paymentMethod = 'bank_transfer'; // Fixed payment method - bank transfer only
 ```
 
-**Expected Type:** `Omit<Address, 'id' | 'isDefault'>`
+**Impact:**
+- Removed the `useState` hook for payment method
+- Changed from mutable state to immutable constant
+- Set fixed value to `'bank_transfer'`
+- Removed `setPaymentMethod` function (no longer exists)
 
-**Address Interface:**
+### 2. Updated Step Validation Logic
+**File:** `frontend/app/[locale]/checkout/CheckoutContent.tsx`
+
+**Before:**
 ```typescript
-interface Address {
-  id: string;
-  fullName: string;
-  phone: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
+if (currentStep === 2) {
+  // Payment step
+  return !!shippingMethod && !!paymentMethod;
 }
 ```
 
-**Verification:** ✅ The `formData` structure matches `NewAddressData` type exactly:
-- Contains all required fields: fullName, phone, addressLine1, city, state, postalCode, country
-- Contains optional field: addressLine2
-- Does NOT contain: id, isDefault (correctly omitted)
-
----
-
-### 3. ✅ Add form validation to prevent submission with incomplete data
-
-**Location:** `frontend/components/ShippingAddressForm.tsx` (Lines 91-99)
-
+**After:**
 ```typescript
-const isFormValid = () => {
-  return (
-    formData.fullName.trim() !== '' &&
-    formData.phone.trim() !== '' &&
-    formData.addressLine1.trim() !== '' &&
-    formData.city.trim() !== '' &&
-    formData.state.trim() !== '' &&
-    formData.postalCode.trim() !== ''
-  );
-};
-```
-
-**Usage in handleSubmit (Lines 103-106):**
-```typescript
-if (!isFormValid()) {
-  return; // Prevents submission
+if (currentStep === 2) {
+  // Shipping method step - payment method is always bank_transfer
+  return !!shippingMethod;
 }
 ```
 
-**Usage in submit button (Line 267):**
-```typescript
-<button
-  type="submit"
-  disabled={!isFormValid() || submitting}
-  // ...
->
-```
+**Impact:**
+- Removed `&& !!paymentMethod` check from step 2 validation
+- Step 2 now only validates shipping method selection
+- Payment method is always valid (constant value)
 
-**Verification:** ✅ Form validation is implemented at multiple levels:
-1. `isFormValid()` checks all required fields are filled
-2. Submit handler returns early if form is invalid
-3. Submit button is disabled when form is invalid
-4. HTML5 `required` attributes on input fields provide browser-level validation
+### 3. Order Creation Uses Bank Transfer
+**File:** `frontend/app/[locale]/checkout/CheckoutContent.tsx`
 
----
-
-### 4. ✅ Test that parent component's `newShippingAddress` state updates correctly
-
-**Location:** `frontend/app/[locale]/checkout/CheckoutContent.tsx` (Lines 62-75)
+The `handlePlaceOrder` function already correctly uses the `paymentMethod` variable:
 
 ```typescript
-const handleNewShippingAddress = async (address: any) => {
-  setNewShippingAddress(address); // ✅ Updates state with received address
-
-  // If user is logged in, save the address
-  if (user) {
-    try {
-      const savedAddress = await userApi.createAddress(address);
-      setShippingAddressId(savedAddress.id);
-      if (useSameAddress) {
-        setBillingAddressId(savedAddress.id);
-      }
-    } catch (error) {
-      console.error('Failed to save address:', error);
-    }
-  }
+const orderData: CreateOrderData = {
+  email,
+  shippingAddressId: finalShippingAddressId,
+  billingAddressId: finalBillingAddressId,
+  shippingMethod,
+  paymentMethod, // Now always 'bank_transfer'
+  items: cart.items.map((item) => ({
+    productId: item.product.id,
+    quantity: item.quantity,
+  })),
+  notes: notes || undefined,
+  promotionId: appliedPromo?.promotionId,
 };
 ```
 
-**Callback Connection (Line 318):**
-```typescript
-<ShippingAddressForm
-  onAddressSelect={handleShippingAddressSelect}
-  onNewAddress={handleNewShippingAddress} // ✅ Connected to handler
-  selectedAddressId={shippingAddressId}
-/>
-```
+**Impact:**
+- All orders will now be created with `paymentMethod: 'bank_transfer'`
+- No code changes needed in `handlePlaceOrder` - it already uses the variable correctly
 
-**Verification:** ✅ The parent component correctly:
-1. Receives address data via `handleNewShippingAddress` callback
-2. Updates `newShippingAddress` state with the received data
-3. For guest users, the state update is immediate (no API call)
+## Requirements Satisfied
 
----
+### Requirement 1.2
+✅ **"THE Checkout System SHALL automatically set the payment method to bank transfer without user interaction"**
+- Payment method is now a constant set to `'bank_transfer'`
+- No user interaction possible or required
 
-### 5. ✅ Verify "Next" button becomes enabled after successful form submission
+### Requirement 1.5
+✅ **"WHEN an order is placed, THE Checkout System SHALL record the payment method as bank transfer"**
+- `handlePlaceOrder` uses the `paymentMethod` constant
+- All orders will be created with `paymentMethod: 'bank_transfer'`
 
-**Location:** `frontend/app/[locale]/checkout/CheckoutContent.tsx` (Lines 88-97)
+## Testing Verification
 
-```typescript
-const canProceedToNextStep = () => {
-  console.log('can next', !email, !!newShippingAddress)
-  if (currentStep === 1) {
-    // Shipping step
-    if (!email) return false;
-    if (user) {
-      return !!shippingAddressId;
-    } else {
-      return !!newShippingAddress; // ✅ Checks for newShippingAddress
-    }
-  }
-  // ... other steps
-}
-```
+### Manual Testing Checklist
+- [ ] Navigate to checkout page
+- [ ] Complete step 1 (shipping address)
+- [ ] Proceed to step 2 (shipping method)
+- [ ] Select a shipping method
+- [ ] Verify "Next" button enables with only shipping method selected
+- [ ] Proceed to step 3 (review)
+- [ ] Place order
+- [ ] Verify order is created successfully
+- [ ] Check order details to confirm payment method is 'bank_transfer'
 
-**Next Button (Lines 327-333):**
-```typescript
-<button
-  onClick={handleNextStep}
-  disabled={!canProceedToNextStep()} // ✅ Uses validation function
-  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
->
-  {tCommon('next')}
-</button>
-```
+### Code Verification
+✅ No TypeScript errors
+✅ Payment method constant is correctly defined
+✅ Step validation logic updated
+✅ Order creation uses correct payment method
+✅ No references to `setPaymentMethod` remain
 
-**Verification:** ✅ The "Next" button logic works correctly:
-1. For guest users, `canProceedToNextStep()` checks `!!newShippingAddress`
-2. When form is submitted, `handleNewShippingAddress` sets `newShippingAddress` state
-3. State update triggers re-render
-4. `canProceedToNextStep()` now returns `true`
-5. "Next" button becomes enabled
+## Notes
 
----
+- The `paymentMethod` variable is now a constant, not state
+- There is no `setPaymentMethod` function anymore
+- Step 2 validation only checks for shipping method
+- All orders will automatically use bank transfer payment
+- This change is backward compatible with the order API (accepts string type)
 
-## Complete Flow Verification
+## Next Steps
 
-### Guest User Checkout Flow:
-
-1. **Initial State:**
-   - `newShippingAddress` = `null`
-   - "Next" button is disabled
-   - Form is displayed (guest users see form by default)
-
-2. **User Fills Form:**
-   - Each field updates `formData` state via `handleInputChange`
-   - `isFormValid()` continuously checks if all required fields are filled
-   - Submit button becomes enabled when all required fields are filled
-
-3. **User Clicks "Save Address":**
-   - `handleSubmit` is called
-   - Validation check: `if (!isFormValid()) return;`
-   - For guest users: `onNewAddress(formData)` is called
-   - Parent's `handleNewShippingAddress` receives the data
-   - `setNewShippingAddress(address)` updates state
-
-4. **State Update Triggers Re-render:**
-   - `canProceedToNextStep()` is re-evaluated
-   - For guest users: returns `!!newShippingAddress` → `true`
-   - "Next" button becomes enabled
-
-5. **User Clicks "Next":**
-   - `handleNextStep` is called
-   - `currentStep` advances to 2
-   - User proceeds to shipping method selection
-
----
-
-## Requirements Mapping
-
-| Requirement | Status | Evidence |
-|------------|--------|----------|
-| 1.1 - Enable "Next" button with complete address | ✅ | `canProceedToNextStep()` checks `!!newShippingAddress` |
-| 1.2 - Capture address data and advance to step 2 | ✅ | `handleNewShippingAddress` sets state, `handleNextStep` advances |
-| 1.5 - Store address data in component state | ✅ | `setNewShippingAddress(address)` stores data |
-
----
-
-## Conclusion
-
-**All requirements for Task 2 have been successfully implemented and verified.**
-
-The implementation correctly:
-- ✅ Calls `onNewAddress` with complete form data
-- ✅ Uses correct data structure matching `NewAddressData` type
-- ✅ Validates form before submission
-- ✅ Updates parent component state correctly
-- ✅ Enables "Next" button after successful submission
-
-**No additional code changes are required for Task 2.**
+Task 2 is complete. The next task is:
+- **Task 3:** Update step validation logic (already partially completed as part of this task)

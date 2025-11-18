@@ -2,7 +2,7 @@
 
 ## Overview
 
-This design addresses the checkout flow issue where users cannot proceed to the next step after entering a new shipping address. The root cause is that the `ShippingAddressForm` component renders a form element but doesn't provide a submit mechanism, preventing the `onNewAddress` callback from being triggered. This blocks the `canProceedToNextStep()` validation in the parent `CheckoutContent` component.
+This design simplifies the checkout flow by removing the payment method selection step, since the business only accepts bank transfer payments. The checkout will be streamlined to two steps: (1) Shipping address and (2) Shipping method selection, followed by order review. The payment method will be automatically set to bank transfer without user interaction.
 
 ## Architecture
 
@@ -10,7 +10,7 @@ This design addresses the checkout flow issue where users cannot proceed to the 
 
 ```
 CheckoutContent (Parent)
-├── CheckoutStepper
+├── CheckoutStepper (2 steps instead of 3)
 ├── ShippingAddressForm (Step 1)
 │   ├── Saved Addresses List (authenticated users)
 │   └── New Address Form (guest users or new address)
@@ -20,43 +20,42 @@ CheckoutContent (Parent)
 
 ### Data Flow
 
-1. User fills in shipping address form fields → `formData` state updates
-2. User triggers form submission → `handleSubmit` called → `onNewAddress` callback invoked
-3. Parent component receives address data → updates `newShippingAddress` state
-4. `canProceedToNextStep()` validates → returns true if address exists
-5. "Next" button becomes enabled → user can proceed to step 2
+1. **Step 1 - Shipping Address:**
+   - User enters/selects shipping address
+   - Address validation occurs
+   - User proceeds to step 2
+
+2. **Step 2 - Shipping Method:**
+   - User selects shipping method (standard/express/overnight)
+   - Shipping cost updates in order summary
+   - Payment method automatically set to 'bank_transfer'
+   - User proceeds to step 3
+
+3. **Step 3 - Order Review:**
+   - User reviews complete order
+   - User places order with bank transfer payment method
 
 ## Components and Interfaces
 
-### ShippingAddressForm Component Changes
-
-**Current Issues:**
-- Form element exists but has no submit button
-- No way to trigger the `onSubmit` handler
-- Form data is collected but never submitted
-
-**Solution:**
-Add a submit button within the form that:
-- Is only visible when showing the new address form
-- Validates all required fields are filled
-- Triggers form submission to invoke `onNewAddress` callback
-- Provides clear visual feedback about form state
-
-**Interface (unchanged):**
-```typescript
-interface ShippingAddressFormProps {
-  onAddressSelect: (addressId: string) => void;
-  onNewAddress: (address: Omit<Address, 'id' | 'isDefault'>) => void;
-  selectedAddressId?: string;
-}
-```
-
 ### CheckoutContent Component Changes
 
-**Current Logic:**
+**Current State:**
+- Has 3 steps with payment method selection in step 2
+- Payment method state: `const [paymentMethod, setPaymentMethod] = useState('card')`
+- Step 2 validation checks for both shipping method and payment method
+
+**Required Changes:**
+1. Remove payment method selection UI from step 2
+2. Set payment method to 'bank_transfer' by default
+3. Update step 2 validation to only check shipping method
+4. Update CheckoutStepper to show 2 steps instead of 3
+5. Keep step 3 as order review (no changes needed)
+
+**Updated Step Validation Logic:**
 ```typescript
 const canProceedToNextStep = () => {
   if (currentStep === 1) {
+    // Shipping address validation
     if (!email) return false;
     if (user) {
       return !!shippingAddressId;
@@ -64,270 +63,238 @@ const canProceedToNextStep = () => {
       return !!newShippingAddress;
     }
   }
-  // ... other steps
+  if (currentStep === 2) {
+    // Only validate shipping method (payment is auto-set)
+    return !!shippingMethod;
+  }
+  return true;
 }
 ```
 
-**Issue:** For guest users, `newShippingAddress` is only set when `onNewAddress` is called, but the form never submits.
+### CheckoutStepper Component Changes
 
-**Solution:** The existing logic is correct; we just need to ensure the form can actually submit and trigger the callback.
+**Current State:**
+- Displays 3 steps: Shipping, Payment, Review
+
+**Required Changes:**
+- Update to display 2 steps: Shipping, Shipping Method, Review
+- Or keep 3 visual steps but rename step 2 from "Payment" to "Shipping Method"
+- Ensure step indicators reflect the simplified flow
 
 ## Data Models
 
-### Address Data Structure
+### Payment Method
 
+**Current:**
 ```typescript
-interface Address {
-  id: string;
-  fullName: string;
-  phone: string;
-  addressLine1: string;
-  addressLine2?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-}
-
-// Form data (without id and isDefault)
-type NewAddressData = Omit<Address, 'id' | 'isDefault'>;
+const [paymentMethod, setPaymentMethod] = useState('card');
 ```
 
-### Form State
+**Updated:**
+```typescript
+const [paymentMethod] = useState('bank_transfer'); // Fixed value, no setter needed
+```
+
+### Order Creation Data
 
 ```typescript
-const [formData, setFormData] = useState<NewAddressData>({
-  fullName: '',
-  phone: '',
-  addressLine1: '',
-  addressLine2: '',
-  city: '',
-  state: '',
-  postalCode: '',
-  country: 'Vietnam',
-});
+interface CreateOrderData {
+  email: string;
+  shippingAddressId: string;
+  billingAddressId: string;
+  shippingMethod: 'standard' | 'express' | 'overnight';
+  paymentMethod: 'bank_transfer'; // Always bank_transfer
+  items: Array<{
+    productId: string;
+    quantity: number;
+  }>;
+  notes?: string;
+  promotionId?: string;
+}
 ```
 
 ## Implementation Details
 
-### ShippingAddressForm Modifications
+### CheckoutContent Modifications
 
-1. **Add Submit Button**
-   - Place button at the end of the form
-   - Style consistently with other checkout buttons
-   - Show loading state during submission
-   - Disable when required fields are empty
+1. **Remove Payment Method Selection UI**
+   - Remove the entire payment method selection section from step 2
+   - Keep only the ShippingMethodSelector component in step 2
+   - Remove radio buttons for payment method selection
 
-2. **Form Validation**
-   - Check all required fields before enabling submit
-   - Use HTML5 validation attributes (required)
-   - Provide visual feedback for validation state
+2. **Update Payment Method State**
+   - Change from `useState('card')` to fixed value `'bank_transfer'`
+   - Remove `setPaymentMethod` function calls
+   - Ensure order creation always uses 'bank_transfer'
 
-3. **User Experience Flow**
+3. **Update Step Validation**
+   - Modify `canProceedToNextStep()` for step 2
+   - Remove `&& !!paymentMethod` check from step 2 validation
+   - Only validate `!!shippingMethod` for step 2
 
-   **For Guest Users:**
-   - Form is shown by default
-   - User fills in fields
-   - User clicks "Save Address" button
-   - Form submits → `onNewAddress` called
-   - Parent updates state → "Next" button enables
+4. **Update CheckoutStepper**
+   - Modify step labels if needed
+   - Consider renaming step 2 from "Payment" to "Shipping Method"
+   - Or keep current labels but ensure flow is clear
+
+### User Experience Flow
+
+**Complete Checkout Flow:**
+1. **Step 1 - Shipping Address:**
+   - User enters email (guest) or is auto-filled (authenticated)
+   - User selects saved address or enters new address
    - User clicks "Next" → proceeds to step 2
 
-   **For Authenticated Users (New Address):**
-   - User clicks "Add New Address"
-   - Form appears
-   - User fills in fields
-   - User clicks "Save Address" button
-   - Address saved to account via API
-   - Address auto-selected
-   - "Next" button enables
-   - User clicks "Next" → proceeds to step 2
+2. **Step 2 - Shipping Method:**
+   - User sees only shipping method options (no payment selection)
+   - User selects standard/express/overnight shipping
+   - Order summary updates with shipping cost
+   - User clicks "Next" → proceeds to step 3
 
-### Button Placement Strategy
-
-The submit button should be placed:
-- Inside the form element (to trigger form submission)
-- After all form fields
-- Before the "Back to Saved Addresses" link (for authenticated users)
-- Styled to match the checkout flow's design system
-
-### Validation Logic
-
-```typescript
-const isFormValid = () => {
-  return (
-    formData.fullName.trim() !== '' &&
-    formData.phone.trim() !== '' &&
-    formData.addressLine1.trim() !== '' &&
-    formData.city.trim() !== '' &&
-    formData.state.trim() !== '' &&
-    formData.postalCode.trim() !== ''
-  );
-};
-```
+3. **Step 3 - Order Review:**
+   - User reviews order items, address, shipping method
+   - User can add order notes
+   - User clicks "Place Order"
+   - Order created with payment method = 'bank_transfer'
 
 ## Error Handling
 
-### Form Submission Errors
+### Order Creation Errors
 
-1. **API Failure (Authenticated Users)**
-   - If address save fails, show error message
-   - Keep form data intact
-   - Allow user to retry
-   - Don't block checkout (address can be saved later)
+1. **API Failure**
+   - Display error message if order creation fails
+   - Keep all form data intact
+   - Allow user to retry order placement
+   - Log error details for debugging
 
 2. **Validation Errors**
-   - Use HTML5 validation for immediate feedback
-   - Show field-level errors for specific issues
-   - Prevent submission until all required fields are valid
+   - Ensure shipping method is selected before proceeding
+   - Validate shipping address exists
+   - Show clear error messages for missing data
 
 3. **Network Issues**
-   - Show loading state during API calls
-   - Display error message if request fails
+   - Show loading state during order creation
+   - Display timeout message if request takes too long
    - Provide retry mechanism
 
 ### Edge Cases
 
-1. **User switches between saved and new address**
-   - Clear form data when switching back to saved addresses
-   - Preserve form data if user accidentally clicks away
+1. **User navigates back from step 3**
+   - Preserve shipping method selection
+   - Allow user to change shipping method
+   - Maintain payment method as bank_transfer
 
 2. **User navigates back from step 2**
-   - Preserve selected/entered address data
-   - Don't require re-submission
+   - Preserve shipping address data
+   - Allow user to change address if needed
 
-3. **Session timeout during checkout**
-   - Preserve form data in component state
-   - Handle authentication errors gracefully
+3. **Cart becomes empty during checkout**
+   - Redirect to cart page
+   - Show appropriate message
 
 ## Testing Strategy
 
 ### Unit Tests
 
-1. **Form Validation**
-   - Test `isFormValid()` with various input combinations
-   - Verify required field validation
-   - Test optional field handling
+1. **Step Validation**
+   - Test `canProceedToNextStep()` for each step
+   - Verify step 2 only checks shipping method (not payment)
+   - Test payment method is always 'bank_transfer'
 
-2. **Form Submission**
-   - Test `handleSubmit` calls `onNewAddress` with correct data
-   - Verify form data structure matches expected interface
-   - Test form reset after successful submission
-
-3. **Button State**
-   - Verify submit button is disabled when form is invalid
-   - Verify submit button is enabled when form is valid
-   - Test loading state during submission
+2. **Order Creation**
+   - Test order data includes correct payment method
+   - Verify all required fields are included
+   - Test order creation with valid data
 
 ### Integration Tests
 
-1. **Guest Checkout Flow**
-   - Fill in new address form
-   - Submit form
-   - Verify "Next" button becomes enabled
+1. **Complete Checkout Flow**
+   - Enter shipping address
    - Proceed to step 2
-   - Verify address data is preserved
+   - Select shipping method (no payment selection shown)
+   - Proceed to step 3
+   - Review order
+   - Place order
+   - Verify order created with bank_transfer payment
 
-2. **Authenticated User New Address**
-   - Click "Add New Address"
-   - Fill in form
-   - Submit form
-   - Verify API call is made
-   - Verify address is saved and selected
-   - Proceed to step 2
+2. **Navigation Between Steps**
+   - Navigate forward through all steps
+   - Navigate backward through steps
+   - Verify data persists when navigating back
+   - Verify shipping method selection is preserved
 
-3. **Form Switching**
-   - Start with saved address
-   - Switch to new address form
-   - Fill in form
-   - Switch back to saved address
-   - Verify saved address is still selected
+3. **Guest vs Authenticated Flow**
+   - Test guest checkout with new address
+   - Test authenticated checkout with saved address
+   - Test authenticated checkout with new address
+   - Verify both flows skip payment selection
 
 ### Manual Testing Checklist
 
-- [ ] Guest user can enter address and proceed
-- [ ] Authenticated user can add new address
-- [ ] Form validation prevents submission with missing fields
-- [ ] Submit button shows loading state
-- [ ] Error messages display correctly
-- [ ] Address data persists when navigating back
+- [ ] Step 2 does not show payment method selection
+- [ ] Shipping method selection works correctly
+- [ ] Order summary updates with shipping cost
+- [ ] Can proceed from step 2 with only shipping method selected
+- [ ] Order is created with bank_transfer payment method
+- [ ] CheckoutStepper shows correct step labels
+- [ ] Navigation between steps works smoothly
 - [ ] Responsive design works on mobile
-- [ ] Keyboard navigation works properly
-- [ ] Screen reader announces form state changes
+- [ ] All translations display correctly
 
 ## UI/UX Considerations
 
-### Button Styling
+### Simplified Step 2 Layout
 
-```css
-/* Primary action button */
-.submit-button {
-  background: blue-600;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-}
+**Before:**
+- Shipping method selector
+- Payment method selector (radio buttons)
 
-.submit-button:hover {
-  background: blue-700;
-}
-
-.submit-button:disabled {
-  background: gray-300;
-  cursor: not-allowed;
-}
-```
+**After:**
+- Shipping method selector only
+- More prominent display of shipping options
+- Clear indication that payment is via bank transfer
 
 ### Visual Feedback
 
-1. **Form State Indicators**
-   - Required fields marked with asterisk (*)
-   - Invalid fields highlighted in red
-   - Valid fields show subtle green indicator
-   - Submit button disabled state is visually clear
+1. **Step Indicators**
+   - Clear progression through 3 steps
+   - Step 2 labeled appropriately (e.g., "Shipping Method" or "Delivery")
+   - Active step highlighted
 
-2. **Loading States**
-   - Submit button shows spinner during API call
-   - Button text changes to "Saving..." or "Processing..."
-   - Form fields disabled during submission
+2. **Order Summary**
+   - Shows shipping cost based on selected method
+   - Displays payment method as "Bank Transfer" (informational)
+   - Updates total in real-time
 
-3. **Success Feedback**
-   - Brief success message after address saved
-   - Smooth transition to enabled "Next" button
-   - Visual confirmation of selected address
+3. **Informational Message**
+   - Optional: Add a note in order summary or step 3 about bank transfer
+   - Example: "Payment will be made via bank transfer. Bank details will be provided after order confirmation."
 
 ## Accessibility
 
-1. **Form Labels**
-   - All inputs have associated labels
-   - Required fields indicated in label text and with aria-required
-   - Error messages linked to inputs via aria-describedby
+1. **Step Navigation**
+   - Clear step labels for screen readers
+   - Proper ARIA labels for navigation buttons
+   - Focus management between steps
 
-2. **Button States**
-   - Submit button has clear aria-label
-   - Disabled state announced to screen readers
-   - Loading state communicated via aria-live region
+2. **Shipping Method Selection**
+   - Radio buttons properly labeled
+   - Selected method announced to screen readers
+   - Keyboard navigation works correctly
 
-3. **Keyboard Navigation**
-   - Tab order follows logical flow
-   - Enter key submits form
-   - Focus management after submission
+3. **Order Review**
+   - All order details accessible via screen reader
+   - Clear indication of payment method
+   - Proper button labels for actions
 
 ## Performance Considerations
 
-1. **Form Validation**
-   - Validate on blur for better UX
-   - Debounce validation for performance
-   - Use memoization for validation function
+1. **State Management**
+   - Remove unused payment method state setter
+   - Simplify step validation logic
+   - Reduce unnecessary re-renders
 
-2. **API Calls**
-   - Show loading state immediately
-   - Handle slow network gracefully
-   - Implement timeout for API calls
-
-3. **State Management**
-   - Minimize re-renders during form input
-   - Use controlled components efficiently
-   - Avoid unnecessary state updates
+2. **Component Rendering**
+   - Step 2 renders faster without payment UI
+   - Fewer form elements to manage
+   - Cleaner component structure

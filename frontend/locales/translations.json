@@ -324,6 +324,18 @@
       "en": "By placing your order, you agree to our terms of service and privacy policy.",
       "vi": "Sau khi đặt hàng, bạn đồng ý với các điều khoản dịch vụ và chính sách bảo mật."
     },
+    "bankTransferInfo": {
+      "en": "Payment via Bank Transfer - details will be provided after order confirmation",
+      "vi": "Thanh toán qua Chuyển khoản Ngân hàng - chi tiết sẽ được cung cấp sau khi xác nhận đơn hàng"
+    },
+    "paymentMethodLabel": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "bankTransfer": {
+      "en": "Bank Transfer",
+      "vi": "Chuyển khoản Ngân hàng"
+    },
     "backToSavedAddress": {
       "en": "Back to saved address",
       "vi": "Quay lại địa chỉ đã lưu"
@@ -384,6 +396,10 @@
       "en": "Select shipping address",
       "vi": "Chọn địa chỉ giao hàng"
     },
+    "orderNotes": {
+      "en": "Order Notes",
+      "vi": "Ghi chú đơn hàng"
+    },
     "shippingAddress": {
       "en": "Shipping Address",
       "vi": "Địa chỉ giao hàng"
@@ -408,6 +424,10 @@
       "shipping": {
         "en": "Shipping",
         "vi": "Giao hàng"
+      },
+      "shippingMethod": {
+        "en": "Shipping Method",
+        "vi": "Phương thức vận chuyển"
       }
     },
     "success": {
@@ -519,6 +539,10 @@
     "items": {
       "en": "Items",
       "vi": "Sản phẩm"
+    },
+    "optional" : {
+      "en": "Optional",
+      "vi": "Tùy chọn"
     },
     "loading": {
       "en": "Loading...",

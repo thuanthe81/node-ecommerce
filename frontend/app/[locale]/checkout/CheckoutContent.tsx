@@ -32,7 +32,7 @@ export default function CheckoutContent() {
   const [shippingAddressId, setShippingAddressId] = useState('');
   const [billingAddressId, setBillingAddressId] = useState('');
   const [shippingMethod, setShippingMethod] = useState('standard');
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const paymentMethod = 'bank_transfer'; // Fixed payment method - bank transfer only
   const [notes, setNotes] = useState('');
   const [newShippingAddress, setNewShippingAddress] = useState<any>(null);
   const [newBillingAddress, setNewBillingAddress] = useState<any>(null);
@@ -100,8 +100,8 @@ export default function CheckoutContent() {
       }
     }
     if (currentStep === 2) {
-      // Payment step
-      return !!shippingMethod && !!paymentMethod;
+      // Shipping method step - payment method is always bank_transfer
+      return !!shippingMethod;
     }
     return true;
   };
@@ -258,9 +258,7 @@ export default function CheckoutContent() {
             <div className="bg-white rounded-lg shadow-md p-6">
               {!user && (
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                   <input
                     type="email"
                     value={email}
@@ -287,9 +285,7 @@ export default function CheckoutContent() {
                       onChange={(e) => setUseSameAddress(e.target.checked)}
                       className="mr-2"
                     />
-                    <span className="text-sm text-gray-700">
-                      {tCheckout('billingAddessSame')}
-                    </span>
+                    <span className="text-sm text-gray-700">{tCheckout('billingAddessSame')}</span>
                   </label>
                 </div>
               )}
@@ -306,32 +302,13 @@ export default function CheckoutContent() {
             </div>
           )}
 
-          {/* Step 2: Payment */}
+          {/* Step 2: Shipping Method */}
           {currentStep === 2 && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <ShippingMethodSelector
                 selectedMethod={shippingMethod}
                 onMethodSelect={setShippingMethod}
               />
-
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">
-                  {tCheckout('paymentMethod')}
-                </h3>
-                <div className="space-y-3">
-                  <label className="block p-4 border rounded-lg cursor-pointer border-blue-600 bg-blue-50">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="card"
-                      checked={paymentMethod === 'card'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-3"
-                    />
-                    <span className="font-semibold">Credit/Debit Card</span>
-                  </label>
-                </div>
-              </div>
 
               <div className="mt-6 flex justify-between">
                 <button
@@ -354,34 +331,57 @@ export default function CheckoutContent() {
           {/* Step 3: Review */}
           {currentStep === 3 && (
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                {tCheckout('orderSummary')}
-              </h3>
+              <h3 className="text-lg font-semibold mb-4">{tCheckout('orderSummary')}</h3>
 
               <div className="space-y-4 mb-6">
                 {cart.items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
                     <img
                       src={item.product.images[0]?.url || '/placeholder.png'}
-                      alt={item.product.nameEn}
+                      alt={locale == 'vi' ? item.product.nameVi : item.product.nameEn}
                       className="w-16 h-16 object-cover rounded"
                     />
                     <div className="flex-1">
-                      <div className="font-medium">{item.product.nameEn}</div>
-                      <div className="text-sm text-gray-600">
-                        Qty: {item.quantity}
+                      <div className="font-medium">
+                        {locale == 'vi' ? item.product.nameVi : item.product.nameEn}
                       </div>
+                      <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
                     </div>
                     <div className="font-semibold">
-                      ${(Number(item.product.price) * item.quantity).toFixed(2)}
+                      {formatMoney(Number(item.product.price) * item.quantity)}
                     </div>
                   </div>
                 ))}
               </div>
 
+              {/* Bank Transfer Information */}
+              <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <svg
+                    className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div>
+                    <div className="font-medium text-blue-900 mb-1">
+                      {tCheckout('paymentMethodLabel')}: {tCheckout('bankTransfer')}
+                    </div>
+                    <div className="text-sm text-blue-700">{tCheckout('bankTransferInfo')}</div>
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Order Notes (Optional)
+                  {tCheckout('orderNotes')} ({tCommon('optional')})
                 </label>
                 <textarea
                   value={notes}
@@ -414,22 +414,23 @@ export default function CheckoutContent() {
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-            <h3 className="text-lg font-semibold mb-4">
-              {tCart('orderSummary')}
-            </h3>
+            <h3 className="text-lg font-semibold mb-4">{tCart('orderSummary')}</h3>
 
             {/* Promotion Code Input */}
             <div className="mb-4">
-              <label htmlFor="checkoutPromoCode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="checkoutPromoCode"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 {tCart('promoCode')}
               </label>
-                {appliedPromo ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                    <div className="flex items-center">
-                      <SvgCheck className="w-5 h-5 text-green-600 mr-2" />
-                      <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
-                    </div>
-                    <button
+              {appliedPromo ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                  <div className="flex items-center">
+                    <SvgCheck className="w-5 h-5 text-green-600 mr-2" />
+                    <span className="text-sm font-medium text-green-800">{appliedPromo.code}</span>
+                  </div>
+                  <button
                     onClick={handleRemovePromo}
                     className="text-sm text-red-600 hover:text-red-700"
                   >
@@ -455,9 +456,7 @@ export default function CheckoutContent() {
                   </button>
                 </div>
               )}
-              {promoError && (
-                <p className="mt-1 text-sm text-red-600">{promoError}</p>
-              )}
+              {promoError && <p className="mt-1 text-sm text-red-600">{promoError}</p>}
             </div>
 
             <div className="space-y-3 mb-4">
@@ -475,7 +474,9 @@ export default function CheckoutContent() {
               </div>
               {appliedPromo && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>{tCart('discount')} ({appliedPromo.code})</span>
+                  <span>
+                    {tCart('discount')} ({appliedPromo.code})
+                  </span>
                   <span>-{formatMoney(appliedPromo.discountAmount)}</span>
                 </div>
               )}
@@ -485,10 +486,34 @@ export default function CheckoutContent() {
               </div>
             </div>
 
+            <div className="border-t pt-4 mt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                <div className="flex items-start">
+                  <svg
+                    className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div className="text-sm">
+                    <div className="font-medium text-blue-900 mb-1">
+                      {tCheckout('paymentMethodLabel')}: {tCheckout('bankTransfer')}
+                    </div>
+                    <div className="text-blue-700">{tCheckout('bankTransferInfo')}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="text-xs text-gray-500 mt-4">
-              <p>
-                {tCheckout('agreeServiceAndPolicy')}
-              </p>
+              <p>{tCheckout('agreeServiceAndPolicy')}</p>
             </div>
           </div>
         </div>

@@ -1,44 +1,46 @@
 # Implementation Plan
 
-- [x] 1. Add form validation and submit button to ShippingAddressForm
-  - Add `isFormValid()` helper function to check all required fields are filled
-  - Add submit button inside the form element after all input fields
-  - Style submit button to match checkout design system (blue primary button)
-  - Disable submit button when form is invalid using `isFormValid()` check
-  - Add loading state to submit button during address save operations
-  - Position button before "Back to Saved Addresses" link for authenticated users
-  - _Requirements: 1.1, 1.3, 1.4, 2.2, 3.1, 3.3_
+- [x] 1. Remove payment method selection from CheckoutContent
+  - Remove the payment method selection UI section from step 2
+  - Keep only the ShippingMethodSelector component in step 2
+  - Remove radio buttons and payment method heading
+  - Clean up the step 2 rendering to show only shipping method selection
+  - _Requirements: 1.1, 1.4_
 
-- [x] 2. Enhance form submission handling for guest users
-  - Ensure `handleSubmit` properly calls `onNewAddress` with complete form data
-  - Verify form data structure matches the expected `NewAddressData` type
-  - Add form validation to prevent submission with incomplete data
-  - Test that parent component's `newShippingAddress` state updates correctly
-  - Verify "Next" button becomes enabled after successful form submission
-  - _Requirements: 1.1, 1.2, 1.5_
+- [x] 2. Update payment method state management
+  - Change payment method state from `useState('card')` to fixed value `'bank_transfer'`
+  - Remove `setPaymentMethod` function and all calls to it
+  - Ensure `handlePlaceOrder` always uses 'bank_transfer' as payment method
+  - Verify order creation data includes correct payment method
+  - _Requirements: 1.2, 1.5_
 
-- [x] 3. Improve authenticated user new address flow
-  - Ensure submit button triggers address save to user account via API
-  - Add error handling for failed address save operations with user-friendly messages
-  - Auto-select newly created address after successful save
-  - Update `selectedAddressId` state to reflect new address
-  - Verify "Next" button enables after address is saved and selected
-  - _Requirements: 2.1, 2.2, 2.3, 2.5_
+- [x] 3. Update step validation logic
+  - Modify `canProceedToNextStep()` function for step 2
+  - Remove `&& !!paymentMethod` check from step 2 validation
+  - Ensure step 2 only validates `!!shippingMethod`
+  - Test that "Next" button enables when shipping method is selected
+  - _Requirements: 2.4_
 
-- [x] 4. Add visual feedback and validation messages
-  - Add real-time validation feedback as users fill form fields
-  - Display field-level error messages for invalid inputs
-  - Show success confirmation when address is successfully saved
-  - Add visual indicator when form is complete and ready to submit
-  - Ensure loading states are visible during API operations
-  - _Requirements: 3.2, 3.3, 3.4, 3.5_
+- [x] 4. Update CheckoutStepper component
+  - Review CheckoutStepper to ensure step labels are appropriate
+  - Consider updating step 2 label from "Payment" to "Shipping Method" or "Delivery"
+  - Ensure step progression works correctly with simplified flow
+  - Verify visual indicators show correct active step
+  - _Requirements: 1.1, 1.3_
 
-- [x] 5. Test complete checkout flow end-to-end
-  - Test guest user flow: enter address → submit → proceed to step 2
-  - Test authenticated user with saved addresses: select address → proceed
-  - Test authenticated user adding new address: add → save → proceed
-  - Test form validation prevents submission with missing required fields
-  - Test navigation back from step 2 preserves address data
-  - Verify responsive design works on mobile devices
-  - Test keyboard navigation and accessibility features
-  - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2_
+- [x] 5. Add informational message about bank transfer
+  - Add a note in the order summary or step 3 about bank transfer payment
+  - Display message like "Payment via Bank Transfer - details will be provided after order confirmation"
+  - Style message to be informative but not intrusive
+  - Ensure message is visible in order review step
+  - _Requirements: 1.5, 3.2_
+
+- [x] 6. Test complete simplified checkout flow
+  - Test guest user flow: address → shipping method → review → place order
+  - Test authenticated user flow with saved address
+  - Verify step 2 shows only shipping method selection (no payment UI)
+  - Verify order is created with 'bank_transfer' payment method
+  - Test navigation backward and forward through steps
+  - Verify all data persists when navigating between steps
+  - Test responsive design on mobile devices
+  - _Requirements: 1.1, 1.3, 2.1, 2.2, 2.3, 2.5, 3.1, 3.3, 3.4, 3.5_

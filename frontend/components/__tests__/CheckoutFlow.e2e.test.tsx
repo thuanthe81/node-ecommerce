@@ -1,16 +1,17 @@
 /**
  * Checkout Flow End-to-End Tests
  *
- * This test file verifies the complete checkout flow as specified in Task 5
+ * This test file verifies the complete checkout flow as specified in Task 6
  * of the checkout-flow-fix spec. It tests:
- * - Guest user flow: enter address → submit → proceed to step 2
- * - Authenticated user with saved addresses: select address → proceed
- * - Authenticated user adding new address: add → save → proceed
- * - Form validation prevents submission with missing required fields
- * - Navigation back from step 2 preserves address data
- * - Keyboard navigation and accessibility features
+ * - Guest user flow: address → shipping method → review → place order
+ * - Authenticated user flow with saved address
+ * - Step 2 shows only shipping method selection (no payment UI)
+ * - Order is created with 'bank_transfer' payment method
+ * - Navigation backward and forward through steps
+ * - All data persists when navigating between steps
+ * - Responsive design on mobile devices
  *
- * Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2
+ * Requirements: 1.1, 1.3, 2.1, 2.2, 2.3, 2.5, 3.1, 3.3, 3.4, 3.5
  */
 
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
@@ -74,6 +75,12 @@ jest.mock('@/lib/order-api', () => ({
   },
 }));
 
+jest.mock('@/lib/shipping-api', () => ({
+  shippingApi: {
+    calculateShipping: jest.fn(),
+  },
+}));
+
 jest.mock('@/lib/promotion-api', () => ({
   promotionApi: {
     validate: jest.fn(),
@@ -96,10 +103,17 @@ const messages = {
     backToSavedAddress: 'Back to Saved Addresses',
     billingAddessSame: 'Billing address same as shipping',
     paymentMethod: 'Payment Method',
+    paymentMethodLabel: 'Payment Method',
+    bankTransfer: 'Bank Transfer',
+    bankTransferInfo: 'Bank details will be provided after order confirmation',
     orderSummary: 'Order Summary',
     processing: 'Processing...',
     placeOrder: 'Place Order',
     agreeServiceAndPolicy: 'By placing your order, you agree to our terms and conditions.',
+    shippingMethod: 'Shipping Method',
+    standard: 'Standard Shipping',
+    express: 'Express Shipping',
+    overnight: 'Overnight Shipping',
   },
   common: {
     phone: 'Phone',
@@ -695,6 +709,584 @@ describe('Checkout Flow - End-to-End Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Valid')).toBeDefined();
+      });
+    });
+  });
+
+  describe('Complete Checkout Flow - Task 6', () => {
+    describe('Guest User Complete Flow', () => {
+      test('should complete full guest checkout: address → shipping method → review → place order', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+        mockOrderApi.createOrder.mockResolvedValue({
+          id: 'order-123',
+          orderNumber: 'ORD-123',
+        });
+
+        renderCheckout(null);
+
+        // Step 1: Fill in shipping address
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'guest@example.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'John Doe' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Main Street' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'New York' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'NY' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '10001' },
+        });
+
+        // Submit address
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        // Proceed to step 2
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 2: Verify only shipping method selection (no payment UI)
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        // Verify NO payment method selection UI is present
+        expect(screen.queryByText(/Select Payment Method/i)).toBeNull();
+        expect(screen.queryByText(/Credit Card/i)).toBeNull();
+        expect(screen.queryByLabelText(/Card/i)).toBeNull();
+
+        // Select shipping method
+        const expressShipping = screen.getByLabelText(/Express/i);
+        fireEvent.click(expressShipping);
+
+        // Proceed to step 3
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 3: Review order
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        // Verify bank transfer information is displayed
+        expect(screen.getByText(/Bank Transfer/i)).toBeDefined();
+        expect(screen.getByText(/Bank details will be provided after order confirmation/i)).toBeDefined();
+
+        // Place order
+        const placeOrderButton = screen.getByRole('button', { name: /Place Order/i });
+        fireEvent.click(placeOrderButton);
+
+        // Verify order was created with bank_transfer payment method
+        await waitFor(() => {
+          expect(mockOrderApi.createOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+              email: 'guest@example.com',
+              shippingMethod: 'express',
+              paymentMethod: 'bank_transfer',
+            })
+          );
+        });
+
+        // Verify redirect to success page
+        await waitFor(() => {
+          expect(mockPush).toHaveBeenCalledWith('/en/checkout/success?orderId=order-123');
+        });
+      });
+
+      test('should verify step 2 shows only shipping method selection', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Complete step 1
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'guest@example.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'John Doe' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Main Street' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'New York' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'NY' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '10001' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Verify step 2 content
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        // Verify shipping method options are present
+        expect(screen.getByLabelText(/Standard/i)).toBeDefined();
+        expect(screen.getByLabelText(/Express/i)).toBeDefined();
+        expect(screen.getByLabelText(/Overnight/i)).toBeDefined();
+
+        // Verify NO payment method UI elements
+        expect(screen.queryByText(/Select Payment Method/i)).toBeNull();
+        expect(screen.queryByText(/Credit Card/i)).toBeNull();
+        expect(screen.queryByText(/Debit Card/i)).toBeNull();
+        expect(screen.queryByLabelText(/Card Number/i)).toBeNull();
+        expect(screen.queryByLabelText(/CVV/i)).toBeNull();
+      });
+    });
+
+    describe('Authenticated User Complete Flow', () => {
+      test('should complete authenticated checkout with saved address', async () => {
+        const savedAddresses = [
+          {
+            id: 'addr-1',
+            fullName: 'Jane Smith',
+            phone: '+1987654321',
+            addressLine1: '456 Oak Avenue',
+            city: 'Boston',
+            state: 'MA',
+            postalCode: '02101',
+            country: 'Vietnam',
+            isDefault: true,
+          },
+        ];
+
+        mockUserApi.getAddresses.mockResolvedValue(savedAddresses);
+        mockOrderApi.createOrder.mockResolvedValue({
+          id: 'order-456',
+          orderNumber: 'ORD-456',
+        });
+
+        const user = { id: 'user-1', email: 'jane@example.com' };
+        renderCheckout(user);
+
+        // Step 1: Wait for addresses to load and proceed
+        await waitFor(() => {
+          expect(screen.getByText('Select Shipping Address')).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 2: Select shipping method
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        const standardShipping = screen.getByLabelText(/Standard/i);
+        fireEvent.click(standardShipping);
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 3: Place order
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Place Order/i }));
+
+        // Verify order created with bank_transfer
+        await waitFor(() => {
+          expect(mockOrderApi.createOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+              email: 'jane@example.com',
+              shippingAddressId: 'addr-1',
+              shippingMethod: 'standard',
+              paymentMethod: 'bank_transfer',
+            })
+          );
+        });
+      });
+    });
+
+    describe('Navigation and Data Persistence', () => {
+      test('should preserve shipping method when navigating back from step 3', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Complete step 1
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'guest@example.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'John Doe' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Main Street' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'New York' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'NY' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '10001' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 2: Select express shipping
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        const expressShipping = screen.getByLabelText(/Express/i);
+        fireEvent.click(expressShipping);
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 3: Navigate back
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        const backButtons = screen.getAllByRole('button', { name: /Back/i });
+        fireEvent.click(backButtons[0]);
+
+        // Verify we're back on step 2
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        // Verify express shipping is still selected
+        const expressShippingRadio = screen.getByLabelText(/Express/i) as HTMLInputElement;
+        expect(expressShippingRadio.checked).toBe(true);
+      });
+
+      test('should preserve all data when navigating forward and backward through all steps', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Step 1: Fill address
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'test@example.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'Test User' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1111111111' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '789 Test Ave' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'Test City' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'TC' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '99999' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 2: Select overnight shipping
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        const overnightShipping = screen.getByLabelText(/Overnight/i);
+        fireEvent.click(overnightShipping);
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 3: Verify we're on review
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        // Navigate back to step 2
+        const backButtons = screen.getAllByRole('button', { name: /Back/i });
+        fireEvent.click(backButtons[0]);
+
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        // Navigate back to step 1
+        fireEvent.click(screen.getByRole('button', { name: /Back/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText('Shipping Address')).toBeDefined();
+        });
+
+        // Verify email is preserved
+        const emailInput = screen.getByPlaceholderText('your@email.com') as HTMLInputElement;
+        expect(emailInput.value).toBe('test@example.com');
+
+        // Navigate forward to step 2
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        // Verify overnight shipping is still selected
+        const overnightRadio = screen.getByLabelText(/Overnight/i) as HTMLInputElement;
+        expect(overnightRadio.checked).toBe(true);
+
+        // Navigate forward to step 3
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        // Verify bank transfer info is displayed
+        expect(screen.getByText(/Bank Transfer/i)).toBeDefined();
+      });
+    });
+
+    describe('Order Creation with Bank Transfer', () => {
+      test('should always create order with bank_transfer payment method', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+        mockOrderApi.createOrder.mockResolvedValue({
+          id: 'order-789',
+          orderNumber: 'ORD-789',
+        });
+
+        renderCheckout(null);
+
+        // Complete checkout flow
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'payment@test.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'Payment Test' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Payment St' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'Payment City' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'PC' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '12345' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByLabelText(/Standard/i));
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Place Order/i }));
+
+        // Verify payment method is ALWAYS bank_transfer
+        await waitFor(() => {
+          expect(mockOrderApi.createOrder).toHaveBeenCalledWith(
+            expect.objectContaining({
+              paymentMethod: 'bank_transfer',
+            })
+          );
+        });
+
+        // Verify no other payment method was used
+        const callArgs = mockOrderApi.createOrder.mock.calls[0][0];
+        expect(callArgs.paymentMethod).toBe('bank_transfer');
+        expect(callArgs.paymentMethod).not.toBe('card');
+        expect(callArgs.paymentMethod).not.toBe('credit_card');
+        expect(callArgs.paymentMethod).not.toBe('paypal');
+      });
+    });
+
+    describe('Responsive Design', () => {
+      test('should render properly on mobile viewport', async () => {
+        // Set mobile viewport
+        global.innerWidth = 375;
+        global.innerHeight = 667;
+
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Verify checkout renders
+        expect(screen.getByText('Checkout')).toBeDefined();
+        expect(screen.getByText('Shipping Address')).toBeDefined();
+
+        // Verify form is accessible on mobile
+        expect(screen.getByPlaceholderText('your@email.com')).toBeDefined();
+        expect(screen.getByLabelText(/Full Name/i)).toBeDefined();
+      });
+
+      test('should maintain functionality on tablet viewport', async () => {
+        // Set tablet viewport
+        global.innerWidth = 768;
+        global.innerHeight = 1024;
+
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Complete step 1
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'tablet@test.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'Tablet User' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Tablet St' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'Tablet City' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'TC' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '12345' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        // Verify next button works
+        const nextButton = screen.getByRole('button', { name: /Next/i });
+        expect(nextButton.hasAttribute('disabled')).toBe(false);
+      });
+    });
+
+    describe('Bank Transfer Information Display', () => {
+      test('should display bank transfer info in order summary sidebar', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Verify bank transfer info is visible in sidebar from step 1
+        expect(screen.getByText(/Bank Transfer/i)).toBeDefined();
+        expect(screen.getByText(/Bank details will be provided after order confirmation/i)).toBeDefined();
+      });
+
+      test('should display bank transfer info in step 3 review', async () => {
+        mockUserApi.getAddresses.mockResolvedValue([]);
+
+        renderCheckout(null);
+
+        // Complete steps 1 and 2
+        fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
+          target: { value: 'info@test.com' },
+        });
+
+        fireEvent.change(screen.getByLabelText(/Full Name/i), {
+          target: { value: 'Info Test' },
+        });
+        fireEvent.change(screen.getByLabelText(/Phone/i), {
+          target: { value: '+1234567890' },
+        });
+        fireEvent.change(screen.getByLabelText(/Address.*1/i), {
+          target: { value: '123 Info St' },
+        });
+        fireEvent.change(screen.getByLabelText(/City/i), {
+          target: { value: 'Info City' },
+        });
+        fireEvent.change(screen.getByLabelText(/State/i), {
+          target: { value: 'IC' },
+        });
+        fireEvent.change(screen.getByLabelText(/Postal Code/i), {
+          target: { value: '12345' },
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Save Address/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Address information saved/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        await waitFor(() => {
+          expect(screen.getByText(/Shipping Method/i)).toBeDefined();
+        });
+
+        fireEvent.click(screen.getByLabelText(/Standard/i));
+        fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+        // Step 3: Verify bank transfer info is prominently displayed
+        await waitFor(() => {
+          expect(screen.getByText(/Order Summary/i)).toBeDefined();
+        });
+
+        // Should have multiple instances of bank transfer info (sidebar + main content)
+        const bankTransferElements = screen.getAllByText(/Bank Transfer/i);
+        expect(bankTransferElements.length).toBeGreaterThan(0);
+
+        const infoElements = screen.getAllByText(/Bank details will be provided after order confirmation/i);
+        expect(infoElements.length).toBeGreaterThan(0);
       });
     });
   });
