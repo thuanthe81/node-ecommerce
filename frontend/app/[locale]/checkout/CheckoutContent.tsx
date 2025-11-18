@@ -89,6 +89,7 @@ export default function CheckoutContent() {
   };
 
   const canProceedToNextStep = () => {
+    console.log('can next', !email, !!newShippingAddress)
     if (currentStep === 1) {
       // Shipping step
       if (!email) return false;

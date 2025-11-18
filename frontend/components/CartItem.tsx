@@ -50,7 +50,7 @@ export default function CartItem({ item }: CartItemProps) {
   const itemTotal = parseFloat(item.price) * item.quantity;
 
   return (
-    <div className="flex gap-4 py-4 border-b">
+    <div className="flex gap-4 py-4">
       <Link href={`/${locale}/products/${item.product.slug}`} className="flex-shrink-0">
         <Image
           src={imageUrl}

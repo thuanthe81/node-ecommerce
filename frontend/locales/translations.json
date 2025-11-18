@@ -316,6 +316,10 @@
       "en": "Address",
       "vi": "Địa chỉ"
     },
+    "addressSaveError": {
+      "en": "Failed to save address. Please try again.",
+      "vi": "Lưu địa chỉ thất bại. Vui lòng thử lại."
+    },
     "agreeServiceAndPolicy": {
       "en": "By placing your order, you agree to our terms of service and privacy policy.",
       "vi": "Sau khi đặt hàng, bạn đồng ý với các điều khoản dịch vụ và chính sách bảo mật."
@@ -367,6 +371,14 @@
     "processing": {
       "en": "Processing...",
       "vi": "Đang xử lý..."
+    },
+    "saveAddress": {
+      "en": "Save Address",
+      "vi": "Lưu địa chỉ"
+    },
+    "saving": {
+      "en": "Saving...",
+      "vi": "Đang lưu..."
     },
     "selectShippingAddress": {
       "en": "Select shipping address",
