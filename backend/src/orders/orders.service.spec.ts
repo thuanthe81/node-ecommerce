@@ -395,6 +395,90 @@ describe('OrdersService', () => {
         service.findOne('order-1', 'user-1', UserRole.CUSTOMER),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should allow guest user to view guest order', async () => {
+      const guestOrder = {
+        ...mockOrder,
+        userId: null,
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: null,
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(guestOrder);
+
+      const result = await service.findOne('order-1', undefined, undefined);
+
+      expect(result).toHaveProperty('orderNumber');
+      expect(result.userId).toBeNull();
+    });
+
+    it('should throw ForbiddenException if guest user tries to view authenticated user order', async () => {
+      const userOrder = {
+        ...mockOrder,
+        userId: 'user-1',
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(userOrder);
+
+      await expect(
+        service.findOne('order-1', undefined, undefined),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw ForbiddenException if authenticated user tries to view guest order', async () => {
+      const guestOrder = {
+        ...mockOrder,
+        userId: null,
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: null,
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(guestOrder);
+
+      await expect(
+        service.findOne('order-1', 'user-1', UserRole.CUSTOMER),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should allow authenticated user to view their own order', async () => {
+      const userOrder = {
+        ...mockOrder,
+        userId: 'user-1',
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(userOrder);
+
+      const result = await service.findOne('order-1', 'user-1', UserRole.CUSTOMER);
+
+      expect(result).toHaveProperty('orderNumber');
+      expect(result.userId).toBe('user-1');
+    });
   });
 
   describe('updateStatus', () => {

@@ -138,6 +138,10 @@ a {
   color: #1d4ed8; /* blue-700 for better contrast */
 }
 
+a.text-white {
+  color: white;
+}
+
 a:hover {
   color: #1e40af; /* blue-800 */
 }

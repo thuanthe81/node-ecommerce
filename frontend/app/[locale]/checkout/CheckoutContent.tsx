@@ -26,6 +26,7 @@ export default function CheckoutContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [orderCompleted, setOrderCompleted] = useState(false);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -39,10 +40,11 @@ export default function CheckoutContent() {
   const [useSameAddress, setUseSameAddress] = useState(true);
 
   useEffect(() => {
-    if (!cart || cart.items.length === 0) {
+    // Don't redirect if order was just completed
+    if (!orderCompleted && (!cart || cart.items.length === 0)) {
       router.push(`/${locale}/cart`);
     }
-  }, [cart, router, locale]);
+  }, [cart, router, locale, orderCompleted]);
 
   useEffect(() => {
     if (user) {
@@ -195,11 +197,14 @@ export default function CheckoutContent() {
 
       const order = await orderApi.createOrder(orderData);
 
-      // Clear cart after successful order
-      await clearCart();
+      // Set flag to prevent useEffect from redirecting to cart
+      setOrderCompleted(true);
 
       // Redirect to order confirmation page
       router.push(`/${locale}/orders/${order.id}/confirmation`);
+
+      // Clear cart after redirect is initiated
+      await clearCart();
     } catch (err: any) {
       console.error('Failed to place order:', err);
       setError(

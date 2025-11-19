@@ -455,10 +455,31 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    // Check authorization - users can only view their own orders
-    if (userRole !== UserRole.ADMIN && order.userId !== userId) {
+    // Check authorization
+    // - Admins can view any order
+    // - Authenticated users can only view their own orders
+    // - Guest users (no userId) can view guest orders (order.userId is null)
+    if (userRole === UserRole.ADMIN) {
+      // Admin can view any order
+      return order;
+    }
+
+    if (userId && order.userId && order.userId !== userId) {
+      // Authenticated user trying to view another user's order
       throw new ForbiddenException('You do not have access to this order');
     }
+
+    if (userId && !order.userId) {
+      // Authenticated user trying to view a guest order
+      throw new ForbiddenException('You do not have access to this order');
+    }
+
+    if (!userId && order.userId) {
+      // Guest user trying to view an authenticated user's order
+      throw new ForbiddenException('You do not have access to this order');
+    }
+
+    // Allow: authenticated user viewing their own order, or guest viewing guest order
 
     return order;
   }

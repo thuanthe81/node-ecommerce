@@ -75,6 +75,7 @@ export class OrdersController {
   }
 
   @Get(':id')
+  @Public()
   findOne(
     @Param('id') id: string,
     @CurrentUser() user?: { userId: string; role: UserRole },

@@ -145,7 +145,6 @@ export default function CartSummary() {
       <Link
         href={`/${locale}/checkout`}
         className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        style={{color: 'white'}}
       >
         {t('proceedToCheckout')}
       </Link>

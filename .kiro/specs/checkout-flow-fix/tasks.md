@@ -246,3 +246,24 @@
   - Test that authenticated users still create addresses with userId
   - _Requirements: 1.6, 7.2, 7.3, 7.5_
 
+- [x] 19. Fix order confirmation redirect race condition
+  - Identify race condition where clearCart() triggers redirect to cart page
+  - Move router.push() to confirmation page before clearCart() call
+  - Alternatively, add flag to prevent useEffect redirect during checkout completion
+  - Test that successful order placement redirects to confirmation page
+  - Verify cart is still cleared after redirect
+  - Test both guest and authenticated user flows
+  - _Requirements: 4.1, 11_
+
+- [x] 20. Fix guest user authorization for order confirmation page
+  - Make GET /orders/:id endpoint public with @Public() decorator
+  - Update authorization logic in findOne service method
+  - Allow guest users (no userId) to view guest orders (order.userId is null)
+  - Prevent authenticated users from viewing guest orders
+  - Prevent guest users from viewing authenticated user orders
+  - Maintain existing security: users can only view their own orders
+  - Test guest user can view order confirmation after placing order
+  - Test authenticated user can view their own orders
+  - Test users cannot view orders that don't belong to them
+  - _Requirements: 4.1, 4.6_
+

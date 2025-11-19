@@ -152,7 +152,6 @@ export default function MiniCart() {
                 className="block w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 onClick={() => setIsOpen(false)}
                 aria-label={t('viewCart')}
-                style={{color: 'white'}}
               >
                 {t('viewCart')}
               </Link>

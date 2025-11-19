@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { orderApi, Order } from '@/lib/order-api';
 import { paymentSettingsApi, BankTransferSettings } from '@/lib/payment-settings-api';
+import { formatMoney } from '@/app/utils';
 
 export default function OrderConfirmationContent() {
   const params = useParams();
@@ -194,13 +195,6 @@ export default function OrderConfirmationContent() {
         }
       })
       .finally(() => setIsLoadingSettings(false));
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
@@ -517,11 +511,11 @@ export default function OrderConfirmationContent() {
                     <div className="text-left sm:text-right flex sm:flex-col justify-between sm:justify-start gap-2">
                       <div>
                         <p className="text-sm text-gray-600 sm:hidden">Unit Price:</p>
-                        <p className="font-semibold text-base sm:text-lg text-gray-900" aria-label={`Unit price: ${formatCurrency(item.price)}`}>{formatCurrency(item.price)}</p>
+                        <p className="font-semibold text-base sm:text-lg text-gray-900" aria-label={`Unit price: ${formatMoney(item.price, locale)}`}>{formatMoney(item.price, locale)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">{t('subtotal', 'Subtotal')}:</p>
-                        <p className="font-bold text-base sm:text-lg text-gray-900" aria-label={`Item subtotal: ${formatCurrency(item.total)}`}>{formatCurrency(item.total)}</p>
+                        <p className="font-bold text-base sm:text-lg text-gray-900" aria-label={`Item subtotal: ${formatMoney(item.total, locale)}`}>{formatMoney(item.total, locale)}</p>
                       </div>
                     </div>
                   </li>
@@ -541,29 +535,29 @@ export default function OrderConfirmationContent() {
                   <dt className="text-gray-700 font-medium">
                     {t('subtotal', 'Subtotal')}
                   </dt>
-                  <dd className="font-semibold text-gray-900">{formatCurrency(order.subtotal)}</dd>
+                  <dd className="font-semibold text-gray-900">{formatMoney(order.subtotal, locale)}</dd>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
                   <dt className="text-gray-700 font-medium">
                     {t('shipping', 'Shipping')}
                   </dt>
-                  <dd className="font-semibold text-gray-900">{formatCurrency(order.shippingCost)}</dd>
+                  <dd className="font-semibold text-gray-900">{formatMoney(order.shippingCost, locale)}</dd>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
                   <dt className="text-gray-700 font-medium">
                     {t('tax', 'Tax')}
                   </dt>
-                  <dd className="font-semibold text-gray-900">{formatCurrency(order.taxAmount)}</dd>
+                  <dd className="font-semibold text-gray-900">{formatMoney(order.taxAmount, locale)}</dd>
                 </div>
                 {order.discountAmount > 0 && (
                   <div className="flex justify-between text-sm sm:text-base text-green-700">
                     <dt className="font-medium">{t('discount', 'Discount')}</dt>
-                    <dd className="font-semibold">-{formatCurrency(order.discountAmount)}</dd>
+                    <dd className="font-semibold">-{formatMoney(order.discountAmount, locale)}</dd>
                   </div>
                 )}
                 <div className="flex justify-between text-lg sm:text-xl lg:text-2xl font-bold border-t-2 border-gray-300 pt-3 mt-3">
                   <dt className="text-gray-900">{t('total', 'Total')}</dt>
-                  <dd className="text-blue-600">{formatCurrency(order.total)}</dd>
+                  <dd className="text-blue-600">{formatMoney(order.total, locale)}</dd>
                 </div>
               </dl>
             </div>
@@ -754,7 +748,7 @@ export default function OrderConfirmationContent() {
                         {t('amountToTransfer', 'Amount to Transfer')}
                       </dt>
                       <dd className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white print:text-gray-900">
-                        {formatCurrency(order.total)}
+                        {formatMoney(order.total, locale)}
                       </dd>
                     </div>
                   </dl>
@@ -781,7 +775,7 @@ export default function OrderConfirmationContent() {
                     <div className="inline-block bg-white p-4 rounded-lg shadow-inner border-2 border-gray-200 print:border-gray-800">
                       <img
                         src={bankSettings.qrCodeUrl}
-                        alt={`${t('qrCodeAlt', 'Bank Transfer QR Code')} for payment of ${formatCurrency(order.total)} to ${bankSettings.accountName || 'merchant account'}`}
+                        alt={`${t('qrCodeAlt', 'Bank Transfer QR Code')} for payment of ${formatMoney(order.total, locale)} to ${bankSettings.accountName || 'merchant account'}`}
                         className="w-48 h-48 sm:w-64 sm:h-64 mx-auto object-contain print:w-48 print:h-48"
                         style={{ imageRendering: 'crisp-edges' }}
                         loading="lazy"
