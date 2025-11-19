@@ -55,13 +55,20 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
+        // Refresh failed, clear tokens
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
 
+        // Don't redirect to login if we're on the order confirmation page
+        // This allows guest users to view their order after checkout
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          const currentPath = window.location.pathname;
+          const isOrderConfirmation = currentPath.includes('/orders/') && currentPath.includes('/confirmation');
+
+          if (!isOrderConfirmation) {
+            window.location.href = '/login';
+          }
         }
 
         return Promise.reject(refreshError);

@@ -22,6 +22,7 @@ import { ContentModule } from './content/content.module';
 import { ContactModule } from './contact/contact.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PaymentSettingsModule } from './payment-settings/payment-settings.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ContactModule,
     AnalyticsModule,
     NotificationsModule,
+    PaymentSettingsModule,
   ],
   controllers: [AppController],
   providers: [

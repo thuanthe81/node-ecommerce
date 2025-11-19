@@ -799,9 +799,9 @@ describe('Checkout Flow - End-to-End Tests', () => {
           );
         });
 
-        // Verify redirect to success page
+        // Verify redirect to order confirmation page
         await waitFor(() => {
-          expect(mockPush).toHaveBeenCalledWith('/en/checkout/success?orderId=order-123');
+          expect(mockPush).toHaveBeenCalledWith('/en/orders/order-123/confirmation');
         });
       });
 

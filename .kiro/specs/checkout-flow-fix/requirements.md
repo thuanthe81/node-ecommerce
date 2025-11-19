@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This specification addresses the checkout flow to support bank transfer as the only payment method. Since the business only accepts bank transfer payments, the payment method selection step should be removed from the checkout flow, simplifying the process to: (1) Shipping address, (2) Shipping method selection, and (3) Order review.
+This specification addresses the complete checkout and order confirmation flow to support bank transfer as the only payment method. Since the business only accepts bank transfer payments, the payment method selection step should be removed from the checkout flow, simplifying the process to: (1) Shipping address, (2) Shipping method selection, and (3) Order review. After successful order placement, customers must be shown an order confirmation page with complete order details and bank transfer payment instructions, including bank account details and a QR code for easy payment. The system must support both authenticated and guest users accessing their order confirmation.
 
 ## Glossary
 
@@ -12,6 +12,9 @@ This specification addresses the checkout flow to support bank transfer as the o
 - **Guest User**: A user who is not authenticated and is checking out without an account
 - **Authenticated User**: A user who is logged in with an account
 - **Bank Transfer**: The only supported payment method where customers transfer funds directly to the business bank account
+- **Order Confirmation Page**: The page displayed after successful order placement showing order details and payment instructions
+- **Bank Transfer Information**: The bank account details and QR code required for customers to complete payment
+- **Payment Settings**: Admin-configurable settings that store bank account details and QR code image for bank transfers
 
 ## Requirements
 
@@ -50,3 +53,34 @@ This specification addresses the checkout flow to support bank transfer as the o
 3. THE Checkout System SHALL display the order total including subtotal, shipping, tax, and any discounts
 4. THE Checkout System SHALL provide a "Place Order" button to complete the purchase
 5. WHEN a user places an order, THE Checkout System SHALL create the order with bank transfer as the payment method
+
+### Requirement 4
+
+**User Story:** As a user, I want to see my order details and bank transfer payment instructions immediately after placing an order, so that I can complete the payment
+
+#### Acceptance Criteria
+
+1. WHEN an order is successfully placed, THE Checkout System SHALL redirect the user to an order confirmation page
+2. THE Order Confirmation Page SHALL display the order number, order date, and order status
+3. THE Order Confirmation Page SHALL show all order items with quantities, prices, and subtotal
+4. THE Order Confirmation Page SHALL display the shipping address and selected shipping method
+5. THE Order Confirmation Page SHALL show the order total including subtotal, shipping cost, tax, and any applied discounts
+6. THE Order Confirmation Page SHALL retrieve and display bank transfer information from the backend
+7. THE Order Confirmation Page SHALL show bank account details including account name, account number, and bank name
+8. WHEN bank transfer QR code is available, THE Order Confirmation Page SHALL display the QR code image for easy scanning
+9. THE Order Confirmation Page SHALL be accessible to both authenticated users and guest users using the order ID
+10. WHEN a guest user accesses the order confirmation page, THE Order Confirmation Page SHALL display the same information as for authenticated users
+
+### Requirement 5
+
+**User Story:** As an administrator, I want to configure bank transfer payment information, so that customers receive accurate payment instructions
+
+#### Acceptance Criteria
+
+1. THE Payment Settings SHALL store bank account name as a text field
+2. THE Payment Settings SHALL store bank account number as a text field
+3. THE Payment Settings SHALL store bank name as a text field
+4. THE Payment Settings SHALL store a QR code image for bank transfer
+5. WHEN an administrator updates payment settings, THE Payment Settings SHALL persist the changes to the database
+6. WHEN the order confirmation page requests payment information, THE Payment Settings SHALL return the current bank transfer details
+7. THE Payment Settings SHALL provide a default response when no QR code image is configured

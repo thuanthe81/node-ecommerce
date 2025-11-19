@@ -199,7 +199,7 @@ export default function CheckoutContent() {
       await clearCart();
 
       // Redirect to order confirmation page
-      router.push(`/${locale}/checkout/success?orderId=${order.id}`);
+      router.push(`/${locale}/orders/${order.id}/confirmation`);
     } catch (err: any) {
       console.error('Failed to place order:', err);
       setError(

@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Request, Response, NextFunction } from 'express';
 import { join, isAbsolute } from 'path';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -49,6 +50,9 @@ async function bootstrap() {
       disableErrorMessages: process.env.NODE_ENV === 'production', // Hide detailed errors in production
     }),
   );
+
+  // Enable global logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Enable CORS with whitelist
   const allowedOrigins = process.env.ALLOWED_ORIGINS

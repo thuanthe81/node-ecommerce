@@ -751,8 +751,11 @@ img {
   }
 }
 
-/* Print styles - hide carousel controls */
+/* ============================================================================
+   Print Styles - Optimized for Order Confirmation
+   ============================================================================ */
 @media print {
+  /* Hide carousel controls */
   .carousel-controls,
   .carousel-indicators {
     display: none !important;
@@ -760,5 +763,299 @@ img {
 
   .carousel-3d-container {
     page-break-inside: avoid;
+  }
+
+  /* General print utilities */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+
+  .print\:bg-white {
+    background-color: white !important;
+  }
+
+  .print\:border {
+    border-width: 1px !important;
+  }
+
+  .print\:border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+
+  .print\:border-gray-800 {
+    border-color: #1f2937 !important;
+  }
+
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  .print\:text-black {
+    color: #000 !important;
+  }
+
+  .print\:no-underline {
+    text-decoration: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  /* Reset page background */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure sections don't break across pages */
+  section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep related content together */
+  .order-item,
+  .bank-details-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Optimize colors for printing - remove backgrounds */
+  .bg-green-50,
+  .bg-blue-50,
+  .bg-gray-50,
+  .bg-indigo-50,
+  .from-green-50,
+  .to-emerald-50,
+  .from-blue-50,
+  .via-indigo-50,
+  .to-blue-50,
+  .from-blue-600,
+  .to-indigo-600 {
+    background: white !important;
+  }
+
+  /* Convert colored borders to black for better print visibility */
+  .border-green-200,
+  .border-green-300,
+  .border-blue-200,
+  .border-blue-300 {
+    border-color: #000 !important;
+  }
+
+  /* Ensure text is black for printing */
+  .text-gray-600,
+  .text-gray-700,
+  .text-gray-800,
+  .text-gray-900,
+  .text-blue-600,
+  .text-green-700,
+  .text-white {
+    color: #000 !important;
+  }
+
+  /* Remove shadows for cleaner print */
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow-3xl,
+  .shadow-inner {
+    box-shadow: none !important;
+  }
+
+  /* Remove gradients */
+  .bg-gradient-to-br,
+  .bg-gradient-to-b,
+  .bg-gradient-to-t {
+    background-image: none !important;
+    background-color: white !important;
+  }
+
+  /* Make links look like regular text */
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  /* Show link URLs after the link text (optional) */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  /* Don't show URLs for internal links */
+  a[href^="/"]:after {
+    content: "";
+  }
+
+  /* Make QR code print clearly with high contrast */
+  img {
+    max-width: 100%;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    image-rendering: crisp-edges;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure QR codes maintain their size */
+  img[alt*="QR"] {
+    width: 200px !important;
+    height: 200px !important;
+    border: 2px solid #000 !important;
+    padding: 8px;
+  }
+
+  /* Optimize button appearance for print */
+  button {
+    display: none !important;
+  }
+
+  /* Remove interactive elements */
+  .hover\:bg-gray-300,
+  .hover\:bg-blue-700,
+  .hover\:bg-green-700,
+  .hover\:text-blue-600 {
+    background: transparent !important;
+  }
+
+  /* Ensure proper spacing for print */
+  h1 {
+    font-size: 24pt;
+    margin-bottom: 12pt;
+  }
+
+  h2 {
+    font-size: 18pt;
+    margin-top: 12pt;
+    margin-bottom: 8pt;
+  }
+
+  h3 {
+    font-size: 14pt;
+    margin-top: 8pt;
+    margin-bottom: 6pt;
+  }
+
+  p {
+    margin-bottom: 6pt;
+  }
+
+  /* Optimize table-like layouts */
+  dl {
+    margin-bottom: 12pt;
+  }
+
+  dt {
+    font-weight: bold;
+  }
+
+  dd {
+    margin-bottom: 6pt;
+  }
+
+  /* Ensure icons don't print (save ink) */
+  svg {
+    display: none !important;
+  }
+
+  /* Keep important icons for context */
+  .print-icon {
+    display: inline-block !important;
+  }
+
+  /* Optimize spacing */
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Remove unnecessary padding/margins */
+  .py-6,
+  .py-8,
+  .py-12,
+  .px-4 {
+    padding: 0 !important;
+  }
+
+  /* Add minimal spacing where needed */
+  section {
+    margin-bottom: 20pt;
+    padding: 12pt;
+    border: 1px solid #000;
+  }
+
+  /* Ensure good contrast for important information */
+  .font-bold,
+  .font-semibold {
+    font-weight: bold !important;
+  }
+
+  /* Make totals stand out */
+  .text-2xl,
+  .text-3xl,
+  .text-4xl {
+    font-size: 18pt !important;
+    font-weight: bold !important;
+  }
+
+  /* Optimize address formatting */
+  address {
+    font-style: normal;
+    line-height: 1.6;
+  }
+
+  /* Ensure proper line breaks */
+  br {
+    content: "";
+    display: block;
+    margin: 3pt 0;
+  }
+
+  /* Remove transforms and transitions */
+  * {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Ensure proper page breaks */
+  .page-break-before {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+    break-after: always;
+  }
+
+  .page-break-inside-avoid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Print header/footer (browser default) */
+  @page {
+    @top-center {
+      content: "Order Confirmation";
+    }
+  }
+
+  /* Ensure color accuracy for important elements */
+  .print-color-exact {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

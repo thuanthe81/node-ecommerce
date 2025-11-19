@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from 'next-intl';
-import { SvgMenu, SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart } from '@/components/Svgs';
+import { SvgMenu, SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency } from '@/components/Svgs';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -64,6 +64,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       name: locale === 'vi' ? 'Phân tích' : 'Analytics',
       href: `${prefUri}/analytics`,
       icon: <SvgChart className="w-5 h-5" />,
+    },
+    {
+      name: locale === 'vi' ? 'Cài đặt thanh toán' : 'Payment Settings',
+      href: `${prefUri}/payment-settings`,
+      icon: <SvgCurrency className="w-5 h-5" />,
     },
   ];
 
