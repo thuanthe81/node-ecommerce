@@ -66,7 +66,9 @@ export class OrdersService {
       throw new NotFoundException('Shipping address not found');
     }
 
-    if (userId && shippingAddress.userId !== userId) {
+    // Only check ownership if both userId and address.userId exist
+    // This allows guest addresses (null userId) to be used in orders
+    if (userId && shippingAddress.userId && shippingAddress.userId !== userId) {
       throw new ForbiddenException('Shipping address does not belong to user');
     }
 
@@ -78,7 +80,9 @@ export class OrdersService {
       throw new NotFoundException('Billing address not found');
     }
 
-    if (userId && billingAddress.userId !== userId) {
+    // Only check ownership if both userId and address.userId exist
+    // This allows guest addresses (null userId) to be used in orders
+    if (userId && billingAddress.userId && billingAddress.userId !== userId) {
       throw new ForbiddenException('Billing address does not belong to user');
     }
 

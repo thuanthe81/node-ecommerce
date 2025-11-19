@@ -206,6 +206,96 @@ describe('OrdersService', () => {
       );
     });
 
+    it('should successfully create an order for guest user with null userId address', async () => {
+      const guestAddress = { ...mockAddress, userId: null };
+      mockPrismaService.address.findUnique.mockResolvedValue(guestAddress);
+      mockPrismaService.product.findMany.mockResolvedValue([mockProduct]);
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          order: {
+            create: jest.fn().mockResolvedValue({
+              ...mockOrder,
+              userId: null,
+              items: [
+                {
+                  id: 'item-1',
+                  orderId: 'order-1',
+                  productId: 'prod-1',
+                  productNameEn: 'Test Product',
+                  productNameVi: 'Sản phẩm test',
+                  sku: 'SKU-001',
+                  quantity: 2,
+                  price: 50.0,
+                  total: 100.0,
+                  product: mockProduct,
+                },
+              ],
+              shippingAddress: guestAddress,
+              billingAddress: guestAddress,
+            }),
+          },
+          product: {
+            update: jest.fn(),
+          },
+        });
+      });
+      mockEmailTemplateService.getOrderConfirmationTemplate.mockReturnValue({
+        subject: 'Order Confirmation',
+        html: '<p>Order confirmed</p>',
+      });
+      mockEmailService.sendEmail.mockResolvedValue(undefined);
+
+      const result = await service.create(createOrderDto, undefined);
+
+      expect(result).toHaveProperty('orderNumber');
+      expect(result.items).toHaveLength(1);
+      expect(result.userId).toBeNull();
+    });
+
+    it('should allow authenticated user to use guest address (null userId)', async () => {
+      const guestAddress = { ...mockAddress, userId: null };
+      mockPrismaService.address.findUnique.mockResolvedValue(guestAddress);
+      mockPrismaService.product.findMany.mockResolvedValue([mockProduct]);
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          order: {
+            create: jest.fn().mockResolvedValue({
+              ...mockOrder,
+              items: [
+                {
+                  id: 'item-1',
+                  orderId: 'order-1',
+                  productId: 'prod-1',
+                  productNameEn: 'Test Product',
+                  productNameVi: 'Sản phẩm test',
+                  sku: 'SKU-001',
+                  quantity: 2,
+                  price: 50.0,
+                  total: 100.0,
+                  product: mockProduct,
+                },
+              ],
+              shippingAddress: guestAddress,
+              billingAddress: guestAddress,
+            }),
+          },
+          product: {
+            update: jest.fn(),
+          },
+        });
+      });
+      mockEmailTemplateService.getOrderConfirmationTemplate.mockReturnValue({
+        subject: 'Order Confirmation',
+        html: '<p>Order confirmed</p>',
+      });
+      mockEmailService.sendEmail.mockResolvedValue(undefined);
+
+      const result = await service.create(createOrderDto, 'user-1');
+
+      expect(result).toHaveProperty('orderNumber');
+      expect(result.items).toHaveLength(1);
+    });
+
     it('should throw BadRequestException if product is out of stock', async () => {
       const outOfStockProduct = { ...mockProduct, stockQuantity: 0 };
       mockPrismaService.address.findUnique.mockResolvedValue(mockAddress);

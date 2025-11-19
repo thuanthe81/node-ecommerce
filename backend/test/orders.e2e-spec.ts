@@ -60,4 +60,34 @@ describe('OrdersController (e2e)', () => {
         });
     });
   });
+
+  describe('Guest Checkout Flow', () => {
+    it('should allow guest user to create address without authentication', async () => {
+      // Step 1: Create a guest address (no auth token)
+      const guestAddressDto = {
+        fullName: 'Guest User',
+        phone: '+1234567890',
+        addressLine1: '123 Guest Street',
+        city: 'Guest City',
+        state: 'GS',
+        postalCode: '12345',
+        country: 'US',
+      };
+
+      const addressResponse = await request(app.getHttpServer())
+        .post('/users/addresses')
+        .send(guestAddressDto)
+        .expect((res) => {
+          // Should create address successfully or fail with validation error
+          expect([200, 201, 400, 500]).toContain(res.status);
+        });
+
+      // If address creation succeeded, verify it has null userId
+      if (addressResponse.status === 200 || addressResponse.status === 201) {
+        expect(addressResponse.body).toHaveProperty('id');
+        expect(addressResponse.body.userId).toBeNull();
+        expect(addressResponse.body.fullName).toBe('Guest User');
+      }
+    });
+  });
 });

@@ -31,6 +31,7 @@ interface FieldErrors {
   city?: string;
   state?: string;
   postalCode?: string;
+  country?: string;
 }
 
 interface TouchedFields {
@@ -40,6 +41,7 @@ interface TouchedFields {
   city: boolean;
   state: boolean;
   postalCode: boolean;
+  country: boolean;
 }
 
 export default function ShippingAddressForm({
@@ -63,6 +65,7 @@ export default function ShippingAddressForm({
     city: false,
     state: false,
     postalCode: false,
+    country: false,
   });
   const [formData, setFormData] = useState({
     fullName: '',
@@ -72,7 +75,7 @@ export default function ShippingAddressForm({
     city: '',
     state: '',
     postalCode: '',
-    country: 'Vietnam',
+    country: 'VN',
   });
 
   useEffect(() => {
@@ -127,6 +130,11 @@ export default function ShippingAddressForm({
         if (!value.trim()) return 'Postal code is required';
         if (!/^[\d\w\s\-]+$/.test(value)) return 'Please enter a valid postal code';
         return undefined;
+      case 'country':
+        if (!value.trim()) return 'Country code is required';
+        if (value.trim().length !== 2) return 'Country code must be exactly 2 characters (e.g., VN, US)';
+        if (!/^[A-Z]{2}$/i.test(value.trim())) return 'Country code must be 2 letters (e.g., VN, US)';
+        return undefined;
       default:
         return undefined;
     }
@@ -136,7 +144,9 @@ export default function ShippingAddressForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Automatically uppercase country code
+    const processedValue = name === 'country' ? value.toUpperCase() : value;
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
 
     // Clear error when user starts editing
     if (error) {
@@ -183,7 +193,8 @@ export default function ShippingAddressForm({
       formData.addressLine1.trim() !== '' &&
       formData.city.trim() !== '' &&
       formData.state.trim() !== '' &&
-      formData.postalCode.trim() !== '';
+      formData.postalCode.trim() !== '' &&
+      formData.country.trim() !== '';
 
     // Check if there are no validation errors
     const noErrors = Object.values(fieldErrors).every((error) => !error);
@@ -215,7 +226,7 @@ export default function ShippingAddressForm({
     // Validate all fields before submission
     const errors: FieldErrors = {};
     Object.keys(formData).forEach((key) => {
-      if (key !== 'addressLine2' && key !== 'country') {
+      if (key !== 'addressLine2') {
         const error = validateField(key, formData[key as keyof typeof formData]);
         if (error) {
           errors[key as keyof FieldErrors] = error;
@@ -232,6 +243,7 @@ export default function ShippingAddressForm({
         city: true,
         state: true,
         postalCode: true,
+        country: true,
       });
       setError('Please fix the errors in the form before submitting.');
       return;
@@ -274,7 +286,7 @@ export default function ShippingAddressForm({
           city: '',
           state: '',
           postalCode: '',
-          country: 'Vietnam',
+          country: 'VN',
         });
 
         // Reset validation states
@@ -286,6 +298,7 @@ export default function ShippingAddressForm({
           city: false,
           state: false,
           postalCode: false,
+          country: false,
         });
       } else {
         // For guest users, just pass the data to parent
@@ -615,6 +628,45 @@ export default function ShippingAddressForm({
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Country Code *
+            </label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              required
+              maxLength={2}
+              placeholder="VN"
+              className={getFieldClassName('country')}
+              aria-invalid={!!fieldErrors.country}
+              aria-describedby={fieldErrors.country ? 'country-error' : undefined}
+              style={{ textTransform: 'uppercase' }}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Enter 2-letter ISO country code (e.g., VN for Vietnam, US for United States)
+            </p>
+            {touchedFields.country && fieldErrors.country && (
+              <p id="country-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
+                <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {fieldErrors.country}
+              </p>
+            )}
+            {touchedFields.country && !fieldErrors.country && formData.country.trim() && (
+              <p className="mt-1 text-sm text-green-600 flex items-center">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Valid
+              </p>
+            )}
+          </div>
+
           <div className="flex items-center justify-between mt-6">
             <button
               type="submit"
@@ -645,6 +697,7 @@ export default function ShippingAddressForm({
                     city: false,
                     state: false,
                     postalCode: false,
+                    country: false,
                   });
                 }}
                 className="text-blue-600 hover:text-blue-700 font-medium"

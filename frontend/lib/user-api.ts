@@ -13,7 +13,7 @@ export interface UpdatePasswordData {
 
 export interface Address {
   id: string;
-  userId: string;
+  userId: string | null;
   fullName: string;
   phone: string;
   addressLine1: string;

@@ -208,3 +208,41 @@
   - Test that order confirmation page doesn't redirect for guest users
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
+- [x] 18. Update Address model to support guest checkout
+- [x] 18.1 Update Prisma schema to make userId optional
+  - Change userId field from String to String? in Address model
+  - Change user relation from User to User? (optional)
+  - Generate database migration for schema change
+  - Run migration to update database
+  - _Requirements: 7.1, 7.2_
+
+- [x] 18.2 Update address creation service to handle optional userId
+  - Modify createAddress method to accept optional userId parameter
+  - Allow address creation with null userId for guest users
+  - Ensure address validation works regardless of userId
+  - Update address DTOs if needed to reflect optional userId
+  - _Requirements: 7.2, 7.3, 7.4_
+
+- [x] 18.3 Update orders service address validation
+  - Modify address ownership validation in orders.service.ts
+  - Only check ownership if both userId and address.userId exist
+  - Allow guest addresses (null userId) to be used in orders
+  - Ensure validation doesn't block guest checkout
+  - _Requirements: 7.5_
+
+- [x] 18.4 Implement address cleanup service for orphaned addresses
+  - Create AddressCleanupService with scheduled task
+  - Implement cron job to run daily at midnight
+  - Delete addresses with null userId older than 90 days
+  - Log cleanup results for monitoring
+  - Register service in appropriate module
+  - _Requirements: 7.6_
+
+- [x] 18.5 Test guest checkout with address creation
+  - Test guest user can create shipping address without authentication
+  - Test guest user can complete full checkout flow
+  - Verify address is created with null userId
+  - Verify order is created successfully with guest address
+  - Test that authenticated users still create addresses with userId
+  - _Requirements: 1.6, 7.2, 7.3, 7.5_
+

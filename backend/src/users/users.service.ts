@@ -111,26 +111,29 @@ export class UsersService {
     return address;
   }
 
-  async createAddress(userId: string, createAddressDto: CreateAddressDto) {
-    // If this is set as default, unset other default addresses
-    if (createAddressDto.isDefault) {
+  async createAddress(userId: string | null, createAddressDto: CreateAddressDto) {
+    // If this is set as default and user is authenticated, unset other default addresses
+    if (createAddressDto.isDefault && userId) {
       await this.prisma.address.updateMany({
         where: { userId, isDefault: true },
         data: { isDefault: false },
       });
     }
 
-    // If this is the first address, make it default
-    const addressCount = await this.prisma.address.count({
-      where: { userId },
-    });
-
-    const isDefault = createAddressDto.isDefault ?? addressCount === 0;
+    // If this is the first address for authenticated user, make it default
+    // For guest users (null userId), never set as default
+    let isDefault = false;
+    if (userId) {
+      const addressCount = await this.prisma.address.count({
+        where: { userId },
+      });
+      isDefault = createAddressDto.isDefault ?? addressCount === 0;
+    }
 
     return this.prisma.address.create({
       data: {
         ...createAddressDto,
-        userId,
+        userId: userId || null,
         isDefault,
       },
     });

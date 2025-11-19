@@ -119,6 +119,33 @@ const [paymentMethod, setPaymentMethod] = useState('card');
 const [paymentMethod] = useState('bank_transfer'); // Fixed value, no setter needed
 ```
 
+### Address Model Changes
+
+**Current Prisma Schema:**
+```prisma
+model Address {
+  id              String   @id @default(uuid())
+  userId          String   // Required - prevents guest checkout
+  // ...
+}
+```
+
+**Updated Prisma Schema:**
+```prisma
+model Address {
+  id              String   @id @default(uuid())
+  userId          String?  // Optional - allows guest checkout
+  // ...
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+```
+
+**Rationale:**
+- Guest users need to create addresses without authentication
+- Making `userId` optional allows address creation for both authenticated and guest users
+- Orphaned addresses (null userId) will be cleaned up periodically
+- Addresses can be linked to users later if guests register
+
 ### Order Creation Data
 
 ```typescript
@@ -382,9 +409,36 @@ Both requests happen in parallel for optimal performance.
 
 ### Backend Implementation
 
-#### Payment Settings Model
+#### Database Schema Changes
 
-Add to Prisma schema:
+**1. Update Address Model:**
+
+```prisma
+model Address {
+  id              String   @id @default(uuid())
+  userId          String?  // Changed from String to String? (optional)
+  fullName        String
+  phone           String
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  postalCode      String
+  country         String
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shippingOrders  Order[]  @relation("ShippingAddress")
+  billingOrders   Order[]  @relation("BillingAddress")
+
+  @@index([userId])
+  @@map("addresses")
+}
+```
+
+**2. Add Payment Settings Model:**
 
 ```prisma
 model PaymentSettings {
@@ -395,6 +449,78 @@ model PaymentSettings {
   qrCodeUrl     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+```
+
+#### Address Service Updates
+
+Update the address service to handle optional userId:
+
+```typescript
+// backend/src/users/users.service.ts (or addresses.service.ts)
+async createAddress(createAddressDto: CreateAddressDto, userId?: string) {
+  // Allow address creation with or without userId
+  return this.prisma.address.create({
+    data: {
+      ...createAddressDto,
+      userId: userId || null, // null for guest users
+    },
+  });
+}
+```
+
+#### Orders Service Updates
+
+Update validation to allow addresses without userId:
+
+```typescript
+// backend/src/orders/orders.service.ts
+async create(createOrderDto: CreateOrderDto, userId?: string) {
+  // Verify addresses exist
+  const shippingAddress = await this.prisma.address.findUnique({
+    where: { id: shippingAddressId },
+  });
+
+  if (!shippingAddress) {
+    throw new NotFoundException('Shipping address not found');
+  }
+
+  // Only check ownership if user is authenticated AND address has a userId
+  if (userId && shippingAddress.userId && shippingAddress.userId !== userId) {
+    throw new ForbiddenException('Shipping address does not belong to user');
+  }
+
+  // Similar validation for billing address...
+}
+```
+
+#### Address Cleanup Service
+
+Create a scheduled task to clean up orphaned guest addresses:
+
+```typescript
+// backend/src/addresses/address-cleanup.service.ts
+@Injectable()
+export class AddressCleanupService {
+  constructor(private prisma: PrismaService) {}
+
+  @Cron('0 0 * * *') // Run daily at midnight
+  async cleanupOrphanedAddresses() {
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    // Delete addresses with null userId older than 90 days
+    const result = await this.prisma.address.deleteMany({
+      where: {
+        userId: null,
+        createdAt: {
+          lt: ninetyDaysAgo,
+        },
+      },
+    });
+
+    console.log(`Cleaned up ${result.count} orphaned guest addresses`);
+  }
 }
 ```
 

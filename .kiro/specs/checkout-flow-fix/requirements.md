@@ -29,6 +29,7 @@ This specification addresses the complete checkout and order confirmation flow t
 3. WHEN a user completes the shipping method selection, THE Checkout System SHALL proceed directly to order review
 4. THE Checkout System SHALL not display any payment method selection interface to the user
 5. WHEN an order is placed, THE Checkout System SHALL record the payment method as bank transfer
+6. WHEN a guest user enters a shipping address, THE Checkout System SHALL create an address record without requiring user authentication
 
 ### Requirement 2
 
@@ -96,3 +97,16 @@ This specification addresses the complete checkout and order confirmation flow t
 3. WHEN redirecting to login after authentication failure, THE Checkout System SHALL preserve the current locale in the redirect URL
 4. WHEN an authentication error occurs on the order confirmation page, THE Checkout System SHALL not redirect guest users to login
 5. WHEN an authentication error occurs, THE Checkout System SHALL preserve browser network activity for debugging purposes
+
+### Requirement 7
+
+**User Story:** As a system administrator, I want guest users to be able to create addresses without authentication, so that guest checkout can function properly
+
+#### Acceptance Criteria
+
+1. THE Address model SHALL allow the userId field to be optional
+2. WHEN a guest user creates an address, THE Checkout System SHALL create an address record with a null userId
+3. WHEN an authenticated user creates an address, THE Checkout System SHALL create an address record with their userId
+4. THE Checkout System SHALL validate address data regardless of whether the user is authenticated
+5. WHEN an address has a null userId, THE Checkout System SHALL allow it to be used for order creation
+6. THE Checkout System SHALL implement a cleanup process to remove orphaned guest addresses older than 90 days
