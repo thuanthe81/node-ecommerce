@@ -64,10 +64,13 @@ apiClient.interceptors.response.use(
         // This allows guest users to view their order after checkout
         if (typeof window !== 'undefined') {
           const currentPath = window.location.pathname;
-          const isOrderConfirmation = currentPath.includes('/orders/') && currentPath.includes('/confirmation');
+          const isOrderConfirmation =  currentPath.includes('/checkout') || currentPath.includes('/orders/') || currentPath.includes('/confirmation');
 
           if (!isOrderConfirmation) {
             window.location.href = '/login';
+            // Dispatch custom event for authentication failure
+            // This will be handled by AuthContext to perform client-side navigation
+            // window.dispatchEvent(new CustomEvent('auth:logout'));
           }
         }
 

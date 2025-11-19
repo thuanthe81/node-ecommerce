@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { authApi, User, RegisterData, LoginData } from '@/lib/auth-api';
 
 interface AuthContextType {
@@ -18,6 +19,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Load user from localStorage on mount
@@ -36,15 +39,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    // Handle authentication logout event from API client
+    const handleAuthLogout = () => {
+      // Clear user state
+      setUser(null);
+
+      // Extract locale from current pathname
+      // Pathname format: /[locale]/... or just /...
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const locale = pathSegments[0] || 'en';
+
+      // Use Next.js router for client-side navigation (no page reload)
+      router.push(`/${locale}/login`);
+    };
+
+    // Add event listener for custom auth:logout event
+    window.addEventListener('auth:logout', handleAuthLogout);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('auth:logout', handleAuthLogout);
+    };
+  }, [router, pathname]);
+
   const login = async (data: LoginData) => {
     try {
       const response = await authApi.login(data);
-      
+
       // Store tokens and user
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       setUser(response.user);
     } catch (error) {
       console.error('Login failed:', error);
@@ -55,12 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     try {
       const response = await authApi.register(data);
-      
+
       // Store tokens and user
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       setUser(response.user);
     } catch (error) {
       console.error('Registration failed:', error);

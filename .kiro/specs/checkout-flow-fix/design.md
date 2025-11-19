@@ -794,3 +794,143 @@ export async function updateBankTransferSettings(
    - Step 2 renders faster without payment UI
    - Fewer form elements to manage
    - Cleaner component structure
+
+## API Client Authentication Handling
+
+### Current Issue
+
+The current `api-client.ts` implementation has a critical flaw in its authentication error handling:
+
+```typescript
+// Current problematic code
+if (!isOrderConfirmation) {
+  window.location.href = '/login';  // ❌ Causes full page reload
+}
+```
+
+**Problems:**
+1. Uses `window.location.href` which causes a full page reload
+2. Loses all browser network activity (DevTools network tab is cleared)
+3. Doesn't preserve locale in redirect URL
+4. Interrupts user experience with jarring page reload
+
+### Solution
+
+Replace `window.location.href` with Next.js router for client-side navigation:
+
+```typescript
+// Improved implementation
+import { useRouter } from 'next/navigation';
+
+// In the interceptor
+if (!isOrderConfirmation) {
+  // Use Next.js router for client-side navigation
+  const router = useRouter();
+  const locale = window.location.pathname.split('/')[1] || 'en';
+  router.push(`/${locale}/login`);
+}
+```
+
+**However**, axios interceptors cannot directly use React hooks. The proper solution is:
+
+1. **Create a custom event system** to communicate authentication failures
+2. **Handle redirects at the app level** using Next.js router
+3. **Preserve network activity** by avoiding full page reloads
+
+### Implementation Approach
+
+**Step 1: Remove window.location.href redirect from api-client.ts**
+
+```typescript
+// Response interceptor to handle token refresh
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        const response = await axios.post(
+          `${apiClient.defaults.baseURL}/auth/refresh`,
+          { refreshToken }
+        );
+
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+
+        localStorage.setItem('accessToken', newAccessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        // Clear tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+
+        // Dispatch custom event for auth failure
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname;
+          const isOrderConfirmation = currentPath.includes('/orders/') && currentPath.includes('/confirmation');
+
+          if (!isOrderConfirmation) {
+            window.dispatchEvent(new CustomEvent('auth:logout'));
+          }
+        }
+
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+```
+
+**Step 2: Handle auth events in AuthContext**
+
+Update the AuthContext to listen for the custom event and handle redirects using Next.js router:
+
+```typescript
+// In AuthContext
+useEffect(() => {
+  const handleAuthLogout = () => {
+    setUser(null);
+    router.push(`/${locale}/login`);
+  };
+
+  window.addEventListener('auth:logout', handleAuthLogout);
+  return () => window.removeEventListener('auth:logout', handleAuthLogout);
+}, [router, locale]);
+```
+
+### Benefits
+
+1. **No page reload** - Preserves network activity in DevTools
+2. **Locale-aware** - Redirects to correct locale login page
+3. **Better UX** - Smooth client-side navigation
+4. **Debuggable** - Network requests remain visible for debugging
+5. **Consistent** - Uses Next.js navigation throughout the app
+
+### Error Handling Strategy
+
+1. **401 Unauthorized**
+   - Try token refresh first
+   - If refresh fails, dispatch auth:logout event
+   - AuthContext handles redirect with router.push()
+
+2. **Order Confirmation Page**
+   - Skip redirect for guest users viewing their order
+   - Allow access via order ID without authentication
+
+3. **Network Activity Preservation**
+   - No full page reloads
+   - All API calls remain visible in DevTools
+   - Easier debugging of authentication issues

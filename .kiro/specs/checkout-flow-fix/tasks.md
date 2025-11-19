@@ -185,3 +185,26 @@
   - Test all error scenarios
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 5.5, 5.6_
 
+- [ ] 17. Fix authentication error handling in API client
+- [x] 17.1 Remove window.location.href redirect from api-client.ts
+  - Replace window.location.href with custom event dispatch
+  - Dispatch 'auth:logout' event when token refresh fails
+  - Preserve order confirmation page exception for guest users
+  - Ensure tokens are cleared before dispatching event
+  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+
+- [x] 17.2 Update AuthContext to handle auth:logout event
+  - Add event listener for 'auth:logout' custom event
+  - Use Next.js router.push() for client-side navigation to login
+  - Preserve locale in login redirect URL
+  - Clean up event listener on component unmount
+  - _Requirements: 6.1, 6.2, 6.3, 6.5_
+
+- [ ] 17.3 Test authentication error handling without page reload
+  - Simulate token expiration during checkout
+  - Verify no full page reload occurs
+  - Verify network activity is preserved in DevTools
+  - Verify redirect to login uses correct locale
+  - Test that order confirmation page doesn't redirect for guest users
+  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+

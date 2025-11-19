@@ -84,3 +84,15 @@ This specification addresses the complete checkout and order confirmation flow t
 5. WHEN an administrator updates payment settings, THE Payment Settings SHALL persist the changes to the database
 6. WHEN the order confirmation page requests payment information, THE Payment Settings SHALL return the current bank transfer details
 7. THE Payment Settings SHALL provide a default response when no QR code image is configured
+
+### Requirement 6
+
+**User Story:** As a user, I want the checkout process to handle authentication errors gracefully without page reloads, so that I can maintain my session and debug network issues
+
+#### Acceptance Criteria
+
+1. WHEN an authentication error occurs during checkout, THE Checkout System SHALL handle the error without triggering a full page reload
+2. WHEN token refresh fails during checkout, THE Checkout System SHALL use client-side navigation instead of window.location redirects
+3. WHEN redirecting to login after authentication failure, THE Checkout System SHALL preserve the current locale in the redirect URL
+4. WHEN an authentication error occurs on the order confirmation page, THE Checkout System SHALL not redirect guest users to login
+5. WHEN an authentication error occurs, THE Checkout System SHALL preserve browser network activity for debugging purposes
