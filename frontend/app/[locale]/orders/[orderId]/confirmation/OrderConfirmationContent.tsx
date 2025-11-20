@@ -470,7 +470,7 @@ export default function OrderConfirmationContent() {
             </dl>
 
             {/* Order Items - Enhanced with better mobile layout */}
-            <div className="mb-6">
+            <div className="mb-6 p-4 sm:p-6">
               <h3
                 id="order-items-heading"
                 className="font-semibold text-lg sm:text-xl mb-4 text-gray-900"
