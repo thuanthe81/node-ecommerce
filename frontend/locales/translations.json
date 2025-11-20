@@ -324,21 +324,17 @@
       "en": "By placing your order, you agree to our terms of service and privacy policy.",
       "vi": "Sau khi đặt hàng, bạn đồng ý với các điều khoản dịch vụ và chính sách bảo mật."
     },
-    "bankTransferInfo": {
-      "en": "Payment via Bank Transfer - details will be provided after order confirmation",
-      "vi": "Thanh toán qua Chuyển khoản Ngân hàng - chi tiết sẽ được cung cấp sau khi xác nhận đơn hàng"
-    },
-    "paymentMethodLabel": {
-      "en": "Payment Method",
-      "vi": "Phương thức thanh toán"
+    "backToSavedAddress": {
+      "en": "Back to saved address",
+      "vi": "Quay lại địa chỉ đã lưu"
     },
     "bankTransfer": {
       "en": "Bank Transfer",
       "vi": "Chuyển khoản Ngân hàng"
     },
-    "backToSavedAddress": {
-      "en": "Back to saved address",
-      "vi": "Quay lại địa chỉ đã lưu"
+    "bankTransferInfo": {
+      "en": "Payment via Bank Transfer - details will be provided after order confirmation",
+      "vi": "Thanh toán qua Chuyển khoản Ngân hàng - chi tiết sẽ được cung cấp sau khi xác nhận đơn hàng"
     },
     "billingAddessSame": {
       "en": "Billing address same as shipping address",
@@ -364,11 +360,19 @@
       "en": "Guest Checkout",
       "vi": "Thanh toán không cần đăng ký"
     },
+    "orderNotes": {
+      "en": "Order Notes",
+      "vi": "Ghi chú đơn hàng"
+    },
     "orderSummary": {
       "en": "Order Summary",
       "vi": "Tóm tắt đơn hàng"
     },
     "paymentMethod": {
+      "en": "Payment Method",
+      "vi": "Phương thức thanh toán"
+    },
+    "paymentMethodLabel": {
       "en": "Payment Method",
       "vi": "Phương thức thanh toán"
     },
@@ -395,10 +399,6 @@
     "selectShippingAddress": {
       "en": "Select shipping address",
       "vi": "Chọn địa chỉ giao hàng"
-    },
-    "orderNotes": {
-      "en": "Order Notes",
-      "vi": "Ghi chú đơn hàng"
     },
     "shippingAddress": {
       "en": "Shipping Address",
@@ -540,10 +540,6 @@
       "en": "Items",
       "vi": "Sản phẩm"
     },
-    "optional" : {
-      "en": "Optional",
-      "vi": "Tùy chọn"
-    },
     "loading": {
       "en": "Loading...",
       "vi": "Đang tải..."
@@ -595,6 +591,10 @@
     "oldest": {
       "en": "Oldest",
       "vi": "Cũ nhất"
+    },
+    "optional": {
+      "en": "Optional",
+      "vi": "Tùy chọn"
     },
     "orders": {
       "en": "Orders",
@@ -802,6 +802,14 @@
     }
   },
   "orders": {
+    "accountName": {
+      "en": "Account Name",
+      "vi": "Tên tài khoản"
+    },
+    "accountNumber": {
+      "en": "Account Number",
+      "vi": "Số tài khoản"
+    },
     "actions": {
       "en": "Actions",
       "vi": "Thao tác"
@@ -809,6 +817,18 @@
     "allStatuses": {
       "en": "All Statuses",
       "vi": "Tất cả trạng thái"
+    },
+    "amountToTransfer": {
+      "en": "Amount to Transfer",
+      "vi": "Số tiền chuyển khoản"
+    },
+    "bankDetails": {
+      "en": "Bank Account Details",
+      "vi": "Thông tin tài khoản ngân hàng"
+    },
+    "bankName": {
+      "en": "Bank Name",
+      "vi": "Tên ngân hàng"
     },
     "billingInfo": {
       "en": "Billing Information",
@@ -830,6 +850,14 @@
       "en": "Are you sure you want to process this refund?",
       "vi": "Bạn có chắc muốn hoàn tiền cho đơn hàng này?"
     },
+    "contactSupport": {
+      "en": "If the problem persists, please contact our support team.",
+      "vi": "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ đội hỗ trợ của chúng tôi."
+    },
+    "continueShopping": {
+      "en": "Continue Shopping",
+      "vi": "Tiếp tục mua sắm"
+    },
     "customer": {
       "en": "Customer",
       "vi": "Khách hàng"
@@ -846,6 +874,10 @@
       "en": "Date Range",
       "vi": "Khoảng thời gian"
     },
+    "deliveryAddress": {
+      "en": "Delivery Address",
+      "vi": "Địa chỉ giao hàng"
+    },
     "discount": {
       "en": "Discount",
       "vi": "Giảm giá"
@@ -853,6 +885,14 @@
     "downloadLabel": {
       "en": "Download Label",
       "vi": "Tải nhãn"
+    },
+    "failedLoadOrder": {
+      "en": "Failed to load order details. Please try again.",
+      "vi": "Không thể tải chi tiết đơn hàng. Xin vui lòng thử lại!"
+    },
+    "failedLoadingPaymentInstructions": {
+      "en": "Failed to load payment instructions",
+      "vi": "Không thể tải hướng dẫn thanh toán"
     },
     "filterByStatus": {
       "en": "Filter by Status",
@@ -870,6 +910,10 @@
       "en": "Generate Shipping Label",
       "vi": "Tạo nhãn vận chuyển"
     },
+    "items": {
+      "en": "Items",
+      "vi": "Sản phẩm"
+    },
     "labelError": {
       "en": "Failed to generate shipping label",
       "vi": "Tạo nhãn vận chuyển thất bại"
@@ -877,6 +921,26 @@
     "labelGenerated": {
       "en": "Shipping label generated successfully",
       "vi": "Tạo nhãn vận chuyển thành công"
+    },
+    "loadingError": {
+      "en": "There was an error loading your order details.",
+      "vi": "Đã xảy ra lỗi khi tải chi tiết đơn hàng của bạn."
+    },
+    "loadingOrder": {
+      "en": "Loading order details...",
+      "vi": "Đang tải chi tiết đơn hàng..."
+    },
+    "loadingPaymentInstructions": {
+      "en": "Loading payment instructions...",
+      "vi": "Đang tải hướng dẫn thanh toán..."
+    },
+    "networkError": {
+      "en": "No internet connection. Please check your network and try again.",
+      "vi": "Không có kết nối internet. Vui lòng kiểm tra mạng và thử lại."
+    },
+    "networkLoadingPaymentInstructions": {
+      "en": "Network error loading payment instructions",
+      "vi": "Lỗi mạng khi tải hướng dẫn thanh toán"
     },
     "noOrders": {
       "en": "No orders found",
@@ -886,25 +950,37 @@
       "en": "Notes",
       "vi": "Ghi chú"
     },
+    "orderDate": {
+      "en": "Order date",
+      "vi": "Ngày đặt hàng"
+    },
     "orderDetails": {
-      "en": "Order Details",
+      "en": "Order details",
       "vi": "Chi tiết đơn hàng"
     },
     "orderInfo": {
-      "en": "Order Information",
+      "en": "Order information",
       "vi": "Thông tin đơn hàng"
     },
     "orderItems": {
-      "en": "Order Items",
+      "en": "Order items",
       "vi": "Sản phẩm đã đặt"
     },
     "orderList": {
-      "en": "Order List",
+      "en": "Order list",
       "vi": "Danh sách đơn hàng"
     },
     "orderManagement": {
-      "en": "Order Management",
+      "en": "Order management",
       "vi": "Quản lý đơn hàng"
+    },
+    "orderNotFound": {
+      "en": "Order not found",
+      "vi": "Không tìm thấy đơn hàng"
+    },
+    "orderNotFoundDesc": {
+      "en": "The order you are looking for does not exist or you do not have permission to view it.",
+      "vi": "Đơn hàng bạn đang tìm không tồn tại hoặc bạn không có quyền xem."
     },
     "orderNumber": {
       "en": "Order Number",
@@ -914,6 +990,10 @@
       "en": "Partial Refund",
       "vi": "Hoàn tiền một phần"
     },
+    "paymentEmailNotice": {
+      "en": "Payment instructions will be sent to your email.",
+      "vi": "Hướng dẫn thanh toán sẽ được gửi đến email của bạn."
+    },
     "paymentFailed": {
       "en": "Failed",
       "vi": "Thất bại"
@@ -922,9 +1002,21 @@
       "en": "Payment Information",
       "vi": "Thông tin thanh toán"
     },
+    "paymentInstructions": {
+      "en": "Payment Instructions",
+      "vi": "Hướng dẫn thanh toán"
+    },
+    "paymentInstructionsUnavailable": {
+      "en": "Payment instructions unavailable",
+      "vi": "Hướng dẫn thanh toán chưa sẵn sàng"
+    },
     "paymentMethod": {
       "en": "Payment Method",
       "vi": "Phương thức thanh toán"
+    },
+    "paymentNotice": {
+      "en": "Please complete your payment via bank transfer to the account below. Your order will be processed once payment is received.",
+      "vi": "Vui lòng hoàn tất thanh toán qua chuyển khoản ngân hàng đến tài khoản bên dưới. Đơn hàng của bạn sẽ được xử lý sau khi nhận được thanh toán."
     },
     "paymentPaid": {
       "en": "Paid",
@@ -942,9 +1034,33 @@
       "en": "Payment Status",
       "vi": "Trạng thái thanh toán"
     },
+    "permissionDenied": {
+      "en": "You do not have permission to view this order.",
+      "vi": "Bạn không có quyền xem đơn hàng này."
+    },
+    "phone": {
+      "en": "Phone",
+      "vi": "Điện thoại"
+    },
+    "printOrder": {
+      "en": "Print Order",
+      "vi": "In đơn hàng"
+    },
     "processRefund": {
       "en": "Process Refund",
       "vi": "Xử lý hoàn tiền"
+    },
+    "qrCodeAlt": {
+      "en": "Bank Transfer QR Code",
+      "vi": "Mã QR chuyển khoản ngân hàng"
+    },
+    "qrHint": {
+      "en": "Scan this QR code with your banking app",
+      "vi": "Quét mã QR này bằng ứng dụng ngân hàng của bạn"
+    },
+    "quantity": {
+      "en": "Quantity",
+      "vi": "Số lượng"
     },
     "refund": {
       "en": "Refund",
@@ -965,6 +1081,10 @@
     "refundSuccess": {
       "en": "Refund processed successfully",
       "vi": "Hoàn tiền thành công"
+    },
+    "scanToPay": {
+      "en": "Scan to Pay",
+      "vi": "Quét mã để thanh toán"
     },
     "searchPlaceholder": {
       "en": "Search by order number or email...",
@@ -1018,9 +1138,21 @@
       "en": "Subtotal",
       "vi": "Tạm tính"
     },
+    "successTitle": {
+      "en": "Order Placed Successfully!",
+      "vi": "Đặt hàng thành công!"
+    },
     "tax": {
       "en": "Tax",
       "vi": "Thuế"
+    },
+    "timeoutError": {
+      "en": "Request timed out. Please check your connection and try again.",
+      "vi": "Yêu cầu hết thời gian. Vui lòng kiểm tra kết nối và thử lại."
+    },
+    "timeoutLoadingPaymentInstructions": {
+      "en": "Request timed out loading payment instructions",
+      "vi": "Hết thời gian yêu cầu tải hướng dẫn thanh toán"
     },
     "to": {
       "en": "To",
@@ -1034,6 +1166,10 @@
       "en": "Tracking Number",
       "vi": "Mã vận đơn"
     },
+    "tryAgain": {
+      "en": "Try Again",
+      "vi": "Thử lại"
+    },
     "updateError": {
       "en": "Failed to update order status",
       "vi": "Cập nhật trạng thái đơn hàng thất bại"
@@ -1045,6 +1181,10 @@
     "updateSuccess": {
       "en": "Order status updated successfully",
       "vi": "Cập nhật trạng thái đơn hàng thành công"
+    },
+    "viewAllOrders": {
+      "en": "View All Orders",
+      "vi": "Xem tất cả đơn hàng"
     },
     "viewDetails": {
       "en": "View Details",
