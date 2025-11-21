@@ -1360,5 +1360,303 @@
         "vi": "Sản phẩm - Handmade E-commerce"
       }
     }
+  },
+  "validation": {
+    "fullNameRequired": {
+      "en": "Full name is required",
+      "vi": "Họ và tên là bắt buộc"
+    },
+    "fullNameMinLength": {
+      "en": "Full name must be at least 2 characters",
+      "vi": "Họ và tên phải có ít nhất 2 ký tự"
+    },
+    "phoneRequired": {
+      "en": "Phone number is required",
+      "vi": "Số điện thoại là bắt buộc"
+    },
+    "phoneInvalid": {
+      "en": "Please enter a valid phone number",
+      "vi": "Vui lòng nhập số điện thoại hợp lệ"
+    },
+    "phoneMinDigits": {
+      "en": "Phone number must be at least 10 digits",
+      "vi": "Số điện thoại phải có ít nhất 10 chữ số"
+    },
+    "addressRequired": {
+      "en": "Address is required",
+      "vi": "Địa chỉ là bắt buộc"
+    },
+    "addressMinLength": {
+      "en": "Address must be at least 5 characters",
+      "vi": "Địa chỉ phải có ít nhất 5 ký tự"
+    },
+    "cityRequired": {
+      "en": "City is required",
+      "vi": "Thành phố là bắt buộc"
+    },
+    "cityMinLength": {
+      "en": "City must be at least 2 characters",
+      "vi": "Thành phố phải có ít nhất 2 ký tự"
+    },
+    "stateRequired": {
+      "en": "State/Province is required",
+      "vi": "Tiểu bang/Tỉnh là bắt buộc"
+    },
+    "postalCodeRequired": {
+      "en": "Postal code is required",
+      "vi": "Mã bưu điện là bắt buộc"
+    },
+    "postalCodeInvalid": {
+      "en": "Please enter a valid postal code",
+      "vi": "Vui lòng nhập mã bưu điện hợp lệ"
+    },
+    "countryCodeRequired": {
+      "en": "Country code is required",
+      "vi": "Mã quốc gia là bắt buộc"
+    },
+    "countryCodeLength": {
+      "en": "Country code must be exactly 2 characters (e.g., VN, US)",
+      "vi": "Mã quốc gia phải có đúng 2 ký tự (ví dụ: VN, US)"
+    },
+    "countryCodeFormat": {
+      "en": "Country code must be 2 letters (e.g., VN, US)",
+      "vi": "Mã quốc gia phải là 2 chữ cái (ví dụ: VN, US)"
+    },
+    "fixErrors": {
+      "en": "Please fix the errors in the form before submitting.",
+      "vi": "Vui lòng sửa các lỗi trong biểu mẫu trước khi gửi."
+    },
+    "valid": {
+      "en": "Valid",
+      "vi": "Hợp lệ"
+    }
+  },
+  "form": {
+    "addressSavedSuccess": {
+      "en": "Address saved successfully!",
+      "vi": "Lưu địa chỉ thành công!"
+    },
+    "addressInfoSaved": {
+      "en": "Address information saved!",
+      "vi": "Thông tin địa chỉ đã được lưu!"
+    },
+    "formComplete": {
+      "en": "Form is complete and ready to submit",
+      "vi": "Biểu mẫu đã hoàn tất và sẵn sàng gửi"
+    },
+    "countryCodeLabel": {
+      "en": "Country Code",
+      "vi": "Mã quốc gia"
+    },
+    "countryCodePlaceholder": {
+      "en": "VN",
+      "vi": "VN"
+    },
+    "countryCodeHint": {
+      "en": "Enter 2-letter ISO country code (e.g., VN for Vietnam, US for United States)",
+      "vi": "Nhập mã quốc gia ISO 2 chữ cái (ví dụ: VN cho Việt Nam, US cho Hoa Kỳ)"
+    },
+    "default": {
+      "en": "Default",
+      "vi": "Mặc định"
+    }
+  },
+  "admin": {
+    "slug": {
+      "en": "Slug",
+      "vi": "Slug"
+    },
+    "slugHint": {
+      "en": "URL-friendly identifier",
+      "vi": "Định danh thân thiện với URL"
+    },
+    "slugPlaceholder": {
+      "en": "summer-sale-2024",
+      "vi": "khuyen-mai-he-2024"
+    },
+    "titleEnglish": {
+      "en": "Title (English)",
+      "vi": "Tiêu đề (Tiếng Anh)"
+    },
+    "titleVietnamese": {
+      "en": "Title (Vietnamese)",
+      "vi": "Tiêu đề (Tiếng Việt)"
+    },
+    "contentEnglish": {
+      "en": "Content (English)",
+      "vi": "Nội dung (Tiếng Anh)"
+    },
+    "contentVietnamese": {
+      "en": "Content (Vietnamese)",
+      "vi": "Nội dung (Tiếng Việt)"
+    },
+    "imageUrl": {
+      "en": "Image URL",
+      "vi": "URL hình ảnh"
+    },
+    "imageUrlPlaceholder": {
+      "en": "https://example.com/banner.jpg",
+      "vi": "https://example.com/banner.jpg"
+    },
+    "linkUrl": {
+      "en": "Link URL",
+      "vi": "URL liên kết"
+    },
+    "linkUrlPlaceholder": {
+      "en": "https://example.com/sale",
+      "vi": "https://example.com/sale"
+    },
+    "displayOrder": {
+      "en": "Display Order",
+      "vi": "Thứ tự hiển thị"
+    },
+    "displayOrderHint": {
+      "en": "Lower numbers appear first",
+      "vi": "Số nhỏ hơn xuất hiện trước"
+    },
+    "published": {
+      "en": "Published (visible on website)",
+      "vi": "Đã xuất bản (hiển thị trên website)"
+    },
+    "updateBanner": {
+      "en": "Update Banner",
+      "vi": "Cập nhật Banner"
+    },
+    "createBanner": {
+      "en": "Create Banner",
+      "vi": "Tạo Banner"
+    },
+    "failedSaveBanner": {
+      "en": "Failed to save banner",
+      "vi": "Lưu banner thất bại"
+    },
+    "failedSaveCategory": {
+      "en": "Failed to save category. Please try again.",
+      "vi": "Không thể lưu danh mục. Vui lòng thử lại."
+    },
+    "basicInformation": {
+      "en": "Basic Information",
+      "vi": "Thông tin cơ bản"
+    },
+    "parentCategory": {
+      "en": "Parent Category",
+      "vi": "Danh mục cha"
+    },
+    "noneRootCategory": {
+      "en": "None (Root Category)",
+      "vi": "Không có (Danh mục gốc)"
+    },
+    "displayOrderHintCategory": {
+      "en": "Order number for sorting categories (0 = first)",
+      "vi": "Số thứ tự để sắp xếp danh mục (0 = đầu tiên)"
+    },
+    "categoryNameEnglish": {
+      "en": "Category Name (English)",
+      "vi": "Tên danh mục (Tiếng Anh)"
+    },
+    "categoryNameVietnamese": {
+      "en": "Tên danh mục (Tiếng Việt)",
+      "vi": "Tên danh mục (Tiếng Việt)"
+    },
+    "descriptionEnglish": {
+      "en": "Description (English)",
+      "vi": "Mô tả (Tiếng Anh)"
+    },
+    "descriptionVietnamese": {
+      "en": "Mô tả (Tiếng Việt)",
+      "vi": "Mô tả (Tiếng Việt)"
+    },
+    "image": {
+      "en": "Image",
+      "vi": "Hình ảnh"
+    },
+    "uploadImage": {
+      "en": "Upload Image",
+      "vi": "Tải lên hình ảnh"
+    },
+    "activeCategory": {
+      "en": "Active category",
+      "vi": "Kích hoạt danh mục"
+    },
+    "saveCategory": {
+      "en": "Save Category",
+      "vi": "Lưu danh mục"
+    },
+    "contentType": {
+      "en": "Content Type",
+      "vi": "Loại nội dung"
+    },
+    "page": {
+      "en": "Page",
+      "vi": "Trang"
+    },
+    "faq": {
+      "en": "FAQ",
+      "vi": "Câu hỏi thường gặp"
+    },
+    "banner": {
+      "en": "Banner",
+      "vi": "Banner"
+    },
+    "slugHintUrl": {
+      "en": "Used in URL: /pages/{slug}",
+      "vi": "Sử dụng trong URL: /pages/{slug}"
+    },
+    "englishContent": {
+      "en": "English Content",
+      "vi": "Nội dung Tiếng Anh"
+    },
+    "vietnameseContent": {
+      "en": "Vietnamese Content",
+      "vi": "Nội dung Tiếng Việt"
+    },
+    "preview": {
+      "en": "Preview",
+      "vi": "Xem trước"
+    },
+    "supportsHtml": {
+      "en": "Supports HTML formatting",
+      "vi": "Hỗ trợ định dạng HTML"
+    },
+    "htmlPlaceholder": {
+      "en": "You can use HTML tags for formatting",
+      "vi": "Bạn có thể sử dụng thẻ HTML để định dạng"
+    },
+    "publishContent": {
+      "en": "Publish this content",
+      "vi": "Xuất bản nội dung này"
+    },
+    "updateContent": {
+      "en": "Update Content",
+      "vi": "Cập nhật nội dung"
+    },
+    "createContent": {
+      "en": "Create Content",
+      "vi": "Tạo nội dung"
+    },
+    "failedSaveContent": {
+      "en": "Failed to save content",
+      "vi": "Lưu nội dung thất bại"
+    },
+    "urlFriendlySlug": {
+      "en": "url-friendly-slug",
+      "vi": "slug-than-thien-url"
+    },
+    "categoryPreview": {
+      "en": "Category preview",
+      "vi": "Xem trước danh mục"
+    },
+    "handmadeJewelry": {
+      "en": "handmade-jewelry",
+      "vi": "trang-suc-thu-cong"
+    },
+    "urlFriendlyHint": {
+      "en": "URL-friendly identifier (e.g., handmade-jewelry)",
+      "vi": "URL thân thiện (ví dụ: trang-suc-thu-cong)"
+    },
+    "required": {
+      "en": "*",
+      "vi": "*"
+    }
   }
 }

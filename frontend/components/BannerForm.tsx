@@ -14,6 +14,54 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const t = (key: string) => {
+    // Simple translation helper for admin forms
+    const translations: Record<string, Record<string, string>> = {
+      en: {
+        'admin.slug': 'Slug (URL identifier)',
+        'admin.slugPlaceholder': 'summer-sale-2024',
+        'admin.titleEnglish': 'Title (English)',
+        'admin.titleVietnamese': 'Title (Vietnamese)',
+        'admin.contentEnglish': 'Content (English)',
+        'admin.contentVietnamese': 'Content (Vietnamese)',
+        'admin.imageUrl': 'Image URL',
+        'admin.imageUrlPlaceholder': 'https://example.com/banner.jpg',
+        'admin.linkUrl': 'Link URL',
+        'admin.linkUrlPlaceholder': 'https://example.com/sale',
+        'admin.displayOrder': 'Display Order',
+        'admin.displayOrderHint': 'Lower numbers appear first',
+        'admin.published': 'Published (visible on website)',
+        'admin.updateBanner': 'Update Banner',
+        'admin.createBanner': 'Create Banner',
+        'admin.failedSaveBanner': 'Failed to save banner',
+        'common.saving': 'Saving...',
+        'common.cancel': 'Cancel',
+        'admin.required': '*',
+      },
+      vi: {
+        'admin.slug': 'Slug (định danh URL)',
+        'admin.slugPlaceholder': 'khuyen-mai-he-2024',
+        'admin.titleEnglish': 'Tiêu đề (Tiếng Anh)',
+        'admin.titleVietnamese': 'Tiêu đề (Tiếng Việt)',
+        'admin.contentEnglish': 'Nội dung (Tiếng Anh)',
+        'admin.contentVietnamese': 'Nội dung (Tiếng Việt)',
+        'admin.imageUrl': 'URL hình ảnh',
+        'admin.imageUrlPlaceholder': 'https://example.com/banner.jpg',
+        'admin.linkUrl': 'URL liên kết',
+        'admin.linkUrlPlaceholder': 'https://example.com/sale',
+        'admin.displayOrder': 'Thứ tự hiển thị',
+        'admin.displayOrderHint': 'Số nhỏ hơn xuất hiện trước',
+        'admin.published': 'Đã xuất bản (hiển thị trên website)',
+        'admin.updateBanner': 'Cập nhật Banner',
+        'admin.createBanner': 'Tạo Banner',
+        'admin.failedSaveBanner': 'Lưu banner thất bại',
+        'common.saving': 'Đang lưu...',
+        'common.cancel': 'Hủy',
+        'admin.required': '*',
+      },
+    };
+    return translations[locale]?.[key] || key;
+  };
 
   const [formData, setFormData] = useState<CreateContentData>({
     slug: banner?.slug || '',
@@ -37,7 +85,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
       await onSubmit(formData);
       router.push(`/${locale}/admin/banners`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save banner');
+      setError(err.response?.data?.message || t('admin.failedSaveBanner'));
     } finally {
       setLoading(false);
     }
@@ -45,7 +93,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       setFormData(prev => ({
         ...prev,
@@ -76,7 +124,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
         {/* Slug */}
         <div className="md:col-span-2">
           <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-            Slug (URL identifier) *
+            {t('admin.slug')} {t('admin.required')}
           </label>
           <input
             type="text"
@@ -86,14 +134,14 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
             onChange={handleChange}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="summer-sale-2024"
+            placeholder={t('admin.slugPlaceholder')}
           />
         </div>
 
         {/* Title English */}
         <div>
           <label htmlFor="titleEn" className="block text-sm font-medium text-gray-700 mb-2">
-            Title (English) *
+            {t('admin.titleEnglish')} {t('admin.required')}
           </label>
           <input
             type="text"
@@ -109,7 +157,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
         {/* Title Vietnamese */}
         <div>
           <label htmlFor="titleVi" className="block text-sm font-medium text-gray-700 mb-2">
-            Title (Vietnamese) *
+            {t('admin.titleVietnamese')} {t('admin.required')}
           </label>
           <input
             type="text"
@@ -125,7 +173,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
         {/* Content English */}
         <div>
           <label htmlFor="contentEn" className="block text-sm font-medium text-gray-700 mb-2">
-            Content (English) *
+            {t('admin.contentEnglish')} {t('admin.required')}
           </label>
           <textarea
             id="contentEn"
@@ -141,7 +189,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
         {/* Content Vietnamese */}
         <div>
           <label htmlFor="contentVi" className="block text-sm font-medium text-gray-700 mb-2">
-            Content (Vietnamese) *
+            {t('admin.contentVietnamese')} {t('admin.required')}
           </label>
           <textarea
             id="contentVi"
@@ -157,7 +205,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
         {/* Image URL */}
         <div>
           <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-            Image URL
+            {t('admin.imageUrl')}
           </label>
           <input
             type="url"
@@ -166,14 +214,14 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
             value={formData.imageUrl}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com/banner.jpg"
+            placeholder={t('admin.imageUrlPlaceholder')}
           />
         </div>
 
         {/* Link URL */}
         <div>
           <label htmlFor="linkUrl" className="block text-sm font-medium text-gray-700 mb-2">
-            Link URL
+            {t('admin.linkUrl')}
           </label>
           <input
             type="url"
@@ -182,14 +230,14 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
             value={formData.linkUrl}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com/sale"
+            placeholder={t('admin.linkUrlPlaceholder')}
           />
         </div>
 
         {/* Display Order */}
         <div>
           <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700 mb-2">
-            Display Order
+            {t('admin.displayOrder')}
           </label>
           <input
             type="number"
@@ -200,7 +248,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
             min="0"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <p className="mt-1 text-sm text-gray-500">Lower numbers appear first</p>
+          <p className="mt-1 text-sm text-gray-500">{t('admin.displayOrderHint')}</p>
         </div>
       </div>
 
@@ -215,7 +263,7 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
         <label htmlFor="isPublished" className="ml-2 block text-sm text-gray-700">
-          Published (visible on website)
+          {t('admin.published')}
         </label>
       </div>
 
@@ -226,14 +274,14 @@ export default function BannerForm({ banner, onSubmit, locale }: BannerFormProps
           disabled={loading}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {loading ? 'Saving...' : banner ? 'Update Banner' : 'Create Banner'}
+          {loading ? t('common.saving') : banner ? t('admin.updateBanner') : t('admin.createBanner')}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     </form>

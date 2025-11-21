@@ -107,33 +107,33 @@ export default function ShippingAddressForm({
   const validateField = (name: string, value: string): string | undefined => {
     switch (name) {
       case 'fullName':
-        if (!value.trim()) return 'Full name is required';
-        if (value.trim().length < 2) return 'Full name must be at least 2 characters';
+        if (!value.trim()) return t('validation.fullNameRequired');
+        if (value.trim().length < 2) return t('validation.fullNameMinLength');
         return undefined;
       case 'phone':
-        if (!value.trim()) return 'Phone number is required';
-        if (!/^[\d\s\-\+\(\)]+$/.test(value)) return 'Please enter a valid phone number';
-        if (value.replace(/\D/g, '').length < 10) return 'Phone number must be at least 10 digits';
+        if (!value.trim()) return t('validation.phoneRequired');
+        if (!/^[\d\s\-\+\(\)]+$/.test(value)) return t('validation.phoneInvalid');
+        if (value.replace(/\D/g, '').length < 10) return t('validation.phoneMinDigits');
         return undefined;
       case 'addressLine1':
-        if (!value.trim()) return 'Address is required';
-        if (value.trim().length < 5) return 'Address must be at least 5 characters';
+        if (!value.trim()) return t('validation.addressRequired');
+        if (value.trim().length < 5) return t('validation.addressMinLength');
         return undefined;
       case 'city':
-        if (!value.trim()) return 'City is required';
-        if (value.trim().length < 2) return 'City must be at least 2 characters';
+        if (!value.trim()) return t('validation.cityRequired');
+        if (value.trim().length < 2) return t('validation.cityMinLength');
         return undefined;
       case 'state':
-        if (!value.trim()) return 'State/Province is required';
+        if (!value.trim()) return t('validation.stateRequired');
         return undefined;
       case 'postalCode':
-        if (!value.trim()) return 'Postal code is required';
-        if (!/^[\d\w\s\-]+$/.test(value)) return 'Please enter a valid postal code';
+        if (!value.trim()) return t('validation.postalCodeRequired');
+        if (!/^[\d\w\s\-]+$/.test(value)) return t('validation.postalCodeInvalid');
         return undefined;
       case 'country':
-        if (!value.trim()) return 'Country code is required';
-        if (value.trim().length !== 2) return 'Country code must be exactly 2 characters (e.g., VN, US)';
-        if (!/^[A-Z]{2}$/i.test(value.trim())) return 'Country code must be 2 letters (e.g., VN, US)';
+        if (!value.trim()) return t('validation.countryCodeRequired');
+        if (value.trim().length !== 2) return t('validation.countryCodeLength');
+        if (!/^[A-Z]{2}$/i.test(value.trim())) return t('validation.countryCodeFormat');
         return undefined;
       default:
         return undefined;
@@ -245,7 +245,7 @@ export default function ShippingAddressForm({
         postalCode: true,
         country: true,
       });
-      setError('Please fix the errors in the form before submitting.');
+      setError(t('validation.fixErrors'));
       return;
     }
 
@@ -269,7 +269,7 @@ export default function ShippingAddressForm({
         onAddressSelect(newAddress.id);
 
         // Show success message
-        setSuccessMessage('Address saved successfully!');
+        setSuccessMessage(t('form.addressSavedSuccess'));
 
         // Hide success message after 3 seconds and close form
         setTimeout(() => {
@@ -305,7 +305,7 @@ export default function ShippingAddressForm({
         onNewAddress(formData);
 
         // Show success message for guest users
-        setSuccessMessage('Address information saved!');
+        setSuccessMessage(t('form.addressInfoSaved'));
 
         // Hide success message after 2 seconds
         setTimeout(() => {
@@ -317,8 +317,7 @@ export default function ShippingAddressForm({
 
       // Set user-friendly error message
       const errorMessage = error?.response?.data?.message ||
-                          t('checkout.addressSaveError') ||
-                          'Failed to save address. Please try again.';
+                          t('checkout.addressSaveError');
       setError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -326,7 +325,7 @@ export default function ShippingAddressForm({
   };
 
   if (loading) {
-    return <div className="text-center py-8">{t('loading')}</div>;
+    return <div className="text-center py-8">{t('common.loading')}</div>;
   }
 
   return (
@@ -364,7 +363,7 @@ export default function ShippingAddressForm({
                   <div className="text-sm text-gray-600">{address.phone}</div>
                   {address.isDefault && (
                     <span className="inline-block mt-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                      Default
+                      {t('form.default')}
                     </span>
                   )}
                 </div>
@@ -408,7 +407,7 @@ export default function ShippingAddressForm({
               <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <span>Form is complete and ready to submit</span>
+              <span>{t('form.formComplete')}</span>
             </div>
           )}
 
@@ -441,7 +440,7 @@ export default function ShippingAddressForm({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Valid
+                  {t('validation.valid')}
                 </p>
               )}
             </div>
@@ -474,7 +473,7 @@ export default function ShippingAddressForm({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Valid
+                  {t('validation.valid')}
                 </p>
               )}
             </div>
@@ -508,7 +507,7 @@ export default function ShippingAddressForm({
                 <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Valid
+                {t('validation.valid')}
               </p>
             )}
           </div>
@@ -524,7 +523,7 @@ export default function ShippingAddressForm({
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             />
-            <p className="mt-1 text-xs text-gray-500">Optional</p>
+            <p className="mt-1 text-xs text-gray-500">{t('common.optional')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -556,7 +555,7 @@ export default function ShippingAddressForm({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Valid
+                  {t('validation.valid')}
                 </p>
               )}
             </div>
@@ -589,7 +588,7 @@ export default function ShippingAddressForm({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Valid
+                  {t('validation.valid')}
                 </p>
               )}
             </div>
@@ -622,7 +621,7 @@ export default function ShippingAddressForm({
                   <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Valid
+                  {t('validation.valid')}
                 </p>
               )}
             </div>
@@ -630,7 +629,7 @@ export default function ShippingAddressForm({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Country Code *
+              {t('form.countryCodeLabel')} *
             </label>
             <input
               type="text"
@@ -640,14 +639,14 @@ export default function ShippingAddressForm({
               onBlur={handleBlur}
               required
               maxLength={2}
-              placeholder="VN"
+              placeholder={t('form.countryCodePlaceholder')}
               className={getFieldClassName('country')}
               aria-invalid={!!fieldErrors.country}
               aria-describedby={fieldErrors.country ? 'country-error' : undefined}
               style={{ textTransform: 'uppercase' }}
             />
             <p className="mt-1 text-xs text-gray-500">
-              Enter 2-letter ISO country code (e.g., VN for Vietnam, US for United States)
+              {t('form.countryCodeHint')}
             </p>
             {touchedFields.country && fieldErrors.country && (
               <p id="country-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
@@ -662,7 +661,7 @@ export default function ShippingAddressForm({
                 <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Valid
+                {t('validation.valid')}
               </p>
             )}
           </div>
@@ -679,7 +678,7 @@ export default function ShippingAddressForm({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               )}
-              {submitting ? t('checkout.saving') || 'Saving...' : t('checkout.saveAddress') || 'Save Address'}
+              {submitting ? t('checkout.saving'): t('checkout.saveAddress')}
             </button>
 
             {user && savedAddresses.length > 0 && (
