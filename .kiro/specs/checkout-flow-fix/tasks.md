@@ -300,3 +300,70 @@
   - Test responsive design on mobile
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
 
+- [x] 21.5 Fix Next button not enabling when form is filled
+  - Debug why newShippingAddress state is not being set in CheckoutContent
+  - Fix the useEffect dependency array in ShippingAddressForm to properly trigger updates
+  - Ensure onNewAddress callback is called when form becomes valid
+  - Add console logging to trace the data flow from form to parent component
+  - Test that Next button enables immediately when all required fields are valid
+  - Verify the fix works for both guest users and authenticated users in new address mode
+  - _Requirements: 8.1, 8.3_
+
+- [ ] 22. Investigate and fix address filtering issue
+- [x] 22.1 Add diagnostic logging to getAddresses backend method
+  - Add logging to log the userId parameter received
+  - Add logging to log the addresses returned and their userIds
+  - Add logging to verify Prisma query execution
+  - Deploy and test to identify the root cause
+  - _Requirements: 9.1, 9.5_
+
+- [ ] 22.2 Verify JWT token and user authentication
+  - Check that JWT token contains correct userId
+  - Verify @CurrentUser() decorator extracts correct userId
+  - Test that token refresh doesn't cause userId issues
+  - Verify authentication flow is working correctly
+  - _Requirements: 9.1, 9.5_
+
+- [ ] 22.3 Verify database data integrity
+  - Query database directly to check address ownership
+  - Ensure no addresses have incorrect userId values
+  - Check for orphaned addresses that should be cleaned up
+  - Verify database constraints are in place
+  - _Requirements: 9.1, 9.5_
+
+- [x] 22.4 Add additional validation to getAddresses method
+  - Add validation to ensure all returned addresses belong to the user
+  - Log error if addresses with incorrect userId are found
+  - Throw error if data integrity issue is detected
+  - Add comprehensive error handling
+  - _Requirements: 9.1, 9.2, 9.3, 9.5_
+
+- [ ]* 22.5 Write property test for address filtering by user ID
+  - **Property 1: Address filtering by user ID**
+  - **Validates: Requirements 9.1**
+  - Generate random users and addresses
+  - Test that getAddresses only returns addresses with matching userId
+  - Verify property holds for all generated test cases
+
+- [ ]* 22.6 Write property test for cross-user address leakage prevention
+  - **Property 2: No cross-user address leakage**
+  - **Validates: Requirements 9.2**
+  - Generate multiple users with their own addresses
+  - Test that each user's getAddresses call never returns another user's addresses
+  - Verify property holds for all user combinations
+
+- [ ]* 22.7 Write property test for guest address exclusion
+  - **Property 3: Guest address exclusion for authenticated users**
+  - **Validates: Requirements 9.3**
+  - Generate authenticated users and guest addresses (null userId)
+  - Test that authenticated users never receive guest addresses
+  - Verify property holds for all test cases
+
+- [x] 22.8 Test address filtering fix end-to-end
+  - Test with multiple authenticated users
+  - Verify each user sees only their own addresses
+  - Test that guest addresses are not shown to authenticated users
+  - Test that addresses from other users are never displayed
+  - Verify fix works in production-like environment
+  - _Requirements: 9.1, 9.2, 9.3, 9.4_
+

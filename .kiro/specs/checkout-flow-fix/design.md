@@ -662,6 +662,59 @@ export async function updateBankTransferSettings(
 }
 ```
 
+## Correctness Properties
+
+*A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+
+### Acceptance Criteria Testing Prework
+
+9.1 WHEN an authenticated user loads the shipping address selection, THE Checkout System SHALL retrieve only addresses where the userId matches the authenticated user's ID
+Thoughts: This is about ensuring data isolation between users. For any authenticated user, when they request their addresses, the system should only return addresses that have their specific userId. This is a security and data privacy property that must hold for all users.
+Testable: yes - property
+
+9.2 THE Checkout System SHALL not display addresses belonging to other users
+Thoughts: This is the inverse of 9.1 - ensuring that addresses from other users are never included in the results. This is a critical security property.
+Testable: yes - property
+
+9.3 THE Checkout System SHALL not display guest addresses with null userId to authenticated users
+Thoughts: This ensures that guest addresses (which have null userId) are not shown to authenticated users. This is a data isolation property.
+Testable: yes - property
+
+9.4 WHEN the address list is displayed, THE Checkout System SHALL show only addresses that belong to the current authenticated user
+Thoughts: This is essentially a restatement of 9.1 and 9.2 combined. It's redundant with the other properties.
+Testable: redundant
+
+9.5 THE Checkout System SHALL enforce address ownership validation at the backend API level
+Thoughts: This is about implementation architecture, not a functional requirement we can test with property-based testing.
+Testable: no
+
+### Property Reflection
+
+After reviewing the prework analysis, I've identified the following redundancies:
+- Property 9.4 is redundant with properties 9.1 and 9.2 - it's essentially the same requirement stated differently
+- Property 9.5 is an implementation detail, not a testable functional property
+
+The core properties we need to test are:
+1. Address filtering by userId (9.1)
+2. Exclusion of other users' addresses (9.2)
+3. Exclusion of guest addresses from authenticated user results (9.3)
+
+These three properties together provide comprehensive coverage of the address isolation requirement.
+
+### Properties
+
+Property 1: Address filtering by user ID
+*For any* authenticated user, when they request their addresses, all returned addresses should have a userId that matches the authenticated user's ID
+**Validates: Requirements 9.1**
+
+Property 2: No cross-user address leakage
+*For any* authenticated user, when they request their addresses, none of the returned addresses should have a userId that belongs to a different user
+**Validates: Requirements 9.2**
+
+Property 3: Guest address exclusion for authenticated users
+*For any* authenticated user, when they request their addresses, none of the returned addresses should have a null userId
+**Validates: Requirements 9.3**
+
 ## Error Handling
 
 ### Order Creation Errors
@@ -1247,3 +1300,92 @@ Add new translation key:
   }
 }
 ```
+
+## Address Filtering Security Fix
+
+### Current Implementation
+
+The backend `getAddresses` method in `users.service.ts` already correctly filters addresses by userId:
+
+```typescript
+async getAddresses(userId: string) {
+  return this.prisma.address.findMany({
+    where: { userId },
+    orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+  });
+}
+```
+
+This implementation is correct and should only return addresses belonging to the authenticated user.
+
+### Potential Issues
+
+If addresses from other users are being returned, the issue could be:
+
+1. **JWT Token Issue**: The `userId` being passed to the service might be incorrect or from a different user
+2. **Database Data Issue**: There might be data corruption where addresses have incorrect userId values
+3. **Caching Issue**: Stale data might be cached somewhere in the application
+4. **Frontend State Issue**: The frontend might be displaying cached addresses from a previous user session
+
+### Verification Steps
+
+To diagnose and fix the issue:
+
+1. **Verify Backend Filtering**:
+   - Add logging to `getAddresses` to log the userId parameter
+   - Add logging to log the returned addresses and their userIds
+   - Verify that the Prisma query is executing correctly
+
+2. **Verify JWT Token**:
+   - Check that the JWT token contains the correct userId
+   - Verify the `@CurrentUser()` decorator is extracting the correct userId
+   - Ensure token refresh doesn't cause userId to change
+
+3. **Verify Database Data**:
+   - Query the database directly to check address ownership
+   - Ensure no addresses have incorrect userId values
+   - Check for any orphaned addresses that should have been cleaned up
+
+4. **Verify Frontend State**:
+   - Clear localStorage and sessionStorage before testing
+   - Ensure the frontend doesn't cache addresses across user sessions
+   - Verify that logging out clears all user-specific state
+
+### Implementation Fix
+
+If the backend filtering is not working as expected, add additional validation:
+
+```typescript
+async getAddresses(userId: string) {
+  // Log for debugging
+  console.log(`Fetching addresses for userId: ${userId}`);
+
+  const addresses = await this.prisma.address.findMany({
+    where: { userId },
+    orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+  });
+
+  // Additional validation to ensure all addresses belong to the user
+  const invalidAddresses = addresses.filter(addr => addr.userId !== userId);
+  if (invalidAddresses.length > 0) {
+    console.error(`Found ${invalidAddresses.length} addresses with incorrect userId`, {
+      requestedUserId: userId,
+      invalidAddresses: invalidAddresses.map(a => ({ id: a.id, userId: a.userId }))
+    });
+    throw new Error('Data integrity error: addresses with incorrect userId found');
+  }
+
+  console.log(`Returning ${addresses.length} addresses for user ${userId}`);
+  return addresses;
+}
+```
+
+### Testing Strategy
+
+Add property-based tests to verify address filtering:
+
+1. **Property Test 1**: For any authenticated user, all returned addresses have matching userId
+2. **Property Test 2**: For any authenticated user, no returned addresses belong to other users
+3. **Property Test 3**: For any authenticated user, no returned addresses have null userId
+
+These tests should generate random users and addresses, then verify the filtering works correctly for all combinations.

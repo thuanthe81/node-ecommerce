@@ -24,7 +24,7 @@ export class UsersController {
 
   @Get('profile')
   getProfile(@CurrentUser() user: any) {
-    return this.usersService.getProfile(user.userId);
+    return this.usersService.getProfile(user.id);
   }
 
   @Put('profile')
@@ -32,7 +32,7 @@ export class UsersController {
     @CurrentUser() user: any,
     @Body() updateProfileDto: UpdateProfileDto,
   ) {
-    return this.usersService.updateProfile(user.userId, updateProfileDto);
+    return this.usersService.updateProfile(user.id, updateProfileDto);
   }
 
   @Put('password')
@@ -40,17 +40,29 @@ export class UsersController {
     @CurrentUser() user: any,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return this.usersService.updatePassword(user.userId, updatePasswordDto);
+    return this.usersService.updatePassword(user.id, updatePasswordDto);
   }
 
   @Get('addresses')
   getAddresses(@CurrentUser() user: any) {
-    return this.usersService.getAddresses(user.userId);
+    // Diagnostic logging to verify JWT token and user extraction
+    console.log(`[UsersController.getAddresses] Request from user:`, {
+      id: user?.id,
+      email: user?.email,
+      hasUser: !!user
+    });
+
+    if (!user || !user.id) {
+      console.error(`[UsersController.getAddresses] ERROR: No user or user.id in request`);
+      throw new Error('User authentication failed');
+    }
+
+    return this.usersService.getAddresses(user.id);
   }
 
   @Get('addresses/:id')
   getAddress(@CurrentUser() user: any, @Param('id') addressId: string) {
-    return this.usersService.getAddress(user.userId, addressId);
+    return this.usersService.getAddress(user.id, addressId);
   }
 
   @Post('addresses')
@@ -60,7 +72,7 @@ export class UsersController {
     @Body() createAddressDto: CreateAddressDto,
   ) {
     // Support both authenticated and guest users
-    return this.usersService.createAddress(user?.userId || null, createAddressDto);
+    return this.usersService.createAddress(user?.id || null, createAddressDto);
   }
 
   @Put('addresses/:id')
@@ -70,7 +82,7 @@ export class UsersController {
     @Body() updateAddressDto: UpdateAddressDto,
   ) {
     return this.usersService.updateAddress(
-      user.userId,
+      user.id,
       addressId,
       updateAddressDto,
     );
@@ -78,6 +90,6 @@ export class UsersController {
 
   @Delete('addresses/:id')
   deleteAddress(@CurrentUser() user: any, @Param('id') addressId: string) {
-    return this.usersService.deleteAddress(user.userId, addressId);
+    return this.usersService.deleteAddress(user.id, addressId);
   }
 }

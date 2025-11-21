@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { userApi } from '@/lib/user-api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,6 +76,9 @@ export default function ShippingAddressForm({
     country: 'VN',
   });
 
+  // Track the last address data we sent to prevent infinite loops
+  const lastSentAddressRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (user) {
       loadSavedAddresses();
@@ -86,23 +89,53 @@ export default function ShippingAddressForm({
 
   // Real-time address updates when form becomes valid
   useEffect(() => {
-    if (isFormValid()) {
+    const formIsValid = isFormValid();
+
+    // Create a unique key for the current form data to prevent duplicate calls
+    const currentAddressKey = JSON.stringify(formData);
+
+    console.log('[ShippingAddressForm] Form validation check:', {
+      formIsValid,
+      user: !!user,
+      showNewAddressForm,
+      formData,
+      fieldErrors,
+      lastSentKey: lastSentAddressRef.current,
+      currentKey: currentAddressKey
+    });
+
+    if (formIsValid) {
+      // Check if we've already sent this exact address data
+      if (lastSentAddressRef.current === currentAddressKey) {
+        console.log('[ShippingAddressForm] Skipping - already sent this address data');
+        return;
+      }
+
       // For guest users, always update the address
       if (!user) {
+        console.log('[ShippingAddressForm] Calling onNewAddress for guest user');
+        lastSentAddressRef.current = currentAddressKey;
         onNewAddress(formData);
       }
       // For authenticated users in new address mode, update the address
       else if (showNewAddressForm) {
+        console.log('[ShippingAddressForm] Calling onNewAddress for authenticated user (new address mode)');
+        lastSentAddressRef.current = currentAddressKey;
         onNewAddress(formData);
       }
     }
-  }, [formData, user, showNewAddressForm]);
+  }, [formData, fieldErrors, user, showNewAddressForm, onNewAddress]);
 
   const loadSavedAddresses = async () => {
     try {
       setLoading(true);
       const addresses = await userApi.getAddresses();
       setSavedAddresses(addresses);
+
+      // If no saved addresses, show the new address form
+      if (addresses.length === 0) {
+        setShowNewAddressForm(true);
+      }
 
       // Auto-select default address
       const defaultAddress = addresses.find((addr) => addr.isDefault);

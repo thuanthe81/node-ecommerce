@@ -60,12 +60,15 @@ export default function CheckoutContent() {
   };
 
   const handleNewShippingAddress = async (address: any) => {
+    console.log('[CheckoutContent] handleNewShippingAddress called with:', address);
     setNewShippingAddress(address);
+    console.log('[CheckoutContent] newShippingAddress state updated');
 
     // If user is logged in, save the address
     if (user) {
       try {
         const savedAddress = await userApi.createAddress(address);
+        console.log('[CheckoutContent] Address saved for authenticated user:', savedAddress.id);
         setShippingAddressId(savedAddress.id);
         if (useSameAddress) {
           setBillingAddressId(savedAddress.id);
@@ -91,15 +94,26 @@ export default function CheckoutContent() {
   };
 
   const canProceedToNextStep = () => {
-    console.log('can next', !email, !!newShippingAddress)
     if (currentStep === 1) {
       // Shipping step
-      if (!email) return false;
-      if (user) {
-        return !!shippingAddressId;
-      } else {
-        return !!newShippingAddress;
-      }
+      const hasEmail = !!email;
+      // For authenticated users: check if they have selected a saved address OR filled out a new address form
+      // For guest users: check if they have filled out the address form
+      const hasShippingAddress = user
+        ? (!!shippingAddressId || !!newShippingAddress)
+        : !!newShippingAddress;
+      const canProceed = hasEmail && hasShippingAddress;
+
+      console.log('[CheckoutContent] canProceedToNextStep (step 1):', {
+        hasEmail,
+        user: !!user,
+        shippingAddressId,
+        newShippingAddress: !!newShippingAddress,
+        hasShippingAddress,
+        canProceed
+      });
+
+      return canProceed;
     }
     if (currentStep === 2) {
       // Shipping method step - payment method is always bank_transfer

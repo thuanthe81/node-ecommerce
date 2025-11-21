@@ -90,10 +90,49 @@ export class UsersService {
   }
 
   async getAddresses(userId: string) {
-    return this.prisma.address.findMany({
+    // Diagnostic logging to identify address filtering issues
+    console.log(`[getAddresses] Fetching addresses for userId: ${userId}`);
+
+    const addresses = await this.prisma.address.findMany({
       where: { userId },
       orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
+
+    // Log the results for debugging
+    console.log(`[getAddresses] Found ${addresses.length} addresses for userId: ${userId}`);
+
+    // Verify data integrity - all addresses should belong to the requested user
+    const invalidAddresses = addresses.filter(addr => addr.userId !== userId);
+    if (invalidAddresses.length > 0) {
+      console.error(`[getAddresses] DATA INTEGRITY ERROR: Found ${invalidAddresses.length} addresses with incorrect userId`, {
+        requestedUserId: userId,
+        invalidAddresses: invalidAddresses.map(a => ({
+          id: a.id,
+          userId: a.userId,
+          fullName: a.fullName
+        }))
+      });
+      // Don't throw error yet, just log for investigation
+    }
+
+    // Additional validation: Filter out any addresses that don't belong to this user
+    // This provides defense-in-depth even if the database query has issues
+    const validAddresses = addresses.filter(addr => addr.userId === userId);
+
+    if (invalidAddresses.length > 0) {
+      // Log warning but continue with valid addresses only
+      console.warn(`[getAddresses] Filtering out ${invalidAddresses.length} invalid addresses. Returning only ${validAddresses.length} valid addresses.`);
+    }
+
+    // Log summary of returned addresses
+    console.log(`[getAddresses] Returning ${validAddresses.length} addresses:`, validAddresses.map(a => ({
+      id: a.id,
+      userId: a.userId,
+      fullName: a.fullName,
+      isDefault: a.isDefault
+    })));
+
+    return validAddresses;
   }
 
   async getAddress(userId: string, addressId: string) {

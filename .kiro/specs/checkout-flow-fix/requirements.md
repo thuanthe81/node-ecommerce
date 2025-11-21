@@ -123,3 +123,15 @@ This specification addresses the complete checkout and order confirmation flow t
 4. WHEN a user places an order, THE Checkout System SHALL save the shipping address to the database as part of the order placement process
 5. WHEN an authenticated user completes checkout, THE Checkout System SHALL associate the saved address with their user account
 6. WHEN a guest user completes checkout, THE Checkout System SHALL save the address without a user association
+
+### Requirement 9
+
+**User Story:** As an authenticated user, I want to see only my own shipping addresses during checkout, so that I can select from my personal addresses without confusion
+
+#### Acceptance Criteria
+
+1. WHEN an authenticated user loads the shipping address selection, THE Checkout System SHALL retrieve only addresses where the userId matches the authenticated user's ID
+2. THE Checkout System SHALL not display addresses belonging to other users
+3. THE Checkout System SHALL not display guest addresses with null userId to authenticated users
+4. WHEN the address list is displayed, THE Checkout System SHALL show only addresses that belong to the current authenticated user
+5. THE Checkout System SHALL enforce address ownership validation at the backend API level
