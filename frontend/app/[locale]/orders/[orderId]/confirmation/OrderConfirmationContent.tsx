@@ -747,7 +747,7 @@ export default function OrderConfirmationContent() {
             ) : bankSettings &&
               (bankSettings.accountName || bankSettings.accountNumber || bankSettings.bankName) ? (
               <>
-                {/* Bank Details Card - Highlighted and prominent */}
+                {/* Bank Details Card with QR Code on the right */}
                 <div
                   className="bg-white rounded-xl shadow-lg border-2 border-blue-200 p-6 sm:p-8 mb-6 print:border print:border-gray-800"
                   role="region"
@@ -775,92 +775,98 @@ export default function OrderConfirmationContent() {
                       {t('bankDetails')}
                     </h3>
                   </div>
-                  <dl className="space-y-4">
-                    {bankSettings.accountName && (
-                      <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
-                        <dt className="text-sm font-medium text-gray-600 mb-1">
-                          {t('accountName')}
-                        </dt>
-                        <dd className="text-base sm:text-lg font-semibold text-gray-900">
-                          {bankSettings.accountName}
-                        </dd>
-                      </div>
-                    )}
-                    {bankSettings.accountNumber && (
-                      <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
-                        <dt className="text-sm font-medium text-gray-600 mb-1">
-                          {t('accountNumber')}
-                        </dt>
-                        <dd className="text-base sm:text-lg font-bold text-gray-900 font-mono tracking-wider">
-                          {bankSettings.accountNumber}
-                        </dd>
-                      </div>
-                    )}
-                    {bankSettings.bankName && (
-                      <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
-                        <dt className="text-sm font-medium text-gray-600 mb-1">
-                          {t('bankName')}
-                        </dt>
-                        <dd className="text-base sm:text-lg font-semibold text-gray-900">
-                          {bankSettings.bankName}
-                        </dd>
-                      </div>
-                    )}
-                    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg p-5 sm:p-6 shadow-md print:bg-white print:border-2 print:border-gray-800">
-                      <dt className="text-sm font-medium text-blue-100 mb-2 print:text-gray-700">
-                        {t('amountToTransfer')}
-                      </dt>
-                      <dd className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white print:text-gray-900">
-                        {formatMoney(order.total, locale)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
 
-                {/* QR Code Section - Properly sized and scannable */}
-                {bankSettings.qrCodeUrl && (
-                  <div
-                    className="bg-white rounded-xl shadow-lg border-2 border-blue-200 p-6 sm:p-8 text-center print:border print:border-gray-800"
-                    role="region"
-                    aria-labelledby="qr-code-heading"
-                  >
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                      <svg
-                        className="w-6 h-6 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
+                  <div className="flex flex-col lg:flex-row gap-6 mb-6">
+                    {/* Bank Information - Left Side */}
+                    <dl className="space-y-4 flex-1">
+                      {bankSettings.accountName && (
+                        <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
+                          <dt className="text-sm font-medium text-gray-600 mb-1">
+                            {t('accountName')}
+                          </dt>
+                          <dd className="text-base sm:text-lg font-semibold text-gray-900">
+                            {bankSettings.accountName}
+                          </dd>
+                        </div>
+                      )}
+                      {bankSettings.accountNumber && (
+                        <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
+                          <dt className="text-sm font-medium text-gray-600 mb-1">
+                            {t('accountNumber')}
+                          </dt>
+                          <dd className="text-base sm:text-lg font-bold text-gray-900 font-mono tracking-wider">
+                            {bankSettings.accountNumber}
+                          </dd>
+                        </div>
+                      )}
+                      {bankSettings.bankName && (
+                        <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
+                          <dt className="text-sm font-medium text-gray-600 mb-1">
+                            {t('bankName')}
+                          </dt>
+                          <dd className="text-base sm:text-lg font-semibold text-gray-900">
+                            {bankSettings.bankName}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+
+                    {/* QR Code - Right Side */}
+                    {bankSettings.qrCodeUrl && (
+                      <div
+                        className="flex flex-col items-center justify-center lg:w-64 flex-shrink-0"
+                        role="region"
+                        aria-labelledby="qr-code-heading"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                        />
-                      </svg>
-                      <h3
-                        id="qr-code-heading"
-                        className="font-bold text-lg sm:text-xl text-gray-900"
-                      >
-                        {t('scanToPay')}
-                      </h3>
-                    </div>
-                    <div className="inline-block bg-white p-4 rounded-lg shadow-inner border-2 border-gray-200 print:border-gray-800">
-                      <img
-                        src={bankSettings.qrCodeUrl}
-                        alt={`${t('qrCodeAlt')} for payment of ${formatMoney(order.total, locale)} to ${bankSettings.accountName || 'merchant account'}`}
-                        className="w-48 h-48 sm:w-64 sm:h-64 mx-auto object-contain print:w-48 print:h-48"
-                        style={{ imageRendering: 'crisp-edges' }}
-                        // priority={true}
-                        // loading="lazy"
-                      />
-                    </div>
-                    <p className="text-sm sm:text-base text-gray-600 mt-4 font-medium">
-                      {t('qrHint')}
-                    </p>
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                            />
+                          </svg>
+                          <h3
+                            id="qr-code-heading"
+                            className="font-bold text-base sm:text-lg text-gray-900"
+                          >
+                            {t('scanToPay')}
+                          </h3>
+                        </div>
+                        <div className="inline-block bg-white p-3 rounded-lg shadow-inner border-2 border-gray-200 print:border-gray-800">
+                          <img
+                            src={bankSettings.qrCodeUrl}
+                            alt={`${t('qrCodeAlt')} for payment of ${formatMoney(order.total, locale)} to ${bankSettings.accountName || 'merchant account'}`}
+                            className="w-40 h-40 sm:w-44 sm:h-44 lg:w-48 lg:h-48 object-contain print:w-40 print:h-40"
+                            style={{ imageRendering: 'crisp-edges' }}
+                            // priority={true}
+                            // loading="lazy"
+                          />
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-3 font-medium text-center">
+                          {t('qrHint')}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Total Amount - Full Width */}
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg p-5 sm:p-6 shadow-md print:bg-white print:border-2 print:border-gray-800">
+                    <dt className="text-sm font-medium text-blue-100 mb-2 print:text-gray-700">
+                      {t('amountToTransfer')}
+                    </dt>
+                    <dd className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white print:text-gray-900">
+                      {formatMoney(order.total, locale)}
+                    </dd>
+                  </div>
+                </div>
               </>
             ) : (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
