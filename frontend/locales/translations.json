@@ -1444,6 +1444,10 @@
       "en": "Form is complete and ready to submit",
       "vi": "Biểu mẫu đã hoàn tất và sẵn sàng gửi"
     },
+    "addressReady": {
+      "en": "Address is complete and ready to use",
+      "vi": "Địa chỉ đã hoàn tất và sẵn sàng sử dụng"
+    },
     "countryCodeLabel": {
       "en": "Country Code",
       "vi": "Mã quốc gia"

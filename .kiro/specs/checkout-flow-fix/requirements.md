@@ -110,3 +110,16 @@ This specification addresses the complete checkout and order confirmation flow t
 4. THE Checkout System SHALL validate address data regardless of whether the user is authenticated
 5. WHEN an address has a null userId, THE Checkout System SHALL allow it to be used for order creation
 6. THE Checkout System SHALL implement a cleanup process to remove orphaned guest addresses older than 90 days
+
+### Requirement 8
+
+**User Story:** As a user, I want to proceed to the next checkout step as soon as I fill in my shipping address, so that I can complete my purchase quickly without unnecessary button clicks
+
+#### Acceptance Criteria
+
+1. WHEN a user fills in all required shipping address fields with valid data, THE Checkout System SHALL enable the "Next" button immediately
+2. THE Shipping Address Form SHALL not display a "Save Address" button during checkout
+3. WHEN a user clicks "Next" after filling the shipping address, THE Checkout System SHALL store the address data and proceed to the shipping method step
+4. WHEN a user places an order, THE Checkout System SHALL save the shipping address to the database as part of the order placement process
+5. WHEN an authenticated user completes checkout, THE Checkout System SHALL associate the saved address with their user account
+6. WHEN a guest user completes checkout, THE Checkout System SHALL save the address without a user association

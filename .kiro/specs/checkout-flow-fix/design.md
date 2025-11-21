@@ -1060,3 +1060,190 @@ useEffect(() => {
    - No full page reloads
    - All API calls remain visible in DevTools
    - Easier debugging of authentication issues
+
+## Shipping Address Form Improvements
+
+### Current Issues
+
+The current shipping address form has UX friction:
+1. Users must click "Save Address" button before they can proceed
+2. The "Next" button only enables after clicking "Save Address"
+3. For guest users, this creates an unnecessary extra step
+4. The form submission happens separately from checkout flow
+
+### Improved Design
+
+**Goal:** Streamline the checkout flow by removing the "Save Address" button and enabling "Next" as soon as the form is valid.
+
+### Component Changes
+
+#### ShippingAddressForm Component
+
+**Current Behavior:**
+- Has a "Save Address" submit button
+- Calls `onNewAddress()` when form is submitted
+- Form validation happens on submit
+
+**New Behavior:**
+- Remove the "Save Address" button entirely
+- Call `onNewAddress()` immediately when form becomes valid
+- Enable real-time validation feedback
+- Parent component (CheckoutContent) controls when to proceed
+
+**Implementation Approach:**
+
+1. **Remove Submit Button**
+   - Remove the form submit button
+   - Remove form `onSubmit` handler
+   - Remove the "Back to Saved Address" button (keep only for authenticated users with saved addresses)
+
+2. **Real-time Address Updates**
+   - Call `onNewAddress(formData)` whenever form data changes AND form is valid
+   - Use `useEffect` to watch form data and validity
+   - Debounce updates to avoid excessive calls
+
+3. **Form Validation**
+   - Keep existing field-level validation
+   - Keep visual feedback (green borders for valid fields)
+   - Keep the "Form Complete" indicator
+   - Remove success message after save (no longer needed)
+
+**Updated Component Structure:**
+
+```typescript
+export default function ShippingAddressForm({
+  onAddressSelect,
+  onNewAddress,
+  selectedAddressId,
+}: ShippingAddressFormProps) {
+  // ... existing state ...
+
+  // Real-time address update when form is valid
+  useEffect(() => {
+    if (isFormValid() && !user) {
+      // For guest users, immediately notify parent of valid address
+      onNewAddress(formData);
+    }
+  }, [formData, isFormValid, onNewAddress, user]);
+
+  // For authenticated users creating new address
+  useEffect(() => {
+    if (isFormValid() && user && showNewAddressForm) {
+      // Notify parent that form is ready
+      onNewAddress(formData);
+    }
+  }, [formData, isFormValid, onNewAddress, user, showNewAddressForm]);
+
+  // ... rest of component ...
+
+  return (
+    <div className="space-y-6">
+      {/* Saved addresses section - unchanged */}
+
+      {/* New address form */}
+      {(showNewAddressForm || !user || savedAddresses.length === 0) && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold mb-4">
+            {t('checkout.shippingAddress')}
+          </h3>
+
+          {/* Form validation indicator */}
+          {isFormValid() && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
+              <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{t('form.addressReady')}</span>
+            </div>
+          )}
+
+          {/* Form fields - unchanged */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ... all form fields ... */}
+          </div>
+
+          {/* Remove submit button section */}
+          {/* Only show "Back to Saved Address" for authenticated users */}
+          {user && savedAddresses.length > 0 && (
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewAddressForm(false);
+                  setError(null);
+                  setFieldErrors({});
+                  setTouchedFields({...initialTouchedState});
+                }}
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
+                ← {t('checkout.backToSavedAddress')}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+#### CheckoutContent Component
+
+**Current Behavior:**
+- `canProceedToNextStep()` checks if `newShippingAddress` is set for guest users
+- Address is saved when user clicks "Save Address" in the form
+
+**New Behavior:**
+- `canProceedToNextStep()` checks if `newShippingAddress` is set (same as before)
+- `newShippingAddress` is automatically set by ShippingAddressForm when form is valid
+- Address is saved to database during order placement, not during form fill
+
+**No Changes Needed:**
+The CheckoutContent component already works correctly with this approach:
+- It receives `newShippingAddress` via `onNewAddress` callback
+- It enables "Next" button when `newShippingAddress` is set
+- It saves the address during `handlePlaceOrder()`
+
+### User Experience Flow
+
+**Guest User:**
+1. User enters email
+2. User fills shipping address form fields
+3. As soon as all required fields are valid, form shows "Address Ready" indicator
+4. "Next" button becomes enabled automatically
+5. User clicks "Next" to proceed to shipping method
+6. Address is saved to database when user places order
+
+**Authenticated User (New Address):**
+1. User clicks "+ Add New Address"
+2. User fills shipping address form fields
+3. As soon as all required fields are valid, form shows "Address Ready" indicator
+4. "Next" button becomes enabled automatically
+5. User clicks "Next" to proceed to shipping method
+6. Address is saved to database when user places order
+7. Address is associated with user account
+
+**Authenticated User (Saved Address):**
+1. User selects a saved address (radio button)
+2. "Next" button is immediately enabled
+3. User clicks "Next" to proceed
+4. No address creation needed
+
+### Benefits
+
+1. **Fewer Clicks:** Users don't need to click "Save Address" before proceeding
+2. **Clearer Flow:** The "Next" button is the only action needed
+3. **Better UX:** Form validation provides immediate feedback
+4. **Consistent:** Same pattern for guest and authenticated users
+5. **Efficient:** Address only saved once during order placement
+
+### Translation Updates
+
+Add new translation key:
+```json
+{
+  "form": {
+    "addressReady": "Address is complete and ready to use"
+  }
+}
+```

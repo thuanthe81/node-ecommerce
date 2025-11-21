@@ -54,9 +54,7 @@ export default function ShippingAddressForm({
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touchedFields, setTouchedFields] = useState<TouchedFields>({
     fullName: false,
@@ -85,6 +83,20 @@ export default function ShippingAddressForm({
       setShowNewAddressForm(true);
     }
   }, [user]);
+
+  // Real-time address updates when form becomes valid
+  useEffect(() => {
+    if (isFormValid()) {
+      // For guest users, always update the address
+      if (!user) {
+        onNewAddress(formData);
+      }
+      // For authenticated users in new address mode, update the address
+      else if (showNewAddressForm) {
+        onNewAddress(formData);
+      }
+    }
+  }, [formData, user, showNewAddressForm]);
 
   const loadSavedAddresses = async () => {
     try {
@@ -153,11 +165,6 @@ export default function ShippingAddressForm({
       setError(null);
     }
 
-    // Clear success message when user starts editing
-    if (successMessage) {
-      setSuccessMessage(null);
-    }
-
     // Validate field in real-time if it has been touched
     if (touchedFields[name as keyof TouchedFields]) {
       const fieldError = validateField(name, value);
@@ -220,109 +227,7 @@ export default function ShippingAddressForm({
     return `${baseClass} border-gray-300`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    // Validate all fields before submission
-    const errors: FieldErrors = {};
-    Object.keys(formData).forEach((key) => {
-      if (key !== 'addressLine2') {
-        const error = validateField(key, formData[key as keyof typeof formData]);
-        if (error) {
-          errors[key as keyof FieldErrors] = error;
-        }
-      }
-    });
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setTouchedFields({
-        fullName: true,
-        phone: true,
-        addressLine1: true,
-        city: true,
-        state: true,
-        postalCode: true,
-        country: true,
-      });
-      setError(t('validation.fixErrors'));
-      return;
-    }
-
-    if (!isFormValid()) {
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      // For authenticated users, save the address to their account
-      if (user) {
-        const newAddress = await userApi.createAddress(formData);
-
-        // Add the new address to the saved addresses list
-        setSavedAddresses((prev) => [...prev, newAddress]);
-
-        // Auto-select the newly created address
-        onAddressSelect(newAddress.id);
-
-        // Show success message
-        setSuccessMessage(t('form.addressSavedSuccess'));
-
-        // Hide success message after 3 seconds and close form
-        setTimeout(() => {
-          setSuccessMessage(null);
-          setShowNewAddressForm(false);
-        }, 2000);
-
-        // Reset form
-        setFormData({
-          fullName: '',
-          phone: '',
-          addressLine1: '',
-          addressLine2: '',
-          city: '',
-          state: '',
-          postalCode: '',
-          country: 'VN',
-        });
-
-        // Reset validation states
-        setFieldErrors({});
-        setTouchedFields({
-          fullName: false,
-          phone: false,
-          addressLine1: false,
-          city: false,
-          state: false,
-          postalCode: false,
-          country: false,
-        });
-      } else {
-        // For guest users, just pass the data to parent
-        onNewAddress(formData);
-
-        // Show success message for guest users
-        setSuccessMessage(t('form.addressInfoSaved'));
-
-        // Hide success message after 2 seconds
-        setTimeout(() => {
-          setSuccessMessage(null);
-        }, 2000);
-      }
-    } catch (error: any) {
-      console.error('Failed to save address:', error);
-
-      // Set user-friendly error message
-      const errorMessage = error?.response?.data?.message ||
-                          t('checkout.addressSaveError');
-      setError(errorMessage);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   if (loading) {
     return <div className="text-center py-8">{t('common.loading')}</div>;
@@ -381,7 +286,7 @@ export default function ShippingAddressForm({
       )}
 
       {(showNewAddressForm || !user || savedAddresses.length === 0) && (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <h3 className="text-lg font-semibold mb-4">{t('checkout.shippingAddress')}</h3>
 
           {error && (
@@ -393,21 +298,12 @@ export default function ShippingAddressForm({
             </div>
           )}
 
-          {successMessage && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start animate-fade-in" role="status">
+          {isFormValid() && !error && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
               <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span>{successMessage}</span>
-            </div>
-          )}
-
-          {isFormValid() && !error && !successMessage && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm flex items-start">
-              <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              <span>{t('form.formComplete')}</span>
+              <span>{t('form.addressReady')}</span>
             </div>
           )}
 
@@ -666,28 +562,13 @@ export default function ShippingAddressForm({
             )}
           </div>
 
-          <div className="flex items-center justify-between mt-6">
-            <button
-              type="submit"
-              disabled={!isFormValid() || submitting}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center"
-            >
-              {submitting && (
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              {submitting ? t('checkout.saving'): t('checkout.saveAddress')}
-            </button>
-
-            {user && savedAddresses.length > 0 && (
+          {user && savedAddresses.length > 0 && (
+            <div className="mt-6">
               <button
                 type="button"
                 onClick={() => {
                   setShowNewAddressForm(false);
                   setError(null);
-                  setSuccessMessage(null);
                   setFieldErrors({});
                   setTouchedFields({
                     fullName: false,
@@ -703,9 +584,9 @@ export default function ShippingAddressForm({
               >
                 ← {t('checkout.backToSavedAddress')}
               </button>
-            )}
-          </div>
-        </form>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

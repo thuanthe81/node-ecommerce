@@ -267,3 +267,36 @@
   - Test users cannot view orders that don't belong to them
   - _Requirements: 4.1, 4.6_
 
+- [x] 21. Improve shipping address form UX by removing save button
+- [x] 21.1 Update ShippingAddressForm to remove submit button
+  - Remove the "Save Address" submit button from the form
+  - Remove the form onSubmit handler
+  - Keep the "Back to Saved Address" button only for authenticated users with saved addresses
+  - Remove success message display after address save
+  - Remove submitting state since there's no submit button
+  - _Requirements: 8.2_
+
+- [x] 21.2 Implement real-time address updates in ShippingAddressForm
+  - Add useEffect to call onNewAddress() when form becomes valid
+  - Call onNewAddress(formData) for guest users when isFormValid() returns true
+  - Call onNewAddress(formData) for authenticated users in new address mode when form is valid
+  - Ensure updates happen smoothly without excessive re-renders
+  - _Requirements: 8.1, 8.3_
+
+- [x] 21.3 Update form validation indicator
+  - Change "Form Complete" message to "Address is complete and ready to use"
+  - Update styling to use green success indicator
+  - Show indicator when form is valid
+  - Add translation key "form.addressReady"
+  - _Requirements: 8.1_
+
+- [x] 21.4 Test improved shipping address form flow
+  - Test guest user: fill form → "Next" button enables automatically → proceed to next step
+  - Test authenticated user with new address: fill form → "Next" button enables → proceed
+  - Test authenticated user with saved address: select address → "Next" enables immediately
+  - Verify address is saved during order placement, not during form fill
+  - Verify no "Save Address" button is visible
+  - Test that form validation still works correctly
+  - Test responsive design on mobile
+  - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
+
