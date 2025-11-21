@@ -85,3 +85,68 @@ These directories are already configured in the `.gitignore` to avoid committing
 - The generated images are simple placeholders with product names overlaid on gradient backgrounds
 - For production, you should replace these with actual product photos
 - The image URLs in the database use relative paths (`/uploads/products/...`) which are served by the NestJS static file middleware
+
+## Address Deduplication
+
+### deduplicate-addresses.ts
+
+Identifies and merges duplicate addresses in the database using the same normalization logic as the runtime deduplication system.
+
+**What it does:**
+- Finds groups of duplicate addresses per user based on normalized key fields (addressLine1, addressLine2, city, state, postalCode, country)
+- Preserves the most recently created address in each duplicate group
+- Updates order references (shippingAddressId, billingAddressId) to point to the preserved address
+- Deletes redundant address records
+- Preserves default address designation when merging duplicates
+- Skips guest addresses (userId = null) as they are transient
+
+**Usage:**
+
+Preview changes without modifying the database (recommended first step):
+```bash
+npx ts-node scripts/deduplicate-addresses.ts --dry-run
+```
+
+Apply changes to the database:
+```bash
+npx ts-node scripts/deduplicate-addresses.ts
+```
+
+**⚠️ Warning:**
+- Always run with `--dry-run` first to preview the changes
+- This script modifies the database and deletes records
+- Make sure you have a database backup before running in live mode
+- The script waits 3 seconds before applying changes to give you time to cancel
+
+**Output:**
+The script provides detailed output showing:
+- Number of users affected
+- Each duplicate group with addresses to keep and delete
+- Order references that will be updated
+- Summary statistics (addresses deleted, orders updated, defaults preserved)
+
+**Example output:**
+```
+=== DRY RUN PREVIEW ===
+
+Users affected: 1
+Duplicate groups found: 2
+
+Group for user abc-123:
+  Address to KEEP: xyz-789
+    - 123 Main St
+    - New York, NY 10001
+    - Created: 2025-11-21T06:23:30.699Z
+    - Default: true
+  Address to DELETE: def-456
+    - 123 Main St
+    - New York, NY 10001
+    - Created: 2025-11-20T06:23:30.687Z
+    - Default: false
+    - Orders to update: 5 (3 shipping, 2 billing)
+
+=== SUMMARY ===
+Total addresses to delete: 1
+Total order references to update: 5
+Groups with default address: 1
+```

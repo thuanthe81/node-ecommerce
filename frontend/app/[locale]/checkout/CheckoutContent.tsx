@@ -53,44 +53,28 @@ export default function CheckoutContent() {
   }, [user]);
 
   const handleShippingAddressSelect = (addressId: string) => {
+    console.log('[CheckoutContent] Saved address selected:', addressId);
     setShippingAddressId(addressId);
+    // Clear new address state since user selected a saved address
+    setNewShippingAddress(null);
     if (useSameAddress) {
       setBillingAddressId(addressId);
+      setNewBillingAddress(null);
     }
   };
 
   const handleNewShippingAddress = async (address: any) => {
-    console.log('[CheckoutContent] handleNewShippingAddress called with:', address);
+    console.log('[CheckoutContent] handleNewShippingAddress called - storing address in state only');
+    console.log('[CheckoutContent] Address data:', address);
     setNewShippingAddress(address);
-    console.log('[CheckoutContent] newShippingAddress state updated');
-
-    // If user is logged in, save the address
-    if (user) {
-      try {
-        const savedAddress = await userApi.createAddress(address);
-        console.log('[CheckoutContent] Address saved for authenticated user:', savedAddress.id);
-        setShippingAddressId(savedAddress.id);
-        if (useSameAddress) {
-          setBillingAddressId(savedAddress.id);
-        }
-      } catch (error) {
-        console.error('Failed to save address:', error);
-      }
-    }
+    console.log('[CheckoutContent] Shipping address stored in component state, will be created during order placement');
   };
 
   const handleNewBillingAddress = async (address: any) => {
+    console.log('[CheckoutContent] handleNewBillingAddress called - storing address in state only');
+    console.log('[CheckoutContent] Address data:', address);
     setNewBillingAddress(address);
-
-    // If user is logged in, save the address
-    if (user) {
-      try {
-        const savedAddress = await userApi.createAddress(address);
-        setBillingAddressId(savedAddress.id);
-      } catch (error) {
-        console.error('Failed to save address:', error);
-      }
-    }
+    console.log('[CheckoutContent] Billing address stored in component state, will be created during order placement');
   };
 
   const canProceedToNextStep = () => {
@@ -169,31 +153,89 @@ export default function CheckoutContent() {
   const handlePlaceOrder = async () => {
     if (!cart) return;
 
+    console.log('[CheckoutContent] handlePlaceOrder called');
+    console.log('[CheckoutContent] Current state:', {
+      user: !!user,
+      shippingAddressId,
+      billingAddressId,
+      newShippingAddress: !!newShippingAddress,
+      newBillingAddress: !!newBillingAddress,
+      useSameAddress
+    });
+
     setLoading(true);
     setError(null);
 
     try {
-      // Create addresses if needed (for guest checkout)
+      // Initialize with existing address IDs (for saved addresses)
       let finalShippingAddressId = shippingAddressId;
       let finalBillingAddressId = billingAddressId;
 
-      if (!user && newShippingAddress) {
-        // For guest checkout, we need to create temporary addresses
-        // In a real implementation, you might want to handle this differently
-        const tempShippingAddress = await userApi.createAddress(
-          newShippingAddress,
-        );
-        finalShippingAddressId = tempShippingAddress.id;
+      console.log('[CheckoutContent] Starting address creation process');
 
-        if (useSameAddress) {
-          finalBillingAddressId = tempShippingAddress.id;
-        } else if (newBillingAddress) {
-          const tempBillingAddress = await userApi.createAddress(
-            newBillingAddress,
-          );
-          finalBillingAddressId = tempBillingAddress.id;
+      // Create shipping address if user filled out new address form and hasn't selected a saved address
+      if (newShippingAddress && !shippingAddressId) {
+        console.log('[CheckoutContent] Creating new shipping address');
+        try {
+          const createdShippingAddress = await userApi.createAddress(newShippingAddress);
+          console.log('[CheckoutContent] Shipping address created with ID:', createdShippingAddress.id);
+          finalShippingAddressId = createdShippingAddress.id;
+
+          // If using same address for billing, reuse the shipping address ID
+          if (useSameAddress) {
+            console.log('[CheckoutContent] Reusing shipping address for billing');
+            finalBillingAddressId = createdShippingAddress.id;
+          }
+        } catch (err: any) {
+          console.error('[CheckoutContent] Failed to create shipping address:', err);
+          // Provide specific error message for address creation failure
+          const errorMessage = err.response?.data?.message ||
+            'Failed to save shipping address. Please check your address details and try again.';
+          setError(errorMessage);
+          setLoading(false);
+          // Prevent order creation by returning early
+          return;
         }
       }
+
+      // Create billing address if:
+      // 1. User is not using same address for billing AND
+      // 2. User filled out new billing address form AND
+      // 3. User hasn't selected a saved billing address
+      if (!useSameAddress && newBillingAddress && !billingAddressId) {
+        console.log('[CheckoutContent] Creating new billing address');
+        try {
+          const createdBillingAddress = await userApi.createAddress(newBillingAddress);
+          console.log('[CheckoutContent] Billing address created with ID:', createdBillingAddress.id);
+          finalBillingAddressId = createdBillingAddress.id;
+        } catch (err: any) {
+          console.error('[CheckoutContent] Failed to create billing address:', err);
+          // Provide specific error message for billing address creation failure
+          const errorMessage = err.response?.data?.message ||
+            'Failed to save billing address. Please check your address details and try again.';
+          setError(errorMessage);
+          setLoading(false);
+          // Prevent order creation by returning early
+          return;
+        }
+      }
+
+      // Validate that we have both address IDs before creating order
+      if (!finalShippingAddressId || !finalBillingAddressId) {
+        console.error('[CheckoutContent] Missing address IDs:', {
+          shippingAddressId: finalShippingAddressId,
+          billingAddressId: finalBillingAddressId
+        });
+        setError('Please provide valid shipping and billing addresses.');
+        setLoading(false);
+        // Prevent order creation by returning early
+        return;
+      }
+
+      console.log('[CheckoutContent] Final address IDs:', {
+        shippingAddressId: finalShippingAddressId,
+        billingAddressId: finalBillingAddressId
+      });
 
       const orderData: CreateOrderData = {
         email,
@@ -209,23 +251,38 @@ export default function CheckoutContent() {
         promotionId: appliedPromo?.promotionId,
       };
 
-      const order = await orderApi.createOrder(orderData);
+      console.log('[CheckoutContent] Creating order with data:', orderData);
 
-      // Set flag to prevent useEffect from redirecting to cart
-      setOrderCompleted(true);
+      try {
+        const order = await orderApi.createOrder(orderData);
+        console.log('[CheckoutContent] Order created successfully:', order.id);
 
-      // Redirect to order confirmation page
-      router.push(`/${locale}/orders/${order.id}/confirmation`);
+        // Set flag to prevent useEffect from redirecting to cart
+        setOrderCompleted(true);
 
-      // Clear cart after redirect is initiated
-      await clearCart();
+        // Redirect to order confirmation page
+        router.push(`/${locale}/orders/${order.id}/confirmation`);
+
+        // Clear cart after redirect is initiated
+        await clearCart();
+      } catch (err: any) {
+        console.error('[CheckoutContent] Failed to create order:', err);
+        // Provide specific error message for order creation failure
+        const errorMessage = err.response?.data?.message ||
+          'Failed to create order. Please try again or contact support if the problem persists.';
+        setError(errorMessage);
+        setLoading(false);
+        // Prevent further execution by returning early
+        return;
+      }
     } catch (err: any) {
-      console.error('Failed to place order:', err);
+      console.error('[CheckoutContent] Unexpected error during checkout:', err);
+      // Catch-all for any unexpected errors
       setError(
         err.response?.data?.message ||
-          'Failed to place order. Please try again.',
+          err.message ||
+          'An unexpected error occurred. Please try again.',
       );
-    } finally {
       setLoading(false);
     }
   };

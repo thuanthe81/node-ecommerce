@@ -9,6 +9,8 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { AddressDeduplicationUtil, NormalizedAddress } from './utils/address-deduplication.util';
+import { Address } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -151,6 +153,32 @@ export class UsersService {
   }
 
   async createAddress(userId: string | null, createAddressDto: CreateAddressDto) {
+    // For authenticated users, check for duplicate addresses
+    if (userId) {
+      const normalizedAddress = AddressDeduplicationUtil.normalizeAddress({
+        addressLine1: createAddressDto.addressLine1,
+        addressLine2: createAddressDto.addressLine2,
+        city: createAddressDto.city,
+        state: createAddressDto.state,
+        postalCode: createAddressDto.postalCode,
+        country: createAddressDto.country,
+      });
+
+      const existingAddress = await this.findDuplicateAddress(userId, normalizedAddress);
+
+      if (existingAddress) {
+        // Update existing address with new contact info and default status
+        return this.updateExistingAddress(
+          existingAddress.id,
+          userId,
+          createAddressDto.fullName,
+          createAddressDto.phone,
+          createAddressDto.isDefault ?? false,
+        );
+      }
+    }
+
+    // No duplicate found or guest user - create new address
     // If this is set as default and user is authenticated, unset other default addresses
     if (createAddressDto.isDefault && userId) {
       await this.prisma.address.updateMany({
@@ -175,6 +203,74 @@ export class UsersService {
         userId: userId || null,
         isDefault,
       },
+    });
+  }
+
+  /**
+   * Finds an existing duplicate address for a user
+   * Returns null if no duplicate found
+   *
+   * @param userId - The user ID to search within
+   * @param normalizedAddress - The normalized address to search for
+   * @returns The existing address if found, null otherwise
+   */
+  private async findDuplicateAddress(
+    userId: string,
+    normalizedAddress: NormalizedAddress,
+  ): Promise<Address | null> {
+    // Get all addresses for the user
+    const userAddresses = await this.prisma.address.findMany({
+      where: { userId },
+    });
+
+    // Compare each address using the deduplication utility
+    for (const address of userAddresses) {
+      if (AddressDeduplicationUtil.areAddressesDuplicate(normalizedAddress, address)) {
+        return address;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Updates contact info and default status on existing address
+   *
+   * @param addressId - The ID of the address to update
+   * @param userId - The user ID (for default address management)
+   * @param fullName - The new full name
+   * @param phone - The new phone number
+   * @param isDefault - Whether to set as default
+   * @returns The updated address
+   */
+  private async updateExistingAddress(
+    addressId: string,
+    userId: string,
+    fullName: string,
+    phone: string,
+    isDefault: boolean,
+  ): Promise<Address> {
+    // Prepare update data with contact info
+    const updateData: any = {
+      fullName,
+      phone,
+    };
+
+    // Only update default status if explicitly setting to true
+    // If isDefault is false, preserve the existing default status
+    if (isDefault) {
+      // Unset other default addresses
+      await this.prisma.address.updateMany({
+        where: { userId, isDefault: true, id: { not: addressId } },
+        data: { isDefault: false },
+      });
+      updateData.isDefault = true;
+    }
+
+    // Update the existing address with new contact info and optionally default status
+    return this.prisma.address.update({
+      where: { id: addressId },
+      data: updateData,
     });
   }
 
