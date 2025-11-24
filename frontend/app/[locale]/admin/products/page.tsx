@@ -7,6 +7,7 @@ import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
 import { productApi, Product, ProductQueryParams } from '@/lib/product-api';
 import { SvgPlus, SvgChevronLeftSolid, SvgChevronRightSolid } from '@/components/Svgs';
+import { formatMoney } from '@/app/utils';
 
 export default function AdminProductsPage() {
   const params = useParams();
@@ -208,7 +209,7 @@ export default function AdminProductsPage() {
                           {product.sku}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${product.price.toFixed(2)}
+                          {formatMoney(product.price)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span

@@ -139,46 +139,46 @@ export default function HomeContent() {
       {/* We don't show error to users, just log it and continue with the rest of the page */}
 
       {/* Main Content Section */}
-      <main className="flex w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start mb-[24px]">
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            {t('home')} - {ShopInfo.name}
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Welcome to our handmade products store. Browse our unique collection of artisan crafted
-            items.
-          </p>
-          {/*{isAuthenticated && (*/}
-          {/*  <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800">*/}
-          {/*    <p className="text-sm text-green-800 dark:text-green-200">*/}
-          {/*      {t('loggedInAs')} {user?.email}*/}
-          {/*    </p>*/}
-          {/*  </div>*/}
-          {/*)}*/}
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row mt-[48px]">
-          {/*<Link*/}
-          {/*  href="/login"*/}
-          {/*  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"*/}
-          {/*>*/}
-          {/*  {t('login').toLocaleUpperCase()}*/}
-          {/*</Link>*/}
-          {user
-            ? <Link
-              href="/products"
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            >
-              {t('shopping').toLocaleUpperCase()}
-            </Link>
-            : <Link
-              href="/register"
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            >
-              {t('signup').toLocaleUpperCase()}
-            </Link>
-          }
-        </div>
-      </main>
+      {/*<main className="flex w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start mb-[24px]">*/}
+      {/*  <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">*/}
+      {/*    <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">*/}
+      {/*      {t('home')} - {ShopInfo.name}*/}
+      {/*    </h1>*/}
+      {/*    <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">*/}
+      {/*      Welcome to our handmade products store. Browse our unique collection of artisan crafted*/}
+      {/*      items.*/}
+      {/*    </p>*/}
+      {/*    /!*{isAuthenticated && (*!/*/}
+      {/*    /!*  <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800">*!/*/}
+      {/*    /!*    <p className="text-sm text-green-800 dark:text-green-200">*!/*/}
+      {/*    /!*      {t('loggedInAs')} {user?.email}*!/*/}
+      {/*    /!*    </p>*!/*/}
+      {/*    /!*  </div>*!/*/}
+      {/*    /!*)}*!/*/}
+      {/*  </div>*/}
+      {/*  <div className="flex flex-col gap-4 text-base font-medium sm:flex-row mt-[48px]">*/}
+      {/*    /!*<Link*!/*/}
+      {/*    /!*  href="/login"*!/*/}
+      {/*    /!*  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"*!/*/}
+      {/*    /!*>*!/*/}
+      {/*    /!*  {t('login').toLocaleUpperCase()}*!/*/}
+      {/*    /!*</Link>*!/*/}
+      {/*    {user*/}
+      {/*      ? <Link*/}
+      {/*        href="/products"*/}
+      {/*        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"*/}
+      {/*      >*/}
+      {/*        {t('shopping').toLocaleUpperCase()}*/}
+      {/*      </Link>*/}
+      {/*      : <Link*/}
+      {/*        href="/register"*/}
+      {/*        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"*/}
+      {/*      >*/}
+      {/*        {t('signup').toLocaleUpperCase()}*/}
+      {/*      </Link>*/}
+      {/*    }*/}
+      {/*  </div>*/}
+      {/*</main>*/}
 
       {/* Homepage Content Sections - Loading State */}
       {isLoadingSections && (

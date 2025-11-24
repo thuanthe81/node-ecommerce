@@ -48,28 +48,28 @@ export default function ContentSection({
   // Image-left layout - image on left, content on right with left-aligned text
   if (layout === 'image-left') {
     return (
-      <section className="w-full py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12">
-            {/* Image - left side on desktop, top on mobile */}
-            <div className="w-full md:w-1/2">
-              <div className="relative aspect-square sm:aspect-[4/3] md:aspect-[4/3] overflow-hidden rounded-lg shadow-md">
-                {imageUrl && (
-                  <Image
-                    src={imageUrl}
-                    alt={imageAlt || title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 600px"
-                    quality={85}
-                    priority={false}
-                  />
-                )}
-              </div>
+      <section className="w-full bg-white">
+        <div className="flex flex-col md:flex-row items-stretch">
+          {/* Image - left side on desktop, top on mobile */}
+          <div className="w-full md:w-1/2">
+            <div className="relative w-full h-full min-h-[300px] md:min-h-[400px]">
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt={imageAlt || title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={85}
+                  priority={true}
+                />
+              )}
             </div>
+          </div>
 
-            {/* Content - right side on desktop, bottom on mobile */}
-            <div className="w-full md:w-1/2 text-left">
+          {/* Content - right side on desktop, bottom on mobile */}
+          <div className="w-full md:w-1/2 flex items-center">
+            <div className="p-8 sm:p-12 md:p-16 lg:p-20">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
                 {title}
               </h2>
@@ -93,28 +93,28 @@ export default function ContentSection({
   // Image-right layout - content on left with right-aligned text, image on right
   if (layout === 'image-right') {
     return (
-      <section className="w-full py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row-reverse items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12">
-            {/* Image - right side on desktop, top on mobile */}
-            <div className="w-full md:w-1/2">
-              <div className="relative aspect-square sm:aspect-[4/3] md:aspect-[4/3] overflow-hidden rounded-lg shadow-md">
-                {imageUrl && (
-                  <Image
-                    src={imageUrl}
-                    alt={imageAlt || title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 50vw, 600px"
-                    quality={85}
-                    priority={false}
-                  />
-                )}
-              </div>
+      <section className="w-full bg-gray-50">
+        <div className="flex flex-col md:flex-row-reverse items-stretch">
+          {/* Image - right side on desktop, top on mobile */}
+          <div className="w-full md:w-1/2">
+            <div className="relative w-full h-full min-h-[300px] md:min-h-[400px]">
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt={imageAlt || title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  quality={85}
+                  priority={true}
+                />
+              )}
             </div>
+          </div>
 
-            {/* Content - left side on desktop, bottom on mobile */}
-            <div className="w-full md:w-1/2 text-left md:text-right">
+          {/* Content - left side on desktop, bottom on mobile */}
+          <div className="w-full md:w-1/2 flex items-center">
+            <div className="p-8 sm:p-12 md:p-16 lg:p-20">
               <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
                 {title}
               </h2>
