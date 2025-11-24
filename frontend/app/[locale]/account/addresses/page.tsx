@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { userApi, Address, CreateAddressData } from '@/lib/user-api';
 import Link from 'next/link';
 
 export default function AddressesPage() {
+  const t = useTranslations('account');
+  const tCommon = useTranslations('common');
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -29,23 +32,23 @@ export default function AddressesPage() {
       const data = await userApi.getAddresses();
       setAddresses(data);
     } catch (err: any) {
-      setError('Failed to load addresses');
+      setError(t('failedLoadAddresses'));
     } finally {
       setIsLoadingAddresses(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this address?')) {
+    if (!confirm(t('confirmDeleteAddress'))) {
       return;
     }
 
     try {
       await userApi.deleteAddress(id);
-      setSuccess('Address deleted successfully');
+      setSuccess(t('addressDeletedSuccess'));
       loadAddresses();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to delete address');
+      setError(err.response?.data?.message || t('failedDeleteAddress'));
     }
   };
 
@@ -71,7 +74,7 @@ export default function AddressesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -86,17 +89,17 @@ export default function AddressesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Link href="/account" className="text-blue-600 hover:text-blue-800">
-            ← Back to Account
+            {t('backToAccount')}
           </Link>
         </div>
 
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">My Addresses</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('myAddresses')}</h1>
           <button
             onClick={handleAddNew}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Add New Address
+            {t('addNewAddress')}
           </button>
         </div>
 
@@ -119,21 +122,21 @@ export default function AddressesPage() {
             onSuccess={() => {
               loadAddresses();
               handleFormClose();
-              setSuccess(editingAddress ? 'Address updated successfully' : 'Address added successfully');
+              setSuccess(editingAddress ? t('addressUpdatedSuccess') : t('addressAddedSuccess'));
             }}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {addresses.length === 0 ? (
               <div className="col-span-full text-center py-12">
-                <p className="text-gray-500">No addresses saved yet</p>
+                <p className="text-gray-500">{t('noAddresses')}</p>
               </div>
             ) : (
               addresses.map((address) => (
                 <div key={address.id} className="bg-white rounded-lg shadow p-6 relative">
                   {address.isDefault && (
                     <span className="absolute top-4 right-4 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
-                      Default
+                      {t('default')}
                     </span>
                   )}
                   <div className="mb-4">
@@ -153,13 +156,13 @@ export default function AddressesPage() {
                       onClick={() => handleEdit(address)}
                       className="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
                     >
-                      Edit
+                      {tCommon('edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(address.id)}
                       className="flex-1 px-3 py-2 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100"
                     >
-                      Delete
+                      {tCommon('delete')}
                     </button>
                   </div>
                 </div>
@@ -181,6 +184,8 @@ function AddressForm({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const t = useTranslations('account');
+  const tCommon = useTranslations('common');
   const [formData, setFormData] = useState<CreateAddressData>({
     fullName: address?.fullName || '',
     phone: address?.phone || '',
@@ -208,7 +213,7 @@ function AddressForm({
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save address');
+      setError(err.response?.data?.message || t('failedSaveAddress'));
     } finally {
       setIsSubmitting(false);
     }
@@ -217,7 +222,7 @@ function AddressForm({
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-6">
-        {address ? 'Edit Address' : 'Add New Address'}
+        {address ? t('editAddress') : t('addNewAddress')}
       </h2>
 
       {error && (
@@ -230,7 +235,7 @@ function AddressForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-              Full Name *
+              {t('fullName')} *
             </label>
             <input
               type="text"
@@ -244,7 +249,7 @@ function AddressForm({
 
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-              Phone *
+              {t('phone')} *
             </label>
             <input
               type="tel"
@@ -259,7 +264,7 @@ function AddressForm({
 
         <div>
           <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">
-            Address Line 1 *
+            {t('addressLine1')} *
           </label>
           <input
             type="text"
@@ -273,7 +278,7 @@ function AddressForm({
 
         <div>
           <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700">
-            Address Line 2
+            {t('addressLine2')}
           </label>
           <input
             type="text"
@@ -287,7 +292,7 @@ function AddressForm({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-              City *
+              {t('city')} *
             </label>
             <input
               type="text"
@@ -301,7 +306,7 @@ function AddressForm({
 
           <div>
             <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-              State/Province *
+              {t('state')} *
             </label>
             <input
               type="text"
@@ -315,7 +320,7 @@ function AddressForm({
 
           <div>
             <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-              Postal Code *
+              {t('postalCode')} *
             </label>
             <input
               type="text"
@@ -330,7 +335,7 @@ function AddressForm({
 
         <div>
           <label htmlFor="country" className="block text-sm font-medium text-gray-700">
-            Country *
+            {t('country')} *
           </label>
           <select
             id="country"
@@ -356,7 +361,7 @@ function AddressForm({
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
           <label htmlFor="isDefault" className="ml-2 block text-sm text-gray-700">
-            Set as default address
+            {t('setAsDefault')}
           </label>
         </div>
 
@@ -366,14 +371,14 @@ function AddressForm({
             onClick={onClose}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Cancel
+            {tCommon('cancel')}
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? 'Saving...' : 'Save Address'}
+            {isSubmitting ? t('saving') : t('saveAddress')}
           </button>
         </div>
       </form>

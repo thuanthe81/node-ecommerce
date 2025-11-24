@@ -4,9 +4,109 @@
       "en": "Addresses",
       "vi": "Địa chỉ"
     },
+    "addNewAddress": {
+      "en": "Add New Address",
+      "vi": "Thêm địa chỉ mới"
+    },
+    "addressAddedSuccess": {
+      "en": "Address added successfully",
+      "vi": "Thêm địa chỉ thành công"
+    },
+    "addressDeletedSuccess": {
+      "en": "Address deleted successfully",
+      "vi": "Xóa địa chỉ thành công"
+    },
+    "addressLine1": {
+      "en": "Address Line 1",
+      "vi": "Địa chỉ dòng 1"
+    },
+    "addressLine2": {
+      "en": "Address Line 2",
+      "vi": "Địa chỉ dòng 2"
+    },
+    "addressUpdatedSuccess": {
+      "en": "Address updated successfully",
+      "vi": "Cập nhật địa chỉ thành công"
+    },
+    "backToAccount": {
+      "en": "← Back to Account",
+      "vi": "← Quay lại Tài khoản"
+    },
+    "city": {
+      "en": "City",
+      "vi": "Thành phố"
+    },
+    "confirmDeleteAddress": {
+      "en": "Are you sure you want to delete this address?",
+      "vi": "Bạn có chắc muốn xóa địa chỉ này?"
+    },
+    "country": {
+      "en": "Country",
+      "vi": "Quốc gia"
+    },
     "dashboard": {
       "en": "Dashboard",
       "vi": "Bảng điều khiển"
+    },
+    "default": {
+      "en": "Default",
+      "vi": "Mặc định"
+    },
+    "editAddress": {
+      "en": "Edit Address",
+      "vi": "Sửa địa chỉ"
+    },
+    "editProfile": {
+      "en": "Edit Profile",
+      "vi": "Sửa hồ sơ"
+    },
+    "email": {
+      "en": "Email",
+      "vi": "Email"
+    },
+    "emailCannotBeChanged": {
+      "en": "Email cannot be changed",
+      "vi": "Email không thể thay đổi"
+    },
+    "failedDeleteAddress": {
+      "en": "Failed to delete address",
+      "vi": "Xóa địa chỉ thất bại"
+    },
+    "failedLoadAddresses": {
+      "en": "Failed to load addresses",
+      "vi": "Tải địa chỉ thất bại"
+    },
+    "failedSaveAddress": {
+      "en": "Failed to save address",
+      "vi": "Lưu địa chỉ thất bại"
+    },
+    "failedUpdateProfile": {
+      "en": "Failed to update profile",
+      "vi": "Cập nhật hồ sơ thất bại"
+    },
+    "firstName": {
+      "en": "First Name",
+      "vi": "Tên"
+    },
+    "fullName": {
+      "en": "Full Name",
+      "vi": "Họ và tên"
+    },
+    "lastName": {
+      "en": "Last Name",
+      "vi": "Họ"
+    },
+    "loading": {
+      "en": "Loading...",
+      "vi": "Đang tải..."
+    },
+    "myAddresses": {
+      "en": "My Addresses",
+      "vi": "Địa chỉ của tôi"
+    },
+    "noAddresses": {
+      "en": "No addresses saved yet",
+      "vi": "Chưa có địa chỉ nào được lưu"
     },
     "noOrders": {
       "en": "No orders yet",
@@ -32,13 +132,45 @@
       "en": "Total",
       "vi": "Tổng tiền"
     },
+    "phone": {
+      "en": "Phone",
+      "vi": "Điện thoại"
+    },
+    "postalCode": {
+      "en": "Postal Code",
+      "vi": "Mã bưu điện"
+    },
     "profile": {
       "en": "Profile",
       "vi": "Hồ sơ"
     },
+    "profileUpdatedSuccess": {
+      "en": "Profile updated successfully",
+      "vi": "Cập nhật hồ sơ thành công"
+    },
+    "saveAddress": {
+      "en": "Save Address",
+      "vi": "Lưu địa chỉ"
+    },
+    "saveChanges": {
+      "en": "Save Changes",
+      "vi": "Lưu thay đổi"
+    },
+    "saving": {
+      "en": "Saving...",
+      "vi": "Đang lưu..."
+    },
+    "setAsDefault": {
+      "en": "Set as default address",
+      "vi": "Đặt làm địa chỉ mặc định"
+    },
     "settings": {
       "en": "Settings",
       "vi": "Cài đặt"
+    },
+    "state": {
+      "en": "State/Province",
+      "vi": "Tiểu bang/Tỉnh"
     },
     "viewOrder": {
       "en": "View Order",
