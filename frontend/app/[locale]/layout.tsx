@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import '../globals.css';
 import { ShopInfo } from '@/app/constants';
@@ -45,6 +46,26 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+// Fetch footer settings on the server
+async function getFooterSettings() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const response = await fetch(`${baseUrl}/footer-settings`, {
+      cache: 'no-store', // Ensure fresh data on each request
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch footer settings:', response.statusText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching footer settings:', error);
+    return null;
+  }
+}
+
 export default async function LocaleLayout({
   children,
   params,
@@ -62,6 +83,9 @@ export default async function LocaleLayout({
   // Providing all messages to the client
   // side is the easiest way to get started
   const messages = await getMessages();
+
+  // Fetch footer settings
+  const footerSettings = await getFooterSettings();
 
   return (
     <html lang={locale}>
@@ -99,12 +123,22 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             <CartProvider>
-              <div className="relative">
+              <div className="relative flex flex-col min-h-screen">
                 <div className="absolute z-10 w-full">
                   <Header />
                 </div>
                 <div className="border-b h-[69px]"/>
-                <main id="main-content" role="main">{children}</main>
+                <main id="main-content" role="main" className="flex-grow">{children}</main>
+                {footerSettings && (
+                  <Footer
+                    copyrightText={footerSettings.copyrightText}
+                    contactEmail={footerSettings.contactEmail || undefined}
+                    contactPhone={footerSettings.contactPhone || undefined}
+                    facebookUrl={footerSettings.facebookUrl || undefined}
+                    twitterUrl={footerSettings.twitterUrl || undefined}
+                    tiktokUrl={footerSettings.tiktokUrl || undefined}
+                  />
+                )}
               </div>
             </CartProvider>
           </AuthProvider>

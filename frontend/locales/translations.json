@@ -210,6 +210,14 @@
       "en": "Welcome to your admin dashboard",
       "vi": "Chào mừng đến với bảng điều khiển quản trị"
     },
+    "homepageSections": {
+      "en": "Homepage Sections",
+      "vi": "Phần trang chủ"
+    },
+    "footerSettings": {
+      "en": "Footer Settings",
+      "vi": "Cài đặt chân trang"
+    },
     "manageCategories": {
       "en": "Manage categories",
       "vi": "Quản lý danh mục"
@@ -842,9 +850,21 @@
       "en": "Contact Us",
       "vi": "Liên hệ"
     },
+    "contactEmail": {
+      "en": "Email",
+      "vi": "Email"
+    },
+    "contactPhone": {
+      "en": "Phone",
+      "vi": "Điện thoại"
+    },
     "copyright": {
       "en": "© {year} All rights reserved",
       "vi": "© {year} Bản quyền thuộc về"
+    },
+    "copyrightText": {
+      "en": "Copyright Text",
+      "vi": "Văn bản bản quyền"
     },
     "followUs": {
       "en": "Follow Us",
@@ -866,6 +886,22 @@
       "en": "Shipping Policy",
       "vi": "Chính sách vận chuyển"
     },
+    "socialLinks": {
+      "en": "Social Media Links",
+      "vi": "Liên kết mạng xã hội"
+    },
+    "facebookUrl": {
+      "en": "Facebook URL",
+      "vi": "URL Facebook"
+    },
+    "twitterUrl": {
+      "en": "Twitter URL",
+      "vi": "URL Twitter"
+    },
+    "tiktokUrl": {
+      "en": "TikTok URL",
+      "vi": "URL TikTok"
+    },
     "subscribeNewsletter": {
       "en": "Subscribe to our newsletter",
       "vi": "Đăng ký nhận bản tin"
@@ -873,6 +909,136 @@
     "termsOfService": {
       "en": "Terms of Service",
       "vi": "Điều khoản dịch vụ"
+    }
+  },
+  "homepageSections": {
+    "title": {
+      "en": "Homepage Sections",
+      "vi": "Phần trang chủ"
+    },
+    "createSection": {
+      "en": "Create Section",
+      "vi": "Tạo phần mới"
+    },
+    "editSection": {
+      "en": "Edit Section",
+      "vi": "Chỉnh sửa phần"
+    },
+    "deleteSection": {
+      "en": "Delete Section",
+      "vi": "Xóa phần"
+    },
+    "sectionTitle": {
+      "en": "Section Title",
+      "vi": "Tiêu đề phần"
+    },
+    "sectionDescription": {
+      "en": "Section Description",
+      "vi": "Mô tả phần"
+    },
+    "buttonText": {
+      "en": "Button Text",
+      "vi": "Văn bản nút"
+    },
+    "buttonUrl": {
+      "en": "Button URL",
+      "vi": "URL nút"
+    },
+    "layout": {
+      "en": "Layout",
+      "vi": "Bố cục"
+    },
+    "layoutCentered": {
+      "en": "Centered",
+      "vi": "Căn giữa"
+    },
+    "layoutImageLeft": {
+      "en": "Image Left",
+      "vi": "Hình bên trái"
+    },
+    "layoutImageRight": {
+      "en": "Image Right",
+      "vi": "Hình bên phải"
+    },
+    "image": {
+      "en": "Image",
+      "vi": "Hình ảnh"
+    },
+    "imageOptional": {
+      "en": "Image (Optional for centered layout)",
+      "vi": "Hình ảnh (Tùy chọn cho bố cục căn giữa)"
+    },
+    "imageRequired": {
+      "en": "Image (Required for this layout)",
+      "vi": "Hình ảnh (Bắt buộc cho bố cục này)"
+    },
+    "displayOrder": {
+      "en": "Display Order",
+      "vi": "Thứ tự hiển thị"
+    },
+    "published": {
+      "en": "Published",
+      "vi": "Đã xuất bản"
+    },
+    "unpublished": {
+      "en": "Unpublished",
+      "vi": "Chưa xuất bản"
+    },
+    "noSections": {
+      "en": "No homepage sections yet",
+      "vi": "Chưa có phần trang chủ nào"
+    },
+    "createFirstSection": {
+      "en": "Create your first section",
+      "vi": "Tạo phần đầu tiên của bạn"
+    },
+    "savingSection": {
+      "en": "Saving section...",
+      "vi": "Đang lưu phần..."
+    },
+    "saveSection": {
+      "en": "Save Section",
+      "vi": "Lưu phần"
+    },
+    "updateSection": {
+      "en": "Update Section",
+      "vi": "Cập nhật phần"
+    },
+    "sectionSaved": {
+      "en": "Section saved successfully",
+      "vi": "Lưu phần thành công"
+    },
+    "sectionDeleted": {
+      "en": "Section deleted successfully",
+      "vi": "Xóa phần thành công"
+    },
+    "failedSaveSection": {
+      "en": "Failed to save section",
+      "vi": "Lưu phần thất bại"
+    },
+    "failedDeleteSection": {
+      "en": "Failed to delete section",
+      "vi": "Xóa phần thất bại"
+    },
+    "confirmDelete": {
+      "en": "Are you sure you want to delete this section?",
+      "vi": "Bạn có chắc muốn xóa phần này?"
+    },
+    "reorderSections": {
+      "en": "Drag to reorder sections",
+      "vi": "Kéo để sắp xếp lại các phần"
+    },
+    "previewSection": {
+      "en": "Preview",
+      "vi": "Xem trước"
+    },
+    "shopNow": {
+      "en": "Shop Now",
+      "vi": "Mua ngay"
+    },
+    "learnMore": {
+      "en": "Learn More",
+      "vi": "Tìm hiểu thêm"
     }
   },
   "nav": {

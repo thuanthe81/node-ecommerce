@@ -8,6 +8,7 @@ import { ShopInfo } from '@/app/constants';
 import { Carousel2D, CarouselItem } from '@/components/Carousel';
 import { productApi, Product } from '@/lib/product-api';
 import { contentApi, Content } from '@/lib/content-api';
+import ContentSection from '@/components/ContentSection';
 
 export default function HomeContent() {
   const t = useTranslations('common');
@@ -17,6 +18,11 @@ export default function HomeContent() {
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
   const [isLoadingCarousel, setIsLoadingCarousel] = useState(true);
   const [carouselError, setCarouselError] = useState<string | null>(null);
+
+  // State for homepage sections
+  const [homepageSections, setHomepageSections] = useState<Content[]>([]);
+  const [isLoadingSections, setIsLoadingSections] = useState(true);
+  const [sectionsError, setSectionsError] = useState<string | null>(null);
 
   // Fetch featured products or banner content for carousel
   useEffect(() => {
@@ -75,6 +81,26 @@ export default function HomeContent() {
     };
 
     fetchCarouselData();
+  }, []);
+
+  // Fetch homepage sections
+  useEffect(() => {
+    const fetchHomepageSections = async () => {
+      setIsLoadingSections(true);
+      setSectionsError(null);
+
+      try {
+        const sections = await contentApi.getHomepageSections();
+        setHomepageSections(sections);
+      } catch (error) {
+        console.error('Error fetching homepage sections:', error);
+        setSectionsError('Failed to load homepage sections');
+      } finally {
+        setIsLoadingSections(false);
+      }
+    };
+
+    fetchHomepageSections();
   }, []);
 
   return (
@@ -153,6 +179,57 @@ export default function HomeContent() {
           }
         </div>
       </main>
+
+      {/* Homepage Content Sections - Loading State */}
+      {isLoadingSections && (
+        <div className="w-full py-16 px-4">
+          <div className="max-w-7xl mx-auto space-y-16">
+            {/* Skeleton loader for sections */}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                  <div className="w-full md:w-1/2 bg-gray-200 dark:bg-gray-700 rounded-lg aspect-square md:aspect-[4/3]"></div>
+                  <div className="w-full md:w-1/2 space-y-4">
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                    <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32 mt-6"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Homepage Content Sections - Error State */}
+      {!isLoadingSections && sectionsError && (
+        <div className="w-full py-16 px-4">
+          <div className="max-w-7xl mx-auto text-center">
+            <p className="text-red-600 dark:text-red-400">
+              {sectionsError}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Homepage Content Sections - Success State */}
+      {!isLoadingSections && !sectionsError && homepageSections.length > 0 && (
+        <div className="w-full">
+          {homepageSections.map((section) => (
+            <ContentSection
+              key={section.id}
+              layout={section.layout || 'centered'}
+              title={section.titleEn}
+              description={section.contentEn}
+              buttonText={section.buttonTextEn || 'Learn More'}
+              buttonUrl={section.linkUrl || '#'}
+              imageUrl={section.imageUrl}
+              imageAlt={section.titleEn}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

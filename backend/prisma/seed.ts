@@ -258,6 +258,124 @@ async function main() {
     console.log('Created content page:', created.titleEn);
   }
 
+  // Create footer settings
+  const footerSettings = await prisma.footerSettings.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: {
+      id: 'default',
+      copyrightText: '© 2024 ALA Craft. All rights reserved.',
+      contactEmail: 'info@alacraft.com',
+      contactPhone: '+84 123 456 789',
+      facebookUrl: 'https://facebook.com/alacraft',
+      twitterUrl: 'https://twitter.com/alacraft',
+      tiktokUrl: 'https://tiktok.com/@alacraft',
+    },
+  });
+  console.log('Created footer settings');
+
+  // Create sample homepage sections
+  const homepageSections = [
+    {
+      slug: 'welcome-section',
+      type: 'HOMEPAGE_SECTION' as const,
+      titleEn: 'Welcome to ALA Craft',
+      titleVi: 'Chào mừng đến với ALA Craft',
+      contentEn:
+        'Discover unique handmade treasures crafted with love and care by talented artisans. Each piece tells a story.',
+      contentVi:
+        'Khám phá những món đồ thủ công độc đáo được chế tác với tình yêu và sự chăm sóc bởi các nghệ nhân tài năng. Mỗi sản phẩm đều kể một câu chuyện.',
+      buttonTextEn: 'Shop Now',
+      buttonTextVi: 'Mua ngay',
+      linkUrl: '/products',
+      layout: 'centered',
+      displayOrder: 1,
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: 'jewelry-collection',
+      type: 'HOMEPAGE_SECTION' as const,
+      titleEn: 'Handcrafted Jewelry',
+      titleVi: 'Trang sức thủ công',
+      contentEn:
+        'Explore our stunning collection of handmade jewelry. From elegant necklaces to beautiful bracelets, each piece is unique.',
+      contentVi:
+        'Khám phá bộ sưu tập trang sức thủ công tuyệt đẹp của chúng tôi. Từ dây chuyền thanh lịch đến vòng tay xinh đẹp, mỗi món đều độc đáo.',
+      buttonTextEn: 'View Collection',
+      buttonTextVi: 'Xem bộ sưu tập',
+      linkUrl: '/categories/jewelry',
+      imageUrl: '/uploads/products/handmade-silver-necklace-main.jpg',
+      layout: 'image-left',
+      displayOrder: 2,
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: 'home-decor-section',
+      type: 'HOMEPAGE_SECTION' as const,
+      titleEn: 'Beautiful Home Decor',
+      titleVi: 'Đồ trang trí nhà đẹp',
+      contentEn:
+        'Transform your living space with our handmade home decor items. Each piece adds character and warmth to your home.',
+      contentVi:
+        'Biến đổi không gian sống của bạn với các món đồ trang trí nhà thủ công của chúng tôi. Mỗi món đều thêm cá tính và sự ấm áp cho ngôi nhà của bạn.',
+      buttonTextEn: 'Explore Decor',
+      buttonTextVi: 'Khám phá đồ trang trí',
+      linkUrl: '/categories/home-decor',
+      imageUrl: '/uploads/products/ceramic-vase-main.jpg',
+      layout: 'image-right',
+      displayOrder: 3,
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: 'accessories-section',
+      type: 'HOMEPAGE_SECTION' as const,
+      titleEn: 'Premium Accessories',
+      titleVi: 'Phụ kiện cao cấp',
+      contentEn:
+        'Discover our range of handcrafted accessories. From leather wallets to stylish bags, find the perfect accessory for you.',
+      contentVi:
+        'Khám phá dải phụ kiện thủ công của chúng tôi. Từ ví da đến túi thời trang, tìm phụ kiện hoàn hảo cho bạn.',
+      buttonTextEn: 'Shop Accessories',
+      buttonTextVi: 'Mua phụ kiện',
+      linkUrl: '/categories/accessories',
+      imageUrl: '/uploads/products/leather-wallet-main.jpg',
+      layout: 'image-left',
+      displayOrder: 4,
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    {
+      slug: 'art-collection',
+      type: 'HOMEPAGE_SECTION' as const,
+      titleEn: 'Original Artwork',
+      titleVi: 'Tác phẩm nghệ thuật gốc',
+      contentEn:
+        'Browse our collection of original handmade art pieces. Each artwork is one-of-a-kind and signed by the artist.',
+      contentVi:
+        'Duyệt qua bộ sưu tập tác phẩm nghệ thuật thủ công gốc của chúng tôi. Mỗi tác phẩm đều độc nhất và có chữ ký của nghệ sĩ.',
+      buttonTextEn: 'View Art',
+      buttonTextVi: 'Xem nghệ thuật',
+      linkUrl: '/categories/art',
+      imageUrl: '/uploads/products/watercolor-painting-main.jpg',
+      layout: 'image-right',
+      displayOrder: 5,
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+  ];
+
+  for (const section of homepageSections) {
+    const created = await prisma.content.upsert({
+      where: { slug: section.slug },
+      update: {},
+      create: section,
+    });
+    console.log('Created homepage section:', created.titleEn);
+  }
+
   console.log('Database seeding completed successfully!');
 }
 

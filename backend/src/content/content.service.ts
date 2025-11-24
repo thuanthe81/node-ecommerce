@@ -2,7 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
@@ -10,7 +13,13 @@ import { Content, ContentType } from '@prisma/client';
 
 @Injectable()
 export class ContentService {
-  constructor(private prisma: PrismaService) {}
+  private readonly HOMEPAGE_SECTIONS_CACHE_KEY = 'homepage:sections';
+  private readonly HOMEPAGE_SECTIONS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(createContentDto: CreateContentDto): Promise<Content> {
     // Check if slug already exists
@@ -22,12 +31,66 @@ export class ContentService {
       throw new BadRequestException('Content with this slug already exists');
     }
 
-    return this.prisma.content.create({
+    // Validate homepage section specific requirements
+    if (createContentDto.type === ContentType.HOMEPAGE_SECTION) {
+      this.validateHomepageSection(createContentDto);
+    }
+
+    const content = await this.prisma.content.create({
       data: {
         ...createContentDto,
         publishedAt: createContentDto.isPublished ? new Date() : null,
       },
     });
+
+    // Invalidate homepage sections cache if creating a homepage section
+    if (createContentDto.type === ContentType.HOMEPAGE_SECTION) {
+      await this.invalidateHomepageSectionsCache();
+    }
+
+    return content;
+  }
+
+  private validateHomepageSection(contentDto: any): void {
+    // Validate required fields
+    if (!contentDto.titleEn || !contentDto.titleVi) {
+      throw new BadRequestException(
+        'Homepage section requires title in both languages',
+      );
+    }
+
+    if (!contentDto.contentEn || !contentDto.contentVi) {
+      throw new BadRequestException(
+        'Homepage section requires description in both languages',
+      );
+    }
+
+    if (!contentDto.buttonTextEn || !contentDto.buttonTextVi) {
+      throw new BadRequestException(
+        'Homepage section requires button text in both languages',
+      );
+    }
+
+    if (!contentDto.linkUrl) {
+      throw new BadRequestException(
+        'Homepage section requires button URL (linkUrl)',
+      );
+    }
+
+    if (!contentDto.layout) {
+      throw new BadRequestException('Homepage section requires layout type');
+    }
+
+    // Validate conditional image requirement based on layout
+    if (
+      (contentDto.layout === 'image-left' ||
+        contentDto.layout === 'image-right') &&
+      !contentDto.imageUrl
+    ) {
+      throw new BadRequestException(
+        `Homepage section with layout '${contentDto.layout}' requires an image`,
+      );
+    }
   }
 
   async findAll(type?: ContentType): Promise<Content[]> {
@@ -94,6 +157,13 @@ export class ContentService {
       }
     }
 
+    // Validate homepage section specific requirements if updating a homepage section
+    if (content.type === ContentType.HOMEPAGE_SECTION) {
+      // Merge existing content with updates for validation
+      const mergedData = { ...content, ...updateContentDto };
+      this.validateHomepageSection(mergedData);
+    }
+
     const updateData: any = { ...updateContentDto };
 
     // Update publishedAt if isPublished is being set to true
@@ -103,10 +173,17 @@ export class ContentService {
       updateData.publishedAt = null;
     }
 
-    return this.prisma.content.update({
+    const updatedContent = await this.prisma.content.update({
       where: { id },
       data: updateData,
     });
+
+    // Invalidate homepage sections cache if updating a homepage section
+    if (content.type === ContentType.HOMEPAGE_SECTION) {
+      await this.invalidateHomepageSectionsCache();
+    }
+
+    return updatedContent;
   }
 
   async remove(id: string): Promise<Content> {
@@ -118,12 +195,58 @@ export class ContentService {
       throw new NotFoundException('Content not found');
     }
 
-    return this.prisma.content.delete({
+    const deletedContent = await this.prisma.content.delete({
       where: { id },
     });
+
+    // Invalidate homepage sections cache if deleting a homepage section
+    if (content.type === ContentType.HOMEPAGE_SECTION) {
+      await this.invalidateHomepageSectionsCache();
+    }
+
+    return deletedContent;
   }
 
   async getBanners(): Promise<Content[]> {
     return this.findPublished(ContentType.BANNER);
+  }
+
+  async getHomepageSections(): Promise<Content[]> {
+    // Try to get from cache first
+    const cached = await this.cacheManager.get<Content[]>(
+      this.HOMEPAGE_SECTIONS_CACHE_KEY,
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    // If not in cache, fetch from database
+    const sections = await this.prisma.content.findMany({
+      where: {
+        type: ContentType.HOMEPAGE_SECTION,
+        isPublished: true,
+      },
+      orderBy: {
+        displayOrder: 'asc',
+      },
+    });
+
+    // Store in cache with 5-minute TTL
+    await this.cacheManager.set(
+      this.HOMEPAGE_SECTIONS_CACHE_KEY,
+      sections,
+      this.HOMEPAGE_SECTIONS_CACHE_TTL,
+    );
+
+    return sections;
+  }
+
+  /**
+   * Invalidate homepage sections cache
+   * Called when homepage sections are created, updated, or deleted
+   */
+  private async invalidateHomepageSectionsCache(): Promise<void> {
+    await this.cacheManager.del(this.HOMEPAGE_SECTIONS_CACHE_KEY);
   }
 }

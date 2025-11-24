@@ -24,6 +24,7 @@ import { ContactModule } from './contact/contact.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentSettingsModule } from './payment-settings/payment-settings.module';
+import { FooterSettingsModule } from './footer-settings/footer-settings.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { PaymentSettingsModule } from './payment-settings/payment-settings.modul
     AnalyticsModule,
     NotificationsModule,
     PaymentSettingsModule,
+    FooterSettingsModule,
   ],
   controllers: [AppController],
   providers: [

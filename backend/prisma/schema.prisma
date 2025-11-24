@@ -360,12 +360,16 @@ model Content {
   displayOrder Int        @default(0)
   isPublished Boolean     @default(false)
   publishedAt DateTime?
+  buttonTextEn String?
+  buttonTextVi String?
+  layout      String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
   @@index([slug])
   @@index([type])
   @@index([isPublished])
+  @@index([type, isPublished, displayOrder])
   @@map("contents")
 }
 
@@ -373,6 +377,7 @@ enum ContentType {
   PAGE
   FAQ
   BANNER
+  HOMEPAGE_SECTION
 }
 
 // Analytics Models
@@ -417,4 +422,19 @@ model PaymentSettings {
   updatedAt     DateTime @updatedAt
 
   @@map("payment_settings")
+}
+
+// Footer Settings Model
+model FooterSettings {
+  id              String   @id @default(uuid())
+  copyrightText   String
+  contactEmail    String?
+  contactPhone    String?
+  facebookUrl     String?
+  twitterUrl      String?
+  tiktokUrl       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("footer_settings")
 }

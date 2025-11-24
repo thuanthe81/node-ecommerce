@@ -3,7 +3,7 @@ import apiClient from './api-client';
 export interface Content {
   id: string;
   slug: string;
-  type: 'PAGE' | 'FAQ' | 'BANNER';
+  type: 'PAGE' | 'FAQ' | 'BANNER' | 'HOMEPAGE_SECTION';
   titleEn: string;
   titleVi: string;
   contentEn: string;
@@ -13,13 +13,16 @@ export interface Content {
   displayOrder: number;
   isPublished: boolean;
   publishedAt?: string;
+  buttonTextEn?: string;
+  buttonTextVi?: string;
+  layout?: 'centered' | 'image-left' | 'image-right';
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateContentData {
   slug: string;
-  type: 'PAGE' | 'FAQ' | 'BANNER';
+  type: 'PAGE' | 'FAQ' | 'BANNER' | 'HOMEPAGE_SECTION';
   titleEn: string;
   titleVi: string;
   contentEn: string;
@@ -28,6 +31,9 @@ export interface CreateContentData {
   linkUrl?: string;
   displayOrder?: number;
   isPublished?: boolean;
+  buttonTextEn?: string;
+  buttonTextVi?: string;
+  layout?: 'centered' | 'image-left' | 'image-right';
 }
 
 export const contentApi = {
@@ -45,6 +51,11 @@ export const contentApi = {
 
   getBanners: async (): Promise<Content[]> => {
     const response = await apiClient.get('/content/banners');
+    return response.data;
+  },
+
+  getHomepageSections: async (): Promise<Content[]> => {
+    const response = await apiClient.get('/content/homepage-sections');
     return response.data;
   },
 
@@ -77,6 +88,7 @@ export const contentApi = {
 export const getContents = (type?: string) => contentApi.getAll(type);
 export const getPublishedContents = (type?: string) => contentApi.getPublished(type);
 export const getBanners = () => contentApi.getBanners();
+export const getHomepageSections = () => contentApi.getHomepageSections();
 export const getContentById = (id: string) => contentApi.getById(id);
 export const getContentBySlug = (slug: string) => contentApi.getBySlug(slug);
 export const createContent = (data: CreateContentData) => contentApi.create(data);

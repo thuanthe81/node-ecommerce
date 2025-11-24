@@ -5,6 +5,8 @@ import {
   IsBoolean,
   IsInt,
   IsUrl,
+  ValidateIf,
+  IsIn,
 } from 'class-validator';
 import { ContentType } from '@prisma/client';
 
@@ -42,4 +44,21 @@ export class CreateContentDto {
   @IsOptional()
   @IsBoolean()
   isPublished?: boolean;
+
+  // Homepage section specific fields
+  @ValidateIf((o) => o.type === ContentType.HOMEPAGE_SECTION)
+  @IsString()
+  @IsOptional()
+  buttonTextEn?: string;
+
+  @ValidateIf((o) => o.type === ContentType.HOMEPAGE_SECTION)
+  @IsString()
+  @IsOptional()
+  buttonTextVi?: string;
+
+  @ValidateIf((o) => o.type === ContentType.HOMEPAGE_SECTION)
+  @IsString()
+  @IsIn(['centered', 'image-left', 'image-right'])
+  @IsOptional()
+  layout?: string;
 }

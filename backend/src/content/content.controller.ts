@@ -43,6 +43,12 @@ export class ContentController {
     return this.contentService.getBanners();
   }
 
+  @Get('homepage-sections')
+  @Public()
+  getHomepageSections() {
+    return this.contentService.getHomepageSections();
+  }
+
   @Get('slug/:slug')
   @Public()
   findBySlug(@Param('slug') slug: string) {
