@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { ShopInfo } from '@/app/constants';
 import { Carousel2D, CarouselItem } from '@/components/Carousel';
@@ -12,6 +12,7 @@ import ContentSection from '@/components/ContentSection';
 
 export default function HomeContent() {
   const t = useTranslations('common');
+  const locale = useLocale();
   const { user } = useAuth();
 
   // State for carousel data
@@ -216,18 +217,21 @@ export default function HomeContent() {
       {/* Homepage Content Sections - Success State */}
       {!isLoadingSections && !sectionsError && homepageSections.length > 0 && (
         <div className="w-full">
-          {homepageSections.map((section) => (
-            <ContentSection
-              key={section.id}
-              layout={section.layout || 'centered'}
-              title={section.titleEn}
-              description={section.contentEn}
-              buttonText={section.buttonTextEn || 'Learn More'}
-              buttonUrl={section.linkUrl || '#'}
-              imageUrl={section.imageUrl}
-              imageAlt={section.titleEn}
-            />
-          ))}
+          {homepageSections.map((section) => {
+            const isVietnamese = locale === 'vi';
+            return (
+              <ContentSection
+                key={section.id}
+                layout={section.layout || 'centered'}
+                title={isVietnamese ? section.titleVi : section.titleEn}
+                description={isVietnamese ? section.contentVi : section.contentEn}
+                buttonText={isVietnamese ? (section.buttonTextVi || 'Tìm hiểu thêm') : (section.buttonTextEn || 'Learn More')}
+                buttonUrl={section.linkUrl || '#'}
+                imageUrl={section.imageUrl}
+                imageAlt={isVietnamese ? section.titleVi : section.titleEn}
+              />
+            );
+          })}
         </div>
       )}
     </div>
