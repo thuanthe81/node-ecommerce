@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import OrderDetailView from '@/components/OrderDetailView';
 
-export default function OrderConfirmationContent() {
+export default function OrderDetailContent() {
   const params = useParams();
   const orderId = params.orderId as string;
   const locale = params.locale as string;
@@ -12,8 +12,8 @@ export default function OrderConfirmationContent() {
     <OrderDetailView
       orderId={orderId}
       locale={locale}
-      showSuccessBanner={true}
-      showBankTransferForPaidOrders={true}
+      showSuccessBanner={false}
+      showBankTransferForPaidOrders={false}
     />
   );
 }

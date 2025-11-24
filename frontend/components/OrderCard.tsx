@@ -74,7 +74,7 @@ export default function OrderCard({ order, locale }: OrderCardProps) {
             {formatMoney(order.total, locale)}
           </p>
           <Link
-            href={`/${locale}/orders/${order.id}/confirmation`}
+            href={`/${locale}/orders/${order.id}`}
             className="text-sm text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
             aria-label={`${locale === 'vi' ? 'Xem chi tiết đơn hàng' : 'View order details'} #${order.orderNumber}`}
           >
