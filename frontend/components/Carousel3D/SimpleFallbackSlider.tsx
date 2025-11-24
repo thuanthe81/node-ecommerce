@@ -40,16 +40,27 @@ export default function SimpleFallbackSlider({
   const [imageError, setImageError] = useState<Set<string>>(new Set());
   const [isPaused, setIsPaused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handlePrevious = useCallback(() => {
-    setCurrentIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1));
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1));
+      setIsTransitioning(false);
+    }, 300); // Half of the transition duration
     setIsPaused(true); // Pause auto-slide on manual navigation
-  }, [items.length]);
+  }, [items.length, isTransitioning]);
 
   const handleNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+      setIsTransitioning(false);
+    }, 300); // Half of the transition duration
     setIsPaused(true); // Pause auto-slide on manual navigation
-  }, [items.length]);
+  }, [items.length, isTransitioning]);
 
   const handleImageError = (itemId: string) => {
     setImageError((prev) => new Set(prev).add(itemId));
@@ -57,16 +68,20 @@ export default function SimpleFallbackSlider({
 
   // Auto-slide effect
   useEffect(() => {
-    if (!autoSlide || isPaused || isHovered || items.length <= 1) {
+    if (!autoSlide || isPaused || isHovered || items.length <= 1 || isTransitioning) {
       return;
     }
 
     const intervalId = setInterval(() => {
-      setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1));
+        setIsTransitioning(false);
+      }, 300); // Half of the transition duration
     }, autoSlideInterval);
 
     return () => clearInterval(intervalId);
-  }, [autoSlide, isPaused, isHovered, items.length, autoSlideInterval]);
+  }, [autoSlide, isPaused, isHovered, items.length, autoSlideInterval, isTransitioning]);
 
   // Resume auto-slide after manual interaction timeout
   useEffect(() => {
@@ -176,6 +191,9 @@ export default function SimpleFallbackSlider({
             aria-roledescription="slide"
             aria-label={`${currentIndex + 1} of ${items.length}: ${currentItem.title || currentItem.alt}`}
             onClick={()=> currentItem.linkUrl && router.push(currentItem.linkUrl)}
+            style={{
+              animation: isTransitioning ? 'fadeOutLeft 0.6s ease-in-out' : 'fadeInRight 0.6s ease-in-out',
+            }}
           >
             {imageError.has(currentItem.id) ? (
               <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600">
@@ -222,6 +240,31 @@ export default function SimpleFallbackSlider({
             )}
           </div>
 
+          {/* CSS Animations */}
+          <style jsx>{`
+            @keyframes fadeInRight {
+              0% {
+                opacity: 0;
+                transform: translateX(100px);
+              }
+              100% {
+                opacity: 1;
+                transform: translateX(0);
+              }
+            }
+
+            @keyframes fadeOutLeft {
+              0% {
+                opacity: 1;
+                transform: translateX(0);
+              }
+              100% {
+                opacity: 0;
+                transform: translateX(-100px);
+              }
+            }
+          `}</style>
+
           {/* Navigation Buttons */}
           {items.length > 1 && (
             <>
@@ -229,7 +272,9 @@ export default function SimpleFallbackSlider({
                 onClick={handlePrevious}
                 className={`absolute ${
                   fullWidth ? 'left-4' : 'left-0 -translate-x-12 md:-translate-x-16'
-                } top-1/2 -translate-y-1/2 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700 group z-10`}
+                } top-1/2 -translate-y-1/2 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700 group z-10 ${
+                  isHovered ? 'opacity-100' : 'opacity-0'
+                }`}
                 aria-label="Previous item"
               >
                 <svg
@@ -253,7 +298,9 @@ export default function SimpleFallbackSlider({
                 onClick={handleNext}
                 className={`absolute ${
                   fullWidth ? 'right-4' : 'right-0 translate-x-12 md:translate-x-16'
-                } top-1/2 -translate-y-1/2 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700 group z-10`}
+                } top-1/2 -translate-y-1/2 bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full p-3 shadow-lg hover:shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700 group z-10 ${
+                  isHovered ? 'opacity-100' : 'opacity-0'
+                }`}
                 aria-label="Next item"
               >
                 <svg
