@@ -122,7 +122,15 @@
   - Test accessibility features with automated tools
   - _Requirements: 1.1, 2.1, 3.1, 4.1_
 
-- [ ] 16. Add documentation and usage examples
+- [x] 16. Fix image re-downloading on focus change
+  - Remove dynamic `priority` prop from Image component in CarouselItem
+  - Set consistent image loading props that don't change based on focus state
+  - Ensure all carousel images are loaded once on initial render
+  - Verify images are cached by browser and not re-downloaded during rotation
+  - Test that focus state changes don't trigger network requests for images
+  - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
+
+- [ ] 17. Add documentation and usage examples
   - Document component props and configuration options
   - Create usage examples for different scenarios
   - Add inline code comments for complex logic

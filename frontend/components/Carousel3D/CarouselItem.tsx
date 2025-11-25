@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useCallback } from 'react';
 import Image from 'next/image';
 
 export interface CarouselItemData {
@@ -27,6 +27,45 @@ export interface CarouselItemProps {
   zIndex: number;
 }
 
+// Separate memoized image component that never re-renders unless the image URL changes
+const CarouselImage = memo(({
+  imageUrl,
+  alt,
+  itemWidth,
+  onError,
+  onLoad
+}: {
+  imageUrl: string;
+  alt: string;
+  itemWidth: number;
+  onError: () => void;
+  onLoad: () => void;
+}) => {
+  return (
+    <Image
+      src={imageUrl}
+      alt={alt}
+      fill
+      style={{ objectFit: 'cover' }}
+      sizes={`(max-width: 768px) 150px, (max-width: 1024px) 180px, ${itemWidth}px`}
+      className="transition-transform duration-500 group-hover:scale-105"
+      onError={onError}
+      onLoad={onLoad}
+      loading="eager"
+    />
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if the image URL or callbacks change
+  // itemWidth changes won't trigger re-render since sizes are responsive
+  return (
+    prevProps.imageUrl === nextProps.imageUrl &&
+    prevProps.onError === nextProps.onError &&
+    prevProps.onLoad === nextProps.onLoad
+  );
+});
+
+CarouselImage.displayName = 'CarouselImage';
+
 function CarouselItem({
   item,
   index,
@@ -45,14 +84,15 @@ function CarouselItem({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
-  const handleImageError = () => {
+  // Memoize callbacks to prevent CarouselImage from re-rendering
+  const handleImageError = useCallback(() => {
     setImageError(true);
     setImageLoading(false);
-  };
+  }, []);
 
-  const handleImageLoad = () => {
+  const handleImageLoad = useCallback(() => {
     setImageLoading(false);
-  };
+  }, []);
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -148,17 +188,12 @@ function CarouselItem({
                 </svg>
               </div>
             )}
-            <Image
-              src={item.imageUrl}
+            <CarouselImage
+              imageUrl={item.imageUrl}
               alt={item.alt}
-              fill
-              style={{ opacity: 1 }}
-              sizes={`(max-width: 768px) 150px, (max-width: 1024px) 180px, ${itemWidth}px`}
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              itemWidth={itemWidth}
               onError={handleImageError}
               onLoad={handleImageLoad}
-              priority={isFocused}
-              unoptimized
             />
             {/* Overlay for non-focused items */}
             {!isFocused && (
@@ -194,6 +229,8 @@ function CarouselItem({
 
 // Memoize the component to prevent unnecessary re-renders
 // Only re-render when key props change
+// Note: isFocused is intentionally included to update visual indicators
+// but the Image component itself should not re-download due to stable props
 export default memo(CarouselItem, (prevProps, nextProps) => {
   // Compare all props that affect rendering
   return (

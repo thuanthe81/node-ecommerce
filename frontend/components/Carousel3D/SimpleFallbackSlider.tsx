@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import Image from 'next/image';
-import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 interface CarouselItem {
@@ -12,6 +11,38 @@ interface CarouselItem {
   linkUrl?: string;
   title?: string;
 }
+
+// Separate memoized image component that never re-renders unless the image URL changes
+const SliderImage = memo(({
+  imageUrl,
+  alt,
+  onError
+}: {
+  imageUrl: string;
+  alt: string;
+  onError: () => void;
+}) => {
+  return (
+    <Image
+      src={imageUrl}
+      alt={alt}
+      fill
+      style={{ opacity: 1, objectFit: 'cover' }}
+      sizes="(max-width: 768px) 100vw, 400px"
+      className="object-cover transition-transform duration-500"
+      onError={onError}
+      priority={false}
+    />
+  );
+}, (prevProps, nextProps) => {
+  // Only re-render if the image URL or error callback changes
+  return (
+    prevProps.imageUrl === nextProps.imageUrl &&
+    prevProps.onError === nextProps.onError
+  );
+});
+
+SliderImage.displayName = 'SliderImage';
 
 interface SimpleFallbackSliderProps {
   items: CarouselItem[];
@@ -62,9 +93,9 @@ export default function SimpleFallbackSlider({
     setIsPaused(true); // Pause auto-slide on manual navigation
   }, [items.length, isTransitioning]);
 
-  const handleImageError = (itemId: string) => {
+  const handleImageError = useCallback((itemId: string) => {
     setImageError((prev) => new Set(prev).add(itemId));
-  };
+  }, []);
 
   // Auto-slide effect
   useEffect(() => {
@@ -94,6 +125,16 @@ export default function SimpleFallbackSlider({
     return () => clearTimeout(timeoutId);
   }, [isPaused, autoSlide]);
 
+  const currentItem = items[currentIndex];
+
+  // Create stable error handlers for each item using useMemo
+  const itemErrorHandlers = useMemo(() => {
+    return items.reduce((acc, item) => {
+      acc[item.id] = () => handleImageError(item.id);
+      return acc;
+    }, {} as Record<string, () => void>);
+  }, [items, handleImageError]);
+
   if (items.length === 0) {
     return (
       <div className="simple-slider-empty w-full py-12 px-4">
@@ -122,8 +163,6 @@ export default function SimpleFallbackSlider({
       </div>
     );
   }
-
-  const currentItem = items[currentIndex];
 
   return (
     <div
@@ -182,65 +221,71 @@ export default function SimpleFallbackSlider({
                 }
           }
         >
-          {/* Current Item */}
-          <div
-            className={`relative w-full h-full overflow-hidden transition-all duration-300 hover:shadow-3xl group ${
-              fullWidth ? 'rounded-none' : 'rounded-xl'
-            }`}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${currentIndex + 1} of ${items.length}: ${currentItem.title || currentItem.alt}`}
-            onClick={()=> currentItem.linkUrl && router.push(currentItem.linkUrl)}
-            style={{
-              animation: isTransitioning ? 'fadeOutLeft 0.6s ease-in-out' : 'fadeInRight 0.6s ease-in-out',
-            }}
-          >
-            {imageError.has(currentItem.id) ? (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600">
-                <svg
-                  className="w-20 h-20 text-gray-400 dark:text-gray-500 mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="text-base font-medium text-gray-600 dark:text-gray-400">
-                  Image unavailable
-                </span>
-              </div>
-            ) : (
-              <>
-                <Image
-                  src={currentItem.imageUrl}
-                  alt={currentItem.alt}
-                  fill
-                  style={{ opacity: 1 }}
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover transition-transform duration-500"
-                  onError={() => handleImageError(currentItem.id)}
-                  priority
-                  unoptimized
-                />
-                {currentItem.title && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 transition-all duration-300 group-hover:from-black/90">
-                    <h3 className="text-white text-lg font-semibold">
-                      {currentItem.title}
-                    </h3>
+          {/* Render all items but only show current one */}
+          {items.map((item, index) => {
+            const isActive = index === currentIndex;
+
+            return (
+              <div
+                key={item.id}
+                className={`absolute inset-0 w-full h-full overflow-hidden transition-all duration-300 hover:shadow-3xl group ${
+                  fullWidth ? 'rounded-none' : 'rounded-xl'
+                } ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${items.length}: ${item.title || item.alt}`}
+                aria-hidden={!isActive}
+                onClick={() => isActive && item.linkUrl && router.push(item.linkUrl)}
+                style={{
+                  animation: isActive
+                    ? isTransitioning
+                      ? 'fadeOutLeft 0.6s ease-in-out'
+                      : 'fadeInRight 0.6s ease-in-out'
+                    : 'none',
+                }}
+              >
+                {imageError.has(item.id) ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 border border-gray-300 dark:border-gray-600">
+                    <svg
+                      className="w-20 h-20 text-gray-400 dark:text-gray-500 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="text-base font-medium text-gray-600 dark:text-gray-400">
+                      Image unavailable
+                    </span>
                   </div>
+                ) : (
+                  <>
+                    <SliderImage
+                      imageUrl={item.imageUrl}
+                      alt={item.alt}
+                      onError={itemErrorHandlers[item.id]}
+                    />
+                    {item.title && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 transition-all duration-300 group-hover:from-black/90">
+                        <h3 className="text-white text-lg font-semibold">
+                          {item.title}
+                        </h3>
+                      </div>
+                    )}
+                    {/* Hover effect border */}
+                    <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 dark:group-hover:border-white/10 transition-all duration-300 pointer-events-none" />
+                  </>
                 )}
-                {/* Hover effect border */}
-                <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 dark:group-hover:border-white/10 transition-all duration-300 pointer-events-none" />
-              </>
-            )}
-          </div>
+              </div>
+            );
+          })}
 
           {/* CSS Animations */}
           <style jsx>{`

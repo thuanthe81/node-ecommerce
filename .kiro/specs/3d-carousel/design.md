@@ -498,25 +498,37 @@ const animateToRotation = (targetRotation: number) => {
 };
 ```
 
-### Image Loading
+### Image Loading and Caching
 
 ```typescript
-// Lazy load images
-// Use appropriate image sizes
-// Implement progressive loading
+// Use Next.js Image component for automatic optimization
+// Ensure images are cached and not re-downloaded on focus changes
+// Load all images on initial render with consistent priority
 
-<img
+import Image from 'next/image';
+
+<Image
   src={item.imageUrl}
   alt={item.alt}
-  loading="lazy"
-  srcSet={`
-    ${item.imageUrl}?w=200 200w,
-    ${item.imageUrl}?w=400 400w,
-    ${item.imageUrl}?w=600 600w
-  `}
+  fill
   sizes="(max-width: 768px) 150px, (max-width: 1024px) 180px, 200px"
+  // Use static priority - don't change based on focus state
+  // This prevents re-downloading when focus changes
+  priority={false}
+  unoptimized={false}
+  className="object-cover"
 />
 ```
+
+**Key Optimization Principles:**
+
+1. **Consistent Priority**: The `priority` prop should remain constant for each image, not change based on focus state. Changing `priority` can trigger re-downloads.
+
+2. **Browser Caching**: Next.js Image component automatically handles browser caching. Images are cached by URL and won't be re-downloaded unless the cache is invalidated.
+
+3. **Preloading Strategy**: For carousel images, consider preloading all images on component mount rather than lazy loading, since users will likely view all items.
+
+4. **Avoid Dynamic Props**: Props like `priority`, `loading`, and `unoptimized` should not change dynamically based on state (like `isFocused`). This ensures stable image loading behavior.
 
 ## Configuration and Customization
 
