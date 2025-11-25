@@ -146,6 +146,10 @@ a:hover {
   color: #1e40af; /* blue-800 */
 }
 
+a:hover.text-white {
+  color: #dfdfdf; /* blue-800 */
+}
+
 /* Status indicators should not rely on color alone */
 .status-indicator::before {
   content: '';
