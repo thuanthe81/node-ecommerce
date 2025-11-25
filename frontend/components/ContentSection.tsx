@@ -61,7 +61,7 @@ export default function ContentSection({
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   quality={85}
-                  priority={true}
+                  priority={false}
                 />
               )}
             </div>
@@ -106,7 +106,7 @@ export default function ContentSection({
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   quality={85}
-                  priority={true}
+                  priority={false}
                 />
               )}
             </div>
