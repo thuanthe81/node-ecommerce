@@ -57,7 +57,9 @@ export default function CartItem({ item }: CartItemProps) {
           alt={imageAlt}
           width={100}
           height={100}
+          style={{ opacity: 1 }}
           priority={true}
+          unoptimized
           className="object-cover rounded"
         />
       </Link>

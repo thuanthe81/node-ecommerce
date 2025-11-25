@@ -110,7 +110,9 @@ export default function MiniCart() {
                           alt={imageAlt}
                           width={60}
                           height={60}
+                          style={{ opacity: 1 }}
                           priority={true}
+                          unoptimized
                           className="object-cover rounded"
                         />
                         <div className="flex-1 min-w-0">

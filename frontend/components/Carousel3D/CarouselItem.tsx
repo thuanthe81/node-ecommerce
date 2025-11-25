@@ -152,12 +152,13 @@ function CarouselItem({
               src={item.imageUrl}
               alt={item.alt}
               fill
+              style={{ opacity: 1 }}
               sizes={`(max-width: 768px) 150px, (max-width: 1024px) 180px, ${itemWidth}px`}
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               onError={handleImageError}
               onLoad={handleImageLoad}
-              preload={isFocused}
-              loading={isFocused ? 'eager' : 'lazy'}
+              priority={isFocused}
+              unoptimized
             />
             {/* Overlay for non-focused items */}
             {!isFocused && (

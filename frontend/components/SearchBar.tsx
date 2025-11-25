@@ -141,7 +141,7 @@ export default function SearchBar() {
 
       {/* Autocomplete Dropdown */}
       {isOpen && (
-        <div 
+        <div
           id="search-results"
           className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"
           role="listbox"
@@ -156,7 +156,7 @@ export default function SearchBar() {
               {results.map((product, index) => {
                 const name = locale === 'vi' ? product.nameVi : product.nameEn;
                 const imageUrl = product.images[0]?.url || '/placeholder-product.png';
-                const altText = locale === 'vi' 
+                const altText = locale === 'vi'
                   ? product.images[0]?.altTextVi || name
                   : product.images[0]?.altTextEn || name;
                 const isSelected = index === selectedIndex;
@@ -185,8 +185,10 @@ export default function SearchBar() {
                         src={imageUrl}
                         alt={altText}
                         fill
+                        style={{ opacity: 1 }}
                         className="object-cover rounded"
                         sizes="48px"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 min-w-0">

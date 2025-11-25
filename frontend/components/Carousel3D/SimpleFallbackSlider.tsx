@@ -222,10 +222,12 @@ export default function SimpleFallbackSlider({
                   src={currentItem.imageUrl}
                   alt={currentItem.alt}
                   fill
+                  style={{ opacity: 1 }}
                   sizes="(max-width: 768px) 100vw, 400px"
                   className="object-cover transition-transform duration-500"
                   onError={() => handleImageError(currentItem.id)}
                   priority
+                  unoptimized
                 />
                 {currentItem.title && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 transition-all duration-300 group-hover:from-black/90">

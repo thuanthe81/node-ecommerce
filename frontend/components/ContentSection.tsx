@@ -11,6 +11,7 @@ export interface ContentSectionProps {
   buttonUrl: string;
   imageUrl?: string;
   imageAlt?: string;
+  priority?: boolean;
 }
 
 export default function ContentSection({
@@ -21,6 +22,7 @@ export default function ContentSection({
   buttonUrl,
   imageUrl,
   imageAlt,
+  priority = false,
 }: ContentSectionProps) {
   // Centered layout - no image, centered text
   if (layout === 'centered') {
@@ -51,20 +53,18 @@ export default function ContentSection({
       <section className="w-full bg-white">
         <div className="flex flex-col md:flex-row items-stretch">
           {/* Image - left side on desktop, top on mobile */}
-          <div className="w-full md:w-1/2">
-            <div className="relative w-full h-full min-h-[300px] md:min-h-[400px]">
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt={imageAlt || title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  quality={85}
-                  priority={false}
-                />
-              )}
-            </div>
+          <div className="w-full md:w-1/2 relative min-h-[300px] md:min-h-[400px] overflow-hidden bg-gray-200">
+            {imageUrl && (
+              <Image
+                src={imageUrl}
+                alt={imageAlt || title}
+                fill
+                style={{ objectFit: 'cover', opacity: 1 }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority={priority}
+                unoptimized
+              />
+            )}
           </div>
 
           {/* Content - right side on desktop, bottom on mobile */}
@@ -96,20 +96,18 @@ export default function ContentSection({
       <section className="w-full bg-gray-50">
         <div className="flex flex-col md:flex-row-reverse items-stretch">
           {/* Image - right side on desktop, top on mobile */}
-          <div className="w-full md:w-1/2">
-            <div className="relative w-full h-full min-h-[300px] md:min-h-[400px]">
-              {imageUrl && (
-                <Image
-                  src={imageUrl}
-                  alt={imageAlt || title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  quality={85}
-                  priority={false}
-                />
-              )}
-            </div>
+          <div className="w-full md:w-1/2 relative min-h-[300px] md:min-h-[400px] overflow-hidden bg-gray-200">
+            {imageUrl && (
+              <Image
+                src={imageUrl}
+                alt={imageAlt || title}
+                fill
+                style={{ objectFit: 'cover', opacity: 1 }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority={priority}
+                unoptimized
+              />
+            )}
           </div>
 
           {/* Content - left side on desktop, bottom on mobile */}

@@ -217,7 +217,7 @@ export default function HomeContent() {
       {/* Homepage Content Sections - Success State */}
       {!isLoadingSections && !sectionsError && homepageSections.length > 0 && (
         <div className="w-full">
-          {homepageSections.map((section) => {
+          {homepageSections.map((section, index) => {
             const isVietnamese = locale === 'vi';
             return (
               <ContentSection
