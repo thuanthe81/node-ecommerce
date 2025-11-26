@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
@@ -609,5 +610,48 @@ export class OrdersService {
     } catch (error) {
       console.error('Failed to send order status update email:', error);
     }
+  }
+
+  /**
+   * Update payment status (admin only)
+   */
+  async updatePaymentStatus(
+    id: string,
+    updatePaymentStatusDto: UpdatePaymentStatusDto,
+  ) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id },
+      data: {
+        paymentStatus: updatePaymentStatusDto.paymentStatus,
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+        promotion: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    return updatedOrder;
   }
 }

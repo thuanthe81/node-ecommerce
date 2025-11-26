@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { orderApi, Order } from '@/lib/order-api';
 import { paymentApi, RefundInfo } from '@/lib/payment-api';
 import { shippingApi, ShippingLabel } from '@/lib/shipping-api';
+import PaymentStatusUpdateModal from '@/components/PaymentStatusUpdateModal';
 import translations from '@/locales/translations.json';
 
 interface OrderDetailContentProps {
@@ -28,6 +29,9 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
   const [selectedCarrier, setSelectedCarrier] = useState('');
   const [generatingLabel, setGeneratingLabel] = useState(false);
   const [shippingLabel, setShippingLabel] = useState<ShippingLabel | null>(null);
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const router = useRouter();
 
   const t = (key: string) => {
@@ -93,7 +97,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
     try {
       setProcessingRefund(true);
       const amount = refundAmount ? parseFloat(refundAmount) : undefined;
-      
+
       const result = await paymentApi.processRefund({
         orderId,
         amount,
@@ -102,7 +106,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
 
       alert(t('orders.refundSuccess'));
       setShowRefundModal(false);
-      
+
       // Reload order data
       await loadOrder();
       await loadRefundInfo();
@@ -126,7 +130,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
       setShippingLabel(label);
       alert(t('orders.labelGenerated'));
       setShowLabelModal(false);
-      
+
       // Reload order data
       await loadOrder();
     } catch (err: any) {
@@ -136,10 +140,30 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
     }
   };
 
-  const canGenerateLabel = order && 
-    order.status !== 'CANCELLED' && 
+  const canGenerateLabel = order &&
+    order.status !== 'CANCELLED' &&
     order.status !== 'REFUNDED' &&
     order.paymentStatus === 'PAID';
+
+  const handlePaymentStatusUpdate = async (paymentStatus: string, notes?: string) => {
+    if (!order) return;
+
+    const updatedOrder = await orderApi.updateOrderPaymentStatus(orderId, {
+      paymentStatus,
+      notes,
+    });
+
+    setOrder(updatedOrder);
+    setToastType('success');
+    setToastMessage(t('orders.paymentStatusUpdateSuccess'));
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToastMessage(message);
+    setToastType(type);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
@@ -249,6 +273,29 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         </div>
       </div>
 
+      {/* Payment Status Update */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.paymentStatus')}</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600">{t('orders.currentStatus')}:</span>
+            <span
+              className={`px-3 py-1 text-sm font-semibold rounded-full ${getPaymentStatusBadgeColor(
+                order.paymentStatus
+              )}`}
+            >
+              {t(`orders.payment${order.paymentStatus.charAt(0) + order.paymentStatus.slice(1).toLowerCase()}`)}
+            </span>
+          </div>
+          <button
+            onClick={() => setShowPaymentStatusModal(true)}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            {t('orders.updatePaymentStatus')}
+          </button>
+        </div>
+      </div>
+
       {/* Refund Section */}
       {refundInfo?.canRefund && (
         <div className="bg-white rounded-lg shadow p-6">
@@ -304,7 +351,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.processRefund')}</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -362,7 +409,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.generateLabel')}</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -606,6 +653,31 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           </dl>
         </div>
       </div>
+
+      {/* Payment Status Update Modal */}
+      <PaymentStatusUpdateModal
+        isOpen={showPaymentStatusModal}
+        currentStatus={order.paymentStatus}
+        onClose={() => setShowPaymentStatusModal(false)}
+        onConfirm={handlePaymentStatusUpdate}
+        locale={locale}
+        translations={translations}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
+          <div
+            className={`px-6 py-3 rounded-lg shadow-lg ${
+              toastType === 'success'
+                ? 'bg-green-50 border border-green-200 text-green-700'
+                : 'bg-red-50 border border-red-200 text-red-700'
+            }`}
+          >
+            {toastMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

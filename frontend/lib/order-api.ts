@@ -83,6 +83,11 @@ export interface UpdateOrderStatusData {
   status: string;
 }
 
+export interface UpdatePaymentStatusData {
+  paymentStatus: string;
+  notes?: string;
+}
+
 export const orderApi = {
   /**
    * Create a new order
@@ -128,6 +133,14 @@ export const orderApi = {
    */
   async updateOrderStatus(id: string, data: UpdateOrderStatusData): Promise<Order> {
     const response = await apiClient.patch(`/orders/${id}/status`, data);
+    return response.data;
+  },
+
+  /**
+   * Update order payment status (admin only)
+   */
+  async updateOrderPaymentStatus(id: string, data: UpdatePaymentStatusData): Promise<Order> {
+    const response = await apiClient.patch(`/orders/${id}/payment-status`, data);
     return response.data;
   },
 };

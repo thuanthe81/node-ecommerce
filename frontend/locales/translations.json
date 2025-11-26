@@ -928,6 +928,10 @@
       "en": "Cancel",
       "vi": "Hủy"
     },
+    "confirm": {
+      "en": "Confirm",
+      "vi": "Xác nhận"
+    },
     "cart": {
       "en": "Cart",
       "vi": "Giỏ hàng"
@@ -1685,6 +1689,30 @@
     "paymentStatus": {
       "en": "Payment Status",
       "vi": "Trạng thái thanh toán"
+    },
+    "paymentStatusUpdateSuccess": {
+      "en": "Payment status updated successfully",
+      "vi": "Cập nhật trạng thái thanh toán thành công"
+    },
+    "updatePaymentStatus": {
+      "en": "Update Payment Status",
+      "vi": "Cập nhật trạng thái thanh toán"
+    },
+    "currentStatus": {
+      "en": "Current Status",
+      "vi": "Trạng thái hiện tại"
+    },
+    "newStatus": {
+      "en": "New Status",
+      "vi": "Trạng thái mới"
+    },
+    "notesPlaceholder": {
+      "en": "Add notes about this payment status update...",
+      "vi": "Thêm ghi chú về cập nhật trạng thái thanh toán..."
+    },
+    "noChangeError": {
+      "en": "Please select a different status",
+      "vi": "Vui lòng chọn trạng thái khác"
     },
     "permissionDenied": {
       "en": "You do not have permission to view this order.",
