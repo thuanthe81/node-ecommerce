@@ -8,15 +8,17 @@ export const metadata: Metadata = {
   description: 'Manage customer orders',
 };
 
-export default function AdminOrdersPage({
+export default async function AdminOrdersPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+
   return (
-    <AdminProtectedRoute locale={params.locale}>
+    <AdminProtectedRoute locale={locale}>
       <AdminLayout>
-        <OrderListContent locale={params.locale} />
+        <OrderListContent locale={locale} />
       </AdminLayout>
     </AdminProtectedRoute>
   );

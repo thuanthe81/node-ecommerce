@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'Manage discount codes and promotions',
 };
 
-export default function PromotionsPage({ params }: { params: { locale: string } }) {
-  return <PromotionListContent locale={params.locale} />;
+export default async function PromotionsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+
+  return <PromotionListContent locale={locale} />;
 }

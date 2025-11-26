@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'Create a new promotional banner',
 };
 
-export default function NewBannerPage({ params }: { params: { locale: string } }) {
-  return <NewBannerContent locale={params.locale} />;
+export default async function NewBannerPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+
+  return <NewBannerContent locale={locale} />;
 }

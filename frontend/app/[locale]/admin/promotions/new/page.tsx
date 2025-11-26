@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'Create a new discount code',
 };
 
-export default function NewPromotionPage({ params }: { params: { locale: string } }) {
-  return <NewPromotionContent locale={params.locale} />;
+export default async function NewPromotionPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+
+  return <NewPromotionContent locale={locale} />;
 }

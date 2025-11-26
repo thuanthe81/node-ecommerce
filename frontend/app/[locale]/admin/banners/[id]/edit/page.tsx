@@ -6,10 +6,12 @@ export const metadata: Metadata = {
   description: 'Edit banner details',
 };
 
-export default function EditBannerPage({ 
-  params 
-}: { 
-  params: { locale: string; id: string } 
+export default async function EditBannerPage({
+  params
+}: {
+  params: Promise<{ locale: string; id: string }>
 }) {
-  return <EditBannerContent locale={params.locale} bannerId={params.id} />;
+  const { locale, id } = await params;
+
+  return <EditBannerContent locale={locale} bannerId={id} />;
 }
