@@ -6,6 +6,7 @@ import CarouselControls from './Carousel3D/CarouselControls';
 import CarouselIndicators from './Carousel3D/CarouselIndicators';
 import SimpleFallbackSlider from './Carousel3D/SimpleFallbackSlider';
 import CarouselErrorBoundary from './Carousel3D/CarouselErrorBoundary';
+import { SvgPlay, SvgPause } from './Svgs';
 
 // TypeScript Interfaces
 export interface CarouselItem {
@@ -1097,27 +1098,15 @@ function Carousel3DInternal({
           title={isPaused ? 'Play auto-rotation' : 'Pause auto-rotation'}
         >
           {isPaused ? (
-            // Play icon
-            <svg
+            <SvgPlay
               className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
-            >
-              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-            </svg>
+            />
           ) : (
-            // Pause icon
-            <svg
+            <SvgPause
               className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
-            >
-              <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z" />
-            </svg>
+            />
           )}
         </button>
       )}
