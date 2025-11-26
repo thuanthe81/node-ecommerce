@@ -9,6 +9,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { CustomerFiltersDto } from './dto/customer-filters.dto';
 import { AddressDeduplicationUtil, NormalizedAddress } from './utils/address-deduplication.util';
 import { Address } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
@@ -339,5 +340,202 @@ export class UsersService {
     });
 
     return { message: 'Address deleted successfully' };
+  }
+
+  // Admin Customer Management Methods
+
+  async findAllCustomersWithStats(filters: CustomerFiltersDto) {
+    const {
+      search,
+      startDate,
+      endDate,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 20,
+    } = filters;
+
+    // Build where clause
+    const where: any = {
+      role: 'CUSTOMER', // Only fetch customers, not admins
+    };
+
+    // Add search filter
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Add date range filters
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        where.createdAt.gte = new Date(startDate);
+      }
+      if (endDate) {
+        where.createdAt.lte = new Date(endDate);
+      }
+    }
+
+    // Calculate total count
+    const total = await this.prisma.user.count({ where });
+
+    // Fetch customers with pagination
+    const customers = await this.prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            orders: true,
+          },
+        },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy:
+        sortBy === 'createdAt'
+          ? { createdAt: sortOrder }
+          : sortBy === 'totalOrders'
+          ? { orders: { _count: sortOrder } }
+          : undefined,
+    });
+
+    // Calculate total spent for each customer
+    const customersWithStats = await Promise.all(
+      customers.map(async (customer) => {
+        const orderStats = await this.prisma.order.aggregate({
+          where: { userId: customer.id },
+          _sum: { total: true },
+        });
+
+        return {
+          id: customer.id,
+          email: customer.email,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          createdAt: customer.createdAt,
+          updatedAt: customer.updatedAt,
+          totalOrders: customer._count.orders,
+          totalSpent: orderStats._sum.total || 0,
+        };
+      }),
+    );
+
+    // Sort by totalSpent if requested (can't do this in Prisma query)
+    if (sortBy === 'totalSpent') {
+      customersWithStats.sort((a, b) => {
+        const comparison = Number(a.totalSpent) - Number(b.totalSpent);
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return {
+      customers: customersWithStats,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findCustomerWithDetails(customerId: string) {
+    const customer = await this.prisma.user.findUnique({
+      where: { id: customerId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        updatedAt: true,
+        orders: {
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            paymentStatus: true,
+            total: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        addresses: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            addressLine1: true,
+            addressLine2: true,
+            city: true,
+            state: true,
+            postalCode: true,
+            country: true,
+            isDefault: true,
+          },
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+        },
+      },
+    });
+
+    if (!customer) {
+      throw new NotFoundException('Customer not found');
+    }
+
+    // Calculate statistics
+    const orderStats = await this.prisma.order.aggregate({
+      where: { userId: customerId },
+      _sum: { total: true },
+      _count: true,
+    });
+
+    return {
+      ...customer,
+      totalOrders: orderStats._count,
+      totalSpent: orderStats._sum.total || 0,
+    };
+  }
+
+  async exportCustomersToCSV(filters: CustomerFiltersDto): Promise<Buffer> {
+    // Fetch all customers matching filters (without pagination)
+    const { customers } = await this.findAllCustomersWithStats({
+      ...filters,
+      page: 1,
+      limit: 10000, // Large limit to get all customers
+    });
+
+    // Generate CSV
+    const headers = [
+      'Email',
+      'First Name',
+      'Last Name',
+      'Registration Date',
+      'Total Orders',
+      'Total Spent',
+    ];
+
+    const rows = customers.map((customer) => [
+      customer.email,
+      customer.firstName || '',
+      customer.lastName || '',
+      customer.createdAt.toISOString(),
+      customer.totalOrders.toString(),
+      customer.totalSpent.toFixed(2),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    ].join('\n');
+
+    return Buffer.from(csvContent, 'utf-8');
   }
 }
