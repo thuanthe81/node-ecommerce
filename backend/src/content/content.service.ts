@@ -21,6 +21,11 @@ export class ContentService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  async getContentTypes(): Promise<string[]> {
+    // Return all available content types from the ContentType enum
+    return Object.values(ContentType);
+  }
+
   async create(createContentDto: CreateContentDto): Promise<Content> {
     // Check if slug already exists
     const existing = await this.prisma.content.findUnique({

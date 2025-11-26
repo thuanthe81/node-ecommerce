@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Content, CreateContentData } from '@/lib/content-api';
+import { Content, CreateContentData, getContentTypes } from '@/lib/content-api';
 
 interface ContentFormProps {
   content?: Content;
@@ -22,10 +22,16 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
     displayOrder: 0,
     isPublished: false,
   });
+  const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en');
   const [previewMode, setPreviewMode] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    loadContentTypes();
+  }, []);
 
   useEffect(() => {
     if (content) {
@@ -44,24 +50,121 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
     }
   }, [content]);
 
+  const loadContentTypes = async () => {
+    try {
+      const types = await getContentTypes();
+      setContentTypes(types);
+    } catch (err: any) {
+      console.error('Failed to load content types:', err);
+      // Fallback to default types if fetch fails
+      setContentTypes(['PAGE', 'FAQ', 'BANNER', 'HOMEPAGE_SECTION']);
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    // Convert enum values to readable labels
+    return type
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  const validateSlug = (slug: string): string | null => {
+    if (!slug) return 'Slug is required';
+    // Slug should only contain lowercase letters, numbers, and hyphens
+    // Should not start or end with a hyphen
+    const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    if (!slugRegex.test(slug)) {
+      return 'Slug must contain only lowercase letters, numbers, and hyphens (no spaces or special characters)';
+    }
+    return null;
+  };
+
+  const validateUrl = (url: string, fieldName: string): string | null => {
+    if (!url) return null; // URL fields are optional
+    try {
+      new URL(url);
+      return null;
+    } catch {
+      return `${fieldName} must be a valid URL`;
+    }
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    const newValue = type === 'checkbox'
+      ? (e.target as HTMLInputElement).checked
+      : type === 'number'
+      ? parseInt(value) || 0
+      : value;
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === 'checkbox'
-          ? (e.target as HTMLInputElement).checked
-          : type === 'number'
-          ? parseInt(value) || 0
-          : value,
+      [name]: newValue,
     }));
+
+    // Clear validation error for this field
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+
+    // Validate on change for specific fields
+    if (name === 'slug' && typeof newValue === 'string') {
+      const error = validateSlug(newValue);
+      if (error) {
+        setValidationErrors((prev) => ({ ...prev, slug: error }));
+      }
+    } else if ((name === 'imageUrl' || name === 'linkUrl') && typeof newValue === 'string') {
+      const error = validateUrl(newValue, name === 'imageUrl' ? 'Image URL' : 'Link URL');
+      if (error) {
+        setValidationErrors((prev) => ({ ...prev, [name]: error }));
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationErrors({});
+
+    // Validate all fields before submission
+    const errors: Record<string, string> = {};
+
+    // Validate required fields
+    if (!formData.slug) errors.slug = 'Slug is required';
+    if (!formData.titleEn) errors.titleEn = 'English title is required';
+    if (!formData.titleVi) errors.titleVi = 'Vietnamese title is required';
+    if (!formData.contentEn) errors.contentEn = 'English content is required';
+    if (!formData.contentVi) errors.contentVi = 'Vietnamese content is required';
+
+    // Validate slug format
+    if (formData.slug) {
+      const slugError = validateSlug(formData.slug);
+      if (slugError) errors.slug = slugError;
+    }
+
+    // Validate URL fields if they have values
+    if (formData.imageUrl) {
+      const urlError = validateUrl(formData.imageUrl, 'Image URL');
+      if (urlError) errors.imageUrl = urlError;
+    }
+    if (formData.linkUrl) {
+      const urlError = validateUrl(formData.linkUrl, 'Link URL');
+      if (urlError) errors.linkUrl = urlError;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError('Please fix the validation errors before submitting');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -109,9 +212,11 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
             required
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="PAGE">Page</option>
-            <option value="FAQ">FAQ</option>
-            <option value="BANNER">Banner</option>
+            {contentTypes.map((type) => (
+              <option key={type} value={type}>
+                {getTypeLabel(type)}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -125,9 +230,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
             value={formData.slug}
             onChange={handleChange}
             required
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              validationErrors.slug ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="url-friendly-slug"
           />
+          {validationErrors.slug && (
+            <p className="text-sm text-red-600 mt-1">{validationErrors.slug}</p>
+          )}
           <p className="text-sm text-gray-500 mt-1">
             Used in URL: /pages/{formData.slug}
           </p>
@@ -173,8 +283,13 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               value={formData.titleEn}
               onChange={handleTitleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.titleEn ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
+            {validationErrors.titleEn && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.titleEn}</p>
+            )}
           </div>
 
           <div>
@@ -202,9 +317,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 onChange={handleChange}
                 required
                 rows={12}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm ${
+                  validationErrors.contentEn ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="You can use HTML tags for formatting"
               />
+            )}
+            {validationErrors.contentEn && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.contentEn}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
               Supports HTML formatting
@@ -225,8 +345,13 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               value={formData.titleVi}
               onChange={handleChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.titleVi ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
+            {validationErrors.titleVi && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.titleVi}</p>
+            )}
           </div>
 
           <div>
@@ -254,9 +379,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 onChange={handleChange}
                 required
                 rows={12}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm ${
+                  validationErrors.contentVi ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="You can use HTML tags for formatting"
               />
+            )}
+            {validationErrors.contentVi && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.contentVi}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
               Supports HTML formatting
@@ -276,9 +406,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               name="imageUrl"
               value={formData.imageUrl}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.imageUrl ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="https://example.com/image.jpg"
             />
+            {validationErrors.imageUrl && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.imageUrl}</p>
+            )}
           </div>
 
           <div>
@@ -290,9 +425,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               name="linkUrl"
               value={formData.linkUrl}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.linkUrl ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="https://example.com/page"
             />
+            {validationErrors.linkUrl && (
+              <p className="text-sm text-red-600 mt-1">{validationErrors.linkUrl}</p>
+            )}
           </div>
         </div>
       )}

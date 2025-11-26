@@ -25,6 +25,12 @@ export class ContentController {
     return this.contentService.create(createContentDto);
   }
 
+  @Get('types')
+  @Public()
+  getContentTypes() {
+    return this.contentService.getContentTypes();
+  }
+
   @Get()
   @Roles(UserRole.ADMIN)
   findAll(@Query('type') type?: ContentType) {

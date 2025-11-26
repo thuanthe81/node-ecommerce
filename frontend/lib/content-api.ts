@@ -37,6 +37,11 @@ export interface CreateContentData {
 }
 
 export const contentApi = {
+  getTypes: async (): Promise<string[]> => {
+    const response = await apiClient.get('/content/types');
+    return response.data;
+  },
+
   getAll: async (type?: string): Promise<Content[]> => {
     const params = type ? `?type=${type}` : '';
     const response = await apiClient.get(`/content${params}`);
@@ -85,6 +90,7 @@ export const contentApi = {
 };
 
 // Helper functions for easier usage
+export const getContentTypes = () => contentApi.getTypes();
 export const getContents = (type?: string) => contentApi.getAll(type);
 export const getPublishedContents = (type?: string) => contentApi.getPublished(type);
 export const getBanners = () => contentApi.getBanners();

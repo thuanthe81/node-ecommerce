@@ -3,18 +3,33 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getContents, deleteContent, Content } from '@/lib/content-api';
+import { getContents, deleteContent, getContentTypes, Content } from '@/lib/content-api';
 
 export default function ContentListContent() {
   const router = useRouter();
   const [contents, setContents] = useState<Content[]>([]);
+  const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
 
   useEffect(() => {
+    loadContentTypes();
+  }, []);
+
+  useEffect(() => {
     loadContents();
   }, [filterType]);
+
+  const loadContentTypes = async () => {
+    try {
+      const types = await getContentTypes();
+      setContentTypes(types);
+    } catch (err: any) {
+      console.error('Failed to load content types:', err);
+      // Don't set error state, just log it - we can still show contents
+    }
+  };
 
   const loadContents = async () => {
     try {
@@ -43,16 +58,11 @@ export default function ContentListContent() {
   };
 
   const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'PAGE':
-        return 'Page';
-      case 'FAQ':
-        return 'FAQ';
-      case 'BANNER':
-        return 'Banner';
-      default:
-        return type;
-    }
+    // Convert enum values to readable labels
+    return type
+      .split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   if (loading) {
@@ -93,9 +103,11 @@ export default function ContentListContent() {
           className="border border-gray-300 rounded px-3 py-2"
         >
           <option value="all">All Types</option>
-          <option value="PAGE">Pages</option>
-          <option value="FAQ">FAQs</option>
-          <option value="BANNER">Banners</option>
+          {contentTypes.map((type) => (
+            <option key={type} value={type}>
+              {getTypeLabel(type)}
+            </option>
+          ))}
         </select>
       </div>
 
