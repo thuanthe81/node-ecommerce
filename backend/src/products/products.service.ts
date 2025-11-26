@@ -125,7 +125,7 @@ export class ProductsService {
         where.stockQuantity = { lte: 0 };
       }
     }
-
+    console.log(`Isfeatured: ${isFeatured}`);
     // Featured filter
     if (isFeatured !== undefined) {
       where.isFeatured = isFeatured;

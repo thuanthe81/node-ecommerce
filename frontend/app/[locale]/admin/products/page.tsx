@@ -142,6 +142,21 @@ export default function AdminProductsPage() {
                 <option value="true">{locale === 'vi' ? 'Còn hàng' : 'In Stock'}</option>
                 <option value="false">{locale === 'vi' ? 'Hết hàng' : 'Out of Stock'}</option>
               </select>
+
+              <select
+                value={filters.isFeatured === undefined ? 'all' : filters.isFeatured ? 'true' : 'false'}
+                onChange={(e) =>
+                  handleFilterChange(
+                    'isFeatured',
+                    e.target.value === 'all' ? undefined : e.target.value === 'true'
+                  )
+                }
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">{locale === 'vi' ? 'Tất cả' : 'All Featured'}</option>
+                <option value="true">{locale === 'vi' ? 'Nổi bật' : 'Featured'}</option>
+                <option value="false">{locale === 'vi' ? 'Không nổi bật' : 'Not Featured'}</option>
+              </select>
             </div>
           </div>
 

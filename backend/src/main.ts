@@ -45,7 +45,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // Throw error if non-whitelisted properties exist
       transform: true, // Transform payloads to DTO instances
       transformOptions: {
-        enableImplicitConversion: true,
+        enableImplicitConversion: false, // Disabled to allow explicit @Transform decorators to work correctly
       },
       disableErrorMessages: process.env.NODE_ENV === 'production', // Hide detailed errors in production
     }),

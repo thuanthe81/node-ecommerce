@@ -6,7 +6,7 @@ import {
   IsIn,
   IsBoolean,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class QueryProductsDto {
   @IsOptional()
@@ -30,13 +30,21 @@ export class QueryProductsDto {
   maxPrice?: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean()
-  @Type(() => Boolean)
   inStock?: boolean;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean()
-  @Type(() => Boolean)
   isFeatured?: boolean;
 
   @IsOptional()
