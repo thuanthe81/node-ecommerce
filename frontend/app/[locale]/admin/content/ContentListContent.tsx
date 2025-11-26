@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getContents, deleteContent, getContentTypes, Content } from '@/lib/content-api';
 
 export default function ContentListContent() {
   const router = useRouter();
+  const t = useTranslations();
   const [contents, setContents] = useState<Content[]>([]);
   const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ export default function ContentListContent() {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (!confirm(t('admin.confirmDelete', { title }))) {
       return;
     }
 
@@ -53,7 +55,7 @@ export default function ContentListContent() {
       await deleteContent(id);
       await loadContents();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete content');
+      alert(err.message || t('admin.failedDeleteContent'));
     }
   };
 
@@ -68,7 +70,7 @@ export default function ContentListContent() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading contents...</div>
+        <div className="text-lg">{t('admin.loadingContents')}</div>
       </div>
     );
   }
@@ -86,23 +88,23 @@ export default function ContentListContent() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Content Management</h1>
+        <h1 className="text-3xl font-bold">{t('admin.contentManagement')}</h1>
         <Link
           href="/admin/content/new"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Create New Content
+          {t('admin.createNewContent')}
         </Link>
       </div>
 
       <div className="mb-4">
-        <label className="mr-2 font-medium">Filter by Type:</label>
+        <label className="mr-2 font-medium">{t('admin.filterByType')}</label>
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2"
         >
-          <option value="all">All Types</option>
+          <option value="all">{t('admin.allTypes')}</option>
           {contentTypes.map((type) => (
             <option key={type} value={type}>
               {getTypeLabel(type)}
@@ -116,22 +118,22 @@ export default function ContentListContent() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
+                {t('admin.title')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Slug
+                {t('admin.slug')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
+                {t('admin.type')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                {t('admin.status')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Updated
+                {t('admin.updated')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
+                {t('admin.actions')}
               </th>
             </tr>
           </thead>
@@ -139,7 +141,7 @@ export default function ContentListContent() {
             {contents.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                  No content found. Create your first content item.
+                  {t('admin.noContentFound')}
                 </td>
               </tr>
             ) : (
@@ -167,7 +169,7 @@ export default function ContentListContent() {
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {content.isPublished ? 'Published' : 'Draft'}
+                      {content.isPublished ? t('admin.published') : t('admin.draft')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -178,13 +180,13 @@ export default function ContentListContent() {
                       href={`/admin/content/${content.id}/edit`}
                       className="text-blue-600 hover:text-blue-900 mr-4"
                     >
-                      Edit
+                      {t('admin.edit')}
                     </Link>
                     <button
                       onClick={() => handleDelete(content.id, content.titleEn)}
                       className="text-red-600 hover:text-red-900"
                     >
-                      Delete
+                      {t('common.delete')}
                     </button>
                   </td>
                 </tr>

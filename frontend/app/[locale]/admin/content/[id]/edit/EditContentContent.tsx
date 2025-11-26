@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import ContentForm from '@/components/ContentForm';
 import {
   getContentById,
@@ -13,6 +14,7 @@ import {
 export default function EditContentContent() {
   const router = useRouter();
   const params = useParams();
+  const t = useTranslations();
   const id = params.id as string;
 
   const [content, setContent] = useState<Content | null>(null);
@@ -29,7 +31,7 @@ export default function EditContentContent() {
       const data = await getContentById(id);
       setContent(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load content');
+      setError(err.message || t('admin.failedLoadContent'));
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,7 @@ export default function EditContentContent() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading content...</div>
+        <div className="text-lg">{t('admin.loadingContent')}</div>
       </div>
     );
   }
@@ -56,7 +58,7 @@ export default function EditContentContent() {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error || 'Content not found'}
+          {error || t('admin.contentNotFound')}
         </div>
       </div>
     );
@@ -64,7 +66,7 @@ export default function EditContentContent() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Edit Content</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('admin.editContent')}</h1>
       <div className="bg-white shadow-md rounded-lg p-6">
         <ContentForm
           content={content}

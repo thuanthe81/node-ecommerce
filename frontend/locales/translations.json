@@ -182,6 +182,10 @@
     }
   },
   "admin": {
+    "actions": {
+      "en": "Actions",
+      "vi": "Thao tác"
+    },
     "activeCategory": {
       "en": "Active category",
       "vi": "Kích hoạt danh mục"
@@ -189,6 +193,10 @@
     "addProduct": {
       "en": "Add product",
       "vi": "Thêm sản phẩm"
+    },
+    "allTypes": {
+      "en": "All Types",
+      "vi": "Tất cả loại"
     },
     "analytics": {
       "en": "Analytics",
@@ -214,6 +222,10 @@
       "en": "Category preview",
       "vi": "Xem trước danh mục"
     },
+    "confirmDelete": {
+      "en": "Are you sure you want to delete \"{title}\"?",
+      "vi": "Bạn có chắc muốn xóa \"{title}\"?"
+    },
     "content": {
       "en": "Content",
       "vi": "Nội dung"
@@ -221,6 +233,14 @@
     "contentEnglish": {
       "en": "Content (English)",
       "vi": "Nội dung (Tiếng Anh)"
+    },
+    "contentManagement": {
+      "en": "Content Management",
+      "vi": "Quản lý nội dung"
+    },
+    "contentNotFound": {
+      "en": "Content not found",
+      "vi": "Không tìm thấy nội dung"
     },
     "contentType": {
       "en": "Content Type",
@@ -237,6 +257,10 @@
     "createContent": {
       "en": "Create Content",
       "vi": "Tạo nội dung"
+    },
+    "createNewContent": {
+      "en": "Create New Content",
+      "vi": "Tạo nội dung mới"
     },
     "createPromotion": {
       "en": "Create promotion",
@@ -274,9 +298,37 @@
       "en": "Order number for sorting categories (0 = first)",
       "vi": "Số thứ tự để sắp xếp danh mục (0 = đầu tiên)"
     },
+    "draft": {
+      "en": "Draft",
+      "vi": "Bản nháp"
+    },
+    "edit": {
+      "en": "Edit",
+      "vi": "Sửa"
+    },
+    "editContent": {
+      "en": "Edit Content",
+      "vi": "Chỉnh sửa nội dung"
+    },
     "englishContent": {
       "en": "English Content",
       "vi": "Nội dung Tiếng Anh"
+    },
+    "failedDeleteContent": {
+      "en": "Failed to delete content",
+      "vi": "Xóa nội dung thất bại"
+    },
+    "failedLoadContent": {
+      "en": "Failed to load content",
+      "vi": "Tải nội dung thất bại"
+    },
+    "failedLoadContentTypes": {
+      "en": "Failed to load content types",
+      "vi": "Tải loại nội dung thất bại"
+    },
+    "failedLoadContents": {
+      "en": "Failed to load contents",
+      "vi": "Tải danh sách nội dung thất bại"
     },
     "failedSaveBanner": {
       "en": "Failed to save banner",
@@ -294,6 +346,14 @@
       "en": "FAQ",
       "vi": "Câu hỏi thường gặp"
     },
+    "filterByType": {
+      "en": "Filter by Type:",
+      "vi": "Lọc theo loại:"
+    },
+    "fixValidationErrors": {
+      "en": "Please fix the validation errors before submitting",
+      "vi": "Vui lòng sửa các lỗi xác thực trước khi gửi"
+    },
     "footerSettings": {
       "en": "Footer Settings",
       "vi": "Cài đặt chân trang"
@@ -301,6 +361,10 @@
     "handmadeJewelry": {
       "en": "handmade-jewelry",
       "vi": "trang-suc-thu-cong"
+    },
+    "homepageSection": {
+      "en": "Homepage Section",
+      "vi": "Phần trang chủ"
     },
     "homepageSections": {
       "en": "Homepage Sections",
@@ -318,6 +382,10 @@
       "en": "Image URL",
       "vi": "URL hình ảnh"
     },
+    "imageUrlError": {
+      "en": "Image URL must be a valid URL",
+      "vi": "URL hình ảnh phải là URL hợp lệ"
+    },
     "imageUrlPlaceholder": {
       "en": "https://example.com/banner.jpg",
       "vi": "https://example.com/banner.jpg"
@@ -326,13 +394,29 @@
       "en": "Link URL",
       "vi": "URL liên kết"
     },
+    "linkUrlError": {
+      "en": "Link URL must be a valid URL",
+      "vi": "URL liên kết phải là URL hợp lệ"
+    },
     "linkUrlPlaceholder": {
       "en": "https://example.com/sale",
       "vi": "https://example.com/sale"
     },
+    "loadingContent": {
+      "en": "Loading content...",
+      "vi": "Đang tải nội dung..."
+    },
+    "loadingContents": {
+      "en": "Loading contents...",
+      "vi": "Đang tải danh sách nội dung..."
+    },
     "manageCategories": {
       "en": "Manage categories",
       "vi": "Quản lý danh mục"
+    },
+    "noContentFound": {
+      "en": "No content found. Create your first content item.",
+      "vi": "Không tìm thấy nội dung. Tạo nội dung đầu tiên của bạn."
     },
     "noneRootCategory": {
       "en": "None (Root Category)",
@@ -359,6 +443,10 @@
       "vi": "Xuất bản nội dung này"
     },
     "published": {
+      "en": "Published",
+      "vi": "Đã xuất bản"
+    },
+    "publishedVisible": {
       "en": "Published (visible on website)",
       "vi": "Đã xuất bản (hiển thị trên website)"
     },
@@ -369,6 +457,10 @@
     "required": {
       "en": "*",
       "vi": "*"
+    },
+    "saving": {
+      "en": "Saving...",
+      "vi": "Đang lưu..."
     },
     "saveCategory": {
       "en": "Save Category",
@@ -382,6 +474,10 @@
       "en": "Slug",
       "vi": "Slug"
     },
+    "slugError": {
+      "en": "Slug must contain only lowercase letters, numbers, and hyphens (no spaces or special characters)",
+      "vi": "Slug chỉ được chứa chữ cái thường, số và dấu gạch ngang (không có khoảng trắng hoặc ký tự đặc biệt)"
+    },
     "slugHint": {
       "en": "URL-friendly identifier",
       "vi": "Định danh thân thiện với URL"
@@ -391,24 +487,48 @@
       "vi": "Sử dụng trong URL: /pages/{slug}"
     },
     "slugPlaceholder": {
-      "en": "summer-sale-2024",
-      "vi": "khuyen-mai-he-2024"
+      "en": "url-friendly-slug",
+      "vi": "slug-than-thien-url"
+    },
+    "slugRequired": {
+      "en": "Slug is required",
+      "vi": "Slug là bắt buộc"
+    },
+    "status": {
+      "en": "Status",
+      "vi": "Trạng thái"
     },
     "supportsHtml": {
       "en": "Supports HTML formatting",
       "vi": "Hỗ trợ định dạng HTML"
     },
+    "title": {
+      "en": "Title",
+      "vi": "Tiêu đề"
+    },
     "titleEnglish": {
       "en": "Title (English)",
       "vi": "Tiêu đề (Tiếng Anh)"
+    },
+    "titleEnglishRequired": {
+      "en": "English title is required",
+      "vi": "Tiêu đề tiếng Anh là bắt buộc"
     },
     "titleVietnamese": {
       "en": "Title (Vietnamese)",
       "vi": "Tiêu đề (Tiếng Việt)"
     },
+    "titleVietnameseRequired": {
+      "en": "Vietnamese title is required",
+      "vi": "Tiêu đề tiếng Việt là bắt buộc"
+    },
     "totalRevenue": {
       "en": "Total revenue",
       "vi": "Tổng doanh thu"
+    },
+    "type": {
+      "en": "Type",
+      "vi": "Loại"
     },
     "updateBanner": {
       "en": "Update Banner",
@@ -417,6 +537,10 @@
     "updateContent": {
       "en": "Update Content",
       "vi": "Cập nhật nội dung"
+    },
+    "updated": {
+      "en": "Updated",
+      "vi": "Cập nhật"
     },
     "uploadImage": {
       "en": "Upload Image",

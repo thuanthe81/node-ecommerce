@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Content, CreateContentData, getContentTypes } from '@/lib/content-api';
 
 interface ContentFormProps {
@@ -10,6 +11,7 @@ interface ContentFormProps {
 }
 
 export default function ContentForm({ content, onSubmit, onCancel }: ContentFormProps) {
+  const t = useTranslations();
   const [formData, setFormData] = useState<CreateContentData>({
     slug: '',
     type: 'PAGE',
@@ -70,12 +72,12 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
   };
 
   const validateSlug = (slug: string): string | null => {
-    if (!slug) return 'Slug is required';
+    if (!slug) return t('admin.slugRequired');
     // Slug should only contain lowercase letters, numbers, and hyphens
     // Should not start or end with a hyphen
     const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     if (!slugRegex.test(slug)) {
-      return 'Slug must contain only lowercase letters, numbers, and hyphens (no spaces or special characters)';
+      return t('admin.slugError');
     }
     return null;
   };
@@ -86,7 +88,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
       new URL(url);
       return null;
     } catch {
-      return `${fieldName} must be a valid URL`;
+      return fieldName === 'imageUrl' ? t('admin.imageUrlError') : t('admin.linkUrlError');
     }
   };
 
@@ -137,11 +139,11 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
     const errors: Record<string, string> = {};
 
     // Validate required fields
-    if (!formData.slug) errors.slug = 'Slug is required';
-    if (!formData.titleEn) errors.titleEn = 'English title is required';
-    if (!formData.titleVi) errors.titleVi = 'Vietnamese title is required';
-    if (!formData.contentEn) errors.contentEn = 'English content is required';
-    if (!formData.contentVi) errors.contentVi = 'Vietnamese content is required';
+    if (!formData.slug) errors.slug = t('admin.slugRequired');
+    if (!formData.titleEn) errors.titleEn = t('admin.titleEnglishRequired');
+    if (!formData.titleVi) errors.titleVi = t('admin.titleVietnameseRequired');
+    if (!formData.contentEn) errors.contentEn = t('admin.titleEnglishRequired');
+    if (!formData.contentVi) errors.contentVi = t('admin.titleVietnameseRequired');
 
     // Validate slug format
     if (formData.slug) {
@@ -161,7 +163,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
-      setError('Please fix the validation errors before submitting');
+      setError(t('admin.fixValidationErrors'));
       return;
     }
 
@@ -203,7 +205,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Content Type *
+            {t('admin.contentType')} {t('admin.required')}
           </label>
           <select
             name="type"
@@ -222,7 +224,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Slug *
+            {t('admin.slug')} {t('admin.required')}
           </label>
           <input
             type="text"
@@ -233,13 +235,13 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
             className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               validationErrors.slug ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="url-friendly-slug"
+            placeholder={t('admin.slugPlaceholder')}
           />
           {validationErrors.slug && (
             <p className="text-sm text-red-600 mt-1">{validationErrors.slug}</p>
           )}
           <p className="text-sm text-gray-500 mt-1">
-            Used in URL: /pages/{formData.slug}
+            {t('admin.slugHintUrl', { slug: formData.slug })}
           </p>
         </div>
       </div>
@@ -255,7 +257,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            English Content
+            {t('admin.englishContent')}
           </button>
           <button
             type="button"
@@ -266,7 +268,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Vietnamese Content
+            {t('admin.vietnameseContent')}
           </button>
         </nav>
       </div>
@@ -275,7 +277,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title (English) *
+              {t('admin.titleEnglish')} {t('admin.required')}
             </label>
             <input
               type="text"
@@ -294,7 +296,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Content (English) *
+              {t('admin.contentEnglish')} {t('admin.required')}
             </label>
             <div className="mb-2">
               <button
@@ -302,7 +304,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 onClick={() => setPreviewMode(!previewMode)}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                {previewMode ? 'Edit' : 'Preview'}
+                {previewMode ? t('common.edit') : t('admin.preview')}
               </button>
             </div>
             {previewMode ? (
@@ -320,14 +322,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm ${
                   validationErrors.contentEn ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="You can use HTML tags for formatting"
+                placeholder={t('admin.htmlPlaceholder')}
               />
             )}
             {validationErrors.contentEn && (
               <p className="text-sm text-red-600 mt-1">{validationErrors.contentEn}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
-              Supports HTML formatting
+              {t('admin.supportsHtml')}
             </p>
           </div>
         </div>
@@ -337,7 +339,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title (Vietnamese) *
+              {t('admin.titleVietnamese')} {t('admin.required')}
             </label>
             <input
               type="text"
@@ -356,7 +358,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Content (Vietnamese) *
+              {t('admin.contentVietnamese')} {t('admin.required')}
             </label>
             <div className="mb-2">
               <button
@@ -364,7 +366,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 onClick={() => setPreviewMode(!previewMode)}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                {previewMode ? 'Edit' : 'Preview'}
+                {previewMode ? t('common.edit') : t('admin.preview')}
               </button>
             </div>
             {previewMode ? (
@@ -382,14 +384,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
                 className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm ${
                   validationErrors.contentVi ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="You can use HTML tags for formatting"
+                placeholder={t('admin.htmlPlaceholder')}
               />
             )}
             {validationErrors.contentVi && (
               <p className="text-sm text-red-600 mt-1">{validationErrors.contentVi}</p>
             )}
             <p className="text-sm text-gray-500 mt-1">
-              Supports HTML formatting
+              {t('admin.supportsHtml')}
             </p>
           </div>
         </div>
@@ -399,7 +401,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image URL
+              {t('admin.imageUrl')}
             </label>
             <input
               type="url"
@@ -409,7 +411,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 validationErrors.imageUrl ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder="https://example.com/image.jpg"
+              placeholder={t('admin.imageUrlPlaceholder')}
             />
             {validationErrors.imageUrl && (
               <p className="text-sm text-red-600 mt-1">{validationErrors.imageUrl}</p>
@@ -418,7 +420,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Link URL
+              {t('admin.linkUrl')}
             </label>
             <input
               type="url"
@@ -428,7 +430,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 validationErrors.linkUrl ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder="https://example.com/page"
+              placeholder={t('admin.linkUrlPlaceholder')}
             />
             {validationErrors.linkUrl && (
               <p className="text-sm text-red-600 mt-1">{validationErrors.linkUrl}</p>
@@ -440,7 +442,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Display Order
+            {t('admin.displayOrder')}
           </label>
           <input
             type="number"
@@ -451,7 +453,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <p className="text-sm text-gray-500 mt-1">
-            Lower numbers appear first
+            {t('admin.displayOrderHint')}
           </p>
         </div>
 
@@ -465,7 +467,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
               className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <span className="ml-2 text-sm font-medium text-gray-700">
-              Publish this content
+              {t('admin.publishContent')}
             </span>
           </label>
         </div>
@@ -477,14 +479,14 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
           onClick={onCancel}
           className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={loading}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
         >
-          {loading ? 'Saving...' : content ? 'Update Content' : 'Create Content'}
+          {loading ? t('admin.saving') : content ? t('admin.updateContent') : t('admin.createContent')}
         </button>
       </div>
     </form>
