@@ -7,6 +7,7 @@ import {
   IsUrl,
   ValidateIf,
   IsIn,
+  Matches,
 } from 'class-validator';
 import { ContentType } from '@prisma/client';
 
@@ -30,11 +31,17 @@ export class CreateContentDto {
   contentVi: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {
+    message: 'imageUrl must be a valid URL or relative path',
+  })
   imageUrl?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {
+    message: 'linkUrl must be a valid URL or relative path',
+  })
   linkUrl?: string;
 
   @IsOptional()
