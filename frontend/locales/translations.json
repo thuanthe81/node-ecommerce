@@ -190,6 +190,10 @@
       "en": "Active category",
       "vi": "Kích hoạt danh mục"
     },
+    "activePromotion": {
+      "en": "Active (customers can use this promotion)",
+      "vi": "Kích hoạt (khách hàng có thể sử dụng khuyến mãi này)"
+    },
     "addProduct": {
       "en": "Add product",
       "vi": "Thêm sản phẩm"
@@ -226,6 +230,10 @@
       "en": "Are you sure you want to delete \"{title}\"?",
       "vi": "Bạn có chắc muốn xóa \"{title}\"?"
     },
+    "confirmDeletePromotion": {
+      "en": "Are you sure you want to delete promotion \"{code}\"?",
+      "vi": "Bạn có chắc muốn xóa khuyến mãi \"{code}\"?"
+    },
     "content": {
       "en": "Content",
       "vi": "Nội dung"
@@ -258,6 +266,10 @@
       "en": "Create Content",
       "vi": "Tạo nội dung"
     },
+    "createFirstPromotion": {
+      "en": "Create your first promotion",
+      "vi": "Tạo khuyến mãi đầu tiên của bạn"
+    },
     "createNewContent": {
       "en": "Create New Content",
       "vi": "Tạo nội dung mới"
@@ -286,6 +298,22 @@
       "en": "Mô tả (Tiếng Việt)",
       "vi": "Mô tả (Tiếng Việt)"
     },
+    "discountType": {
+      "en": "Discount Type",
+      "vi": "Loại giảm giá"
+    },
+    "discountTypeFixed": {
+      "en": "Fixed Amount ($)",
+      "vi": "Số tiền cố định ($)"
+    },
+    "discountTypePercentage": {
+      "en": "Percentage (%)",
+      "vi": "Phần trăm (%)"
+    },
+    "discountValue": {
+      "en": "Discount Value",
+      "vi": "Giá trị giảm giá"
+    },
     "displayOrder": {
       "en": "Display Order",
       "vi": "Thứ tự hiển thị"
@@ -310,6 +338,10 @@
       "en": "Edit Content",
       "vi": "Chỉnh sửa nội dung"
     },
+    "endDate": {
+      "en": "End Date",
+      "vi": "Ngày kết thúc"
+    },
     "englishContent": {
       "en": "English Content",
       "vi": "Nội dung Tiếng Anh"
@@ -317,6 +349,10 @@
     "failedDeleteContent": {
       "en": "Failed to delete content",
       "vi": "Xóa nội dung thất bại"
+    },
+    "failedDeletePromotion": {
+      "en": "Failed to delete promotion",
+      "vi": "Xóa khuyến mãi thất bại"
     },
     "failedLoadContent": {
       "en": "Failed to load content",
@@ -330,6 +366,10 @@
       "en": "Failed to load contents",
       "vi": "Tải danh sách nội dung thất bại"
     },
+    "failedLoadPromotions": {
+      "en": "Failed to load promotions",
+      "vi": "Tải khuyến mãi thất bại"
+    },
     "failedSaveBanner": {
       "en": "Failed to save banner",
       "vi": "Lưu banner thất bại"
@@ -341,6 +381,10 @@
     "failedSaveContent": {
       "en": "Failed to save content",
       "vi": "Lưu nội dung thất bại"
+    },
+    "failedSavePromotion": {
+      "en": "Failed to save promotion",
+      "vi": "Lưu khuyến mãi thất bại"
     },
     "faq": {
       "en": "FAQ",
@@ -410,13 +454,29 @@
       "en": "Loading contents...",
       "vi": "Đang tải danh sách nội dung..."
     },
+    "loadingPromotions": {
+      "en": "Loading promotions...",
+      "vi": "Đang tải khuyến mãi..."
+    },
     "manageCategories": {
       "en": "Manage categories",
       "vi": "Quản lý danh mục"
     },
+    "maxDiscountAmount": {
+      "en": "Maximum Discount Amount ($)",
+      "vi": "Số tiền giảm tối đa ($)"
+    },
+    "minOrderAmount": {
+      "en": "Minimum Order Amount ($)",
+      "vi": "Giá trị đơn hàng tối thiểu ($)"
+    },
     "noContentFound": {
       "en": "No content found. Create your first content item.",
       "vi": "Không tìm thấy nội dung. Tạo nội dung đầu tiên của bạn."
+    },
+    "noPromotionsFound": {
+      "en": "No promotions found",
+      "vi": "Không tìm thấy khuyến mãi"
     },
     "noneRootCategory": {
       "en": "None (Root Category)",
@@ -430,9 +490,89 @@
       "en": "Parent Category",
       "vi": "Danh mục cha"
     },
+    "perCustomerLimit": {
+      "en": "Per Customer Limit",
+      "vi": "Giới hạn mỗi khách hàng"
+    },
     "preview": {
       "en": "Preview",
       "vi": "Xem trước"
+    },
+    "promotionCode": {
+      "en": "Promotion Code",
+      "vi": "Mã khuyến mãi"
+    },
+    "promotionCodePlaceholder": {
+      "en": "SUMMER2024",
+      "vi": "SUMMER2024"
+    },
+    "promotionCodeShort": {
+      "en": "Code",
+      "vi": "Mã"
+    },
+    "promotionCodeUppercase": {
+      "en": "Code will be converted to uppercase",
+      "vi": "Mã sẽ được chuyển thành chữ hoa"
+    },
+    "promotionMaxDiscount": {
+      "en": "Max: ${amount}",
+      "vi": "Tối đa: ${amount}"
+    },
+    "promotionMinOrder": {
+      "en": "Min: ${amount}",
+      "vi": "Tối thiểu: ${amount}"
+    },
+    "promotionPerCustomer": {
+      "en": "{limit} per customer",
+      "vi": "{limit} mỗi khách hàng"
+    },
+    "promotionStatusActive": {
+      "en": "Active",
+      "vi": "Đang hoạt động"
+    },
+    "promotionStatusExpired": {
+      "en": "Expired",
+      "vi": "Đã hết hạn"
+    },
+    "promotionStatusInactive": {
+      "en": "Inactive",
+      "vi": "Không hoạt động"
+    },
+    "promotionStatusLimitReached": {
+      "en": "Limit Reached",
+      "vi": "Đã đạt giới hạn"
+    },
+    "promotionStatusScheduled": {
+      "en": "Scheduled",
+      "vi": "Đã lên lịch"
+    },
+    "promotionType": {
+      "en": "Type",
+      "vi": "Loại"
+    },
+    "promotionTypeFixedShort": {
+      "en": "Fixed",
+      "vi": "Cố định"
+    },
+    "promotionTypePercentageShort": {
+      "en": "Percentage",
+      "vi": "Phần trăm"
+    },
+    "promotionUnlimited": {
+      "en": "Unlimited",
+      "vi": "Không giới hạn"
+    },
+    "promotionUsage": {
+      "en": "Usage",
+      "vi": "Lượt sử dụng"
+    },
+    "promotionValidPeriod": {
+      "en": "Valid Period",
+      "vi": "Thời gian hiệu lực"
+    },
+    "promotionValue": {
+      "en": "Value",
+      "vi": "Giá trị"
     },
     "promotions": {
       "en": "Promotions",
@@ -458,13 +598,13 @@
       "en": "*",
       "vi": "*"
     },
-    "saving": {
-      "en": "Saving...",
-      "vi": "Đang lưu..."
-    },
     "saveCategory": {
       "en": "Save Category",
       "vi": "Lưu danh mục"
+    },
+    "saving": {
+      "en": "Saving...",
+      "vi": "Đang lưu..."
     },
     "settings": {
       "en": "Settings",
@@ -493,6 +633,10 @@
     "slugRequired": {
       "en": "Slug is required",
       "vi": "Slug là bắt buộc"
+    },
+    "startDate": {
+      "en": "Start Date",
+      "vi": "Ngày bắt đầu"
     },
     "status": {
       "en": "Status",
@@ -526,6 +670,10 @@
       "en": "Total revenue",
       "vi": "Tổng doanh thu"
     },
+    "totalUsageLimit": {
+      "en": "Total Usage Limit",
+      "vi": "Giới hạn sử dụng tổng"
+    },
     "type": {
       "en": "Type",
       "vi": "Loại"
@@ -537,6 +685,34 @@
     "updateContent": {
       "en": "Update Content",
       "vi": "Cập nhật nội dung"
+    },
+    "updatePromotion": {
+      "en": "Update Promotion",
+      "vi": "Cập nhật khuyến mãi"
+    },
+    "editPromotion": {
+      "en": "Edit Promotion",
+      "vi": "Chỉnh sửa khuyến mãi"
+    },
+    "loadingPromotion": {
+      "en": "Loading promotion...",
+      "vi": "Đang tải khuyến mãi..."
+    },
+    "promotionNotFound": {
+      "en": "Promotion not found",
+      "vi": "Không tìm thấy khuyến mãi"
+    },
+    "usageStatistics": {
+      "en": "Usage Statistics",
+      "vi": "Thống kê sử dụng"
+    },
+    "promotionUsedTimes": {
+      "en": "This promotion has been used {count} time(s)",
+      "vi": "Khuyến mãi này đã được sử dụng {count} lần"
+    },
+    "recentOrders": {
+      "en": "Recent Orders:",
+      "vi": "Đơn hàng gần đây:"
     },
     "updated": {
       "en": "Updated",
@@ -928,10 +1104,6 @@
       "en": "Cancel",
       "vi": "Hủy"
     },
-    "confirm": {
-      "en": "Confirm",
-      "vi": "Xác nhận"
-    },
     "cart": {
       "en": "Cart",
       "vi": "Giỏ hàng"
@@ -955,6 +1127,10 @@
     "close": {
       "en": "Close",
       "vi": "Đóng"
+    },
+    "confirm": {
+      "en": "Confirm",
+      "vi": "Xác nhận"
     },
     "contact": {
       "en": "Contact",
@@ -1514,6 +1690,10 @@
       "en": "Continue Shopping",
       "vi": "Tiếp tục mua sắm"
     },
+    "currentStatus": {
+      "en": "Current Status",
+      "vi": "Trạng thái hiện tại"
+    },
     "customer": {
       "en": "Customer",
       "vi": "Khách hàng"
@@ -1598,6 +1778,14 @@
       "en": "Network error loading payment instructions",
       "vi": "Lỗi mạng khi tải hướng dẫn thanh toán"
     },
+    "newStatus": {
+      "en": "New Status",
+      "vi": "Trạng thái mới"
+    },
+    "noChangeError": {
+      "en": "Please select a different status",
+      "vi": "Vui lòng chọn trạng thái khác"
+    },
     "noOrders": {
       "en": "No orders found",
       "vi": "Không tìm thấy đơn hàng"
@@ -1605,6 +1793,10 @@
     "notes": {
       "en": "Notes",
       "vi": "Ghi chú"
+    },
+    "notesPlaceholder": {
+      "en": "Add notes about this payment status update...",
+      "vi": "Thêm ghi chú về cập nhật trạng thái thanh toán..."
     },
     "orderDate": {
       "en": "Order date",
@@ -1693,26 +1885,6 @@
     "paymentStatusUpdateSuccess": {
       "en": "Payment status updated successfully",
       "vi": "Cập nhật trạng thái thanh toán thành công"
-    },
-    "updatePaymentStatus": {
-      "en": "Update Payment Status",
-      "vi": "Cập nhật trạng thái thanh toán"
-    },
-    "currentStatus": {
-      "en": "Current Status",
-      "vi": "Trạng thái hiện tại"
-    },
-    "newStatus": {
-      "en": "New Status",
-      "vi": "Trạng thái mới"
-    },
-    "notesPlaceholder": {
-      "en": "Add notes about this payment status update...",
-      "vi": "Thêm ghi chú về cập nhật trạng thái thanh toán..."
-    },
-    "noChangeError": {
-      "en": "Please select a different status",
-      "vi": "Vui lòng chọn trạng thái khác"
     },
     "permissionDenied": {
       "en": "You do not have permission to view this order.",
@@ -1853,6 +2025,10 @@
     "updateError": {
       "en": "Failed to update order status",
       "vi": "Cập nhật trạng thái đơn hàng thất bại"
+    },
+    "updatePaymentStatus": {
+      "en": "Update Payment Status",
+      "vi": "Cập nhật trạng thái thanh toán"
     },
     "updateStatus": {
       "en": "Update Status",

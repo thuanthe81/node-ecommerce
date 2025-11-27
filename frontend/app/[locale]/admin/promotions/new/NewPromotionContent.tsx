@@ -1,10 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import AdminLayout from '@/components/AdminLayout';
 import PromotionForm from '@/components/PromotionForm';
 import { promotionApi, CreatePromotionData } from '@/lib/promotion-api';
 
 export default function NewPromotionContent({ locale }: { locale: string }) {
+  const t = useTranslations('admin');
+
   const handleSubmit = async (data: CreatePromotionData) => {
     await promotionApi.create(data);
   };
@@ -12,7 +15,7 @@ export default function NewPromotionContent({ locale }: { locale: string }) {
   return (
     <AdminLayout>
       <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Create Promotion</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('createPromotion')}</h1>
         <div className="bg-white shadow-md rounded-lg p-6">
           <PromotionForm onSubmit={handleSubmit} locale={locale} />
         </div>

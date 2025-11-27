@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import AdminLayout from '@/components/AdminLayout';
 import { promotionApi, Promotion } from '@/lib/promotion-api';
 
 export default function PromotionListContent({ locale }: { locale: string }) {
   const router = useRouter();
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,14 +25,14 @@ export default function PromotionListContent({ locale }: { locale: string }) {
       const data = await promotionApi.getAll();
       setPromotions(data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load promotions');
+      setError(err.response?.data?.message || t('failedLoadPromotions'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string, code: string) => {
-    if (!confirm(`Are you sure you want to delete promotion "${code}"?`)) {
+    if (!confirm(t('confirmDeletePromotion', { code }))) {
       return;
     }
 
@@ -37,7 +40,7 @@ export default function PromotionListContent({ locale }: { locale: string }) {
       await promotionApi.delete(id);
       setPromotions(promotions.filter(p => p.id !== id));
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete promotion');
+      alert(err.response?.data?.message || t('failedDeletePromotion'));
     }
   };
 
@@ -57,22 +60,22 @@ export default function PromotionListContent({ locale }: { locale: string }) {
     const endDate = new Date(promotion.endDate);
 
     if (!promotion.isActive) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-700">Inactive</span>;
+      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-700">{t('promotionStatusInactive')}</span>;
     }
 
     if (now < startDate) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-800">Scheduled</span>;
+      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-200 text-yellow-800">{t('promotionStatusScheduled')}</span>;
     }
 
     if (now > endDate) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-800">Expired</span>;
+      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-800">{t('promotionStatusExpired')}</span>;
     }
 
     if (promotion.usageLimit && promotion.usageCount >= promotion.usageLimit) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-800">Limit Reached</span>;
+      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-200 text-red-800">{t('promotionStatusLimitReached')}</span>;
     }
 
-    return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-800">Active</span>;
+    return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-800">{t('promotionStatusActive')}</span>;
   };
 
   return (
@@ -80,12 +83,12 @@ export default function PromotionListContent({ locale }: { locale: string }) {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Promotions</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('promotions')}</h1>
           <Link
             href={`/${locale}/admin/promotions/new`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            Create Promotion
+            {t('createPromotion')}
           </Link>
         </div>
 
@@ -100,16 +103,16 @@ export default function PromotionListContent({ locale }: { locale: string }) {
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="mt-2 text-gray-600">Loading promotions...</p>
+            <p className="mt-2 text-gray-600">{t('loadingPromotions')}</p>
           </div>
         ) : promotions.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-600">No promotions found</p>
+            <p className="text-gray-600">{t('noPromotionsFound')}</p>
             <Link
               href={`/${locale}/admin/promotions/new`}
               className="mt-4 inline-block text-blue-600 hover:text-blue-700"
             >
-              Create your first promotion
+              {t('createFirstPromotion')}
             </Link>
           </div>
         ) : (
@@ -118,25 +121,25 @@ export default function PromotionListContent({ locale }: { locale: string }) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Code
+                    {t('promotionCodeShort')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
+                    {t('promotionType')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Value
+                    {t('promotionValue')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usage
+                    {t('promotionUsage')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valid Period
+                    {t('promotionValidPeriod')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t('status')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t('actions')}
                   </th>
                 </tr>
               </thead>
@@ -153,7 +156,7 @@ export default function PromotionListContent({ locale }: { locale: string }) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">
-                        {promotion.type === 'PERCENTAGE' ? 'Percentage' : 'Fixed'}
+                        {promotion.type === 'PERCENTAGE' ? t('promotionTypePercentageShort') : t('promotionTypeFixedShort')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -188,13 +191,13 @@ export default function PromotionListContent({ locale }: { locale: string }) {
                         href={`/${locale}/admin/promotions/${promotion.id}/edit`}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
-                        Edit
+                        {tCommon('edit')}
                       </Link>
                       <button
                         onClick={() => handleDelete(promotion.id, promotion.code)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {tCommon('delete')}
                       </button>
                     </td>
                   </tr>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Promotion, CreatePromotionData } from '@/lib/promotion-api';
 
 interface PromotionFormProps {
@@ -12,6 +13,8 @@ interface PromotionFormProps {
 
 export default function PromotionForm({ promotion, onSubmit, locale }: PromotionFormProps) {
   const router = useRouter();
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -45,7 +48,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
       await onSubmit(submitData);
       router.push(`/${locale}/admin/promotions`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to save promotion');
+      setError(err.response?.data?.message || t('failedSavePromotion'));
     } finally {
       setLoading(false);
     }
@@ -53,7 +56,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       setFormData(prev => ({
         ...prev,
@@ -84,7 +87,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {/* Promotion Code */}
         <div>
           <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-            Promotion Code *
+            {t('promotionCode')} *
           </label>
           <input
             type="text"
@@ -94,15 +97,15 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
             onChange={handleChange}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-            placeholder="SUMMER2024"
+            placeholder={t('promotionCodePlaceholder')}
           />
-          <p className="mt-1 text-sm text-gray-500">Code will be converted to uppercase</p>
+          <p className="mt-1 text-sm text-gray-500">{t('promotionCodeUppercase')}</p>
         </div>
 
         {/* Discount Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-            Discount Type *
+            {t('discountType')} *
           </label>
           <select
             id="type"
@@ -112,15 +115,15 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="PERCENTAGE">Percentage (%)</option>
-            <option value="FIXED">Fixed Amount ($)</option>
+            <option value="PERCENTAGE">{t('discountTypePercentage')}</option>
+            <option value="FIXED">{t('discountTypeFixed')}</option>
           </select>
         </div>
 
         {/* Discount Value */}
         <div>
           <label htmlFor="value" className="block text-sm font-medium text-gray-700 mb-2">
-            Discount Value * {formData.type === 'PERCENTAGE' ? '(%)' : '($)'}
+            {t('discountValue')} * {formData.type === 'PERCENTAGE' ? '(%)' : '($)'}
           </label>
           <input
             type="number"
@@ -139,7 +142,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {/* Min Order Amount */}
         <div>
           <label htmlFor="minOrderAmount" className="block text-sm font-medium text-gray-700 mb-2">
-            Minimum Order Amount ($)
+            {t('minOrderAmount')}
           </label>
           <input
             type="number"
@@ -150,7 +153,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
             min="0"
             step="0.01"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Optional"
+            placeholder={tCommon('optional')}
           />
         </div>
 
@@ -158,7 +161,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {formData.type === 'PERCENTAGE' && (
           <div>
             <label htmlFor="maxDiscountAmount" className="block text-sm font-medium text-gray-700 mb-2">
-              Maximum Discount Amount ($)
+              {t('maxDiscountAmount')}
             </label>
             <input
               type="number"
@@ -169,7 +172,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
               min="0"
               step="0.01"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Optional"
+              placeholder={tCommon('optional')}
             />
           </div>
         )}
@@ -177,7 +180,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {/* Usage Limit */}
         <div>
           <label htmlFor="usageLimit" className="block text-sm font-medium text-gray-700 mb-2">
-            Total Usage Limit
+            {t('totalUsageLimit')}
           </label>
           <input
             type="number"
@@ -188,14 +191,14 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
             min="1"
             step="1"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Unlimited"
+            placeholder={t('promotionUnlimited')}
           />
         </div>
 
         {/* Per Customer Limit */}
         <div>
           <label htmlFor="perCustomerLimit" className="block text-sm font-medium text-gray-700 mb-2">
-            Per Customer Limit
+            {t('perCustomerLimit')}
           </label>
           <input
             type="number"
@@ -206,14 +209,14 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
             min="1"
             step="1"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Unlimited"
+            placeholder={t('promotionUnlimited')}
           />
         </div>
 
         {/* Start Date */}
         <div>
           <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
-            Start Date *
+            {t('startDate')} *
           </label>
           <input
             type="datetime-local"
@@ -229,7 +232,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {/* End Date */}
         <div>
           <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-            End Date *
+            {t('endDate')} *
           </label>
           <input
             type="datetime-local"
@@ -254,7 +257,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
         <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-          Active (customers can use this promotion)
+          {t('activePromotion')}
         </label>
       </div>
 
@@ -265,14 +268,14 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
           disabled={loading}
           className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {loading ? 'Saving...' : promotion ? 'Update Promotion' : 'Create Promotion'}
+          {loading ? t('saving') : promotion ? t('updatePromotion') : t('createPromotion')}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
         >
-          Cancel
+          {tCommon('cancel')}
         </button>
       </div>
     </form>
