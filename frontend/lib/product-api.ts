@@ -79,6 +79,14 @@ export const productApi = {
     return response.data;
   },
 
+  /**
+   * Create a new product with optional multiple images.
+   * FormData should contain product fields and optionally multiple files under the 'images' key.
+   * Example:
+   *   formData.append('nameEn', 'Product Name');
+   *   formData.append('images', file1);
+   *   formData.append('images', file2);
+   */
   createProduct: async (data: FormData): Promise<Product> => {
     const response = await apiClient.post('/products', data, {
       headers: {
@@ -117,8 +125,54 @@ export const productApi = {
     return response.data;
   },
 
+  uploadMultipleImages: async (
+    productId: string,
+    files: File[],
+    imageData?: { altTextEn?: string; altTextVi?: string }
+  ): Promise<{ images: ProductImage[]; errors?: Array<{ filename: string; error: string }> }> => {
+    // Upload images sequentially to maintain order
+    const results: ProductImage[] = [];
+    const errors: Array<{ filename: string; error: string }> = [];
+
+    for (const file of files) {
+      try {
+        const image = await productApi.uploadProductImage(productId, file, imageData);
+        results.push(image);
+      } catch (error: any) {
+        errors.push({
+          filename: file.name,
+          error: error.response?.data?.message || error.message || 'Upload failed',
+        });
+      }
+    }
+
+    return {
+      images: results,
+      errors: errors.length > 0 ? errors : undefined,
+    };
+  },
+
   deleteProductImage: async (productId: string, imageId: string): Promise<void> => {
     await apiClient.delete(`/products/${productId}/images/${imageId}`);
+  },
+
+  reorderImages: async (
+    productId: string,
+    images: Array<{ imageId: string; displayOrder: number }>
+  ): Promise<ProductImage[]> => {
+    const response = await apiClient.patch(`/products/${productId}/images/reorder`, {
+      images,
+    });
+    return response.data;
+  },
+
+  updateImageMetadata: async (
+    productId: string,
+    imageId: string,
+    data: { altTextEn?: string; altTextVi?: string; displayOrder?: number }
+  ): Promise<ProductImage> => {
+    const response = await apiClient.patch(`/products/${productId}/images/${imageId}`, data);
+    return response.data;
   },
 
   getProductCount: async (): Promise<ProductCountResponse> => {

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product, productApi, ProductImage } from '@/lib/product-api';
 import { SvgClose } from '@/components/Svgs';
 import { Category, categoryApi } from '@/lib/category-api';
+import ImageManager, { ImageManagerHandle } from '@/components/ImageManager';
 
 interface ProductFormProps {
   locale: string;
@@ -18,7 +19,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en');
   const [images, setImages] = useState<ProductImage[]>(product?.images || []);
-  const [newImages, setNewImages] = useState<File[]>([]);
+  const imageManagerRef = useRef<ImageManagerHandle>(null);
   const [formData, setFormData] = useState({
     sku: product?.sku || '',
     nameEn: product?.nameEn || '',
@@ -72,25 +73,27 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
     });
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setNewImages(Array.from(e.target.files));
-    }
+  const handleImagesChange = (updatedImages: ProductImage[]) => {
+    setImages(updatedImages);
   };
 
-  const handleRemoveExistingImage = async (imageId: string) => {
+  const handleDeleteImage = async (imageId: string) => {
     if (!product) return;
-    try {
-      await productApi.deleteProductImage(product.id, imageId);
-      setImages(images.filter((img) => img.id !== imageId));
-    } catch (error) {
-      console.error('Failed to delete image:', error);
-      alert(locale === 'vi' ? 'Không thể xóa hình ảnh' : 'Failed to delete image');
-    }
+    await productApi.deleteProductImage(product.id, imageId);
   };
 
-  const handleRemoveNewImage = (index: number) => {
-    setNewImages(newImages.filter((_, i) => i !== index));
+  const handleReorderImages = async (reorderedImages: ProductImage[]) => {
+    if (!product) return;
+    const imageOrder = reorderedImages.map((img, index) => ({
+      imageId: img.id,
+      displayOrder: index,
+    }));
+    await productApi.reorderImages(product.id, imageOrder);
+  };
+
+  const handleUpdateAltText = async (imageId: string, altTextEn: string, altTextVi: string) => {
+    if (!product) return;
+    await productApi.updateImageMetadata(product.id, imageId, { altTextEn, altTextVi });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,6 +106,16 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
       if (isEdit && product) {
         // Update existing product
         savedProduct = await productApi.updateProduct(product.id, formData);
+
+        // Upload new images for edit mode
+        const newFiles = imageManagerRef.current?.getNewFiles() || [];
+        if (newFiles.length > 0) {
+          for (let i = 0; i < newFiles.length; i++) {
+            await productApi.uploadProductImage(savedProduct.id, newFiles[i], {
+              displayOrder: images.length + i,
+            });
+          }
+        }
       } else {
         // Create new product - need to use FormData for file upload
         const formDataToSend = new FormData();
@@ -110,21 +123,13 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
           formDataToSend.append(key, value.toString());
         });
 
-        // Add images
-        newImages.forEach((file) => {
+        // Add images from ImageManager
+        const newFiles = imageManagerRef.current?.getNewFiles() || [];
+        newFiles.forEach((file) => {
           formDataToSend.append('images', file);
         });
 
         savedProduct = await productApi.createProduct(formDataToSend);
-      }
-
-      // Upload new images for edit mode
-      if (isEdit && newImages.length > 0) {
-        for (let i = 0; i < newImages.length; i++) {
-          await productApi.uploadProductImage(savedProduct.id, newImages[i], {
-            displayOrder: images.length + i,
-          });
-        }
       }
 
       router.push(`/${locale}/admin/products`);
@@ -362,74 +367,16 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
         <h2 className="text-lg font-medium text-gray-900 mb-4">
           {locale === 'vi' ? 'Hình ảnh' : 'Images'}
         </h2>
-
-        {/* Existing Images */}
-        {images.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              {locale === 'vi' ? 'Hình ảnh hiện tại' : 'Current Images'}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {images.map((image) => (
-                <div key={image.id} className="relative group">
-                  <img
-                    src={image.url}
-                    alt={image.altTextEn || ''}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveExistingImage(image.id)}
-                    className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <SvgClose className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* New Images Preview */}
-        {newImages.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              {locale === 'vi' ? 'Hình ảnh mới' : 'New Images'}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {newImages.map((file, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`New ${index}`}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveNewImage(index)}
-                    className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <SvgClose className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Upload Input */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {locale === 'vi' ? 'Tải lên hình ảnh' : 'Upload Images'}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageSelect}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-        </div>
+        <ImageManager
+          ref={imageManagerRef}
+          productId={product?.id}
+          existingImages={images}
+          onImagesChange={handleImagesChange}
+          locale={locale}
+          onDelete={handleDeleteImage}
+          onReorder={handleReorderImages}
+          onUpdateAltText={handleUpdateAltText}
+        />
       </div>
 
       {/* Settings */}

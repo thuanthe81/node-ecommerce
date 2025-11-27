@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
+import { useState } from 'react';
 import { Product } from '@/lib/product-api';
 
 interface ProductCardProps {
@@ -13,11 +14,21 @@ interface ProductCardProps {
 export default function ProductCard({ product, priority = true }: ProductCardProps) {
   const locale = useLocale();
   const name = locale === 'vi' ? product.nameVi : product.nameEn;
-  const imageUrl = product.images[0]?.url || '/placeholder-product.png';
-  const altText =
-    locale === 'vi'
-      ? product.images[0]?.altTextVi || name
-      : product.images[0]?.altTextEn || name;
+
+  // Sort images by displayOrder to get primary and secondary images
+  const sortedImages = [...product.images].sort((a, b) => a.displayOrder - b.displayOrder);
+  const primaryImage = sortedImages[0];
+  const secondaryImage = sortedImages[1];
+
+  // State to track hover for image swap
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Determine which image to show
+  const currentImage = isHovered && secondaryImage ? secondaryImage : primaryImage;
+  const imageUrl = currentImage?.url || '/placeholder-product.png';
+  const altText = currentImage
+    ? (locale === 'vi' ? currentImage.altTextVi || name : currentImage.altTextEn || name)
+    : name;
 
   const isOutOfStock = product.stockQuantity <= 0;
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
@@ -32,7 +43,11 @@ export default function ProductCard({ product, priority = true }: ProductCardPro
         }).format(Number(product.price))}`}
         className="touch-manipulation"
       >
-        <div className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100">
+        <div
+          className="relative aspect-square overflow-hidden rounded-t-lg bg-gray-100"
+          onMouseEnter={() => secondaryImage && setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <Image
             src={imageUrl}
             alt={altText}

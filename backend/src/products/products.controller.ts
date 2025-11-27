@@ -10,17 +10,20 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { ProductsImageService } from './products-image.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
+import { UpdateProductImageDto } from './dto/update-product-image.dto';
+import { ReorderImagesDto } from './dto/reorder-images.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -36,7 +39,39 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  create(@Body() createProductDto: CreateProductDto) {
+  @UseInterceptors(FilesInterceptor('images', 10))
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    // If files are provided, use createWithImages, otherwise use regular create
+    if (files && files.length > 0) {
+      // Validate files
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      const invalidFiles = files.filter(
+        (file) =>
+          !allowedMimeTypes.includes(file.mimetype) || file.size > maxSize,
+      );
+
+      if (invalidFiles.length === files.length) {
+        // All files are invalid
+        throw new Error('All uploaded files are invalid');
+      }
+
+      // Extract alt text from body if provided
+      const altTextEn = createProductDto['altTextEn' as keyof CreateProductDto];
+      const altTextVi = createProductDto['altTextVi' as keyof CreateProductDto];
+
+      return this.productsService.createWithImages(
+        createProductDto,
+        files,
+        altTextEn as string | undefined,
+        altTextVi as string | undefined,
+      );
+    }
+
     return this.productsService.create(createProductDto);
   }
 
@@ -113,15 +148,15 @@ export class ProductsController {
   @Patch(':id/images/:imageId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  updateImageOrder(
+  updateImageMetadata(
     @Param('id') productId: string,
     @Param('imageId') imageId: string,
-    @Body('displayOrder') displayOrder: number,
+    @Body() updateDto: UpdateProductImageDto,
   ) {
-    return this.productsImageService.updateImageOrder(
+    return this.productsImageService.updateImageMetadata(
       productId,
       imageId,
-      displayOrder,
+      updateDto,
     );
   }
 
@@ -133,5 +168,15 @@ export class ProductsController {
     @Param('imageId') imageId: string,
   ) {
     return this.productsImageService.deleteProductImage(productId, imageId);
+  }
+
+  @Patch(':id/images/reorder')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  reorderImages(
+    @Param('id') productId: string,
+    @Body() reorderDto: ReorderImagesDto,
+  ) {
+    return this.productsImageService.reorderImages(productId, reorderDto.images);
   }
 }

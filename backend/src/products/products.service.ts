@@ -11,12 +11,14 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { Prisma } from '@prisma/client';
+import { ProductsImageService } from './products-image.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private productsImageService: ProductsImageService,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -61,6 +63,87 @@ export class ProductsService {
     await this.invalidateProductCache();
 
     return product;
+  }
+
+  async createWithImages(
+    createProductDto: CreateProductDto,
+    files: Express.Multer.File[],
+    altTextEn?: string,
+    altTextVi?: string,
+  ) {
+    // Check if slug already exists
+    const existingProduct = await this.prisma.product.findUnique({
+      where: { slug: createProductDto.slug },
+    });
+
+    if (existingProduct) {
+      throw new BadRequestException('Product with this slug already exists');
+    }
+
+    // Check if SKU already exists
+    const existingSku = await this.prisma.product.findUnique({
+      where: { sku: createProductDto.sku },
+    });
+
+    if (existingSku) {
+      throw new BadRequestException('Product with this SKU already exists');
+    }
+
+    // Verify category exists
+    const category = await this.prisma.category.findUnique({
+      where: { id: createProductDto.categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    // Use a transaction to ensure atomicity
+    return await this.prisma.$transaction(async (tx) => {
+      // Create the product
+      const product = await tx.product.create({
+        data: createProductDto,
+        include: {
+          category: true,
+        },
+      });
+
+      // Upload images if provided
+      let imageResult;
+      if (files && files.length > 0) {
+        try {
+          imageResult = await this.productsImageService.uploadMultipleImages(
+            product.id,
+            files,
+            0,
+            altTextEn,
+            altTextVi,
+          );
+        } catch (error) {
+          // If image upload fails, the transaction will rollback
+          throw error;
+        }
+      }
+
+      // Fetch the complete product with images
+      const completeProduct = await tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          category: true,
+          images: {
+            orderBy: { displayOrder: 'asc' },
+          },
+        },
+      });
+
+      // Invalidate product list cache
+      await this.invalidateProductCache();
+
+      return {
+        ...completeProduct,
+        imageErrors: imageResult?.errors,
+      };
+    });
   }
 
   async findAll(query: QueryProductsDto) {

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
+import { ProductsImageService } from './products-image.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
@@ -11,6 +12,7 @@ describe('ProductsService', () => {
   let service: ProductsService;
   let prismaService: PrismaService;
   let cacheManager: any;
+  let productsImageService: ProductsImageService;
 
   const mockCategory = {
     id: 'cat-1',
@@ -75,18 +77,28 @@ describe('ProductsService', () => {
     del: jest.fn(),
   };
 
+  const mockProductsImageService = {
+    uploadProductImage: jest.fn(),
+    uploadMultipleImages: jest.fn(),
+    deleteProductImage: jest.fn(),
+    updateImageOrder: jest.fn(),
+    getProductImages: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: CACHE_MANAGER, useValue: mockCacheManager },
+        { provide: ProductsImageService, useValue: mockProductsImageService },
       ],
     }).compile();
 
     service = module.get<ProductsService>(ProductsService);
     prismaService = module.get<PrismaService>(PrismaService);
     cacheManager = module.get(CACHE_MANAGER);
+    productsImageService = module.get<ProductsImageService>(ProductsImageService);
 
     jest.clearAllMocks();
   });

@@ -64,11 +64,11 @@ export default function ProductDetailContent({
   const productName = currentLocale === 'vi' ? product.nameVi : product.nameEn;
   const productDescription = currentLocale === 'vi' ? product.descriptionVi : product.descriptionEn;
   const categoryName = currentLocale === 'vi' ? product.category.nameVi : product.category.nameEn;
-  
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const localePrefix = currentLocale === 'vi' ? '' : `/${currentLocale}`;
   const productUrl = `${siteUrl}${localePrefix}/products/${product.slug}`;
-  
+
   const productSchema = generateProductSchema({
     name: productName,
     description: productDescription,
@@ -93,7 +93,7 @@ export default function ProductDetailContent({
     <>
       <StructuredData data={[productSchema, breadcrumbSchema]} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        <ProductImageGallery images={product.images} productName={product.nameEn} />
+        <ProductImageGallery images={product.images} productName={productName} locale={currentLocale} />
         <ProductInfo product={product} />
       </div>
 
