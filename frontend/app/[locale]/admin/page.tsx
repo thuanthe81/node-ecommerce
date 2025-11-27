@@ -6,36 +6,49 @@ import AdminLayout from '@/components/AdminLayout';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { SvgCurrency, SvgClipboard, SvgBoxes, SvgUsers, SvgPlus, SvgGrid, SvgTag } from '@/components/Svgs';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { formatCurrency, formatNumber } from '@/app/utils';
 
 export default function AdminDashboardPage() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations();
 
+  // Integrate useDashboardStats hook
+  const { stats: dashboardStats, retryRevenue, retryOrders, retryProducts, retryCustomers } = useDashboardStats();
+
   const stats = [
     {
       name: t('admin.totalRevenue'),
-      value: '$0',
+      stat: dashboardStats.revenue,
+      retry: retryRevenue,
       icon: <SvgCurrency className="w-6 h-6" />,
       color: 'bg-blue-500',
+      type: 'currency' as const,
     },
     {
       name: t('common.orders'),
-      value: '0',
+      stat: dashboardStats.orders,
+      retry: retryOrders,
       icon: <SvgClipboard className="w-6 h-6" />,
       color: 'bg-green-500',
+      type: 'number' as const,
     },
     {
       name: t('common.products'),
-      value: '0',
+      stat: dashboardStats.products,
+      retry: retryProducts,
       icon: <SvgBoxes className="w-6 h-6" />,
       color: 'bg-purple-500',
+      type: 'number' as const,
     },
     {
       name: t('common.customers'),
-      value: '0',
+      stat: dashboardStats.customers,
+      retry: retryCustomers,
       icon: <SvgUsers className="w-6 h-6" />,
       color: 'bg-yellow-500',
+      type: 'number' as const,
     },
   ];
 
@@ -94,7 +107,41 @@ export default function AdminDashboardPage() {
                           {stat.name}
                         </dt>
                         <dd className="text-2xl font-semibold text-gray-900">
-                          {stat.value}
+                          {/* Loading State */}
+                          {stat.stat.loading && (
+                            <div
+                              className="animate-pulse"
+                              aria-live="polite"
+                              aria-busy="true"
+                              role="status"
+                            >
+                              <div className="h-8 bg-gray-200 rounded w-24"></div>
+                            </div>
+                          )}
+
+                          {/* Error State */}
+                          {!stat.stat.loading && stat.stat.error && (
+                            <div className="space-y-2" role="alert" aria-live="assertive">
+                              <p className="text-sm text-red-600">{stat.stat.error}</p>
+                              <button
+                                onClick={stat.retry}
+                                className="text-xs text-blue-600 hover:text-blue-800 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                                aria-label={`Retry loading ${stat.name}`}
+                              >
+                                {locale === 'vi' ? 'Thử lại' : 'Retry'}
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Success State - Display formatted value */}
+                          {!stat.stat.loading && !stat.stat.error && stat.stat.value !== null && (
+                            <span aria-live="polite">
+                              {stat.type === 'currency'
+                                ? formatCurrency(stat.stat.value, locale)
+                                : formatNumber(stat.stat.value, locale)
+                              }
+                            </span>
+                          )}
                         </dd>
                       </dl>
                     </div>

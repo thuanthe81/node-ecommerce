@@ -57,6 +57,10 @@ export interface ProductQueryParams {
   limit?: number;
 }
 
+export interface ProductCountResponse {
+  count: number;
+}
+
 export const productApi = {
   getProducts: async (params?: ProductQueryParams): Promise<ProductsResponse> => {
     const response = await apiClient.get('/products', { params });
@@ -115,5 +119,10 @@ export const productApi = {
 
   deleteProductImage: async (productId: string, imageId: string): Promise<void> => {
     await apiClient.delete(`/products/${productId}/images/${imageId}`);
+  },
+
+  getProductCount: async (): Promise<ProductCountResponse> => {
+    const response = await apiClient.get('/products/count');
+    return response.data;
   },
 };

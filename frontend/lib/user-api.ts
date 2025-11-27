@@ -51,6 +51,10 @@ export interface UpdateAddressData {
   isDefault?: boolean;
 }
 
+export interface CustomerCountResponse {
+  count: number;
+}
+
 export const userApi = {
   getProfile: async (): Promise<User> => {
     const response = await apiClient.get('/users/profile');
@@ -89,6 +93,11 @@ export const userApi = {
 
   deleteAddress: async (id: string): Promise<{ message: string }> => {
     const response = await apiClient.delete(`/users/addresses/${id}`);
+    return response.data;
+  },
+
+  getCustomerCount: async (): Promise<CustomerCountResponse> => {
+    const response = await apiClient.get('/users/count');
     return response.data;
   },
 };

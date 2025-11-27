@@ -441,6 +441,11 @@ export class ProductsService {
     });
   }
 
+  async getCount() {
+    const count = await this.prisma.product.count();
+    return { count };
+  }
+
   // Helper method to invalidate product list cache
   // Note: This is a simplified approach. In production, consider using:
   // - Cache tags for better invalidation

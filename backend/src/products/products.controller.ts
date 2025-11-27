@@ -40,6 +40,13 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
+  @Get('count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  getCount() {
+    return this.productsService.getCount();
+  }
+
   @Get()
   @Public()
   findAll(@Query() query: QueryProductsDto) {

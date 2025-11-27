@@ -538,4 +538,11 @@ export class UsersService {
 
     return Buffer.from(csvContent, 'utf-8');
   }
+
+  async getCount() {
+    const count = await this.prisma.user.count({
+      where: { role: 'CUSTOMER' },
+    });
+    return { count };
+  }
 }

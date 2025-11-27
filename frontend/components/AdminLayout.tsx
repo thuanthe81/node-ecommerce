@@ -75,47 +75,47 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Top Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-30">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              >
-                <SvgMenu className="h-6 w-6" />
-              </button>
-              <h1 className="ml-4 text-xl font-semibold text-gray-900">
-                {locale === 'vi' ? 'Quản trị' : 'Admin Panel'}
-              </h1>
-            </div>
+      {/*<nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-30">*/}
+      {/*  <div className="px-4 sm:px-6 lg:px-8">*/}
+      {/*    <div className="flex justify-between h-16">*/}
+      {/*      <div className="flex items-center">*/}
+      {/*        <button*/}
+      {/*          onClick={() => setIsSidebarOpen(!isSidebarOpen)}*/}
+      {/*          className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"*/}
+      {/*        >*/}
+      {/*          <SvgMenu className="h-6 w-6" />*/}
+      {/*        </button>*/}
+      {/*        <h1 className="ml-4 text-xl font-semibold text-gray-900">*/}
+      {/*          {locale === 'vi' ? 'Quản trị' : 'Admin Panel'}*/}
+      {/*        </h1>*/}
+      {/*      </div>*/}
 
-            <div className="flex items-center space-x-4">
-              <Link
-                href={`/${locale}`}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                {locale === 'vi' ? 'Xem cửa hàng' : 'View Store'}
-              </Link>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">
-                  {user?.firstName} {user?.lastName}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"
-                >
-                  {locale === 'vi' ? 'Đăng xuất' : 'Logout'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/*      <div className="flex items-center space-x-4">*/}
+      {/*        <Link*/}
+      {/*          href={`/${locale}`}*/}
+      {/*          className="text-sm text-gray-600 hover:text-gray-900"*/}
+      {/*        >*/}
+      {/*          {locale === 'vi' ? 'Xem cửa hàng' : 'View Store'}*/}
+      {/*        </Link>*/}
+      {/*        <div className="flex items-center space-x-2">*/}
+      {/*          <span className="text-sm text-gray-700">*/}
+      {/*            {user?.firstName} {user?.lastName}*/}
+      {/*          </span>*/}
+      {/*          <button*/}
+      {/*            onClick={handleLogout}*/}
+      {/*            className="px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md"*/}
+      {/*          >*/}
+      {/*            {locale === 'vi' ? 'Đăng xuất' : 'Logout'}*/}
+      {/*          </button>*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*    </div>*/}
+      {/*  </div>*/}
+      {/*</nav>*/}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out z-20 ${
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out z-20 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -145,7 +145,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main Content */}
       <main
-        className={`pt-16 transition-all duration-300 ease-in-out ${
+        className={`transition-all duration-300 ease-in-out ${
           isSidebarOpen ? 'ml-64' : 'ml-0'
         }`}
       >

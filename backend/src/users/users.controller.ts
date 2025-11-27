@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -21,6 +23,13 @@ import { UpdateAddressDto } from './dto/update-address.dto';
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('count')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  getCount() {
+    return this.usersService.getCount();
+  }
 
   @Get('profile')
   getProfile(@CurrentUser() user: any) {

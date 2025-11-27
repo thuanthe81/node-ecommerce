@@ -160,15 +160,15 @@ export class AnalyticsService {
     const sales = await this.prisma.$queryRaw<
       Array<{ date: Date; revenue: number; orders: number }>
     >`
-      SELECT 
-        DATE(created_at) as date,
+      SELECT
+        DATE("createdAt") as date,
         SUM(total)::numeric as revenue,
         COUNT(*)::int as orders
       FROM orders
-      WHERE created_at >= ${startDate}
-        AND created_at <= ${endDate}
-        AND payment_status = 'PAID'
-      GROUP BY DATE(created_at)
+      WHERE "createdAt" >= ${startDate}
+        AND "createdAt" <= ${endDate}
+        AND "paymentStatus" = 'PAID'
+      GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
 
@@ -183,15 +183,15 @@ export class AnalyticsService {
     const sales = await this.prisma.$queryRaw<
       Array<{ week: string; revenue: number; orders: number }>
     >`
-      SELECT 
-        TO_CHAR(created_at, 'IYYY-IW') as week,
+      SELECT
+        TO_CHAR("createdAt", 'IYYY-IW') as week,
         SUM(total)::numeric as revenue,
         COUNT(*)::int as orders
       FROM orders
-      WHERE created_at >= ${startDate}
-        AND created_at <= ${endDate}
-        AND payment_status = 'PAID'
-      GROUP BY TO_CHAR(created_at, 'IYYY-IW')
+      WHERE "createdAt" >= ${startDate}
+        AND "createdAt" <= ${endDate}
+        AND "paymentStatus" = 'PAID'
+      GROUP BY TO_CHAR("createdAt", 'IYYY-IW')
       ORDER BY week ASC
     `;
 
@@ -206,15 +206,15 @@ export class AnalyticsService {
     const sales = await this.prisma.$queryRaw<
       Array<{ month: string; revenue: number; orders: number }>
     >`
-      SELECT 
-        TO_CHAR(created_at, 'YYYY-MM') as month,
+      SELECT
+        TO_CHAR("createdAt", 'YYYY-MM') as month,
         SUM(total)::numeric as revenue,
         COUNT(*)::int as orders
       FROM orders
-      WHERE created_at >= ${startDate}
-        AND created_at <= ${endDate}
-        AND payment_status = 'PAID'
-      GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+      WHERE "createdAt" >= ${startDate}
+        AND "createdAt" <= ${endDate}
+        AND "paymentStatus" = 'PAID'
+      GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
       ORDER BY month ASC
     `;
 
@@ -247,23 +247,23 @@ export class AnalyticsService {
         purchases: number;
       }>
     >`
-      SELECT 
+      SELECT
         p.id as product_id,
-        p.name_en,
-        p.name_vi,
+        p."nameEn" as name_en,
+        p."nameVi" as name_vi,
         COUNT(DISTINCT ae.id) as views,
         COALESCE(SUM(oi.quantity), 0)::int as purchases
       FROM products p
-      LEFT JOIN analytics_events ae ON ae.product_id = p.id 
-        AND ae.event_type = 'PRODUCT_VIEW'
-        AND ae.created_at >= ${startDate}
-        AND ae.created_at <= ${endDate}
-      LEFT JOIN order_items oi ON oi.product_id = p.id
-      LEFT JOIN orders o ON o.id = oi.order_id 
-        AND o.payment_status = 'PAID'
-        AND o.created_at >= ${startDate}
-        AND o.created_at <= ${endDate}
-      GROUP BY p.id, p.name_en, p.name_vi
+      LEFT JOIN analytics_events ae ON ae."productId" = p.id
+        AND ae."eventType" = 'PRODUCT_VIEW'
+        AND ae."createdAt" >= ${startDate}
+        AND ae."createdAt" <= ${endDate}
+      LEFT JOIN order_items oi ON oi."productId" = p.id
+      LEFT JOIN orders o ON o.id = oi."orderId"
+        AND o."paymentStatus" = 'PAID'
+        AND o."createdAt" >= ${startDate}
+        AND o."createdAt" <= ${endDate}
+      GROUP BY p.id, p."nameEn", p."nameVi"
       ORDER BY purchases DESC, views DESC
       LIMIT ${limit}
     `;
@@ -278,12 +278,11 @@ export class AnalyticsService {
   }
 
   private async getLowStockProducts(limit: number) {
-    const products = await this.prisma.product.findMany({
+    // Prisma doesn't support field-to-field comparisons in where clause
+    // So we fetch all active products and filter in memory
+    const allProducts = await this.prisma.product.findMany({
       where: {
         isActive: true,
-        stockQuantity: {
-          lte: this.prisma.product.fields.lowStockThreshold,
-        },
       },
       select: {
         id: true,
@@ -296,10 +295,14 @@ export class AnalyticsService {
       orderBy: {
         stockQuantity: 'asc',
       },
-      take: limit,
     });
 
-    return products;
+    // Filter products where stock is at or below their threshold
+    const lowStockProducts = allProducts.filter(
+      (p) => p.stockQuantity <= p.lowStockThreshold,
+    );
+
+    return lowStockProducts.slice(0, limit);
   }
 
   private async getCartAbandonmentRate(startDate: Date, endDate: Date) {
