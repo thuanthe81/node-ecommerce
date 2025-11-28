@@ -126,4 +126,47 @@ describe('ProductCard', () => {
     const image = screen.getByAltText('Primary Image');
     expect(image).toHaveAttribute('src', '/image-1.jpg');
   });
+
+  it('should display "Contact for Price" for zero-price products', () => {
+    const zeroPriceProduct: Product = {
+      ...mockProduct,
+      price: 0,
+    };
+
+    render(<ProductCard product={zeroPriceProduct} />);
+
+    expect(screen.getByText('Contact for Price')).toBeInTheDocument();
+  });
+
+  it('should not display currency formatting for zero-price products', () => {
+    const zeroPriceProduct: Product = {
+      ...mockProduct,
+      price: 0,
+    };
+
+    render(<ProductCard product={zeroPriceProduct} />);
+
+    // Should not contain currency symbols or numeric price
+    expect(screen.queryByText(/₫/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0/)).not.toBeInTheDocument();
+  });
+
+  it('should display regular price for non-zero price products', () => {
+    render(<ProductCard product={mockProduct} />);
+
+    // Should display formatted price
+    expect(screen.getByText(/100.000/)).toBeInTheDocument();
+  });
+
+  it('should use blue styling for contact-for-price text', () => {
+    const zeroPriceProduct: Product = {
+      ...mockProduct,
+      price: 0,
+    };
+
+    render(<ProductCard product={zeroPriceProduct} />);
+
+    const contactText = screen.getByText('Contact for Price');
+    expect(contactText).toHaveClass('text-blue-600');
+  });
 });

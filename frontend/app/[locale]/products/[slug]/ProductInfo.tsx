@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Product } from '@/lib/product-api';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
-import { formatMoney } from '@/app/utils';
+import { formatMoney, isContactForPrice, getContactForPriceText, getPricingGuidanceText } from '@/app/utils';
 
 interface ProductInfoProps {
   product: Product;
@@ -25,6 +25,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
   const isOutOfStock = product.stockQuantity <= 0;
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+  const isZeroPrice = isContactForPrice(product.price);
 
   const handleQuantityChange = (value: number) => {
     const newQuantity = Math.max(1, Math.min(value, product.stockQuantity));
@@ -93,23 +94,31 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {/* Price */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
-          <span className="text-3xl font-bold text-gray-900">
-            {formatMoney(product.price)}
-          </span>
-          {hasDiscount && (
+          {isZeroPrice ? (
+            <span className="text-3xl font-bold text-blue-600">
+              {getContactForPriceText(locale)}
+            </span>
+          ) : (
             <>
-              <span className="text-xl text-gray-500 line-through">
-                {formatMoney(product.compareAtPrice)}
+              <span className="text-3xl font-bold text-gray-900">
+                {formatMoney(product.price)}
               </span>
-              <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-semibold">
-                {t('common.discount')}{' '}
-                {Math.round(
-                  ((Number(product.compareAtPrice) - Number(product.price)) /
-                    Number(product.compareAtPrice)) *
-                    100
-                )}
-                %
-              </span>
+              {hasDiscount && (
+                <>
+                  <span className="text-xl text-gray-500 line-through">
+                    {formatMoney(product.compareAtPrice)}
+                  </span>
+                  <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-semibold">
+                    {t('common.discount')}{' '}
+                    {Math.round(
+                      ((Number(product.compareAtPrice) - Number(product.price)) /
+                        Number(product.compareAtPrice)) *
+                        100
+                    )}
+                    %
+                  </span>
+                </>
+              )}
             </>
           )}
         </div>
@@ -181,6 +190,15 @@ export default function ProductInfo({ product }: ProductInfoProps) {
               ? t('cart.added')
               : t('cart.addToCart')}
           </button>
+
+          {/* Zero-price product messaging */}
+          {isZeroPrice && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                {getPricingGuidanceText(locale)}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

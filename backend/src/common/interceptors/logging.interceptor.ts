@@ -39,6 +39,11 @@ export class LoggingInterceptor implements NestInterceptor {
           this.logger.error(
             `${method} ${url} ${statusCode} - ${responseTime}ms - ${ip} - ${userAgent} - Error: ${error.message}`,
           );
+
+          // Log detailed error for debugging
+          if (error.response) {
+            this.logger.error(`Error details: ${JSON.stringify(error.response)}`);
+          }
         },
       }),
     );

@@ -78,7 +78,10 @@ export class CartService {
       throw new BadRequestException('Product is not available');
     }
 
-    if (product.stockQuantity < quantity) {
+    // Check stock for non-zero-price products
+    // Zero-price products can be added to cart regardless of stock
+    const isZeroPrice = Number(product.price) === 0;
+    if (!isZeroPrice && product.stockQuantity < quantity) {
       throw new BadRequestException('Insufficient stock');
     }
 
@@ -99,7 +102,7 @@ export class CartService {
     if (existingItem) {
       // Update quantity
       const newQuantity = existingItem.quantity + quantity;
-      if (product.stockQuantity < newQuantity) {
+      if (!isZeroPrice && product.stockQuantity < newQuantity) {
         throw new BadRequestException('Insufficient stock');
       }
 
@@ -108,7 +111,7 @@ export class CartService {
         data: { quantity: newQuantity },
       });
     } else {
-      // Create new cart item
+      // Create new cart item (price will be 0 for zero-price products)
       cartItem = await this.prisma.cartItem.create({
         data: {
           cartId: cart.id,

@@ -12,6 +12,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
+import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -100,5 +101,19 @@ export class OrdersController {
     @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
   ) {
     return this.ordersService.updatePaymentStatus(id, updatePaymentStatusDto);
+  }
+
+  @Patch(':orderId/items/:orderItemId/price')
+  @Roles(UserRole.ADMIN)
+  setOrderItemPrice(
+    @Param('orderId') orderId: string,
+    @Param('orderItemId') orderItemId: string,
+    @Body() setOrderItemPriceDto: SetOrderItemPriceDto,
+  ) {
+    return this.ordersService.setOrderItemPrice(
+      orderId,
+      orderItemId,
+      setOrderItemPriceDto,
+    );
   }
 }

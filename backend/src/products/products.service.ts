@@ -118,6 +118,8 @@ export class ProductsService {
             0,
             altTextEn,
             altTextVi,
+            true, // Skip product check since we're in a transaction
+            tx, // Pass transaction client
           );
         } catch (error) {
           // If image upload fails, the transaction will rollback
@@ -208,7 +210,6 @@ export class ProductsService {
         where.stockQuantity = { lte: 0 };
       }
     }
-    console.log(`Isfeatured: ${isFeatured}`);
     // Featured filter
     if (isFeatured !== undefined) {
       where.isFeatured = isFeatured;
@@ -527,6 +528,13 @@ export class ProductsService {
   async getCount() {
     const count = await this.prisma.product.count();
     return { count };
+  }
+
+  /**
+   * Check if a product is a contact-for-price product (zero price)
+   */
+  isContactForPrice(product: { price: any }): boolean {
+    return Number(product.price) === 0;
   }
 
   // Helper method to invalidate product list cache

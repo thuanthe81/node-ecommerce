@@ -7,6 +7,7 @@ import { orderApi, Order } from '@/lib/order-api';
 import { paymentApi, RefundInfo } from '@/lib/payment-api';
 import { shippingApi, ShippingLabel } from '@/lib/shipping-api';
 import PaymentStatusUpdateModal from '@/components/PaymentStatusUpdateModal';
+import { isContactForPrice, getAdminOrderPricingMessage } from '@/app/utils';
 import translations from '@/locales/translations.json';
 
 interface OrderDetailContentProps {
@@ -32,6 +33,8 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
+  const [itemPrices, setItemPrices] = useState<Record<string, string>>({});
+  const [settingPrice, setSettingPrice] = useState<string | null>(null);
   const router = useRouter();
 
   const t = (key: string) => {
@@ -165,6 +168,51 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const handlePriceChange = (itemId: string, value: string) => {
+    setItemPrices((prev) => ({
+      ...prev,
+      [itemId]: value,
+    }));
+  };
+
+  const handleSetPrice = async (itemId: string) => {
+    if (!order) return;
+
+    const priceValue = itemPrices[itemId];
+    if (!priceValue || parseFloat(priceValue) <= 0) {
+      showToast(
+        locale === 'vi' ? 'Vui lòng nhập giá hợp lệ' : 'Please enter a valid price',
+        'error'
+      );
+      return;
+    }
+
+    try {
+      setSettingPrice(itemId);
+      const updatedOrder = await orderApi.setOrderItemPrice(order.id, itemId, {
+        price: parseFloat(priceValue),
+      });
+      setOrder(updatedOrder);
+      setItemPrices((prev) => {
+        const newPrices = { ...prev };
+        delete newPrices[itemId];
+        return newPrices;
+      });
+      showToast(
+        locale === 'vi' ? 'Đã cập nhật giá thành công' : 'Price updated successfully',
+        'success'
+      );
+    } catch (err: any) {
+      showToast(
+        err.response?.data?.message ||
+          (locale === 'vi' ? 'Không thể cập nhật giá' : 'Failed to update price'),
+        'error'
+      );
+    } finally {
+      setSettingPrice(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric',
@@ -237,6 +285,11 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           <p className="mt-1 text-sm text-gray-600">{formatDate(order.createdAt)}</p>
         </div>
         <div className="flex items-center gap-4">
+          {order.requiresPricing && (
+            <span className="px-3 py-1 text-sm font-semibold rounded-full bg-orange-100 text-orange-800">
+              {locale === 'vi' ? '💰 Cần đặt giá' : '💰 Needs Pricing'}
+            </span>
+          )}
           <span
             className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeColor(
               order.status
@@ -246,6 +299,13 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           </span>
         </div>
       </div>
+
+      {/* Warning message for orders requiring pricing */}
+      {order.requiresPricing && order.items.some((item) => isContactForPrice(item.price)) && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-sm text-yellow-800">{getAdminOrderPricingMessage(locale)}</p>
+        </div>
+      )}
 
       {/* Status Update */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -596,7 +656,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {order.items.map((item) => (
-                <tr key={item.id}>
+                <tr key={item.id} className={isContactForPrice(item.price) ? 'bg-yellow-50' : ''}>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       {item.product?.images?.[0] && (
@@ -614,10 +674,44 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.sku}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.quantity}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(item.price)}
+                    {isContactForPrice(item.price) ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          placeholder={locale === 'vi' ? 'Nhập giá' : 'Enter price'}
+                          value={itemPrices[item.id] || ''}
+                          onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                          disabled={settingPrice === item.id}
+                          className="w-32 px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                        />
+                        <button
+                          onClick={() => handleSetPrice(item.id)}
+                          disabled={settingPrice === item.id || !itemPrices[item.id]}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {settingPrice === item.id
+                            ? locale === 'vi'
+                              ? 'Đang lưu...'
+                              : 'Saving...'
+                            : locale === 'vi'
+                            ? 'Đặt giá'
+                            : 'Set Price'}
+                        </button>
+                      </div>
+                    ) : (
+                      formatCurrency(item.price)
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {formatCurrency(item.total)}
+                    {isContactForPrice(item.price) ? (
+                      <span className="text-yellow-600 font-semibold">
+                        {locale === 'vi' ? 'Chưa có giá' : 'Not Priced'}
+                      </span>
+                    ) : (
+                      formatCurrency(item.total)
+                    )}
                   </td>
                 </tr>
               ))}

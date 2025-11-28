@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
+import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
@@ -101,7 +102,9 @@ export class OrdersService {
     const productMap = new Map(products.map((p) => [p.id, p]));
 
     // Validate stock and calculate totals
+    // Track if order contains zero-price products
     let subtotal = 0;
+    let hasZeroPriceItems = false;
     const orderItems: Array<{
       productId: string;
       productNameEn: string;
@@ -125,7 +128,14 @@ export class OrdersService {
         );
       }
 
-      if (product.stockQuantity < item.quantity) {
+      // Check if this is a zero-price product
+      const isZeroPrice = Number(product.price) === 0;
+      if (isZeroPrice) {
+        hasZeroPriceItems = true;
+      }
+
+      // Only validate stock for non-zero-price products
+      if (!isZeroPrice && product.stockQuantity < item.quantity) {
         throw new BadRequestException(
           `Insufficient stock for product ${product.nameEn}. Available: ${product.stockQuantity}`,
         );
@@ -182,6 +192,11 @@ export class OrdersService {
     // Generate order number
     const orderNumber = await this.generateOrderNumber();
 
+    // Determine order status based on zero-price items
+    const orderStatus = hasZeroPriceItems
+      ? OrderStatus.PENDING_QUOTE
+      : OrderStatus.PENDING;
+
     // Create order with transaction to ensure atomicity
     const order = await this.prisma.$transaction(async (tx) => {
       // Create the order
@@ -190,12 +205,13 @@ export class OrdersService {
           orderNumber,
           userId,
           email,
-          status: OrderStatus.PENDING,
+          status: orderStatus,
           subtotal,
           shippingCost,
           taxAmount,
           discountAmount,
           total,
+          requiresPricing: hasZeroPriceItems,
           shippingAddressId,
           billingAddressId,
           shippingMethod,
@@ -218,16 +234,26 @@ export class OrdersService {
         },
       });
 
-      // Deduct inventory for each product
+      // Deduct inventory for each product (only for non-zero-price products)
       for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stockQuantity: {
-              decrement: item.quantity,
+        const product = productMap.get(item.productId);
+        if (!product) {
+          continue; // Skip if product not found (should not happen due to earlier validation)
+        }
+
+        const isZeroPrice = Number(product.price) === 0;
+
+        // Only deduct stock for non-zero-price products
+        if (!isZeroPrice) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: {
+                decrement: item.quantity,
+              },
             },
-          },
-        });
+          });
+        }
       }
 
       // Update promotion usage count if applicable
@@ -486,6 +512,121 @@ export class OrdersService {
   }
 
   /**
+   * Set price for an order item (admin only)
+   */
+  async setOrderItemPrice(
+    orderId: string,
+    orderItemId: string,
+    setOrderItemPriceDto: SetOrderItemPriceDto,
+  ) {
+    // Verify order exists
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Verify order item exists and belongs to this order
+    const orderItem = order.items.find((item) => item.id === orderItemId);
+
+    if (!orderItem) {
+      throw new NotFoundException('Order item not found');
+    }
+
+    // Update the order item price and total
+    const updatedOrderItem = await this.prisma.orderItem.update({
+      where: { id: orderItemId },
+      data: {
+        price: setOrderItemPriceDto.price,
+        total: setOrderItemPriceDto.price * orderItem.quantity,
+      },
+    });
+
+    // Recalculate order total
+    await this.recalculateOrderTotal(orderId);
+
+    // Verify product base price remains unchanged
+    const product = await this.prisma.product.findUnique({
+      where: { id: orderItem.productId },
+    });
+
+    return {
+      orderItem: updatedOrderItem,
+      productBasePriceUnchanged: product
+        ? Number(product.price) === 0
+        : false,
+    };
+  }
+
+  /**
+   * Recalculate order total after price updates
+   */
+  async recalculateOrderTotal(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Calculate new subtotal from order items
+    const subtotal = order.items.reduce((sum, item) => {
+      return sum + Number(item.total);
+    }, 0);
+
+    // Recalculate tax based on new subtotal
+    const taxAmount = subtotal * 0.1;
+
+    // Recalculate total
+    const total =
+      subtotal +
+      Number(order.shippingCost) +
+      taxAmount -
+      Number(order.discountAmount);
+
+    // Check if all items are priced
+    const allItemsPriced = order.items.every((item) => Number(item.price) > 0);
+
+    // Update order status if all items are now priced
+    const newStatus =
+      allItemsPriced && order.status === OrderStatus.PENDING_QUOTE
+        ? OrderStatus.PENDING
+        : order.status;
+
+    // Update order with new totals
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        subtotal,
+        taxAmount,
+        total,
+        status: newStatus,
+        requiresPricing: !allItemsPriced,
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      },
+    });
+
+    return updatedOrder;
+  }
+
+  /**
    * Update order status (admin only)
    */
   async updateStatus(id: string, updateOrderStatusDto: UpdateOrderStatusDto) {
@@ -500,6 +641,22 @@ export class OrdersService {
 
     if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    // Validate that order doesn't have unpriced items if moving to PROCESSING or SHIPPED
+    if (
+      updateOrderStatusDto.status === OrderStatus.PROCESSING ||
+      updateOrderStatusDto.status === OrderStatus.SHIPPED
+    ) {
+      const hasUnpricedItems = order.items.some(
+        (item) => Number(item.price) === 0,
+      );
+
+      if (hasUnpricedItems) {
+        throw new BadRequestException(
+          'Cannot process order with unpriced items. Please set prices for all items first.',
+        );
+      }
     }
 
     const updatedOrder = await this.prisma.order.update({

@@ -133,14 +133,19 @@ export class ProductsImageService {
     startOrder: number = 0,
     altTextEn?: string,
     altTextVi?: string,
+    skipProductCheck: boolean = false,
+    prismaClient?: any,
   ) {
-    // Verify product exists
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-    });
+    // Fetch product for validation and default alt text
+    let product = null;
+    if (!skipProductCheck) {
+      product = await this.prisma.product.findUnique({
+        where: { id: productId },
+      });
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
     }
 
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -205,8 +210,8 @@ export class ProductsImageService {
         const displayOrder = startOrder + index;
 
         // Use product name as default alt text if not provided
-        const defaultAltTextEn = altTextEn || product.nameEn;
-        const defaultAltTextVi = altTextVi || product.nameVi;
+        const defaultAltTextEn = altTextEn || product?.nameEn || '';
+        const defaultAltTextVi = altTextVi || product?.nameVi || '';
 
         return {
           productId,
@@ -235,13 +240,16 @@ export class ProductsImageService {
     try {
       const processedImages = await Promise.all(uploadPromises);
 
+      // Use transaction client if provided, otherwise use default prisma client
+      const client = prismaClient || this.prisma;
+
       // Save all images to database in a single operation
-      const createdImages = await this.prisma.productImage.createMany({
+      const createdImages = await client.productImage.createMany({
         data: processedImages.map(({ filepath, thumbnailPath, ...data }) => data),
       });
 
       // Fetch the created images to return with IDs
-      const images = await this.prisma.productImage.findMany({
+      const images = await client.productImage.findMany({
         where: {
           productId,
           displayOrder: {

@@ -6,6 +6,7 @@ import CartItem from '@/components/CartItem';
 import CartSummary from '@/components/CartSummary';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
+import { isContactForPrice, getCartQuoteMessage } from '@/app/utils';
 
 export default function CartPageContent() {
   const locale = useLocale();
@@ -80,6 +81,11 @@ export default function CartPageContent() {
     );
   }
 
+  // Check if cart contains any zero-price items
+  const hasZeroPriceItems = cart.items.some(item =>
+    isContactForPrice(parseFloat(item.price))
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -96,6 +102,29 @@ export default function CartPageContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
+          {hasZeroPriceItems && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start">
+                <svg
+                  className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-sm text-blue-800">
+                  {getCartQuoteMessage(locale)}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-lg shadow-sm border">
             <div className="divide-y">
               {cart.items.map((item) => (

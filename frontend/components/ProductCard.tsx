@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { useState } from 'react';
 import { Product } from '@/lib/product-api';
+import { isContactForPrice, getContactForPriceText } from '@/app/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -31,16 +32,22 @@ export default function ProductCard({ product, priority = true }: ProductCardPro
     : name;
 
   const isOutOfStock = product.stockQuantity <= 0;
+  const isZeroPrice = isContactForPrice(product.price);
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+
+  // Generate aria-label for the link
+  const priceLabel = isZeroPrice
+    ? getContactForPriceText(locale)
+    : new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(Number(product.price));
 
   return (
     <article className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
       <Link
         href={`/${locale}/products/${product.slug}`}
-        aria-label={`${name} - ${new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-          style: 'currency',
-          currency: 'VND',
-        }).format(Number(product.price))}`}
+        aria-label={`${name} - ${priceLabel}`}
         className="touch-manipulation"
       >
         <div
@@ -76,19 +83,30 @@ export default function ProductCard({ product, priority = true }: ProductCardPro
             {name}
           </h3>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl font-bold text-gray-900" aria-label={locale === 'vi' ? 'Giá' : 'Price'}>
-              {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-                style: 'currency',
-                currency: 'VND',
-              }).format(Number(product.price))}
-            </span>
-            {hasDiscount && (
-              <span className="text-sm text-gray-500 line-through" aria-label={locale === 'vi' ? 'Giá gốc' : 'Original price'}>
-                {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-                  style: 'currency',
-                  currency: 'VND',
-                }).format(Number(product.compareAtPrice))}
+            {isZeroPrice ? (
+              <span
+                className="text-lg font-semibold text-blue-600"
+                aria-label={locale === 'vi' ? 'Giá' : 'Price'}
+              >
+                {getContactForPriceText(locale)}
               </span>
+            ) : (
+              <>
+                <span className="text-xl font-bold text-gray-900" aria-label={locale === 'vi' ? 'Giá' : 'Price'}>
+                  {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+                    style: 'currency',
+                    currency: 'VND',
+                  }).format(Number(product.price))}
+                </span>
+                {hasDiscount && (
+                  <span className="text-sm text-gray-500 line-through" aria-label={locale === 'vi' ? 'Giá gốc' : 'Original price'}>
+                    {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+                      style: 'currency',
+                      currency: 'VND',
+                    }).format(Number(product.compareAtPrice))}
+                  </span>
+                )}
+              </>
             )}
           </div>
           {product.averageRating !== undefined && product._count && (

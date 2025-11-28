@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { CartItem as CartItemType } from '@/lib/cart-api';
 import { useCart } from '@/contexts/CartContext';
-import { formatMoney } from '@/app/utils';
+import { formatMoney, isContactForPrice, getPriceTBDText } from '@/app/utils';
 
 interface CartItemProps {
   item: CartItemType;
@@ -23,6 +23,8 @@ export default function CartItem({ item }: CartItemProps) {
   const imageAlt = locale === 'vi'
     ? item.product.images[0]?.altTextVi || productName
     : item.product.images[0]?.altTextEn || productName;
+
+  const isZeroPrice = isContactForPrice(parseFloat(item.price));
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity < 1 || newQuantity > item.product.stockQuantity) return;
@@ -72,8 +74,14 @@ export default function CartItem({ item }: CartItemProps) {
           {productName}
         </Link>
 
-        <p className="text-sm text-gray-600 mt-1">
-          {formatMoney(item.price)}
+        <p className="text-sm mt-1">
+          {isZeroPrice ? (
+            <span className="text-blue-600 font-semibold">
+              {getPriceTBDText(locale)}
+            </span>
+          ) : (
+            <span className="text-gray-600">{formatMoney(item.price)}</span>
+          )}
         </p>
 
         {item.product.stockQuantity < 10 && (
@@ -116,7 +124,13 @@ export default function CartItem({ item }: CartItemProps) {
       </div>
 
       <div className="text-right">
-        <p className="font-semibold">{formatMoney(itemTotal)}</p>
+        <p className="font-semibold">
+          {isZeroPrice ? (
+            <span className="text-blue-600">{getPriceTBDText(locale)}</span>
+          ) : (
+            formatMoney(itemTotal)
+          )}
+        </p>
       </div>
     </div>
   );

@@ -7,10 +7,24 @@ import {
   IsUUID,
   Min,
   IsInt,
+  Allow,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class CreateProductDto {
+  // Allow images field for multipart form data (handled by FilesInterceptor)
+  @Allow()
+  @IsOptional()
+  images?: any;
+
+  // Allow alt text fields for image uploads
+  @Allow()
+  @IsOptional()
+  altTextEn?: string;
+
+  @Allow()
+  @IsOptional()
+  altTextVi?: string;
   @IsString()
   @IsNotEmpty()
   slug: string;
@@ -93,9 +107,19 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   isActive?: boolean;
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   isFeatured?: boolean;
 }

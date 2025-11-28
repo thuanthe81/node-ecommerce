@@ -2,9 +2,10 @@ import { IsString, IsNotEmpty, IsOptional, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateProductImageDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  url: string;
+  url?: string;
 
   @IsOptional()
   @IsString()

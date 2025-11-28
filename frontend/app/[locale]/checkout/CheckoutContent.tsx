@@ -12,7 +12,7 @@ import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
 import { SvgCheck } from '@/components/Svgs';
-import { formatMoney } from '@/app/utils';
+import { formatMoney, isContactForPrice, getPriceTBDText, getCartQuoteMessage } from '@/app/utils';
 
 export default function CheckoutContent() {
   const tCheckout = useTranslations('checkout');
@@ -301,8 +301,15 @@ export default function CheckoutContent() {
     return null;
   }
 
+  // Check if cart contains zero-price products
+  const hasZeroPriceItems = cart.items.some(item => isContactForPrice(Number(item.product.price)));
+
+  // Calculate subtotal only from non-zero price items
   const subtotal = cart.items.reduce(
-    (sum, item) => sum + Number(item.product.price) * item.quantity,
+    (sum, item) => {
+      const price = Number(item.product.price);
+      return sum + (price > 0 ? price * item.quantity : 0);
+    },
     0,
   );
   const shippingCost =
@@ -424,11 +431,39 @@ export default function CheckoutContent() {
                       <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
                     </div>
                     <div className="font-semibold">
-                      {formatMoney(Number(item.product.price) * item.quantity)}
+                      {isContactForPrice(Number(item.product.price)) ? (
+                        <span className="text-blue-600">{getPriceTBDText(locale)}</span>
+                      ) : (
+                        formatMoney(Number(item.product.price) * item.quantity)
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
+
+              {/* Message for zero-price items */}
+              {hasZeroPriceItems && (
+                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <div className="text-sm text-blue-800">
+                      {getCartQuoteMessage(locale)}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Bank Transfer Information */}
               <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">

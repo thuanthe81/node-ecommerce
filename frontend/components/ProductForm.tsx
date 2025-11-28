@@ -21,6 +21,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
   const [images, setImages] = useState<ProductImage[]>(product?.images || []);
   const imageManagerRef = useRef<ImageManagerHandle>(null);
   const [formData, setFormData] = useState({
+    slug: product?.slug || '',
     sku: product?.sku || '',
     nameEn: product?.nameEn || '',
     nameVi: product?.nameVi || '',
@@ -120,7 +121,12 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
         // Create new product - need to use FormData for file upload
         const formDataToSend = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
-          formDataToSend.append(key, value.toString());
+          // Convert boolean values properly for FormData
+          if (typeof value === 'boolean') {
+            formDataToSend.append(key, value ? 'true' : 'false');
+          } else {
+            formDataToSend.append(key, value.toString());
+          }
         });
 
         // Add images from ImageManager
@@ -157,6 +163,26 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
         </h2>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {locale === 'vi' ? 'Slug (URL)' : 'Slug (URL)'} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="slug"
+              value={formData.slug}
+              onChange={handleInputChange}
+              required
+              placeholder="product-name-url"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              {locale === 'vi'
+                ? 'URL thân thiện cho sản phẩm (ví dụ: ao-len-handmade)'
+                : 'URL-friendly product identifier (e.g., handmade-sweater)'}
+            </p>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               SKU <span className="text-red-500">*</span>
@@ -314,6 +340,15 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
                 className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+            {formData.price === 0 && (
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  {locale === 'vi'
+                    ? '💡 Giá 0 = Khách hàng cần liên hệ để biết giá. Bạn sẽ đặt giá tùy chỉnh cho từng đơn hàng trong trang chi tiết đơn hàng.'
+                    : '💡 Price 0 = Customer must contact for pricing. You will set custom prices for each order in the order detail page.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div>

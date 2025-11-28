@@ -28,6 +28,7 @@ export interface Order {
   taxAmount: number;
   discountAmount: number;
   total: number;
+  requiresPricing: boolean;
   shippingMethod: string;
   paymentMethod: string;
   paymentStatus: string;
@@ -88,6 +89,10 @@ export interface UpdatePaymentStatusData {
   notes?: string;
 }
 
+export interface SetOrderItemPriceData {
+  price: number;
+}
+
 export const orderApi = {
   /**
    * Create a new order
@@ -141,6 +146,21 @@ export const orderApi = {
    */
   async updateOrderPaymentStatus(id: string, data: UpdatePaymentStatusData): Promise<Order> {
     const response = await apiClient.patch(`/orders/${id}/payment-status`, data);
+    return response.data;
+  },
+
+  /**
+   * Set price for a zero-price order item (admin only)
+   */
+  async setOrderItemPrice(
+    orderId: string,
+    orderItemId: string,
+    data: SetOrderItemPriceData
+  ): Promise<Order> {
+    const response = await apiClient.patch(
+      `/orders/${orderId}/items/${orderItemId}/price`,
+      data
+    );
     return response.data;
   },
 };

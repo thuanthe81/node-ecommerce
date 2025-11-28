@@ -194,6 +194,7 @@ model Order {
   taxAmount         Decimal       @db.Decimal(10, 2)
   discountAmount    Decimal       @db.Decimal(10, 2) @default(0)
   total             Decimal       @db.Decimal(10, 2)
+  requiresPricing   Boolean       @default(false)
   shippingAddressId String
   billingAddressId  String
   shippingMethod    String
@@ -226,6 +227,7 @@ model Order {
 
 enum OrderStatus {
   PENDING
+  PENDING_QUOTE
   PROCESSING
   SHIPPED
   DELIVERED
