@@ -72,6 +72,7 @@ describe('ProductsImageService', () => {
       create: jest.fn(),
       delete: jest.fn(),
       update: jest.fn(),
+      count: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -123,6 +124,9 @@ describe('ProductsImageService', () => {
 
       // Setup: Image exists
       mockPrismaService.productImage.findFirst.mockResolvedValue(mockImages[1]);
+
+      // Setup: Image count (not the last image)
+      mockPrismaService.productImage.count.mockResolvedValue(3);
 
       // Setup: Transaction mock
       mockPrismaService.$transaction.mockImplementation(async (callback) => {

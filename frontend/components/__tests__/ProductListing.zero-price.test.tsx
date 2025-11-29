@@ -164,12 +164,12 @@ describe('Product Listing with Zero-Price Products', () => {
       expect(screen.getByText('Contact for Price')).toBeInTheDocument();
     });
 
-    it('should display out of stock indicator for zero-price product', () => {
+    it('should display pre-order indicator for zero-price product', () => {
       const product = createMockProduct({ price: 0, stockQuantity: 0 });
 
       render(<ProductCard product={product} />);
 
-      expect(screen.getByText('Out of Stock')).toBeInTheDocument();
+      expect(screen.getByText('Pre-Order')).toBeInTheDocument();
       expect(screen.getByText('Contact for Price')).toBeInTheDocument();
     });
   });

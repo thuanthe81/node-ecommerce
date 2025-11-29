@@ -1,0 +1,32 @@
+{
+  "timestamp": "2025-11-28T11:25:10.900Z",
+  "checks": {
+    "databaseIntegrity": {
+      "passed": false,
+      "details": "Found 5 duplicate image URLs"
+    },
+    "imageAccessibility": {
+      "passed": true,
+      "accessible": 9,
+      "total": 9
+    },
+    "newImageUpload": {
+      "passed": false,
+      "details": "Image upload test failed: Input buffer contains unsupported image format"
+    },
+    "orphanedDirectories": {
+      "count": 0,
+      "directories": []
+    },
+    "fileSystemConsistency": {
+      "passed": false,
+      "details": "Uploads directory does not exist"
+    }
+  },
+  "overallStatus": "FAIL",
+  "recommendations": [
+    "Fix database integrity issues before proceeding",
+    "Fix image upload functionality before deploying",
+    "Fix file system permissions or structure"
+  ]
+}

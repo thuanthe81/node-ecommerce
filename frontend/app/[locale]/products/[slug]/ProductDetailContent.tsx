@@ -75,7 +75,7 @@ export default function ProductDetailContent({
     image: product.images[0]?.url || '',
     price: product.price,
     currency: 'VND',
-    availability: product.stockQuantity > 0 ? 'in stock' : 'out of stock',
+    availability: product.stockQuantity > 0 ? 'in stock' : 'pre-order',
     sku: product.sku,
     rating: product.averageRating,
     reviewCount: product._count?.reviews,

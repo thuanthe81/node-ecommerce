@@ -24,7 +24,13 @@
     "prisma:studio": "prisma studio",
     "generate:images": "ts-node scripts/generate-product-images.ts",
     "verify:images": "ts-node scripts/verify-images.ts",
-    "cleanup:images": "ts-node scripts/cleanup-old-images.ts"
+    "cleanup:images": "ts-node scripts/cleanup-old-images.ts",
+    "migrate:images": "ts-node scripts/migrate-images.ts",
+    "verify:migration": "ts-node scripts/verify-migration.ts",
+    "cleanup:orphaned-images": "ts-node scripts/cleanup-images.ts",
+    "migrate:staging": "ts-node scripts/execute-staging-migration.ts",
+    "test:image-retrieval": "ts-node scripts/test-image-retrieval.ts",
+    "monitor:staging": "ts-node scripts/monitor-staging.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

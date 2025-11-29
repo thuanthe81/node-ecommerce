@@ -32,7 +32,7 @@ The admin products page currently supports filtering by stock status (in stock/o
 #### Acceptance Criteria
 
 1. WHEN multiple filters are applied THEN the system SHALL combine all filter criteria using AND logic
-2. WHEN the featured filter is combined with stock status filter THEN the system SHALL return products matching both criteria
+2. WHEN the featured filter is combined with stock status filter (in stock/pre-order) THEN the system SHALL return products matching both criteria
 3. WHEN the featured filter is combined with search query THEN the system SHALL return products matching both the search and featured status
 4. WHEN filters are applied THEN the system SHALL preserve sort order and other query parameters
 

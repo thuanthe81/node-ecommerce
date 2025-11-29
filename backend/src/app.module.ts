@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentSettingsModule } from './payment-settings/payment-settings.module';
 import { FooterSettingsModule } from './footer-settings/footer-settings.module';
+import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware';
 
 @Module({
   imports: [
@@ -75,4 +76,12 @@ import { FooterSettingsModule } from './footer-settings/footer-settings.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply image retrieval middleware to handle backward compatibility
+    // for product images (checks hierarchical location first, then legacy)
+    consumer
+      .apply(ImageRetrievalMiddleware)
+      .forRoutes('/uploads/products/*');
+  }
+}

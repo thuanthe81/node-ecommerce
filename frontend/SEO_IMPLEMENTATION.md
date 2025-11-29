@@ -24,7 +24,7 @@ This document summarizes the SEO features implemented for the Handmade E-commerc
    - Open Graph tags for social sharing
    - Twitter Card tags
 
-2. **Locale-Specific Meta Tags**: 
+2. **Locale-Specific Meta Tags**:
    - Supports both Vietnamese (vi) and English (en) locales
    - Proper hreflang implementation
    - x-default fallback to Vietnamese
@@ -53,7 +53,7 @@ This document summarizes the SEO features implemented for the Handmade E-commerc
    - Product name, description, image
    - Price and currency
    - SKU
-   - Availability (in stock/out of stock)
+   - Availability (in stock/pre-order)
    - Aggregate rating (when reviews exist)
    - Brand information (optional)
 
@@ -161,7 +161,7 @@ const productSchema = generateProductSchema({
   image: 'https://example.com/image.jpg',
   price: 100000,
   currency: 'VND',
-  availability: 'in stock',
+  availability: 'in stock', // or 'pre-order'
   sku: 'SKU123',
   url: 'https://example.com/product',
 });

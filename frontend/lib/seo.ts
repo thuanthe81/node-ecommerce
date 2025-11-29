@@ -9,7 +9,7 @@ export interface SEOProps {
   type?: 'website' | 'article' | 'product';
   price?: number;
   currency?: string;
-  availability?: 'in stock' | 'out of stock';
+  availability?: 'in stock' | 'pre-order';
   noindex?: boolean;
 }
 
@@ -102,7 +102,7 @@ export function generateProductSchema(product: {
   image: string;
   price: number;
   currency: string;
-  availability: 'in stock' | 'out of stock';
+  availability: 'in stock' | 'pre-order';
   sku: string;
   brand?: string;
   rating?: number;
@@ -124,7 +124,7 @@ export function generateProductSchema(product: {
       availability:
         product.availability === 'in stock'
           ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+          : 'https://schema.org/PreOrder',
       url: product.url,
     },
   };

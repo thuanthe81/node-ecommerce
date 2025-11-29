@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { ProductImage } from '@/lib/product-api';
 import { useLocale } from 'next-intl';
+import { SvgAlertTriangle, SvgChevronLeft, SvgChevronRight } from '@/components/Svgs';
 
 interface ProductImageGalleryProps {
   images: ProductImage[];
@@ -129,19 +130,7 @@ export default function ProductImageGallery({
           {imageError ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
               <div className="text-center text-gray-500">
-                <svg
-                  className="mx-auto h-12 w-12 mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
+                <SvgAlertTriangle className="mx-auto h-12 w-12 mb-2" />
                 <p>Failed to load image</p>
               </div>
             </div>
@@ -153,6 +142,7 @@ export default function ProductImageGallery({
               className={`object-contain transition-transform duration-200 ${
                 isZoomed ? 'scale-150' : 'scale-100'
               }`}
+              style={{opacity: 1}}
               priority={currentIndex === 0}
               sizes="(max-width: 1024px) 100vw, 50vw"
               onLoadingComplete={() => setImageLoading(false)}
@@ -172,38 +162,14 @@ export default function ProductImageGallery({
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
               aria-label="Previous image"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
+              <SvgChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={goToNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
               aria-label="Next image"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              <SvgChevronRight className="w-6 h-6" />
             </button>
           </>
         )}
@@ -233,6 +199,7 @@ export default function ProductImageGallery({
                 }
                 fill
                 className="object-cover"
+                style={{opacity: 1}}
                 sizes="(max-width: 1024px) 25vw, 12.5vw"
               />
             </button>

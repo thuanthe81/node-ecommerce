@@ -86,7 +86,7 @@ This document specifies the requirements for a full-featured e-commerce platform
 #### Acceptance Criteria
 
 1. THE Inventory Management System SHALL track stock quantities for each product
-2. WHEN stock quantity reaches zero, THE Product Catalog System SHALL mark the product as out of stock
+2. WHEN stock quantity reaches zero, THE Product Catalog System SHALL mark the product as available for pre-order
 3. THE Order Management System SHALL display all customer orders with status information
 4. THE Order Management System SHALL allow administrators to update order status
 5. THE Order Management System SHALL support processing returns and refunds

@@ -1,0 +1,174 @@
+{
+  "timestamp": "2025-11-28T11:22:18.650Z",
+  "environment": "staging",
+  "preMigrationChecks": {
+    "databaseConnection": true,
+    "diskSpace": {
+      "available": "unknown",
+      "required": "unknown",
+      "sufficient": true
+    },
+    "imageCount": 24,
+    "backupCreated": true
+  },
+  "dryRun": {
+    "totalImages": 24,
+    "wouldMigrate": 0,
+    "wouldSkip": 24,
+    "estimatedTime": "0.00s"
+  },
+  "migration": {
+    "totalImages": 24,
+    "migrated": 0,
+    "failed": 0,
+    "skipped": 24,
+    "duration": "0.01s",
+    "errors": [
+      {
+        "imageId": "be612d56-f1bb-4e0a-affa-831a12f935d2",
+        "filename": "handmade-silver-necklace-main.jpg",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "ed7b21a1-5fb3-4f3f-9a3d-8a70c4496322",
+        "filename": "ceramic-vase-main.jpg",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "26af173e-e184-440e-8566-08d9ad07b31f",
+        "filename": "leather-wallet-main.jpg",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "b00e3549-5a35-4ea5-8580-8e8a5ab3560a",
+        "filename": "watercolor-painting-main.jpg",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "3be6f7f1-bd7a-4701-9342-0fe538de98ae",
+        "filename": "beaded-bracelet-main.jpg",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "a997ae9c-954b-469b-8483-a914df4592f2",
+        "filename": "800x800?text=Handmade%20Silver%20Necklace",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "0f75e780-a455-4bdd-8244-206e6b396401",
+        "filename": "800x800?text=Ceramic%20Vase",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "ee41f58c-6137-4489-8ad0-08bb4aab1967",
+        "filename": "800x800?text=Leather%20Wallet",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "13c2cb10-2877-4fdd-a77b-f6d40d110996",
+        "filename": "800x800?text=Watercolor%20Painting",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "93363e0f-38c7-4a8e-afbb-2cf28a415bf3",
+        "filename": "800x800?text=Beaded%20Bracelet",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "d2aedbed-c89e-4a2b-be6a-e5b2b75a70bc",
+        "filename": "800x800?text=Handmade%20Silver%20Necklace",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "2dc8a9fc-1493-41fe-a5eb-32bb3bb6a560",
+        "filename": "800x800?text=Ceramic%20Vase",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "f1a3aeb5-0097-4151-b8dd-4d2219d8e696",
+        "filename": "800x800?text=Leather%20Wallet",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "84942b2a-f577-48ca-95bc-e4c4a98ff277",
+        "filename": "800x800?text=Watercolor%20Painting",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "c1dfddca-2a39-400e-8772-6bb7bcebbbab",
+        "filename": "800x800?text=Beaded%20Bracelet",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "2c27b552-d8f4-475f-b91a-84e1f65f3973",
+        "filename": "800x800?text=Handmade%20Silver%20Necklace",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "aefc5da8-3048-422e-ab4d-c58a11d718bb",
+        "filename": "800x800?text=Ceramic%20Vase",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "4d3e9dfe-3189-4b1b-9492-b6a96ab072a4",
+        "filename": "800x800?text=Leather%20Wallet",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "c2a50af8-7cb8-49d3-8744-3f18af985092",
+        "filename": "800x800?text=Watercolor%20Painting",
+        "error": "Invalid filename format - could not extract product ID"
+      },
+      {
+        "imageId": "44625688-cc3a-4478-97fd-cd3d6a68ada2",
+        "filename": "800x800?text=Beaded%20Bracelet",
+        "error": "Invalid filename format - could not extract product ID"
+      }
+    ]
+  },
+  "verification": {
+    "valid": false,
+    "issues": [
+      "Image be612d56-f1bb-4e0a-affa-831a12f935d2 (/uploads/products/handmade-silver-necklace-main.jpg) - URL does not follow new format",
+      "Image ed7b21a1-5fb3-4f3f-9a3d-8a70c4496322 (/uploads/products/ceramic-vase-main.jpg) - URL does not follow new format",
+      "Image 26af173e-e184-440e-8566-08d9ad07b31f (/uploads/products/leather-wallet-main.jpg) - URL does not follow new format",
+      "Image b00e3549-5a35-4ea5-8580-8e8a5ab3560a (/uploads/products/watercolor-painting-main.jpg) - URL does not follow new format",
+      "Image 3be6f7f1-bd7a-4701-9342-0fe538de98ae (/uploads/products/beaded-bracelet-main.jpg) - URL does not follow new format",
+      "Image a997ae9c-954b-469b-8483-a914df4592f2 (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+      "Image a997ae9c-954b-469b-8483-a914df4592f2 (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - URL does not follow new format",
+      "Image 0f75e780-a455-4bdd-8244-206e6b396401 (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Ceramic%20Vase",
+      "Image 0f75e780-a455-4bdd-8244-206e6b396401 (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - URL does not follow new format",
+      "Image ee41f58c-6137-4489-8ad0-08bb4aab1967 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Leather%20Wallet",
+      "Image ee41f58c-6137-4489-8ad0-08bb4aab1967 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - URL does not follow new format",
+      "Image 13c2cb10-2877-4fdd-a77b-f6d40d110996 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Watercolor%20Painting",
+      "Image 13c2cb10-2877-4fdd-a77b-f6d40d110996 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - URL does not follow new format",
+      "Image 93363e0f-38c7-4a8e-afbb-2cf28a415bf3 (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Beaded%20Bracelet",
+      "Image 93363e0f-38c7-4a8e-afbb-2cf28a415bf3 (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - URL does not follow new format",
+      "Image d2aedbed-c89e-4a2b-be6a-e5b2b75a70bc (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+      "Image d2aedbed-c89e-4a2b-be6a-e5b2b75a70bc (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - URL does not follow new format",
+      "Image 2dc8a9fc-1493-41fe-a5eb-32bb3bb6a560 (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Ceramic%20Vase",
+      "Image 2dc8a9fc-1493-41fe-a5eb-32bb3bb6a560 (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - URL does not follow new format",
+      "Image f1a3aeb5-0097-4151-b8dd-4d2219d8e696 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Leather%20Wallet",
+      "Image f1a3aeb5-0097-4151-b8dd-4d2219d8e696 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - URL does not follow new format",
+      "Image 84942b2a-f577-48ca-95bc-e4c4a98ff277 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Watercolor%20Painting",
+      "Image 84942b2a-f577-48ca-95bc-e4c4a98ff277 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - URL does not follow new format",
+      "Image c1dfddca-2a39-400e-8772-6bb7bcebbbab (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Beaded%20Bracelet",
+      "Image c1dfddca-2a39-400e-8772-6bb7bcebbbab (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - URL does not follow new format",
+      "Image 2c27b552-d8f4-475f-b91a-84e1f65f3973 (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+      "Image 2c27b552-d8f4-475f-b91a-84e1f65f3973 (https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace) - URL does not follow new format",
+      "Image aefc5da8-3048-422e-ab4d-c58a11d718bb (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Ceramic%20Vase",
+      "Image aefc5da8-3048-422e-ab4d-c58a11d718bb (https://via.placeholder.com/800x800?text=Ceramic%20Vase) - URL does not follow new format",
+      "Image 4d3e9dfe-3189-4b1b-9492-b6a96ab072a4 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Leather%20Wallet",
+      "Image 4d3e9dfe-3189-4b1b-9492-b6a96ab072a4 (https://via.placeholder.com/800x800?text=Leather%20Wallet) - URL does not follow new format",
+      "Image c2a50af8-7cb8-49d3-8744-3f18af985092 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Watercolor%20Painting",
+      "Image c2a50af8-7cb8-49d3-8744-3f18af985092 (https://via.placeholder.com/800x800?text=Watercolor%20Painting) - URL does not follow new format",
+      "Image 44625688-cc3a-4478-97fd-cd3d6a68ada2 (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - file not found at /Users/macos/ws/ala-kiro/backend/https:/via.placeholder.com/800x800?text=Beaded%20Bracelet",
+      "Image 44625688-cc3a-4478-97fd-cd3d6a68ada2 (https://via.placeholder.com/800x800?text=Beaded%20Bracelet) - URL does not follow new format"
+    ]
+  },
+  "postMigration": {
+    "legacyFilesRemaining": 0,
+    "newStructureFiles": 0,
+    "orphanedDirectories": 0
+  }
+}

@@ -390,7 +390,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
             )}
             {outOfStock && (
               <p className="mt-1 text-sm text-red-600">
-                {locale === 'vi' ? '❌ Hết hàng' : '❌ Out of stock'}
+                {locale === 'vi' ? '❌ Đặt trước' : '❌ Pre-Order'}
               </p>
             )}
           </div>

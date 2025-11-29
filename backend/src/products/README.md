@@ -184,8 +184,10 @@ Response: { message: string }
   - Main image: Resized to max 1200x1200px (maintains aspect ratio)
   - Thumbnail: Resized to 300x300px (cropped to fit)
   - Format: Converted to JPEG for consistency
-- **Storage**: Local filesystem at `uploads/products/`
+- **Storage**: Hierarchical structure at `uploads/products/[product-id]/`
 - **Access**: Served via static file middleware at `/uploads/products/`
+
+**Note:** See [Image Storage API Documentation](./IMAGE_STORAGE_API.md) for detailed information about the storage structure, migration process, and cleanup utilities.
 
 ## Validation Rules
 

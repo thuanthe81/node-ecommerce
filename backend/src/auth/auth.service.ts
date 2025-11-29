@@ -177,7 +177,7 @@ export class AuthService {
     // Generate access token (15 minutes)
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_SECRET'),
-      expiresIn: '15m',
+      expiresIn: '12h',
     });
 
     // Generate refresh token (7 days)

@@ -128,7 +128,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div>
         {isOutOfStock ? (
           <span className="text-red-600 font-semibold">
-            {t('common.outOfStock')}
+            {t('common.preOrder')}
           </span>
         ) : (
           <span className="text-green-600 font-semibold">

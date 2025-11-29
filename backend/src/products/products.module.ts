@@ -3,6 +3,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 import { ProductsImageService } from './products-image.service';
+import { ImageMigrationService } from './image-migration.service';
+import { ImageCleanupService } from './image-cleanup.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { memoryStorage } from 'multer';
 
@@ -17,7 +19,7 @@ import { memoryStorage } from 'multer';
     }),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, ProductsImageService],
-  exports: [ProductsService, ProductsImageService],
+  providers: [ProductsService, ProductsImageService, ImageMigrationService, ImageCleanupService],
+  exports: [ProductsService, ProductsImageService, ImageMigrationService, ImageCleanupService],
 })
 export class ProductsModule {}

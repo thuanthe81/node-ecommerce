@@ -75,8 +75,8 @@ To replace all product images with locally generated ones:
 ## Image Storage
 
 Generated images are stored in:
-- Main images: `backend/uploads/products/*.jpg`
-- Thumbnails: `backend/uploads/products/thumbnails/*.jpg`
+- Main images: `backend/uploads/products/[product-id]/*.jpg`
+- Thumbnails: `backend/uploads/products/[product-id]/thumbnails/*.jpg`
 
 These directories are already configured in the `.gitignore` to avoid committing large binary files.
 
@@ -85,6 +85,155 @@ These directories are already configured in the `.gitignore` to avoid committing
 - The generated images are simple placeholders with product names overlaid on gradient backgrounds
 - For production, you should replace these with actual product photos
 - The image URLs in the database use relative paths (`/uploads/products/...`) which are served by the NestJS static file middleware
+
+## Image Storage Migration
+
+### migrate-images.ts
+
+Migrates product images from the legacy flat directory structure to the new hierarchical structure organized by product ID.
+
+**What it does:**
+- Identifies all existing product images in the flat directory structure
+- Extracts product IDs from legacy filenames
+- Creates product-specific directories
+- Moves both original images and thumbnails to new locations
+- Updates database URLs to reflect new paths
+- Verifies migration success
+- Creates database backup (optional)
+
+**Usage:**
+
+Preview migration without making changes:
+```bash
+npm run migrate:images -- --dry-run
+```
+
+Run migration with database backup:
+```bash
+npm run migrate:images -- --backup
+```
+
+Run migration with custom batch size:
+```bash
+npm run migrate:images -- --backup --batch-size 100
+```
+
+**Options:**
+- `--dry-run` - Preview migration without making changes
+- `--backup` - Create database backup before migration (recommended)
+- `--batch-size <number>` - Number of images to process per batch (default: 50)
+
+**Output:**
+```
+🚀 Starting migration...
+💾 Creating database backup...
+✓ Backup created: product_images_backup_20241128_100000
+
+📊 Found 150 images to migrate
+
+Processing batch 1/3...
+✓ Migrated: abc-123.jpg → abc/123.jpg
+...
+
+📈 Migration Summary:
+   Total images: 150
+   Migrated: 148
+   Failed: 0
+   Skipped: 2
+```
+
+### verify-migration.ts
+
+Verifies that the image storage migration completed successfully.
+
+**What it does:**
+- Checks all database URLs point to existing files
+- Verifies files are in correct hierarchical structure
+- Reports any mismatches or missing files
+- Identifies files still in legacy location
+
+**Usage:**
+```bash
+npm run verify:migration
+```
+
+**Output:**
+```
+🔍 Verifying migration...
+
+Checking database URLs...
+✓ All 148 database URLs point to existing files
+
+Checking file locations...
+✓ All files are in correct hierarchical structure
+
+✓ Verification complete!
+```
+
+### cleanup-images.ts
+
+Identifies and removes orphaned image directories (directories for products that no longer exist).
+
+**What it does:**
+- Scans uploads/products directory for subdirectories
+- Checks if each product ID exists in database
+- Identifies orphaned directories
+- Calculates total size of orphaned directories
+- Removes orphaned directories (with confirmation)
+
+**Usage:**
+
+Preview orphaned directories:
+```bash
+npm run cleanup:orphaned-images -- --dry-run
+```
+
+Remove orphaned directories:
+```bash
+npm run cleanup:orphaned-images -- --confirm
+```
+
+**Output:**
+```
+🔍 Scanning for orphaned directories...
+
+Found 2 orphaned directories:
+  - 9dd8b6b8-4696-4777-93fe-5b9ecce34be6 (5.2 MB)
+  - a1b2c3d4-5678-90ab-cdef-1234567890ab (3.8 MB)
+
+Total space to reclaim: 9.0 MB
+```
+
+## Image Storage Migration Workflow
+
+To migrate from legacy flat structure to hierarchical structure:
+
+1. **Preview migration:**
+   ```bash
+   npm run migrate:images -- --dry-run
+   ```
+
+2. **Run migration with backup:**
+   ```bash
+   npm run migrate:images -- --backup
+   ```
+
+3. **Verify migration:**
+   ```bash
+   npm run verify:migration
+   ```
+
+4. **Clean up orphaned directories:**
+   ```bash
+   npm run cleanup:orphaned-images -- --dry-run
+   npm run cleanup:orphaned-images -- --confirm
+   ```
+
+**Important:**
+- Always run with `--dry-run` first
+- Create database backup before migration
+- Verify sufficient disk space (2x current uploads)
+- See [MIGRATION_RUNBOOK.md](./MIGRATION_RUNBOOK.md) for detailed instructions
 
 ## Address Deduplication
 

@@ -296,11 +296,11 @@ describe('OrdersService', () => {
       expect(result.items).toHaveLength(1);
     });
 
-    it('should throw BadRequestException if product is out of stock', async () => {
-      const outOfStockProduct = { ...mockProduct, stockQuantity: 0 };
+    it('should throw BadRequestException if product is on pre-order (zero stock)', async () => {
+      const preOrderProduct = { ...mockProduct, stockQuantity: 0 };
       mockPrismaService.address.findUnique.mockResolvedValue(mockAddress);
       mockPrismaService.product.findMany.mockResolvedValue([
-        outOfStockProduct,
+        preOrderProduct,
       ]);
 
       await expect(service.create(createOrderDto, 'user-1')).rejects.toThrow(

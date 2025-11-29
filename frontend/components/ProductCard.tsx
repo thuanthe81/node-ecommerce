@@ -66,9 +66,9 @@ export default function ProductCard({ product, priority = true }: ProductCardPro
             unoptimized
           />
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center" role="status">
-              <span className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold">
-                {locale === 'vi' ? 'Hết hàng' : 'Out of Stock'}
+            <div className="absolute bottom-2 right-2" role="status">
+              <span className="bg-red-600 text-white px-3 py-1.5 rounded-md font-semibold text-sm shadow-lg">
+                {locale === 'vi' ? 'Đặt trước' : 'Pre-Order'}
               </span>
             </div>
           )}

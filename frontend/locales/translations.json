@@ -1240,9 +1240,9 @@
       "en": "Orders",
       "vi": "Đơn hàng"
     },
-    "outOfStock": {
-      "en": "Out of stock",
-      "vi": "Hết hàng"
+    "preOrder": {
+      "en": "Pre-Order",
+      "vi": "Đặt trước"
     },
     "page": {
       "en": "Page",
@@ -2080,9 +2080,9 @@
       "en": "New Arrival",
       "vi": "Hàng mới"
     },
-    "outOfStock": {
-      "en": "Out of Stock",
-      "vi": "Hết hàng"
+    "preOrder": {
+      "en": "Pre-Order",
+      "vi": "Đặt trước"
     },
     "price": {
       "en": "Price",

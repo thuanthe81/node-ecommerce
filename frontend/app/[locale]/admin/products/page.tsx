@@ -140,7 +140,7 @@ export default function AdminProductsPage() {
               >
                 <option value="all">{locale === 'vi' ? 'Tất cả' : 'All Stock'}</option>
                 <option value="true">{locale === 'vi' ? 'Còn hàng' : 'In Stock'}</option>
-                <option value="false">{locale === 'vi' ? 'Hết hàng' : 'Out of Stock'}</option>
+                <option value="false">{locale === 'vi' ? 'Đặt trước' : 'Pre-Order'}</option>
               </select>
 
               <select

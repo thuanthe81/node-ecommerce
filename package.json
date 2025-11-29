@@ -12,7 +12,11 @@
     "dev:backend": "npm run start:dev --workspace=backend",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:staging": "bash scripts/deploy.sh staging",
+    "deploy:production": "bash scripts/deploy-production.sh",
+    "rollback:migration": "bash scripts/rollback-migration.sh"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

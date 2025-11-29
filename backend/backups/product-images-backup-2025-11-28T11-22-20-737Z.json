@@ -1,0 +1,242 @@
+[
+  {
+    "id": "be612d56-f1bb-4e0a-affa-831a12f935d2",
+    "productId": "4e73c4e4-0919-45a4-a04f-6af232e6eb60",
+    "url": "/uploads/products/handmade-silver-necklace-main.jpg",
+    "altTextEn": "Handmade Silver Necklace",
+    "altTextVi": "Dây chuyền bạc thủ công",
+    "displayOrder": 0,
+    "createdAt": "2025-11-09T16:10:56.984Z",
+    "updatedAt": "2025-11-16T15:47:15.844Z"
+  },
+  {
+    "id": "ed7b21a1-5fb3-4f3f-9a3d-8a70c4496322",
+    "productId": "40524ee9-37f9-4d27-9ef2-b5a2a278b1a1",
+    "url": "/uploads/products/ceramic-vase-main.jpg",
+    "altTextEn": "Ceramic Vase",
+    "altTextVi": "Bình gốm",
+    "displayOrder": 0,
+    "createdAt": "2025-11-09T16:10:56.987Z",
+    "updatedAt": "2025-11-16T15:47:15.935Z"
+  },
+  {
+    "id": "26af173e-e184-440e-8566-08d9ad07b31f",
+    "productId": "ebef4c16-e9c2-4356-b2fa-27ad6af67545",
+    "url": "/uploads/products/leather-wallet-main.jpg",
+    "altTextEn": "Leather Wallet",
+    "altTextVi": "Ví da",
+    "displayOrder": 0,
+    "createdAt": "2025-11-09T16:10:56.989Z",
+    "updatedAt": "2025-11-16T15:47:16.019Z"
+  },
+  {
+    "id": "b00e3549-5a35-4ea5-8580-8e8a5ab3560a",
+    "productId": "10aed623-bfec-4363-9c4f-ff71568a4afe",
+    "url": "/uploads/products/watercolor-painting-main.jpg",
+    "altTextEn": "Watercolor Painting",
+    "altTextVi": "Tranh màu nước",
+    "displayOrder": 0,
+    "createdAt": "2025-11-09T16:10:56.990Z",
+    "updatedAt": "2025-11-16T15:47:16.101Z"
+  },
+  {
+    "id": "3be6f7f1-bd7a-4701-9342-0fe538de98ae",
+    "productId": "85d13c55-dbdf-45dd-ab74-50e369fa2545",
+    "url": "/uploads/products/beaded-bracelet-main.jpg",
+    "altTextEn": "Beaded Bracelet",
+    "altTextVi": "Vòng tay chuỗi hạt",
+    "displayOrder": 0,
+    "createdAt": "2025-11-09T16:10:56.992Z",
+    "updatedAt": "2025-11-16T15:47:16.184Z"
+  },
+  {
+    "id": "2c9eef09-7ded-4655-979b-9ebb21c2fff3",
+    "productId": "9dd8b6b8-4696-4777-93fe-5b9ecce34be6",
+    "url": "/uploads/products/9dd8b6b8-4696-4777-93fe-5b9ecce34be6/9dd8b6b8-4696-4777-93fe-5b9ecce34be6-1764320380597-t0edi4.jpg",
+    "altTextEn": "",
+    "altTextVi": "",
+    "displayOrder": 1,
+    "createdAt": "2025-11-28T08:59:40.682Z",
+    "updatedAt": "2025-11-28T11:07:15.435Z"
+  },
+  {
+    "id": "a997ae9c-954b-469b-8483-a914df4592f2",
+    "productId": "4e73c4e4-0919-45a4-a04f-6af232e6eb60",
+    "url": "https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+    "altTextEn": "Handmade Silver Necklace",
+    "altTextVi": "Dây chuyền bạc thủ công",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T13:52:55.233Z",
+    "updatedAt": "2025-11-24T13:52:55.233Z"
+  },
+  {
+    "id": "0f75e780-a455-4bdd-8244-206e6b396401",
+    "productId": "40524ee9-37f9-4d27-9ef2-b5a2a278b1a1",
+    "url": "https://via.placeholder.com/800x800?text=Ceramic%20Vase",
+    "altTextEn": "Ceramic Vase",
+    "altTextVi": "Bình gốm",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T13:52:55.237Z",
+    "updatedAt": "2025-11-24T13:52:55.237Z"
+  },
+  {
+    "id": "ee41f58c-6137-4489-8ad0-08bb4aab1967",
+    "productId": "ebef4c16-e9c2-4356-b2fa-27ad6af67545",
+    "url": "https://via.placeholder.com/800x800?text=Leather%20Wallet",
+    "altTextEn": "Leather Wallet",
+    "altTextVi": "Ví da",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T13:52:55.239Z",
+    "updatedAt": "2025-11-24T13:52:55.239Z"
+  },
+  {
+    "id": "13c2cb10-2877-4fdd-a77b-f6d40d110996",
+    "productId": "10aed623-bfec-4363-9c4f-ff71568a4afe",
+    "url": "https://via.placeholder.com/800x800?text=Watercolor%20Painting",
+    "altTextEn": "Watercolor Painting",
+    "altTextVi": "Tranh màu nước",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T13:52:55.241Z",
+    "updatedAt": "2025-11-24T13:52:55.241Z"
+  },
+  {
+    "id": "93363e0f-38c7-4a8e-afbb-2cf28a415bf3",
+    "productId": "85d13c55-dbdf-45dd-ab74-50e369fa2545",
+    "url": "https://via.placeholder.com/800x800?text=Beaded%20Bracelet",
+    "altTextEn": "Beaded Bracelet",
+    "altTextVi": "Vòng tay chuỗi hạt",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T13:52:55.242Z",
+    "updatedAt": "2025-11-24T13:52:55.242Z"
+  },
+  {
+    "id": "d2aedbed-c89e-4a2b-be6a-e5b2b75a70bc",
+    "productId": "4e73c4e4-0919-45a4-a04f-6af232e6eb60",
+    "url": "https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+    "altTextEn": "Handmade Silver Necklace",
+    "altTextVi": "Dây chuyền bạc thủ công",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T15:02:07.405Z",
+    "updatedAt": "2025-11-24T15:02:07.405Z"
+  },
+  {
+    "id": "2dc8a9fc-1493-41fe-a5eb-32bb3bb6a560",
+    "productId": "40524ee9-37f9-4d27-9ef2-b5a2a278b1a1",
+    "url": "https://via.placeholder.com/800x800?text=Ceramic%20Vase",
+    "altTextEn": "Ceramic Vase",
+    "altTextVi": "Bình gốm",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T15:02:07.411Z",
+    "updatedAt": "2025-11-24T15:02:07.411Z"
+  },
+  {
+    "id": "f1a3aeb5-0097-4151-b8dd-4d2219d8e696",
+    "productId": "ebef4c16-e9c2-4356-b2fa-27ad6af67545",
+    "url": "https://via.placeholder.com/800x800?text=Leather%20Wallet",
+    "altTextEn": "Leather Wallet",
+    "altTextVi": "Ví da",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T15:02:07.414Z",
+    "updatedAt": "2025-11-24T15:02:07.414Z"
+  },
+  {
+    "id": "84942b2a-f577-48ca-95bc-e4c4a98ff277",
+    "productId": "10aed623-bfec-4363-9c4f-ff71568a4afe",
+    "url": "https://via.placeholder.com/800x800?text=Watercolor%20Painting",
+    "altTextEn": "Watercolor Painting",
+    "altTextVi": "Tranh màu nước",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T15:02:07.415Z",
+    "updatedAt": "2025-11-24T15:02:07.415Z"
+  },
+  {
+    "id": "c1dfddca-2a39-400e-8772-6bb7bcebbbab",
+    "productId": "85d13c55-dbdf-45dd-ab74-50e369fa2545",
+    "url": "https://via.placeholder.com/800x800?text=Beaded%20Bracelet",
+    "altTextEn": "Beaded Bracelet",
+    "altTextVi": "Vòng tay chuỗi hạt",
+    "displayOrder": 0,
+    "createdAt": "2025-11-24T15:02:07.417Z",
+    "updatedAt": "2025-11-24T15:02:07.417Z"
+  },
+  {
+    "id": "2c27b552-d8f4-475f-b91a-84e1f65f3973",
+    "productId": "4e73c4e4-0919-45a4-a04f-6af232e6eb60",
+    "url": "https://via.placeholder.com/800x800?text=Handmade%20Silver%20Necklace",
+    "altTextEn": "Handmade Silver Necklace",
+    "altTextVi": "Dây chuyền bạc thủ công",
+    "displayOrder": 0,
+    "createdAt": "2025-11-27T10:29:19.804Z",
+    "updatedAt": "2025-11-27T10:29:19.804Z"
+  },
+  {
+    "id": "aefc5da8-3048-422e-ab4d-c58a11d718bb",
+    "productId": "40524ee9-37f9-4d27-9ef2-b5a2a278b1a1",
+    "url": "https://via.placeholder.com/800x800?text=Ceramic%20Vase",
+    "altTextEn": "Ceramic Vase",
+    "altTextVi": "Bình gốm",
+    "displayOrder": 0,
+    "createdAt": "2025-11-27T10:29:19.813Z",
+    "updatedAt": "2025-11-27T10:29:19.813Z"
+  },
+  {
+    "id": "4d3e9dfe-3189-4b1b-9492-b6a96ab072a4",
+    "productId": "ebef4c16-e9c2-4356-b2fa-27ad6af67545",
+    "url": "https://via.placeholder.com/800x800?text=Leather%20Wallet",
+    "altTextEn": "Leather Wallet",
+    "altTextVi": "Ví da",
+    "displayOrder": 0,
+    "createdAt": "2025-11-27T10:29:19.815Z",
+    "updatedAt": "2025-11-27T10:29:19.815Z"
+  },
+  {
+    "id": "c2a50af8-7cb8-49d3-8744-3f18af985092",
+    "productId": "10aed623-bfec-4363-9c4f-ff71568a4afe",
+    "url": "https://via.placeholder.com/800x800?text=Watercolor%20Painting",
+    "altTextEn": "Watercolor Painting",
+    "altTextVi": "Tranh màu nước",
+    "displayOrder": 0,
+    "createdAt": "2025-11-27T10:29:19.817Z",
+    "updatedAt": "2025-11-27T10:29:19.817Z"
+  },
+  {
+    "id": "44625688-cc3a-4478-97fd-cd3d6a68ada2",
+    "productId": "85d13c55-dbdf-45dd-ab74-50e369fa2545",
+    "url": "https://via.placeholder.com/800x800?text=Beaded%20Bracelet",
+    "altTextEn": "Beaded Bracelet",
+    "altTextVi": "Vòng tay chuỗi hạt",
+    "displayOrder": 0,
+    "createdAt": "2025-11-27T10:29:19.819Z",
+    "updatedAt": "2025-11-27T10:29:19.819Z"
+  },
+  {
+    "id": "de812a52-235d-4dfa-84ab-865898a37f82",
+    "productId": "9dd8b6b8-4696-4777-93fe-5b9ecce34be6",
+    "url": "/uploads/products/9dd8b6b8-4696-4777-93fe-5b9ecce34be6/9dd8b6b8-4696-4777-93fe-5b9ecce34be6-1764320380595-bb502c.jpg",
+    "altTextEn": "",
+    "altTextVi": "",
+    "displayOrder": 0,
+    "createdAt": "2025-11-28T08:59:40.682Z",
+    "updatedAt": "2025-11-28T11:07:15.431Z"
+  },
+  {
+    "id": "286bfa98-3aeb-49a1-b37d-0f74dbe3775c",
+    "productId": "9dd8b6b8-4696-4777-93fe-5b9ecce34be6",
+    "url": "/uploads/products/9dd8b6b8-4696-4777-93fe-5b9ecce34be6/9dd8b6b8-4696-4777-93fe-5b9ecce34be6-1764322910686.jpg",
+    "altTextEn": "Tulip",
+    "altTextVi": "Hoa Tulip",
+    "displayOrder": 1,
+    "createdAt": "2025-11-28T09:41:50.744Z",
+    "updatedAt": "2025-11-28T11:07:15.439Z"
+  },
+  {
+    "id": "f951d4f3-2a72-4d17-9913-cb9ede77e3c3",
+    "productId": "9dd8b6b8-4696-4777-93fe-5b9ecce34be6",
+    "url": "/uploads/products/9dd8b6b8-4696-4777-93fe-5b9ecce34be6/9dd8b6b8-4696-4777-93fe-5b9ecce34be6-1764322910754.jpg",
+    "altTextEn": "Tulip",
+    "altTextVi": "Hoa Tulip",
+    "displayOrder": 2,
+    "createdAt": "2025-11-28T09:41:50.830Z",
+    "updatedAt": "2025-11-28T11:07:15.442Z"
+  }
+]

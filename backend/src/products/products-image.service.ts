@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductImageDto } from './dto/create-product-image.dto';
@@ -11,8 +12,11 @@ import * as path from 'path';
 
 @Injectable()
 export class ProductsImageService {
+  private readonly logger = new Logger(ProductsImageService.name);
   private uploadDir: string;
   private thumbnailDir: string;
+  private legacyUploadDir: string;
+  private legacyThumbnailDir: string;
 
   constructor(private prisma: PrismaService) {
     const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
@@ -22,6 +26,10 @@ export class ProductsImageService {
 
     this.uploadDir = path.join(baseUploadPath, 'products');
     this.thumbnailDir = path.join(baseUploadPath, 'products', 'thumbnails');
+
+    // Legacy directories for backward compatibility
+    this.legacyUploadDir = path.join(baseUploadPath, 'products');
+    this.legacyThumbnailDir = path.join(baseUploadPath, 'products', 'thumbnails');
 
     this.ensureUploadDirectories();
   }
@@ -33,6 +41,131 @@ export class ProductsImageService {
     } catch (error) {
       console.error('Error creating upload directories:', error);
     }
+  }
+
+  /**
+   * Get the upload directory path for a specific product
+   * @param productId - The UUID of the product
+   * @returns Path to the product's upload directory (e.g., uploads/products/[product-id]/)
+   */
+  private getProductUploadDir(productId: string): string {
+    return path.join(this.uploadDir, productId);
+  }
+
+  /**
+   * Get the thumbnail directory path for a specific product
+   * @param productId - The UUID of the product
+   * @returns Path to the product's thumbnail directory (e.g., uploads/products/[product-id]/thumbnails/)
+   */
+  private getProductThumbnailDir(productId: string): string {
+    return path.join(this.uploadDir, productId, 'thumbnails');
+  }
+
+  /**
+   * Ensure product-specific directories exist
+   * @param productId - The UUID of the product
+   */
+  private async ensureProductDirectories(productId: string): Promise<void> {
+    try {
+      const productUploadDir = this.getProductUploadDir(productId);
+      const productThumbnailDir = this.getProductThumbnailDir(productId);
+
+      await fs.mkdir(productUploadDir, { recursive: true });
+      await fs.mkdir(productThumbnailDir, { recursive: true });
+    } catch (error) {
+      console.error(`Error creating directories for product ${productId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resolve the physical file path for an image with backward compatibility
+   * Checks hierarchical location first, then falls back to legacy flat directory
+   * @param imageUrl - The image URL from the database (e.g., /uploads/products/[product-id]/image.jpg)
+   * @param isThumbnail - Whether to resolve the thumbnail path
+   * @returns Object containing the resolved file path and whether it was found in legacy location
+   */
+  async resolveImagePath(
+    imageUrl: string,
+    isThumbnail: boolean = false,
+  ): Promise<{ filePath: string; isLegacy: boolean } | null> {
+    // Extract the filename and product ID from the URL
+    // URL format: /uploads/products/[product-id]/[filename] (new)
+    // URL format: /uploads/products/[product-id]/thumbnails/[filename] (new thumbnail)
+    // or: /uploads/products/[filename] (legacy)
+    // or: /uploads/products/thumbnails/[filename] (legacy thumbnail)
+    const urlParts = imageUrl.split('/');
+
+    // Remove empty strings and 'uploads', 'products' from the path
+    const relevantParts = urlParts.filter(part => part && part !== 'uploads' && part !== 'products');
+
+    let productId: string | null = null;
+    let filename: string;
+    let hasThumbnailsInPath = false;
+
+    // Check if 'thumbnails' is in the path
+    const thumbnailsIndex = relevantParts.indexOf('thumbnails');
+    if (thumbnailsIndex !== -1) {
+      hasThumbnailsInPath = true;
+      // Remove 'thumbnails' from relevant parts for processing
+      relevantParts.splice(thumbnailsIndex, 1);
+    }
+
+    if (relevantParts.length === 2) {
+      // New format: [product-id]/[filename]
+      productId = relevantParts[0];
+      filename = relevantParts[1];
+    } else if (relevantParts.length === 1) {
+      // Legacy format: [filename]
+      filename = relevantParts[0];
+    } else {
+      this.logger.warn(`Invalid image URL format: ${imageUrl}`);
+      return null;
+    }
+
+    // Determine if we should look for thumbnail based on URL path or parameter
+    const lookForThumbnail = isThumbnail || hasThumbnailsInPath;
+
+    // First, try the hierarchical location (new structure)
+    if (productId) {
+      const hierarchicalPath = lookForThumbnail
+        ? path.join(this.getProductThumbnailDir(productId), filename)
+        : path.join(this.getProductUploadDir(productId), filename);
+
+      try {
+        await fs.access(hierarchicalPath);
+        return { filePath: hierarchicalPath, isLegacy: false };
+      } catch (error) {
+        // File not found in hierarchical location, will try legacy
+      }
+    }
+
+    // Fall back to legacy flat directory location
+    const legacyPath = lookForThumbnail
+      ? path.join(this.legacyThumbnailDir, filename)
+      : path.join(this.legacyUploadDir, filename);
+
+    try {
+      await fs.access(legacyPath);
+      this.logger.warn(
+        `Image served from legacy location: ${imageUrl}. Consider running migration.`,
+      );
+      return { filePath: legacyPath, isLegacy: true };
+    } catch (error) {
+      // File not found in either location
+      this.logger.error(`Image file not found in any location: ${imageUrl}`);
+      return null;
+    }
+  }
+
+  /**
+   * Check if an image exists at the given URL (with backward compatibility)
+   * @param imageUrl - The image URL from the database
+   * @returns True if the image exists in either hierarchical or legacy location
+   */
+  async imageExists(imageUrl: string): Promise<boolean> {
+    const resolved = await this.resolveImagePath(imageUrl, false);
+    return resolved !== null;
   }
 
   async uploadProductImage(
@@ -63,12 +196,15 @@ export class ProductsImageService {
       throw new BadRequestException('File size exceeds 5MB limit');
     }
 
-    // Generate unique filename
+    // Ensure product-specific directories exist
+    await this.ensureProductDirectories(productId);
+
+    // Generate unique filename (without product ID prefix since it's in the directory path)
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
-    const filename = `${productId}-${timestamp}${ext}`;
-    const filepath = path.join(this.uploadDir, filename);
-    const thumbnailPath = path.join(this.thumbnailDir, filename);
+    const filename = `${timestamp}${ext}`;
+    const filepath = path.join(this.getProductUploadDir(productId), filename);
+    const thumbnailPath = path.join(this.getProductThumbnailDir(productId), filename);
 
     try {
       // Save original image
@@ -97,8 +233,8 @@ export class ProductsImageService {
       const displayOrder =
         imageDto?.displayOrder ?? (lastImage?.displayOrder ?? -1) + 1;
 
-      // Save to database
-      const imageUrl = `/uploads/products/${filename}`;
+      // Save to database with new URL format including product ID in path
+      const imageUrl = `/uploads/products/${productId}/${filename}`;
 
       // Use product name as default alt text if not provided
       const defaultAltTextEn = imageDto?.altTextEn || product.nameEn;
@@ -148,6 +284,9 @@ export class ProductsImageService {
       }
     }
 
+    // Ensure product-specific directories exist
+    await this.ensureProductDirectories(productId);
+
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
@@ -184,9 +323,10 @@ export class ProductsImageService {
       const timestamp = Date.now();
       const randomSuffix = Math.random().toString(36).substring(2, 8);
       const ext = path.extname(file.originalname);
-      const filename = `${productId}-${timestamp}-${randomSuffix}${ext}`;
-      const filepath = path.join(this.uploadDir, filename);
-      const thumbnailPath = path.join(this.thumbnailDir, filename);
+      // Filename without product ID prefix (since it's in the directory path)
+      const filename = `${timestamp}-${randomSuffix}${ext}`;
+      const filepath = path.join(this.getProductUploadDir(productId), filename);
+      const thumbnailPath = path.join(this.getProductThumbnailDir(productId), filename);
 
       try {
         // Save original image and generate thumbnail in parallel
@@ -206,7 +346,8 @@ export class ProductsImageService {
             .toFile(thumbnailPath),
         ]);
 
-        const imageUrl = `/uploads/products/${filename}`;
+        // Database URL format includes product ID in path
+        const imageUrl = `/uploads/products/${productId}/${filename}`;
         const displayOrder = startOrder + index;
 
         // Use product name as default alt text if not provided
@@ -303,10 +444,18 @@ export class ProductsImageService {
       throw new NotFoundException('Image not found');
     }
 
+    // Check if this is the last image for the product
+    const imageCount = await this.prisma.productImage.count({
+      where: { productId },
+    });
+
+    const isLastImage = imageCount === 1;
+
     // Store file paths for cleanup
     const filename = path.basename(image.url);
-    const filepath = path.join(this.uploadDir, filename);
-    const thumbnailPath = path.join(this.thumbnailDir, filename);
+    const productUploadDir = this.getProductUploadDir(productId);
+    const filepath = path.join(productUploadDir, filename);
+    const thumbnailPath = path.join(this.getProductThumbnailDir(productId), filename);
 
     try {
       // Delete from database and normalize display order in a transaction
@@ -334,10 +483,15 @@ export class ProductsImageService {
       });
 
       // Delete files after successful database transaction
-      // File cleanup happens outside transaction to ensure it occurs even if normalization fails
       try {
-        await fs.unlink(filepath).catch(() => {});
-        await fs.unlink(thumbnailPath).catch(() => {});
+        if (isLastImage) {
+          // If this was the last image, remove the entire product directory
+          await fs.rm(productUploadDir, { recursive: true, force: true });
+        } else {
+          // Otherwise, just remove the specific image files
+          await fs.unlink(filepath).catch(() => {});
+          await fs.unlink(thumbnailPath).catch(() => {});
+        }
       } catch (error) {
         console.error('Error deleting image files:', error);
         // Don't throw - database deletion was successful
@@ -347,8 +501,12 @@ export class ProductsImageService {
     } catch (error) {
       // If database transaction fails, ensure files are still cleaned up
       try {
-        await fs.unlink(filepath).catch(() => {});
-        await fs.unlink(thumbnailPath).catch(() => {});
+        if (isLastImage) {
+          await fs.rm(productUploadDir, { recursive: true, force: true });
+        } else {
+          await fs.unlink(filepath).catch(() => {});
+          await fs.unlink(thumbnailPath).catch(() => {});
+        }
       } catch (cleanupError) {
         console.error('Error cleaning up files after failed deletion:', cleanupError);
       }

@@ -30,7 +30,7 @@ graph TB
     Redis[(Redis Cache)]
     S3[File Storage]
     Payment[Payment Gateway]
-    
+
     Client --> NextJS
     NextJS --> NestJS
     NestJS --> DB
@@ -572,7 +572,7 @@ interface AnalyticsEvent {
   "product": {
     "price": "Price",
     "inStock": "In Stock",
-    "outOfStock": "Out of Stock"
+    "preOrder": "Pre-Order"
   },
   "checkout": {
     "shippingAddress": "Shipping Address",

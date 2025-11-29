@@ -69,12 +69,21 @@ This will start both frontend (http://localhost:3000) and backend (http://localh
 
 ## Available Scripts
 
+### Development
 - `npm run dev` - Start both frontend and backend in development mode
 - `npm run dev:frontend` - Start only frontend
 - `npm run dev:backend` - Start only backend
 - `npm run build` - Build both applications
 - `npm run lint` - Lint all workspaces
 - `npm run format` - Format code with Prettier
+
+### Deployment
+- `npm run deploy` - Deploy to staging environment
+- `npm run deploy:staging` - Deploy to staging with full checks
+- `npm run deploy:production` - Deploy to production with safety checks
+- `npm run rollback:migration` - Rollback image storage migration
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ## Technology Stack
 
