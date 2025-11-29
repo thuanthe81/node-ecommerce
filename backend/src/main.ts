@@ -42,7 +42,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Strip properties that don't have decorators
-      forbidNonWhitelisted: true, // Throw error if non-whitelisted properties exist
+      forbidNonWhitelisted: false, // Allow extra properties (like cache-busting _t parameter) to pass through
       transform: true, // Transform payloads to DTO instances
       transformOptions: {
         enableImplicitConversion: false, // Disabled to allow explicit @Transform decorators to work correctly
