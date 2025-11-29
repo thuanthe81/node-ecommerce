@@ -24,7 +24,7 @@ export default function AdminProductsPage() {
     sortOrder: 'desc',
   });
   const [totalPages, setTotalPages] = useState(1);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -48,10 +48,13 @@ export default function AdminProductsPage() {
     setFilters({ ...filters, search: searchQuery, page: 1 });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (product: Product) => {
     try {
-      await productApi.deleteProduct(id);
+      await productApi.deleteProduct(product.id);
       setDeleteConfirm(null);
+      // Immediately update local state to remove the deleted product
+      setProducts((prevProducts) => prevProducts.filter((p) => p.id !== product.id));
+      // Also reload to ensure we have accurate data
       loadProducts();
     } catch (error) {
       console.error('Failed to delete product:', error);
@@ -264,7 +267,7 @@ export default function AdminProductsPage() {
                             {locale === 'vi' ? 'Sửa' : 'Edit'}
                           </Link>
                           <button
-                            onClick={() => setDeleteConfirm(product.id)}
+                            onClick={() => setDeleteConfirm(product)}
                             className="text-red-600 hover:text-red-900"
                           >
                             {locale === 'vi' ? 'Xóa' : 'Delete'}
@@ -336,11 +339,35 @@ export default function AdminProductsPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 {locale === 'vi' ? 'Xác nhận xóa' : 'Confirm Delete'}
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                {locale === 'vi'
-                  ? 'Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.'
-                  : 'Are you sure you want to delete this product? This action cannot be undone.'}
-              </p>
+              <div className="mb-6">
+                <p className="text-sm text-gray-500 mb-3">
+                  {locale === 'vi'
+                    ? 'Bạn có chắc chắn muốn xóa sản phẩm này?'
+                    : 'Are you sure you want to delete this product?'}
+                </p>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    {deleteConfirm.images[0] && (
+                      <img
+                        src={deleteConfirm.images[0].url}
+                        alt={locale === 'vi' ? deleteConfirm.nameVi : deleteConfirm.nameEn}
+                        className="h-12 w-12 rounded object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {locale === 'vi' ? deleteConfirm.nameVi : deleteConfirm.nameEn}
+                      </p>
+                      <p className="text-xs text-gray-500">SKU: {deleteConfirm.sku}</p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-red-600 mt-3">
+                  {locale === 'vi'
+                    ? 'Hành động này không thể hoàn tác.'
+                    : 'This action cannot be undone.'}
+                </p>
+              </div>
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
