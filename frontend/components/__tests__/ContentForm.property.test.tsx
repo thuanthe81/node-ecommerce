@@ -16,6 +16,24 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
+}));
+
+// Mock ImagePickerModal
+jest.mock('../ImagePickerModal', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+// Mock content-api
+jest.mock('@/lib/content-api', () => ({
+  ...jest.requireActual('@/lib/content-api'),
+  getContentTypes: jest.fn().mockResolvedValue(['PAGE', 'FAQ', 'BANNER', 'HOMEPAGE_SECTION']),
+}));
+
 describe('ContentForm Property-Based Tests', () => {
   /**
    * Feature: admin-content-edit, Property 2: All editable fields are present

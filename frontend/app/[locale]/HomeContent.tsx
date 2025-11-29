@@ -36,7 +36,7 @@ export default function HomeContent() {
         const productsResponse = await productApi.getProducts({
           isFeatured: true,
           limit: 8,
-          inStock: true,
+          // inStock: true,
         });
 
         if (productsResponse.data && productsResponse.data.length >= 3) {
