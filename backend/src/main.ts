@@ -78,11 +78,15 @@ async function bootstrap() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     // Include custom headers used by the app (e.g., x-session-id)
+    // Cache-busting headers (Cache-Control, Pragma, Expires) are added by frontend for admin requests
     allowedHeaders: [
       'Content-Type',
       'Authorization',
       'X-Requested-With',
       'x-session-id',
+      'Cache-Control',
+      'Pragma',
+      'Expires',
     ],
     exposedHeaders: ['X-Total-Count'],
     maxAge: 3600, // Cache preflight requests for 1 hour

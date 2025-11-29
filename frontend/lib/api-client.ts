@@ -13,7 +13,6 @@
  *
  * All requests to `/admin` endpoints are automatically configured to prevent caching:
  * - Cache-Control, Pragma, and Expires headers are added to all admin requests
- * - GET requests receive a unique timestamp query parameter (_t)
  * - This ensures administrators always see current data without stale cache interference
  *
  * The cache-busting mechanism is transparent to API consumers - no changes are needed
@@ -52,7 +51,6 @@ apiClient.interceptors.request.use(
  *
  * Ensures that all admin API calls never use cached data by:
  * 1. Adding cache-busting headers (Cache-Control, Pragma, Expires)
- * 2. Appending timestamp query parameter to GET requests
  *
  * This guarantees administrators always see the most current information
  * when managing the platform.
@@ -76,13 +74,6 @@ apiClient.interceptors.request.use(
       config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
       config.headers['Pragma'] = 'no-cache'; // HTTP/1.0 backward compatibility
       config.headers['Expires'] = '0'; // Prevent caching
-
-      // Add timestamp query parameter for GET requests as additional cache-busting
-      // This ensures each request has a unique URL, preventing URL-based caching
-      if (config.method?.toUpperCase() === 'GET') {
-        const separator = config.url?.includes('?') ? '&' : '?';
-        config.url = `${config.url}${separator}_t=${Date.now()}`;
-      }
     }
 
     return config;
