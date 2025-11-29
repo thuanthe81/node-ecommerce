@@ -202,34 +202,54 @@ export default function AdminCategoriesPage() {
         </div>
 
         {/* Delete Confirmation Modal */}
-        {deleteConfirm && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {locale === 'vi' ? 'Xác nhận xóa' : 'Confirm Delete'}
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                {locale === 'vi'
-                  ? 'Bạn có chắc chắn muốn xóa danh mục này? Tất cả danh mục con cũng sẽ bị xóa. Hành động này không thể hoàn tác.'
-                  : 'Are you sure you want to delete this category? All subcategories will also be deleted. This action cannot be undone.'}
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  {locale === 'vi' ? 'Hủy' : 'Cancel'}
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  {locale === 'vi' ? 'Xóa' : 'Delete'}
-                </button>
+        {deleteConfirm && (() => {
+          // Find the category being deleted
+          const findCategory = (cats: Category[], id: string): Category | null => {
+            for (const cat of cats) {
+              if (cat.id === id) return cat;
+              if (cat.children) {
+                const found = findCategory(cat.children, id);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          const categoryToDelete = findCategory(categories, deleteConfirm);
+          const categoryName = categoryToDelete
+            ? (locale === 'vi' ? categoryToDelete.nameVi : categoryToDelete.nameEn)
+            : '';
+
+          return (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {locale === 'vi'
+                    ? `Xác nhận xóa "${categoryName}"`
+                    : `Confirm Delete "${categoryName}"`}
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {locale === 'vi'
+                    ? 'Bạn có chắc chắn muốn xóa danh mục này? Tất cả danh mục con cũng sẽ bị xóa. Hành động này không thể hoàn tác.'
+                    : 'Are you sure you want to delete this category? All subcategories will also be deleted. This action cannot be undone.'}
+                </p>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setDeleteConfirm(null)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  >
+                    {locale === 'vi' ? 'Hủy' : 'Cancel'}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(deleteConfirm)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  >
+                    {locale === 'vi' ? 'Xóa' : 'Delete'}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </AdminLayout>
     </AdminProtectedRoute>
   );
