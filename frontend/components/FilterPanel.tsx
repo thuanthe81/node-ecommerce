@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { categoryApi } from '@/lib/category-api';
+import { SvgChevronDown } from './Svgs';
 
 interface Category {
   id: string;
@@ -111,15 +112,10 @@ export default function FilterPanel() {
             </span>
           )}
         </span>
-        <svg
+        <SvgChevronDown
           className={`w-5 h-5 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        />
       </button>
 
       {/* Filter Content */}

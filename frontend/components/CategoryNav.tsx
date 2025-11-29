@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { Category } from '@/lib/category-api';
 import { useCategories } from '@/hooks/useCategories';
+import { SvgChevronDown } from './Svgs';
 
 export default function CategoryNav() {
   const locale = useLocale();
@@ -70,20 +71,10 @@ export default function CategoryNav() {
                 >
                   {getCategoryName(category)}
                   {hasChildren && (
-                    <svg
+                    <SvgChevronDown
                       className="inline-block ml-1 w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
                       aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                    />
                   )}
                 </Link>
 
@@ -137,15 +128,10 @@ export default function CategoryNav() {
             <span className="font-medium">
               {locale === 'vi' ? 'Danh mục' : 'Categories'}
             </span>
-            <svg
+            <SvgChevronDown
               className={`w-5 h-5 transition-transform ${isMobileCategoryOpen ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
               aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            />
           </button>
 
           {isMobileCategoryOpen && (
@@ -174,15 +160,10 @@ export default function CategoryNav() {
                             aria-expanded={isCategoryOpen}
                             style={{ minWidth: '44px', minHeight: '44px' }}
                           >
-                            <svg
+                            <SvgChevronDown
                               className={`w-5 h-5 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
                               aria-hidden="true"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                            />
                           </button>
                         )}
                       </div>

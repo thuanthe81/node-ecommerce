@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { productApi, Product } from '@/lib/product-api';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SvgSearch } from './Svgs';
 
 export default function SearchBar() {
   const [query, setQuery] = useState('');
@@ -121,20 +122,7 @@ export default function SearchBar() {
             className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             aria-label={locale === 'vi' ? 'Tìm kiếm' : 'Search'}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <SvgSearch className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </form>

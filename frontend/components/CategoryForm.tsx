@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Category, categoryApi } from '@/lib/category-api';
 import { adminCategoryApi, CreateCategoryData } from '@/lib/admin-category-api';
 import ImagePickerModal from './ImagePickerModal';
+import { SvgClose } from './Svgs';
 
 interface CategoryFormProps {
   locale: string;
@@ -308,14 +309,7 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
                   className="absolute -top-2 -right-2 bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-colors"
                   title={locale === 'vi' ? 'Xóa hình ảnh' : 'Remove image'}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <SvgClose className="w-4 h-4" />
                 </button>
               </div>
             )}

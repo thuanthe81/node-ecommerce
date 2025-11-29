@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, memo } from 'react';
+import { SvgChevronLeft, SvgChevronRight } from '../Svgs';
 
 export interface CarouselControlsProps {
   onPrevious: () => void;
@@ -67,20 +68,10 @@ function CarouselControls({
           z-10
         `}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
+        <SvgChevronLeft
           strokeWidth={2.5}
-          stroke="currentColor"
           className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 19.5L8.25 12l7.5-7.5"
-          />
-        </svg>
+        />
       </button>
 
       {/* Next button - right side */}
@@ -108,20 +99,10 @@ function CarouselControls({
           z-10
         `}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
+        <SvgChevronRight
           strokeWidth={2.5}
-          stroke="currentColor"
           className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8.25 4.5l7.5 7.5-7.5 7.5"
-          />
-        </svg>
+        />
       </button>
     </div>
   );

@@ -7,6 +7,7 @@ import { orderApi, Order } from '@/lib/order-api';
 import { paymentSettingsApi, BankTransferSettings } from '@/lib/payment-settings-api';
 import { formatMoney } from '@/app/utils';
 import { useTranslations } from 'next-intl';
+import { SvgRefresh, SvgClipboard, SvgShoppingBag } from './Svgs';
 
 interface OrderDetailViewProps {
   orderId: string;
@@ -325,9 +326,7 @@ export default function OrderDetailView({
                   className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg font-medium"
                   aria-label="Retry loading order"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
+                  <SvgRefresh className="w-5 h-5" aria-hidden="true" />
                   {t('tryAgain')}
                 </button>
               )}
@@ -336,9 +335,7 @@ export default function OrderDetailView({
                   href={`/${locale}/account/orders`}
                   className="inline-flex items-center gap-2 px-8 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg font-medium"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
+                  <SvgClipboard className="w-5 h-5" aria-hidden="true" />
                   {t('viewAllOrders')}
                 </Link>
               )}
@@ -346,9 +343,7 @@ export default function OrderDetailView({
                 href={`/${locale}/products`}
                 className="inline-flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg font-medium"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+                <SvgShoppingBag className="w-5 h-5" aria-hidden="true" />
                 {t('continueShopping')}
               </Link>
             </nav>
