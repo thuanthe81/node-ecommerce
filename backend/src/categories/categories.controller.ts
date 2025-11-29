@@ -25,6 +25,12 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @Get('product-images')
+  @Roles(UserRole.ADMIN)
+  getProductImages() {
+    return this.categoriesService.getAvailableProductImages();
+  }
+
   @Get()
   @Public()
   findAll() {

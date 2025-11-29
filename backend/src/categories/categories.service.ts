@@ -214,6 +214,16 @@ export class CategoriesService {
       }
     }
 
+    // If imageUrl is being updated, validate it references an existing product image
+    if (updateCategoryDto.imageUrl !== undefined && updateCategoryDto.imageUrl !== null && updateCategoryDto.imageUrl !== '') {
+      const isValid = await this.validateProductImageUrl(updateCategoryDto.imageUrl);
+      if (!isValid) {
+        throw new BadRequestException(
+          'Invalid image URL. Must reference an existing product image.',
+        );
+      }
+    }
+
     const updated = await this.prisma.category.update({
       where: { id },
       data: updateCategoryDto,
@@ -294,6 +304,70 @@ export class CategoriesService {
     }
 
     return this.isDescendant(ancestorId, descendant.parentId);
+  }
+
+  // Get all available product images with metadata
+  async getAvailableProductImages() {
+    const productImages = await this.prisma.productImage.findMany({
+      include: {
+        product: {
+          select: {
+            id: true,
+            nameEn: true,
+            nameVi: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Deduplicate by URL - keep first occurrence of each unique URL
+    const seenUrls = new Set<string>();
+    const uniqueImages = productImages.filter((image) => {
+      if (seenUrls.has(image.url)) {
+        return false;
+      }
+      seenUrls.add(image.url);
+      return true;
+    });
+
+    // Map to response format
+    return uniqueImages.map((image) => ({
+      id: image.id,
+      url: image.url,
+      productId: image.productId,
+      productNameEn: image.product.nameEn,
+      productNameVi: image.product.nameVi,
+      altTextEn: image.altTextEn,
+      altTextVi: image.altTextVi,
+    }));
+  }
+
+  // Validate that an imageUrl references an existing product image
+  async validateProductImageUrl(imageUrl: string): Promise<boolean> {
+    // Check if it's a relative path (starts with / or ./)
+    const isRelativePath = imageUrl.startsWith('/') || imageUrl.startsWith('./') || imageUrl.startsWith('../');
+
+    if (isRelativePath) {
+      // For relative paths, check if any product image URL ends with this path
+      // This handles cases where the database stores full URLs but the form uses relative paths
+      const images = await this.prisma.productImage.findMany({
+        where: {
+          url: {
+            endsWith: imageUrl.startsWith('/') ? imageUrl : imageUrl.replace(/^\.\.?\//, ''),
+          },
+        },
+      });
+      return images.length > 0;
+    }
+
+    // For absolute URLs, check for exact match
+    const image = await this.prisma.productImage.findFirst({
+      where: { url: imageUrl },
+    });
+    return !!image;
   }
 
   // Helper method to invalidate category cache

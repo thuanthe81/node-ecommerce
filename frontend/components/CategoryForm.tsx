@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Category, categoryApi } from '@/lib/category-api';
 import { adminCategoryApi, CreateCategoryData } from '@/lib/admin-category-api';
+import ImagePickerModal from './ImagePickerModal';
 
 interface CategoryFormProps {
   locale: string;
@@ -16,8 +17,7 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(category?.imageUrl || null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
   const [formData, setFormData] = useState<CreateCategoryData>({
     slug: category?.slug || '',
     nameEn: category?.nameEn || '',
@@ -72,12 +72,19 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
     });
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleImageSelect = (imageUrl: string) => {
+    setFormData({
+      ...formData,
+      imageUrl,
+    });
+    setShowImagePicker(false);
+  };
+
+  const handleImageClear = () => {
+    setFormData({
+      ...formData,
+      imageUrl: '',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,23 +92,21 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
     setLoading(true);
 
     try {
-      let imageUrl = formData.imageUrl;
-
-      // Upload image if a new one was selected
-      if (imageFile) {
-        const uploadResult = await adminCategoryApi.uploadCategoryImage(imageFile);
-        imageUrl = uploadResult.url;
-      }
-
-      const dataToSend = {
-        ...formData,
-        imageUrl,
-        parentId: formData.parentId || undefined,
-      };
-
       if (isEdit && category) {
+        // In edit mode, send imageUrl if it exists
+        const dataToSend = {
+          ...formData,
+          parentId: formData.parentId || undefined,
+          imageUrl: formData.imageUrl || undefined,
+        };
         await adminCategoryApi.updateCategory(category.id, dataToSend);
       } else {
+        // In create mode, exclude imageUrl from the request
+        const { imageUrl, ...dataWithoutImage } = formData;
+        const dataToSend = {
+          ...dataWithoutImage,
+          parentId: formData.parentId || undefined,
+        };
         await adminCategoryApi.createCategory(dataToSend);
       }
 
@@ -282,34 +287,55 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
         </div>
       </div>
 
-      {/* Image */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">
-          {locale === 'vi' ? 'Hình ảnh' : 'Image'}
-        </h2>
+      {/* Image - Only show in edit mode */}
+      {isEdit && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            {locale === 'vi' ? 'Hình ảnh' : 'Image'}
+          </h2>
 
-        {imagePreview && (
-          <div className="mb-4">
-            <img
-              src={imagePreview}
-              alt="Category preview"
-              className="w-32 h-32 object-cover rounded-lg"
-            />
+          <div className="space-y-4">
+            {formData.imageUrl && (
+              <div className="relative inline-block">
+                <img
+                  src={formData.imageUrl}
+                  alt="Category preview"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={handleImageClear}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-colors"
+                  title={locale === 'vi' ? 'Xóa hình ảnh' : 'Remove image'}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowImagePicker(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {formData.imageUrl
+                ? locale === 'vi'
+                  ? 'Thay đổi hình ảnh'
+                  : 'Change Image'
+                : locale === 'vi'
+                ? 'Chọn hình ảnh'
+                : 'Select Image'}
+            </button>
           </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {locale === 'vi' ? 'Tải lên hình ảnh' : 'Upload Image'}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageSelect}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
         </div>
-      </div>
+      )}
 
       {/* Settings */}
       <div className="bg-white shadow rounded-lg p-6">
@@ -354,6 +380,14 @@ export default function CategoryForm({ locale, category, isEdit = false }: Categ
             : 'Save Category'}
         </button>
       </div>
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        onSelectImage={handleImageSelect}
+        locale={locale}
+      />
     </form>
   );
 }

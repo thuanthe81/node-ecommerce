@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Content, CreateContentData, getContentTypes } from '@/lib/content-api';
-import { productApi, Product } from '@/lib/product-api';
+import ImagePickerModal from './ImagePickerModal';
 
 interface ContentFormProps {
   content?: Content;
@@ -32,40 +32,12 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
   const [previewMode, setPreviewMode] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showImagePicker, setShowImagePicker] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadContentTypes();
   }, []);
 
-  useEffect(() => {
-    if (showImagePicker) {
-      loadProducts();
-    }
-  }, [showImagePicker]);
-
-  const loadProducts = async (search?: string) => {
-    try {
-      setLoadingProducts(true);
-      const response = await productApi.getProducts({
-        limit: 100,
-        search: search || undefined
-      });
-      setProducts(response.data);
-    } catch (err) {
-      console.error('Failed to load products:', err);
-    } finally {
-      setLoadingProducts(false);
-    }
-  };
-
-  const handleSearchProducts = () => {
-    loadProducts(searchQuery);
-  };
-
-  const handleSelectProduct = (imageUrl: string) => {
+  const handleSelectImage = (imageUrl: string) => {
     setFormData((prev) => ({ ...prev, imageUrl }));
     // Clear validation error for imageUrl
     if (validationErrors.imageUrl) {
@@ -76,7 +48,6 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
       });
     }
     setShowImagePicker(false);
-    setSearchQuery('');
   };
 
   useEffect(() => {
@@ -562,129 +533,13 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         </button>
       </div>
 
-      {/* Product Image Picker Modal */}
-      {showImagePicker && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Select Product Image
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowImagePicker(false);
-                    setSearchQuery('');
-                  }}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Search Bar */}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSearchProducts();
-                      }
-                    }}
-                    placeholder="Search products by name or SKU..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery('');
-                        loadProducts();
-                      }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSearchProducts}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Search
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              {loadingProducts ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading products...</p>
-                  </div>
-                </div>
-              ) : products.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">
-                    {searchQuery ? 'No products found matching your search' : 'No products available'}
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {products.flatMap((product) =>
-                    product.images.map((image) => (
-                      <button
-                        key={image.id}
-                        type="button"
-                        onClick={() => handleSelectProduct(image.url)}
-                        className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all"
-                      >
-                        <img
-                          src={image.url}
-                          alt={image.altTextEn || product.nameEn}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-gray-600">
-                  {products.reduce((total, product) => total + product.images.length, 0)}{' '}
-                  {products.reduce((total, product) => total + product.images.length, 0) === 1 ? 'image' : 'images'} available
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowImagePicker(false);
-                    setSearchQuery('');
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-white transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={showImagePicker}
+        onClose={() => setShowImagePicker(false)}
+        onSelectImage={handleSelectImage}
+        locale={t('locale')}
+      />
     </form>
   );
 }
