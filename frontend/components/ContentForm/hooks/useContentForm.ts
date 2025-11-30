@@ -46,6 +46,7 @@ export function useContentForm(
     linkUrl: '',
     buttonTextEn: '',
     buttonTextVi: '',
+    layout: 'centered',
     displayOrder: 0,
     isPublished: false,
   });
@@ -76,6 +77,7 @@ export function useContentForm(
         linkUrl: initialContent.linkUrl || '',
         buttonTextEn: initialContent.buttonTextEn || '',
         buttonTextVi: initialContent.buttonTextVi || '',
+        layout: initialContent.layout || 'centered',
         displayOrder: initialContent.displayOrder,
         isPublished: initialContent.isPublished,
       });
@@ -172,14 +174,24 @@ export function useContentForm(
   /**
    * Handles image selection from the image picker
    */
-  const handleImageSelect = (imageUrl: string) => {
-    setFormData((prev) => ({ ...prev, imageUrl }));
+  const handleImageSelect = (imageUrl: string, productSlug?: string) => {
+    setFormData((prev) => {
+      const updates: Partial<ContentFormData> = { imageUrl };
 
-    // Clear validation error for imageUrl
-    if (validationErrors.imageUrl) {
+      // For HOMEPAGE_SECTION, also set linkUrl to product page
+      if (prev.type === 'HOMEPAGE_SECTION' && productSlug) {
+        updates.linkUrl = `/products/${productSlug}`;
+      }
+
+      return { ...prev, ...updates };
+    });
+
+    // Clear validation errors for imageUrl and linkUrl
+    if (validationErrors.imageUrl || validationErrors.linkUrl) {
       setValidationErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.imageUrl;
+        delete newErrors.linkUrl;
         return newErrors;
       });
     }
@@ -209,12 +221,17 @@ export function useContentForm(
     try {
       // Prepare submission data - exclude fields based on content type
       const submissionData: CreateContentData = { ...formData };
-      if (formData.type !== 'BANNER') {
+
+      // linkUrl is used by both BANNER and HOMEPAGE_SECTION
+      if (formData.type !== 'BANNER' && formData.type !== 'HOMEPAGE_SECTION') {
         delete submissionData.linkUrl;
       }
+
+      // buttonText and layout are only for HOMEPAGE_SECTION
       if (formData.type !== 'HOMEPAGE_SECTION') {
         delete submissionData.buttonTextEn;
         delete submissionData.buttonTextVi;
+        delete submissionData.layout;
       }
 
       await onSubmit(submissionData);

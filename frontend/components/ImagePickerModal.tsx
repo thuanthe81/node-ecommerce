@@ -8,7 +8,7 @@ import { SvgClose } from './Svgs';
 interface ImagePickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectImage: (imageUrl: string) => void;
+  onSelectImage: (imageUrl: string, product?: Product) => void;
   locale: string;
 }
 
@@ -47,8 +47,8 @@ export default function ImagePickerModal({
     loadProducts(searchQuery);
   };
 
-  const handleSelectImage = (imageUrl: string) => {
-    onSelectImage(imageUrl);
+  const handleSelectImage = (imageUrl: string, product: Product) => {
+    onSelectImage(imageUrl, product);
     setSearchQuery('');
   };
 
@@ -151,7 +151,7 @@ export default function ImagePickerModal({
                   <button
                     key={image.id}
                     type="button"
-                    onClick={() => handleSelectImage(image.url)}
+                    onClick={() => handleSelectImage(image.url, product)}
                     className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all group"
                   >
                     <img

@@ -10,6 +10,7 @@ import { LanguageTabs } from './components/LanguageTabs';
 import { ContentFields } from './components/ContentFields';
 import { MediaSection } from './components/MediaSection';
 import { ButtonTextSection } from './components/ButtonTextSection';
+import { LayoutSection } from './components/LayoutSection';
 
 /**
  * Form component for creating and editing content
@@ -47,8 +48,8 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
     getTypeLabel,
   } = useContentForm(content, onSubmit);
 
-  const handleImagePickerSelect = (imageUrl: string) => {
-    handleImageSelect(imageUrl);
+  const handleImagePickerSelect = (imageUrl: string, product?: any) => {
+    handleImageSelect(imageUrl, product?.slug);
     setShowImagePicker(false);
   };
 
@@ -124,6 +125,13 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         showImagePicker={showImagePicker}
         onChange={handleChange}
         onToggleImagePicker={() => setShowImagePicker(!showImagePicker)}
+      />
+
+      <LayoutSection
+        contentType={formData.type}
+        layout={formData.layout}
+        validationErrors={validationErrors}
+        onChange={handleChange}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

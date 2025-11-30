@@ -26,6 +26,7 @@ export interface ContentFormData {
   linkUrl: string;
   buttonTextEn: string;
   buttonTextVi: string;
+  layout: 'centered' | 'image-left' | 'image-right';
   displayOrder: number;
   isPublished: boolean;
 }

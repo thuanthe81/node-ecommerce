@@ -446,6 +446,10 @@
       "en": "https://example.com/sale",
       "vi": "https://example.com/sale"
     },
+    "linkUrlHintHomepage": {
+      "en": "Auto-filled when selecting a product image",
+      "vi": "Tự động điền khi chọn hình ảnh sản phẩm"
+    },
     "buttonTextEnglish": {
       "en": "Button Label (English)",
       "vi": "Nhãn nút nhấn (Tiếng Anh)"
@@ -461,6 +465,26 @@
     "buttonTextHint": {
       "en": "Text displayed on the call-to-action button",
       "vi": "Văn bản hiển thị trên nút kêu gọi hành động"
+    },
+    "layout": {
+      "en": "Layout",
+      "vi": "Bố cục"
+    },
+    "layoutCentered": {
+      "en": "Centered",
+      "vi": "Căn giữa"
+    },
+    "layoutImageLeft": {
+      "en": "Image Left",
+      "vi": "Hình ảnh bên trái"
+    },
+    "layoutImageRight": {
+      "en": "Image Right",
+      "vi": "Hình ảnh bên phải"
+    },
+    "layoutHint": {
+      "en": "Choose how content and image are arranged",
+      "vi": "Chọn cách sắp xếp nội dung và hình ảnh"
     },
     "loadingContent": {
       "en": "Loading content...",
