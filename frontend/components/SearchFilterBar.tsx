@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { categoryApi } from '@/lib/category-api';
 import { SvgSearch } from './Svgs';
@@ -21,6 +21,7 @@ interface SearchFilterBarProps {
 export default function SearchFilterBar({ className = '' }: SearchFilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('common');
 
@@ -94,7 +95,7 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
     }
   }, [searchParams, categories]);
 
-  // Debounced search handler - skip on initial mount
+  // Auto-update URL only when category changes
   useEffect(() => {
     // Skip URL update on initial mount (hydration already handled)
     if (isInitialMount.current) {
@@ -102,35 +103,37 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
       return;
     }
 
-    const debounce = setTimeout(() => {
-      updateURL();
-    }, 300);
-
-    return () => clearTimeout(debounce);
+    // Only auto-update when category changes, not search query
+    updateURL();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedCategoryId]);
+  }, [selectedCategoryId]);
 
   const updateURL = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
 
-    // Remove page when filters change
-    params.delete('page');
+    // Remove page when filters change (don't include it)
 
     // Update search parameter
     if (searchQuery.trim()) {
       params.set('search', searchQuery.trim());
-    } else {
-      params.delete('search');
     }
 
     // Update category parameter
     if (selectedCategoryId) {
       params.set('categoryId', selectedCategoryId);
-    } else {
-      params.delete('categoryId');
     }
+    const searchParamsStr = params.toString();
+    // Check if we're already on the products page
+    const isOnProductsPage = pathname.includes('/products');
 
-    router.push(`?${params.toString()}`);
+    let targetUrl = `?${searchParamsStr}`;
+
+    if (searchParamsStr.length > 0 && !isOnProductsPage) {
+      // Navigate to products page with search params
+      targetUrl = `/${locale}/products?${searchParamsStr}`;
+
+    }
+    router.push(targetUrl);
 
     // Announce filter changes to screen readers
     announceFilterChange();
@@ -165,7 +168,13 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
       if (searchQuery) {
         setSearchQuery('');
       }
+    } else if (e.key === 'Enter') {
+      updateURL();
     }
+  };
+
+  const handleSearchClick = () => {
+    updateURL();
   };
 
   return (
@@ -181,7 +190,7 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
 
       <div className="flex flex-col sm:flex-row items-stretch">
         {/* Category Dropdown */}
-        <div className="sm:w-64 min-h-[44px] mb-3 sm:mb-0">
+        <div className="w-46 min-h-[44px] mb-3 sm:mb-0">
           <label htmlFor="category-filter-select" className="sr-only">
             {t('category')}
           </label>
@@ -223,9 +232,14 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
           <span id="search-hint" className="sr-only">
             {t('searchProductsHint')}
           </span>
-          <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <button
+            type="button"
+            onClick={handleSearchClick}
+            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label={t('search')}
+          >
             <SvgSearch className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
-          </div>
+          </button>
         </div>
       </div>
     </div>

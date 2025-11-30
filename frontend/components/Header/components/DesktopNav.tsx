@@ -28,7 +28,7 @@ export function DesktopNav({ locale, user, isActiveLink, getLinkClasses }: Deskt
   const t = useTranslations();
 
   return (
-    <nav className="hidden lg:flex items-stretch flex-1 ml-8" aria-label={t('nav.main') || 'Main navigation'}>
+    <nav className="hidden lg:flex items-stretch" aria-label={t('nav.main') || 'Main navigation'}>
       {user?.role === 'ADMIN' && (
         <Link
           href={`/${locale}/admin`}

@@ -10,6 +10,7 @@ import { DesktopNav } from './components/DesktopNav';
 import { MobileNav } from './components/MobileNav';
 import { UserActions } from './components/UserActions';
 import { HeaderProps } from './types';
+import SearchFilterBar from '@/components/SearchFilterBar';
 
 /**
  * Header component
@@ -73,9 +74,10 @@ export default function Header(props: HeaderProps = {}) {
             />
 
             {/* Search Bar - Desktop */}
-            {/* <div className="hidden lg:flex flex-1 max-w-md mx-8" role="search"> */}
-              {/* <SearchBar /> */}
-            {/* </div> */}
+             <div className="hidden lg:flex max-w-md self-center" role="search">
+               <SearchFilterBar />
+             </div>
+            {/*<SearchFilterBar />*/}
 
             {/* Right Side Navigation - Desktop */}
             <UserActions

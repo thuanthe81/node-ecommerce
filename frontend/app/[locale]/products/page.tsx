@@ -28,19 +28,13 @@ export default function ProductsPage() {
   const t = useTranslations();
 
   return (
-    <div className="relative container mx-auto px-4 py-8">
-      {/* Integrated Search and Filter Bar */}
-      <div className="absolute z-10 flex items-center space-x-32 w-[calc(100%-2em)]">
-        <h1 className="text-3xl font-bold">{t('common.products')}</h1>
-        <SearchFilterBar className="flex-1"/>
-      </div>
-
-      {/* Full-width Products Grid */}
-      <main className="mt-16">
+      <main className="container py-4">
         <Suspense fallback={<ProductGridSkeleton count={12} />}>
           <ProductsContent />
         </Suspense>
       </main>
-    </div>
+    // <div className="relative container mx-auto px-4 py-8">
+    //   {/* Full-width Products Grid */}
+    // </div>
   );
 }
