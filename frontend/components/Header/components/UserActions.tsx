@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import MiniCart from '@/components/MiniCart';
+import { SvgUser, SvgLogout } from '@/components/Svgs';
 import { UserActionsProps } from '../types';
 
 /**
@@ -32,7 +33,7 @@ export function UserActions({ isAuthenticated, user, locale, onLogout, getLinkCl
   const t = useTranslations();
 
   return (
-    <div className="hidden lg:flex items-center space-x-4 relative">
+    <div className="hidden lg:flex items-center space-x-2 relative">
       <LocaleSwitcher />
 
       <MiniCart />
@@ -44,14 +45,14 @@ export function UserActions({ isAuthenticated, user, locale, onLogout, getLinkCl
             className={getLinkClasses(`/${locale}/account`, 'flex items-center')}
             aria-label={t('nav.account') || 'Account'}
           >
-            {t('nav.account')}
+            <SvgUser className="w-6 h-6" />
           </Link>
           <button
             onClick={onLogout}
-            className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation"
+            className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation flex items-center"
             aria-label={t('auth.logout') || 'Logout'}
           >
-            {t('auth.logout')}
+            <SvgLogout className="w-6 h-6" />
           </button>
         </>
       ) : (

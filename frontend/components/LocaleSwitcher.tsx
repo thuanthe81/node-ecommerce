@@ -47,14 +47,14 @@ export default function LocaleSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors touch-manipulation rounded-md hover:bg-gray-100"
+        className="flex items-center gap-1 p-2 text-gray-700 hover:text-blue-600 transition-colors touch-manipulation rounded-md hover:bg-gray-100"
         aria-label="Select language"
         aria-expanded={isOpen}
         aria-haspopup="true"
         style={{ minHeight: '44px' }}
       >
-        <SvgLanguage className="w-5 h-5" aria-hidden="true" />
-        <span className="text-sm font-medium">{localeNames[locale]}</span>
+        {/*<SvgLanguage className="w-5 h-5" aria-hidden="true" />*/}
+        <span className="text-sm font-medium uppercase">{locale}</span>
         <SvgChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
 
