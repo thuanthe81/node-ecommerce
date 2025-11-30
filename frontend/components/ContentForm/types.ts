@@ -24,6 +24,8 @@ export interface ContentFormData {
   contentVi: string;
   imageUrl: string;
   linkUrl: string;
+  buttonTextEn: string;
+  buttonTextVi: string;
   displayOrder: number;
   isPublished: boolean;
 }

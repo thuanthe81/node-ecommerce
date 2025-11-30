@@ -9,6 +9,7 @@ import { ContentTypeSelector } from './components/ContentTypeSelector';
 import { LanguageTabs } from './components/LanguageTabs';
 import { ContentFields } from './components/ContentFields';
 import { MediaSection } from './components/MediaSection';
+import { ButtonTextSection } from './components/ButtonTextSection';
 
 /**
  * Form component for creating and editing content
@@ -104,6 +105,15 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         onPreviewToggle={() => setPreviewMode(!previewMode)}
         onTitleChange={handleTitleChange}
         onContentChange={handleChange as any}
+      />
+
+      <ButtonTextSection
+        contentType={formData.type}
+        activeTab={activeTab}
+        buttonTextEn={formData.buttonTextEn}
+        buttonTextVi={formData.buttonTextVi}
+        validationErrors={validationErrors}
+        onChange={handleChange}
       />
 
       <MediaSection

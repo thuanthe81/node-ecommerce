@@ -446,6 +446,22 @@
       "en": "https://example.com/sale",
       "vi": "https://example.com/sale"
     },
+    "buttonTextEnglish": {
+      "en": "Button Label (English)",
+      "vi": "Nhãn nút nhấn (Tiếng Anh)"
+    },
+    "buttonTextVietnamese": {
+      "en": "Button Text (Vietnamese)",
+      "vi": "Nhãn nút nhấn (Tiếng Việt)"
+    },
+    "buttonTextPlaceholder": {
+      "en": "Learn More",
+      "vi": "Tìm hiểu thêm"
+    },
+    "buttonTextHint": {
+      "en": "Text displayed on the call-to-action button",
+      "vi": "Văn bản hiển thị trên nút kêu gọi hành động"
+    },
     "loadingContent": {
       "en": "Loading content...",
       "vi": "Đang tải nội dung..."
@@ -1447,8 +1463,8 @@
   },
   "homepageSections": {
     "buttonText": {
-      "en": "Button Text",
-      "vi": "Văn bản nút"
+      "en": "Button Label",
+      "vi": "Nhãn nút nhấn"
     },
     "buttonUrl": {
       "en": "Button URL",

@@ -44,6 +44,8 @@ export function useContentForm(
     contentVi: '',
     imageUrl: '',
     linkUrl: '',
+    buttonTextEn: '',
+    buttonTextVi: '',
     displayOrder: 0,
     isPublished: false,
   });
@@ -72,6 +74,8 @@ export function useContentForm(
         contentVi: initialContent.contentVi,
         imageUrl: initialContent.imageUrl || '',
         linkUrl: initialContent.linkUrl || '',
+        buttonTextEn: initialContent.buttonTextEn || '',
+        buttonTextVi: initialContent.buttonTextVi || '',
         displayOrder: initialContent.displayOrder,
         isPublished: initialContent.isPublished,
       });
@@ -203,7 +207,17 @@ export function useContentForm(
     setLoading(true);
 
     try {
-      await onSubmit(formData);
+      // Prepare submission data - exclude fields based on content type
+      const submissionData: CreateContentData = { ...formData };
+      if (formData.type !== 'BANNER') {
+        delete submissionData.linkUrl;
+      }
+      if (formData.type !== 'HOMEPAGE_SECTION') {
+        delete submissionData.buttonTextEn;
+        delete submissionData.buttonTextVi;
+      }
+
+      await onSubmit(submissionData);
     } catch (err: any) {
       setError(err.message || 'Failed to save content');
     } finally {
