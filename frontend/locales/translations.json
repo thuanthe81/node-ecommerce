@@ -1129,12 +1129,52 @@
       "vi": "Thêm vào giỏ"
     },
     "allCategories": {
-      "en": "All categories",
+      "en": "All Categories",
       "vi": "Tất cả danh mục"
     },
-    "applyFilters": {
-      "en": "Apply Filters",
-      "vi": "Áp dụng bộ lọc"
+    "categoryFilterHint": {
+      "en": "Select a category to filter products. Press Escape to clear selection.",
+      "vi": "Chọn danh mục để lọc sản phẩm. Nhấn Escape để xóa lựa chọn."
+    },
+    "clearFilters": {
+      "en": "Clear Filters",
+      "vi": "Xóa bộ lọc"
+    },
+    "errorLoadingCategories": {
+      "en": "Unable to load categories. Please try again later.",
+      "vi": "Không thể tải danh mục. Vui lòng thử lại sau."
+    },
+    "filteringByCategory": {
+      "en": "Filtering products by category \"{category}\"",
+      "vi": "Đang lọc sản phẩm theo danh mục \"{category}\""
+    },
+    "filteringBySearchAndCategory": {
+      "en": "Filtering products by search \"{search}\" and category \"{category}\"",
+      "vi": "Đang lọc sản phẩm theo từ khóa \"{search}\" và danh mục \"{category}\""
+    },
+    "searchProducts": {
+      "en": "Search products",
+      "vi": "Tìm kiếm sản phẩm"
+    },
+    "searchProductsPlaceholder": {
+      "en": "Search products...",
+      "vi": "Tìm kiếm sản phẩm..."
+    },
+    "searchProductsHint": {
+      "en": "Enter keywords to search for products. Press Escape to clear search.",
+      "vi": "Nhập từ khóa để tìm kiếm sản phẩm. Nhấn Escape để xóa tìm kiếm."
+    },
+    "searchingProducts": {
+      "en": "Searching products for \"{search}\"",
+      "vi": "Đang tìm kiếm sản phẩm với từ khóa \"{search}\""
+    },
+    "showingAllProducts": {
+      "en": "Showing all products",
+      "vi": "Hiển thị tất cả sản phẩm"
+    },
+    "unavailable": {
+      "en": "Unavailable",
+      "vi": "Không khả dụng"
     },
     "back": {
       "en": "Back",
@@ -1160,9 +1200,9 @@
       "en": "Clear All",
       "vi": "Xóa tất cả"
     },
-    "clearAllFilters": {
-      "en": "Clear all filters",
-      "vi": "Xóa tất cả bộ lọc"
+    "clearFilters": {
+      "en": "Clear Filters",
+      "vi": "Xóa bộ lọc"
     },
     "close": {
       "en": "Close",
@@ -1199,14 +1239,6 @@
     "faq": {
       "en": "FAQ",
       "vi": "Câu hỏi thường gặp"
-    },
-    "filterAndSorting": {
-      "en": "Filter and Sorting",
-      "vi": "Bộ lọc và sắp xếp"
-    },
-    "filters": {
-      "en": "Filters",
-      "vi": "Bộ lọc"
     },
     "home": {
       "en": "Home",
@@ -1319,10 +1351,6 @@
     "productDesc": {
       "en": "Product description",
       "vi": "Mô tả sản phẩm"
-    },
-    "productFilters": {
-      "en": "Product filters",
-      "vi": "Bộ lọc sản phẩm"
     },
     "products": {
       "en": "Products",
