@@ -2384,5 +2384,13 @@
       "en": "Valid",
       "vi": "Hợp lệ"
     }
+  },
+  "products": {
+    "gallery": {
+      "imageAnnouncement": {
+        "en": "Image {current} of {total}",
+        "vi": "Hình {current} trong số {total}"
+      }
+    }
   }
 }

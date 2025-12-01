@@ -29,11 +29,11 @@ export default function ProductImageGallery({
   // Configuration validation with fallback to defaults
   const validatePositiveNumber = (value: number | undefined, defaultValue: number): number => {
     if (typeof value !== 'number' || value <= 0 || !isFinite(value)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(
-          `Invalid configuration value: ${value}. Falling back to default: ${defaultValue}`
-        );
-      }
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.warn(
+      //     `Invalid configuration value: ${value}. Falling back to default: ${defaultValue}`
+      //   );
+      // }
       return defaultValue;
     }
     return value;
@@ -226,8 +226,6 @@ export default function ProductImageGallery({
     // After animation completes, update the index
     animationTimerRef.current = setTimeout(() => {
       setCurrentIndex(prevIndex);
-      setImageLoading(true);
-      setImageError(false);
       setIsAnimating(false);
       setAnimationDirection(null);
     }, transitionDuration);
@@ -272,8 +270,6 @@ export default function ProductImageGallery({
     // After animation completes, update the index
     animationTimerRef.current = setTimeout(() => {
       setCurrentIndex(nextIndex);
-      setImageLoading(true);
-      setImageError(false);
       setIsAnimating(false);
       setAnimationDirection(null);
     }, transitionDuration);
@@ -364,8 +360,6 @@ export default function ProductImageGallery({
         // After animation completes, update the index
         animationTimerRef.current = setTimeout(() => {
           setCurrentIndex(nextIndex);
-          setImageLoading(true);
-          setImageError(false);
           setIsAnimating(false);
           setAnimationDirection(null);
         }, transitionDuration);
@@ -499,37 +493,26 @@ export default function ProductImageGallery({
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
-              {imageLoading && !imageError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                </div>
-              )}
-
-              {imageError ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                  <div className="text-center text-gray-500">
-                    <SvgAlertTriangle className="mx-auto h-12 w-12 mb-2" />
-                    <p>Failed to load image</p>
-                  </div>
-                </div>
-              ) : (
-                <Image
-                  src={currentImage!.url}
-                  alt={altText}
-                  fill
-                  className={`object-cover object-center transition-transform duration-200 ${
-                    isZoomed ? 'scale-150' : 'scale-100'
-                  }`}
-                  style={{opacity: 1}}
-                  priority={currentIndex === 0}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  onLoad={() => setImageLoading(false)}
-                  onError={() => {
-                    setImageLoading(false);
-                    setImageError(true);
-                  }}
-                />
-              )}
+              <Image
+                src={currentImage!.url}
+                alt={altText}
+                fill
+                className={`object-cover object-center transition-transform duration-200 ${
+                  isZoomed ? 'scale-150' : 'scale-100'
+                }`}
+                style={{opacity: 1}}
+                priority={currentIndex === 0}
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                onLoad={() => {
+                  setLoadedImages((prev) => new Set(prev).add(currentImage!.url));
+                  setImageLoading(false);
+                }}
+                onError={() => {
+                  setFailedImages((prev) => new Set(prev).add(currentImage!.url));
+                  setImageLoading(false);
+                  setImageError(true);
+                }}
+              />
             </div>
 
             {/* Next image (for next animation) */}
