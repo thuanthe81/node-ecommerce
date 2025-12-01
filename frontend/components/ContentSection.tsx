@@ -60,7 +60,8 @@ function SectionLeft({
               src={imageUrl}
               alt={imageAlt || title}
               fill
-              style={{ objectFit: 'cover', opacity: 1 }}
+              className='object-cover object-center'
+              style={{ opacity: 1 }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={priority}
               loading="eager"
@@ -111,7 +112,8 @@ function SectionRight({
               src={imageUrl}
               alt={imageAlt || title}
               fill
-              style={{ objectFit: 'cover', opacity: 1 }}
+              className='object-cover object-center'
+              style={{ opacity: 1 }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={priority}
               unoptimized

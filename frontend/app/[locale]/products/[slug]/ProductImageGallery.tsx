@@ -139,7 +139,7 @@ export default function ProductImageGallery({
               src={currentImage.url}
               alt={altText}
               fill
-              className={`object-contain transition-transform duration-200 ${
+              className={`object-cover object-center transition-transform duration-200 ${
                 isZoomed ? 'scale-150' : 'scale-100'
               }`}
               style={{opacity: 1}}
@@ -198,7 +198,7 @@ export default function ProductImageGallery({
                     : image.altTextEn || productName
                 }
                 fill
-                className="object-cover"
+                className="object-cover object-center"
                 style={{opacity: 1}}
                 sizes="(max-width: 1024px) 25vw, 12.5vw"
               />

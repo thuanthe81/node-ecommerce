@@ -2,36 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { getContents, deleteContent, getContentTypes, Content } from '@/lib/content-api';
+import { getContents, deleteContent, Content } from '@/lib/content-api';
 
 export default function ContentListContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations();
   const [contents, setContents] = useState<Content[]>([]);
-  const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>('all');
 
+  // Read type parameter from URL on mount
   useEffect(() => {
-    loadContentTypes();
-  }, []);
+    const typeParam = searchParams.get('type');
+    if (typeParam) {
+      setFilterType(typeParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     loadContents();
   }, [filterType]);
-
-  const loadContentTypes = async () => {
-    try {
-      const types = await getContentTypes();
-      setContentTypes(types);
-    } catch (err: any) {
-      console.error('Failed to load content types:', err);
-      // Don't set error state, just log it - we can still show contents
-    }
-  };
 
   const loadContents = async () => {
     try {
@@ -67,6 +61,22 @@ export default function ContentListContent() {
       .join(' ');
   };
 
+  const getPageTitle = () => {
+    if (filterType === 'all') {
+      return t('admin.allContent');
+    }
+
+    // Map content types to their translation keys
+    const typeTranslationMap: Record<string, string> = {
+      'PAGE': t('admin.pages'),
+      'FAQ': t('admin.faqs'),
+      'BANNER': t('admin.banners'),
+      'HOMEPAGE_SECTION': t('admin.homepageSections'),
+    };
+
+    return typeTranslationMap[filterType] || t('admin.contentManagement');
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -88,29 +98,13 @@ export default function ContentListContent() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('admin.contentManagement')}</h1>
+        <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
         <Link
           href="/admin/content/new"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           {t('admin.createNewContent')}
         </Link>
-      </div>
-
-      <div className="mb-4">
-        <label className="mr-2 font-medium">{t('admin.filterByType')}</label>
-        <select
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        >
-          <option value="all">{t('admin.allTypes')}</option>
-          {contentTypes.map((type) => (
-            <option key={type} value={type}>
-              {getTypeLabel(type)}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">

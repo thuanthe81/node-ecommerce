@@ -516,7 +516,7 @@ import Image from 'next/image';
   // This prevents re-downloading when focus changes
   priority={false}
   unoptimized={false}
-  className="object-cover"
+  className="object-cover object-center"
 />
 ```
 

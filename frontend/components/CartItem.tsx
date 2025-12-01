@@ -62,7 +62,7 @@ export default function CartItem({ item }: CartItemProps) {
           style={{ opacity: 1 }}
           priority={true}
           unoptimized
-          className="object-cover rounded"
+          className="object-cover object-center rounded"
         />
       </Link>
 

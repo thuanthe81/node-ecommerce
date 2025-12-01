@@ -174,7 +174,7 @@ export default function SearchBar() {
                         alt={altText}
                         fill
                         style={{ opacity: 1 }}
-                        className="object-cover rounded"
+                        className="object-cover object-center rounded"
                         sizes="48px"
                         unoptimized
                       />

@@ -113,7 +113,7 @@ export default function MiniCart() {
                           style={{ opacity: 1 }}
                           priority={true}
                           unoptimized
-                          className="object-cover rounded"
+                          className="object-cover object-center rounded"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium line-clamp-2">{productName}</p>

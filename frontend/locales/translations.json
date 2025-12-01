@@ -198,6 +198,10 @@
       "en": "Add product",
       "vi": "Thêm sản phẩm"
     },
+    "allContent": {
+      "en": "All Content",
+      "vi": "Tất cả nội dung"
+    },
     "allTypes": {
       "en": "All Types",
       "vi": "Tất cả loại"
@@ -413,6 +417,18 @@
     "homepageSections": {
       "en": "Homepage Sections",
       "vi": "Phần trang chủ"
+    },
+    "pages": {
+      "en": "Pages",
+      "vi": "Trang"
+    },
+    "faqs": {
+      "en": "FAQs",
+      "vi": "Câu hỏi thường gặp"
+    },
+    "banners": {
+      "en": "Banners",
+      "vi": "Banner"
     },
     "htmlPlaceholder": {
       "en": "You can use HTML tags for formatting",

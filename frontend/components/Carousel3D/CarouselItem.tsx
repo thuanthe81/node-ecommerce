@@ -47,12 +47,12 @@ const CarouselImage = memo(({
       src={imageUrl}
       alt={alt}
       fill
-      style={{ objectFit: 'cover' }}
+      style={{ opacity: 1 }}
       sizes={`(max-width: 768px) 150px, (max-width: 1024px) 180px, ${itemWidth}px`}
-      className="transition-transform duration-500 group-hover:scale-105"
+      className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
       onError={onError}
       onLoad={onLoad}
-      loading="eager"
+      loading="lazy"
     />
   );
 }, (prevProps, nextProps) => {

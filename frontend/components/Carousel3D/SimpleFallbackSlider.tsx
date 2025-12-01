@@ -28,9 +28,9 @@ const SliderImage = memo(({
       src={imageUrl}
       alt={alt}
       fill
-      style={{ opacity: 1, objectFit: 'cover' }}
+      style={{ opacity: 1 }}
       sizes="(max-width: 768px) 100vw, 400px"
-      className="object-cover transition-transform duration-500"
+      className="object-cover object-center transition-transform duration-500"
       onError={onError}
       priority={false}
     />
@@ -251,15 +251,6 @@ export default function SimpleFallbackSlider({
                       alt={item.alt}
                       onError={itemErrorHandlers[item.id]}
                     />
-                    {item.title && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6 transition-all duration-300 group-hover:from-black/90">
-                        <h3 className="text-white text-lg font-semibold">
-                          {item.title}
-                        </h3>
-                      </div>
-                    )}
-                    {/* Hover effect border */}
-                    <div className="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-white/20 dark:group-hover:border-white/10 transition-all duration-300 pointer-events-none" />
                   </>
                 )}
               </div>
@@ -328,30 +319,6 @@ export default function SimpleFallbackSlider({
             </>
           )}
         </div>
-
-        {/* Indicators */}
-        {/*{items.length > 1 && (*/}
-        {/*  <div className="flex justify-center gap-2.5 mt-6 bg-black/30 dark:bg-black/50 backdrop-blur-md rounded-full px-5 py-3 shadow-lg border border-white/10 w-fit mx-auto">*/}
-        {/*    {items.map((item, index) => (*/}
-        {/*      <button*/}
-        {/*        key={item.id}*/}
-        {/*        onClick={() => setCurrentIndex(index)}*/}
-        {/*        className={`rounded-full transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-black/30 ${*/}
-        {/*          index === currentIndex*/}
-        {/*            ? 'w-10 h-3 bg-white dark:bg-blue-400 shadow-md shadow-white/50'*/}
-        {/*            : 'w-3 h-3 bg-white/60 dark:bg-white/50 hover:bg-white/90 dark:hover:bg-white/80'*/}
-        {/*        }`}*/}
-        {/*        aria-label={`Go to item ${index + 1}`}*/}
-        {/*        aria-current={index === currentIndex ? 'true' : 'false'}*/}
-        {/*      />*/}
-        {/*    ))}*/}
-        {/*  </div>*/}
-        {/*)}*/}
-
-        {/* Item counter */}
-        {/*<div className="text-center mt-4 text-sm font-medium text-gray-600 dark:text-gray-400">*/}
-        {/*  {currentIndex + 1} / {items.length}*/}
-        {/*</div>*/}
       </div>
     </div>
   );
