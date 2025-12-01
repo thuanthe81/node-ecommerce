@@ -145,7 +145,7 @@ export default function ProductImageGallery({
               style={{opacity: 1}}
               priority={currentIndex === 0}
               sizes="(max-width: 1024px) 100vw, 50vw"
-              onLoadingComplete={() => setImageLoading(false)}
+              onLoad={() => setImageLoading(false)}
               onError={() => {
                 setImageLoading(false);
                 setImageError(true);
