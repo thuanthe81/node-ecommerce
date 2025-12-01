@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import ImagePickerModal from '../ImagePickerModal';
 import { ContentFormProps } from './types';
 import { useContentForm } from './hooks/useContentForm';
@@ -27,8 +27,14 @@ import { LayoutSection } from './components/LayoutSection';
  * />
  * ```
  */
-export default function ContentForm({ content, onSubmit, onCancel }: ContentFormProps) {
+export default function ContentForm({
+  content,
+  onSubmit,
+  onCancel,
+  defaultType,
+}: ContentFormProps) {
   const t = useTranslations();
+  const locale = useLocale();
   const [showImagePicker, setShowImagePicker] = useState(false);
 
   const {
@@ -46,7 +52,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
     handleImageSelect,
     handleSubmit,
     getTypeLabel,
-  } = useContentForm(content, onSubmit);
+  } = useContentForm(content, onSubmit, defaultType);
 
   const handleImagePickerSelect = (imageUrl: string, product?: any) => {
     handleImageSelect(imageUrl, product?.slug);
@@ -62,14 +68,16 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ContentTypeSelector
-          value={formData.type}
-          types={contentTypes}
-          onChange={handleChange}
-          getTypeLabel={getTypeLabel}
-        />
+        {!defaultType && (
+          <ContentTypeSelector
+            value={formData.type}
+            types={contentTypes}
+            onChange={handleChange}
+            getTypeLabel={getTypeLabel}
+          />
+        )}
 
-        <div>
+        <div className={defaultType ? 'md:col-span-2' : ''}>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('admin.slug')} {t('admin.required')}
           </label>
@@ -190,7 +198,7 @@ export default function ContentForm({ content, onSubmit, onCancel }: ContentForm
         isOpen={showImagePicker}
         onClose={() => setShowImagePicker(false)}
         onSelectImage={handleImagePickerSelect}
-        locale={t('locale')}
+        locale={locale}
       />
     </form>
   );

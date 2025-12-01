@@ -1,23 +1,18 @@
 'use client';
 
-import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
-import NewContentContent from './NewContentContent';
+import NewContentContent from '../../new/NewContentContent';
 
-export default function NewContentPage() {
+export default function CreateBannerPage() {
   const params = useParams();
   const locale = params.locale as string;
-  const t = useTranslations();
 
   return (
     <AdminProtectedRoute locale={locale}>
       <AdminLayout>
-        <Suspense fallback={<div>{t('common.loading')}</div>}>
-          <NewContentContent />
-        </Suspense>
+        <NewContentContent defaultType="BANNER" />
       </AdminLayout>
     </AdminProtectedRoute>
   );

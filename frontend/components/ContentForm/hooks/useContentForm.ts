@@ -31,13 +31,14 @@ import { validateSlug, validateUrl, validateContentForm } from '../utils/validat
  */
 export function useContentForm(
   initialContent?: Content,
-  onSubmit?: (data: CreateContentData) => Promise<void>
+  onSubmit?: (data: CreateContentData) => Promise<void>,
+  defaultType?: string
 ) {
   const t = useTranslations();
 
   const [formData, setFormData] = useState<ContentFormData>({
     slug: '',
-    type: 'PAGE',
+    type: (defaultType as any) || 'PAGE',
     titleEn: '',
     titleVi: '',
     contentEn: '',

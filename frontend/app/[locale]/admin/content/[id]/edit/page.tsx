@@ -1,13 +1,24 @@
+'use client';
+
 import { Suspense } from 'react';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import AdminProtectedRoute from '@/components/AdminProtectedRoute';
+import AdminLayout from '@/components/AdminLayout';
 import EditContentContent from './EditContentContent';
 
 export default function EditContentPage() {
+  const params = useParams();
+  const locale = params.locale as string;
   const t = useTranslations();
 
   return (
-    <Suspense fallback={<div>{t('common.loading')}</div>}>
-      <EditContentContent />
-    </Suspense>
+    <AdminProtectedRoute locale={locale}>
+      <AdminLayout>
+        <Suspense fallback={<div>{t('common.loading')}</div>}>
+          <EditContentContent />
+        </Suspense>
+      </AdminLayout>
+    </AdminProtectedRoute>
   );
 }

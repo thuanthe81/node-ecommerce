@@ -10,6 +10,8 @@ export interface ContentFormProps {
   onSubmit: (data: CreateContentData) => Promise<void>;
   /** Callback function to handle form cancellation */
   onCancel: () => void;
+  /** Default content type (hides type selector when provided) */
+  defaultType?: string;
 }
 
 /**

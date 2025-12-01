@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
-import NewContentContent from './NewContentContent';
+import EditContentContent from '../../../[id]/edit/EditContentContent';
 
-export default function NewContentPage() {
+export default function EditPagePage() {
   const params = useParams();
   const locale = params.locale as string;
   const t = useTranslations();
@@ -16,7 +16,7 @@ export default function NewContentPage() {
     <AdminProtectedRoute locale={locale}>
       <AdminLayout>
         <Suspense fallback={<div>{t('common.loading')}</div>}>
-          <NewContentContent />
+          <EditContentContent contentType="PAGE" />
         </Suspense>
       </AdminLayout>
     </AdminProtectedRoute>

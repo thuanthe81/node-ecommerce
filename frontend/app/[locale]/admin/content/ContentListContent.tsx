@@ -2,36 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { getContents, deleteContent, Content } from '@/lib/content-api';
 
-export default function ContentListContent() {
+interface ContentListContentProps {
+  contentType?: string;
+}
+
+export default function ContentListContent({ contentType }: ContentListContentProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations();
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<string>('all');
-
-  // Read type parameter from URL on mount
-  useEffect(() => {
-    const typeParam = searchParams.get('type');
-    if (typeParam) {
-      setFilterType(typeParam);
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     loadContents();
-  }, [filterType]);
+  }, [contentType]);
 
   const loadContents = async () => {
     try {
       setLoading(true);
-      const type = filterType === 'all' ? undefined : filterType;
-      const data = await getContents(type as any);
+      const data = await getContents(contentType as any);
       setContents(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load contents');
@@ -62,24 +55,52 @@ export default function ContentListContent() {
   };
 
   const getPageTitle = () => {
-    if (filterType === 'all') {
+    if (!contentType) {
       return t('admin.allContent');
     }
 
     // Map content types to their translation keys
     const typeTranslationMap: Record<string, string> = {
-      'PAGE': t('admin.pages'),
-      'FAQ': t('admin.faqs'),
-      'BANNER': t('admin.banners'),
-      'HOMEPAGE_SECTION': t('admin.homepageSections'),
+      PAGE: t('admin.pages'),
+      FAQ: t('admin.faqs'),
+      BANNER: t('admin.banners'),
+      HOMEPAGE_SECTION: t('admin.homepageSections'),
     };
 
-    return typeTranslationMap[filterType] || t('admin.contentManagement');
+    return typeTranslationMap[contentType] || t('admin.contentManagement');
+  };
+
+  const getCreateLink = () => {
+    if (!contentType) {
+      return '/admin/content/new';
+    }
+
+    // Map content types to their URL paths
+    const typePathMap: Record<string, string> = {
+      PAGE: '/admin/content/pages/create',
+      FAQ: '/admin/content/faqs/create',
+      BANNER: '/admin/content/banners/create',
+      HOMEPAGE_SECTION: '/admin/content/homepage-sections/create',
+    };
+
+    return typePathMap[contentType] || '/admin/content/new';
+  };
+
+  const getEditLink = (content: Content) => {
+    // Map content types to their URL paths
+    const typePathMap: Record<string, string> = {
+      PAGE: `/admin/content/pages/${content.id}/edit`,
+      FAQ: `/admin/content/faqs/${content.id}/edit`,
+      BANNER: `/admin/content/banners/${content.id}/edit`,
+      HOMEPAGE_SECTION: `/admin/content/homepage-sections/${content.id}/edit`,
+    };
+
+    return typePathMap[content.type] || `/admin/content/${content.id}/edit`;
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-lg">{t('admin.loadingContents')}</div>
       </div>
     );
@@ -87,20 +108,18 @@ export default function ContentListContent() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        {error}
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
         <Link
-          href="/admin/content/new"
+          href={getCreateLink()}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           {t('admin.createNewContent')}
@@ -171,7 +190,7 @@ export default function ContentListContent() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
-                      href={`/admin/content/${content.id}/edit`}
+                      href={getEditLink(content)}
                       className="text-blue-600 hover:text-blue-900 mr-4"
                     >
                       {t('admin.edit')}

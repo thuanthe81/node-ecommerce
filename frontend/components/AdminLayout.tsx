@@ -118,22 +118,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       subItems: [
         {
           name: t('pages'),
-          href: `${prefUri}/content?type=PAGE`,
+          href: `${prefUri}/content/pages`,
           type: 'PAGE',
         },
         {
           name: t('faqs'),
-          href: `${prefUri}/content?type=FAQ`,
+          href: `${prefUri}/content/faqs`,
           type: 'FAQ',
         },
         {
           name: t('banners'),
-          href: `${prefUri}/content?type=BANNER`,
+          href: `${prefUri}/content/banners`,
           type: 'BANNER',
         },
         {
           name: t('homepageSections'),
-          href: `${prefUri}/content?type=HOMEPAGE_SECTION`,
+          href: `${prefUri}/content/homepage-sections`,
           type: 'HOMEPAGE_SECTION',
         },
       ],
@@ -155,11 +155,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     navigation.forEach((item) => {
       if (item.subItems) {
         const matchesSubItem = item.subItems.some((subItem) => {
-          // Check if pathname and query match
-          const url = new URL(subItem.href, 'http://localhost');
-          const pathMatches = pathname === url.pathname;
-          const typeParam = url.searchParams.get('type');
-          return pathMatches && typeParam && pathname.includes('/content');
+          return pathname.startsWith(subItem.href);
         });
 
         if (matchesSubItem && !expandedMenus.has(item.name)) {
@@ -223,21 +219,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               const isExpanded = expandedMenus.has(item.name);
 
               // Check if current route matches this item or any of its sub-items
-              const matchesSubItem = hasSubItems && item.subItems!.some((subItem) => {
-                const url = new URL(subItem.href, 'http://localhost');
-                const pathMatches = pathname === url.pathname;
-                const typeParam = url.searchParams.get('type');
-                // Check if we're on the content page with the matching type parameter
-                if (pathMatches && typeParam) {
-                  const currentUrl = new URL(window.location.href);
-                  return currentUrl.searchParams.get('type') === typeParam;
-                }
-                return false;
-              });
+              const matchesSubItem =
+                hasSubItems &&
+                item.subItems!.some((subItem) => pathname.startsWith(subItem.href));
 
-              const isActive = pathname === item.href ||
-                              (pathname.startsWith(item.href + '/') && !hasSubItems) ||
-                              matchesSubItem;
+              const isActive =
+                pathname === item.href ||
+                (pathname.startsWith(item.href + '/') && !hasSubItems) ||
+                matchesSubItem;
 
               return (
                 <li key={item.href}>
@@ -283,12 +272,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       {isExpanded && (
                         <ul className="mt-1 space-y-1">
                           {item.subItems!.map((subItem) => {
-                            const url = new URL(subItem.href, 'http://localhost');
-                            const typeParam = url.searchParams.get('type');
-                            const currentUrl = typeof window !== 'undefined' ? new URL(window.location.href) : null;
-                            const isSubItemActive = currentUrl &&
-                                                   pathname === url.pathname &&
-                                                   currentUrl.searchParams.get('type') === typeParam;
+                            const isSubItemActive = pathname.startsWith(subItem.href);
 
                             return (
                               <li key={subItem.href}>

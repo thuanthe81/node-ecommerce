@@ -11,7 +11,11 @@ import {
   Content,
 } from '@/lib/content-api';
 
-export default function EditContentContent() {
+interface EditContentContentProps {
+  contentType?: string;
+}
+
+export default function EditContentContent({ contentType }: EditContentContentProps) {
   const router = useRouter();
   const params = useParams();
   const t = useTranslations();
@@ -37,18 +41,36 @@ export default function EditContentContent() {
     }
   };
 
+  const getListPath = () => {
+    // Use contentType from props if available, otherwise from loaded content
+    const type = contentType || content?.type;
+
+    if (!type) {
+      return '/admin/content';
+    }
+
+    const typePathMap: Record<string, string> = {
+      PAGE: '/admin/content/pages',
+      FAQ: '/admin/content/faqs',
+      BANNER: '/admin/content/banners',
+      HOMEPAGE_SECTION: '/admin/content/homepage-sections',
+    };
+
+    return typePathMap[type] || '/admin/content';
+  };
+
   const handleSubmit = async (data: CreateContentData) => {
     await updateContent(id, data);
-    router.push('/admin/content');
+    router.push(getListPath());
   };
 
   const handleCancel = () => {
-    router.push('/admin/content');
+    router.push(getListPath());
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-[400px]">
         <div className="text-lg">{t('admin.loadingContent')}</div>
       </div>
     );
@@ -56,22 +78,21 @@ export default function EditContentContent() {
 
   if (error || !content) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error || t('admin.contentNotFound')}
-        </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        {error || t('admin.contentNotFound')}
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">{t('admin.editContent')}</h1>
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold">{t('admin.editContent')}</h1>
       <div className="bg-white shadow-md rounded-lg p-6">
         <ContentForm
           content={content}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          defaultType={contentType}
         />
       </div>
     </div>
