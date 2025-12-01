@@ -28,7 +28,6 @@ export default function ProductImageGallery({
 }: ProductImageGalleryProps) {
   // Configuration validation with fallback to defaults
   const validatePositiveNumber = (value: number | undefined, defaultValue: number): number => {
-    if (value === undefined) return defaultValue;
     if (typeof value !== 'number' || value <= 0 || !isFinite(value)) {
       if (process.env.NODE_ENV === 'development') {
         console.warn(
@@ -42,8 +41,8 @@ export default function ProductImageGallery({
 
   // Validated configuration values
   const autoAdvance = autoAdvanceProp !== undefined ? autoAdvanceProp : true;
-  const autoAdvanceInterval = validatePositiveNumber(autoAdvanceIntervalProp, 5000);
-  const transitionDuration = validatePositiveNumber(transitionDurationProp, 1000);
+  const autoAdvanceInterval = validatePositiveNumber(autoAdvanceIntervalProp, 3000);
+  const transitionDuration = validatePositiveNumber(transitionDurationProp, 500);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -99,20 +98,13 @@ export default function ProductImageGallery({
     threshold: 0.5,
   });
 
-  // Handle empty images case with placeholder
-  if (!images || images.length === 0) {
-    return (
-      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-        <span className="text-gray-400">No image available</span>
-      </div>
-    );
-  }
-
-  const currentImage = images[currentIndex];
-  const altText =
-    locale === 'vi'
+  // These will be safely accessed after the empty check
+  const currentImage = images?.[currentIndex];
+  const altText = currentImage
+    ? locale === 'vi'
       ? currentImage.altTextVi || productName
-      : currentImage.altTextEn || productName;
+      : currentImage.altTextEn || productName
+    : productName;
 
   /**
    * Preload an image and return a promise that resolves when loaded or rejects on error
@@ -181,13 +173,18 @@ export default function ProductImageGallery({
     }, autoAdvanceInterval + transitionDuration);
   }, [autoAdvanceInterval, transitionDuration]);
 
+  const handleHovered = (hovered:boolean) => {
+    if (hovered) pauseAutoAdvance();
+    setIsHovered(hovered);
+  }
+
   // Navigation functions with animation support
   const goToPrevious = useCallback(async () => {
     // Prevent navigation during animation
     if (isAnimating) return;
 
     // Pause auto-advance when user manually navigates
-    pauseAutoAdvance();
+    // pauseAutoAdvance();
 
     const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
     const prevImageUrl = images[prevIndex].url;
@@ -209,9 +206,17 @@ export default function ProductImageGallery({
       console.warn('Failed to preload previous image:', error);
     }
 
-    setAnimationDirection('prev');
-    setIsAnimating(true);
     setIsZoomed(false);
+
+    // Step 1: Set direction without animating (positions track at -100%)
+    setAnimationDirection('prev');
+
+    // Step 2: Wait for next frame, then start animation
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    });
 
     // Clear any existing animation timer
     if (animationTimerRef.current) {
@@ -233,7 +238,7 @@ export default function ProductImageGallery({
     if (isAnimating) return;
 
     // Pause auto-advance when user manually navigates
-    pauseAutoAdvance();
+    // pauseAutoAdvance();
 
     const nextIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
     const nextImageUrl = images[nextIndex].url;
@@ -423,6 +428,15 @@ export default function ProductImageGallery({
     }
   }, [touchStart, touchEnd, goToNext, goToPrevious]);
 
+  // Handle empty images case with placeholder - must be after all hooks
+  if (!images || images.length === 0) {
+    return (
+      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+        <span className="text-gray-400">No image available</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4" ref={galleryRef}>
       {/* ARIA live region for screen reader announcements */}
@@ -438,8 +452,8 @@ export default function ProductImageGallery({
       {/* Main Image */}
       <div
         className="relative"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => handleHovered(true)}
+        onMouseLeave={() => handleHovered(false)}
       >
         <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
           {/* Gallery track container for scrolling animation */}
@@ -500,7 +514,7 @@ export default function ProductImageGallery({
                 </div>
               ) : (
                 <Image
-                  src={currentImage.url}
+                  src={currentImage!.url}
                   alt={altText}
                   fill
                   className={`object-cover object-center transition-transform duration-200 ${
