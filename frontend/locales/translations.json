@@ -2295,6 +2295,20 @@
         "en": "Browse our complete collection of handmade products. Find unique artisan crafted items for every occasion.",
         "vi": "Duyệt qua bộ sưu tập đầy đủ các sản phẩm thủ công. Tìm các sản phẩm thủ công độc đáo cho mọi dịp."
       },
+      "gallery": {
+        "imageAnnouncement": {
+          "en": "Image {current} of {total}",
+          "vi": "Hình {current} trong tổng số {total}"
+        },
+        "autoAdvanceActive": {
+          "en": "Auto-advance active. Images will change automatically.",
+          "vi": "Tự động chuyển đang hoạt động. Hình ảnh sẽ tự động thay đổi."
+        },
+        "autoAdvancePaused": {
+          "en": "Auto-advance paused",
+          "vi": "Tự động chuyển đã tạm dừng"
+        }
+      },
       "title": {
         "en": "Products - Handmade E-commerce",
         "vi": "Sản phẩm - Handmade E-commerce"
