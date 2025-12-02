@@ -127,6 +127,10 @@ export default function ProductImageGallery({
 
       img.onload = () => {
         setLoadedImages((prev) => new Set(prev).add(url));
+        setFailedImages((prev) => {
+          prev.delete(url);
+          return prev;
+        });
         resolve();
       };
 
@@ -137,20 +141,6 @@ export default function ProductImageGallery({
 
       img.src = url;
     });
-  };
-
-  /**
-   * Check if an image is loaded
-   */
-  const isImageLoaded = (url: string): boolean => {
-    return loadedImages.has(url);
-  };
-
-  /**
-   * Check if an image has failed to load
-   */
-  const isImageFailed = (url: string): boolean => {
-    return failedImages.has(url);
   };
 
   /**
