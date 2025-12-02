@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { ShopInfo } from '@/app/constants';
-import { Carousel2D, CarouselItem } from '@/components/Carousel';
+import { Carousel, CarouselImage } from '@/components/Carousel';
 import { productApi, Product } from '@/lib/product-api';
 import { contentApi, Content } from '@/lib/content-api';
 import ContentSection from '@/components/ContentSection';
@@ -16,7 +16,7 @@ export default function HomeContent() {
   const { user } = useAuth();
 
   // State for carousel data
-  const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
+  const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
   const [isLoadingCarousel, setIsLoadingCarousel] = useState(true);
   const [carouselError, setCarouselError] = useState<string | null>(null);
 
@@ -40,34 +40,32 @@ export default function HomeContent() {
         });
 
         if (productsResponse.data && productsResponse.data.length >= 3) {
-          // Transform products to carousel items
-          const items: CarouselItem[] = productsResponse.data.map((product: Product) => ({
+          // Transform products to carousel images
+          const images: CarouselImage[] = productsResponse.data.map((product: Product) => ({
             id: product.id,
-            imageUrl: product.images?.[0]?.url || '/placeholder-product.jpg',
-            alt: product.images?.[0]?.altTextEn || product.nameEn,
-            linkUrl: `/products/${product.slug}`,
-            title: product.nameEn,
+            url: product.images?.[0]?.url || '/placeholder-product.jpg',
+            altTextEn: product.images?.[0]?.altTextEn || product.nameEn,
+            altTextVi: product.images?.[0]?.altTextVi || product.nameVi || product.nameEn,
           }));
 
-          setCarouselItems(items);
+          setCarouselImages(images);
         } else {
           // Fallback to banner content if not enough featured products
           const banners = await contentApi.getBanners();
           const publishedBanners = banners.filter((banner: Content) => banner.isPublished);
 
           if (publishedBanners.length >= 3) {
-            const items: CarouselItem[] = publishedBanners
+            const images: CarouselImage[] = publishedBanners
               .sort((a: Content, b: Content) => a.displayOrder - b.displayOrder)
               .slice(0, 12) // Maximum 12 items
               .map((banner: Content) => ({
                 id: banner.id,
-                imageUrl: banner.imageUrl || '/placeholder-banner.jpg',
-                alt: banner.titleEn,
-                linkUrl: banner.linkUrl || `/pages/${banner.slug}`,
-                title: banner.titleEn,
+                url: banner.imageUrl || '/placeholder-banner.jpg',
+                altTextEn: banner.titleEn,
+                altTextVi: banner.titleVi || banner.titleEn,
               }));
 
-            setCarouselItems(items);
+            setCarouselImages(images);
           } else {
             // Not enough items for carousel
             setCarouselError('Not enough items to display carousel');
@@ -107,16 +105,19 @@ export default function HomeContent() {
   return (
     <div className="flex flex-col items-center bg-zinc-50 font-sans dark:bg-black">
       {/* Carousel Section */}
-      {!isLoadingCarousel && !carouselError && carouselItems.length >= 3 && (
+      {!isLoadingCarousel && !carouselError && carouselImages.length >= 3 && (
         <section className="w-full pb-12 bg-gradient-to-b from-zinc-100 to-zinc-50 dark:from-zinc-900 dark:to-black">
-          <div>
-            <Carousel2D
-              items={carouselItems}
-              autoRotate={true}
-              autoRotateInterval={5000}
+          <div className="max-w-7xl mx-auto px-4">
+            <Carousel
+              images={carouselImages}
+              autoAdvance={true}
+              autoAdvanceInterval={5000}
+              transitionDuration={500}
               showControls={true}
-              showIndicators={true}
+              showThumbnails={false}
+              aspectRatio="wide"
               className="mb-4"
+              ariaLabel="Featured products and promotions"
             />
           </div>
         </section>

@@ -2392,5 +2392,31 @@
         "vi": "Hình {current} trong số {total}"
       }
     }
+  },
+  "carousel": {
+    "defaultAriaLabel": {
+      "en": "Image carousel",
+      "vi": "Băng chuyền hình ảnh"
+    },
+    "imageAnnouncement": {
+      "en": "Image {current} of {total}",
+      "vi": "Hình {current} trong số {total}"
+    },
+    "previousButton": {
+      "en": "Previous image",
+      "vi": "Hình trước"
+    },
+    "nextButton": {
+      "en": "Next image",
+      "vi": "Hình tiếp theo"
+    },
+    "thumbnailLabel": {
+      "en": "Go to image",
+      "vi": "Đi đến hình"
+    },
+    "imageLoadError": {
+      "en": "Unable to load image",
+      "vi": "Không thể tải hình ảnh"
+    }
   }
 }
