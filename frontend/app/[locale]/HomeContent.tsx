@@ -107,7 +107,7 @@ export default function HomeContent() {
       {/* Carousel Section */}
       {!isLoadingCarousel && !carouselError && carouselImages.length >= 3 && (
         <section className="w-full pb-12 bg-gradient-to-b from-zinc-100 to-zinc-50 dark:from-zinc-900 dark:to-black">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="w-full">
             <Carousel
               images={carouselImages}
               autoAdvance={true}

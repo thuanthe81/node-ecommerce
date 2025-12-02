@@ -43,7 +43,7 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
   };
 
   return (
-    <div className="carousel-slide absolute inset-0 w-full h-full">
+    <div className="carousel-slide content-center absolute inset-0 w-full h-full">
       {/* Loading spinner */}
       {imageState === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -101,7 +101,7 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
       <img
         src={image.url}
         alt={altText}
-        className={`w-full h-full object-cover object-center ${imageState === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full object-contain object-center`}
         style={{opacity: 1}}
         onLoad={handleLoad}
         onError={handleError}
