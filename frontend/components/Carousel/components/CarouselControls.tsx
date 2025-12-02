@@ -21,19 +21,18 @@ const CarouselControls: React.FC<CarouselControlsProps> = ({
 }) => {
   const t = useTranslations('carousel');
 
-  // Don't render if not visible
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <div className="carousel-controls absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
+    <div
+      className={`carousel-controls absolute inset-0 flex items-center justify-between px-4 pointer-events-none transition-opacity duration-300 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
       {/* Previous button */}
       <button
         onClick={onPrevious}
         disabled={disabled}
         aria-label={t('previousButton')}
-        className="carousel-control-prev pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+        className="carousel-control-prev pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         <svg
           className="w-6 h-6"
@@ -56,7 +55,7 @@ const CarouselControls: React.FC<CarouselControlsProps> = ({
         onClick={onNext}
         disabled={disabled}
         aria-label={t('nextButton')}
-        className="carousel-control-next pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+        className="carousel-control-next pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         <svg
           className="w-6 h-6"

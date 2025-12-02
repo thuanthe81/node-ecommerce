@@ -355,7 +355,7 @@ const Carousel: React.FC<CarouselProps> = ({
           <CarouselControls
             onPrevious={handlePreviousClick}
             onNext={handleNextClick}
-            isVisible={showControls}
+            isVisible={showControls && isHovered}
             disabled={isAnimating}
           />
         )}
