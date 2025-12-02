@@ -2,14 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import { ProductImage } from '@/lib/product-api';
-import { useLocale } from 'next-intl';
 import { Carousel } from '@/components/Carousel/index';
 import type { CarouselImage } from '@/components/Carousel/types';
 
 interface ProductImageGalleryProps {
   images: ProductImage[];
   productName: string;
-  locale?: string;
   // Auto-advance configuration
   autoAdvance?: boolean;
   autoAdvanceInterval?: number;
@@ -19,25 +17,12 @@ interface ProductImageGalleryProps {
 export default function ProductImageGallery({
   images,
   productName,
-  locale: localeProp,
   autoAdvance: autoAdvanceProp = true,
   autoAdvanceInterval,
   transitionDuration,
 }: ProductImageGalleryProps) {
-  const localeFromHook = useLocale();
-  const locale = localeProp || localeFromHook;
-
   // Product-specific state: zoom functionality
   const [isZoomed, setIsZoomed] = useState(false);
-
-  // Handle empty images case with placeholder
-  if (!images || images.length === 0) {
-    return (
-      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-        <span className="text-gray-400">No image available</span>
-      </div>
-    );
-  }
 
   // Transform ProductImage[] to CarouselImage[]
   const carouselImages: CarouselImage[] = images.map((img) => ({
@@ -63,6 +48,15 @@ export default function ProductImageGallery({
       setIsZoomed((prev) => !prev);
     }
   }, []);
+
+  // Handle empty images case with placeholder
+  if (!images || images.length === 0) {
+    return (
+      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+        <span className="text-gray-400">No image available</span>
+      </div>
+    );
+  }
 
   return (
     <div className="product-image-gallery">

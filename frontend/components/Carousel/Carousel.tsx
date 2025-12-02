@@ -9,8 +9,8 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { CarouselProps } from './types';
 import { useAutoAdvance } from './hooks/useAutoAdvance';
-import { useVisibilityDetection } from './hooks/useVisibilityDetection';
-import { useCarouselAnimation } from './hooks/useCarouselAnimation';
+import { useVisibilityDetection } from '@/components/Carousel/hooks';
+import { useCarouselAnimation } from '@/components/Carousel/hooks';
 import { useImagePreloader } from './hooks/useImagePreloader';
 import CarouselImage from './components/CarouselImage';
 import CarouselControls from './components/CarouselControls';
@@ -19,7 +19,7 @@ import CarouselThumbnails from './components/CarouselThumbnails';
 /**
  * Default configuration values
  */
-const DEFAULT_AUTO_ADVANCE_INTERVAL = 3000;
+const DEFAULT_AUTO_ADVANCE_INTERVAL = 2000;
 const DEFAULT_TRANSITION_DURATION = 500;
 const MIN_SWIPE_DISTANCE = 50;
 
@@ -31,7 +31,7 @@ function validateConfigValue(value: number | undefined, defaultValue: number, na
     return defaultValue;
   }
 
-  if (typeof value !== 'number' || isNaN(value) || !isFinite(value) || value <= 0) {
+  if (isNaN(value) || !isFinite(value) || value <= 0) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(
         `Invalid ${name} value: ${value}. Using default: ${defaultValue}ms`

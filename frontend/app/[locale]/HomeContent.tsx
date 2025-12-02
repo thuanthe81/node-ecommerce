@@ -111,10 +111,6 @@ export default function HomeContent() {
             <Carousel
               images={carouselImages}
               autoAdvance={true}
-              autoAdvanceInterval={5000}
-              transitionDuration={500}
-              showControls={true}
-              showThumbnails={false}
               aspectRatio="wide"
               className="mb-4"
               ariaLabel="Featured products and promotions"
