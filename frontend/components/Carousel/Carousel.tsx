@@ -83,6 +83,7 @@ const Carousel: React.FC<CarouselProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isPausedByUser, setIsPausedByUser] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Detect reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -97,6 +98,17 @@ const Carousel: React.FC<CarouselProps> = ({
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Detect touch-capable device (mobile/tablet)
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      // Check if device supports touch events
+      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      setIsMobile(isTouchDevice);
+    };
+
+    checkTouchDevice();
   }, []);
 
   // Image preloader hook
@@ -355,7 +367,7 @@ const Carousel: React.FC<CarouselProps> = ({
           <CarouselControls
             onPrevious={handlePreviousClick}
             onNext={handleNextClick}
-            isVisible={showControls && isHovered}
+            isVisible={showControls && (isMobile || isHovered)}
             disabled={isAnimating}
           />
         )}
