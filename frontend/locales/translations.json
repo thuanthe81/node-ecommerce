@@ -458,6 +458,18 @@
       "en": "TikTok URL",
       "vi": "Liên kết TikTok"
     },
+    "zaloUrl": {
+      "en": "Zalo URL",
+      "vi": "Liên kết Zalo"
+    },
+    "whatsappUrl": {
+      "en": "WhatsApp URL",
+      "vi": "Liên kết WhatsApp"
+    },
+    "whatsappPlaceholder": {
+      "en": "https://wa.me/1234567890",
+      "vi": "https://wa.me/1234567890"
+    },
     "invalidUrlFormat": {
       "en": "Invalid URL format",
       "vi": "Định dạng URL không hợp lệ"
@@ -1681,6 +1693,10 @@
     "zalo": {
       "en": "Zalo",
       "vi": "Zalo"
+    },
+    "whatsapp": {
+      "en": "WhatsApp",
+      "vi": "WhatsApp"
     }
   },
   "form": {

@@ -31,6 +31,7 @@ export default function FooterSettingsPage() {
   const [twitterUrl, setTwitterUrl] = useState('');
   const [tiktokUrl, setTiktokUrl] = useState('');
   const [zaloUrl, setZaloUrl] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,6 +51,7 @@ export default function FooterSettingsPage() {
         setTwitterUrl(settings.twitterUrl || '');
         setTiktokUrl(settings.tiktokUrl || '');
         setZaloUrl(settings.zaloUrl || '');
+        setWhatsappUrl(settings.whatsappUrl || '');
       } catch (err: any) {
         setError(err.message || 'Failed to load footer settings');
       } finally {
@@ -95,6 +97,10 @@ export default function FooterSettingsPage() {
       newErrors.zaloUrl = 'Invalid URL format';
     }
 
+    if (whatsappUrl && !isValidUrl(whatsappUrl)) {
+      newErrors.whatsappUrl = 'Invalid URL format';
+    }
+
     if (googleMapsUrl && !isValidUrl(googleMapsUrl)) {
       newErrors.googleMapsUrl = 'Invalid URL format';
     }
@@ -126,6 +132,7 @@ export default function FooterSettingsPage() {
         twitterUrl: twitterUrl || undefined,
         tiktokUrl: tiktokUrl || undefined,
         zaloUrl: zaloUrl || undefined,
+        whatsappUrl: whatsappUrl || undefined,
       };
 
       await footerSettingsApi.updateFooterSettings(data);
@@ -353,7 +360,7 @@ export default function FooterSettingsPage() {
                   </div>
 
                   {/* Zalo URL */}
-                  <div>
+                  <div className="mb-4">
                     <label
                       htmlFor="zaloUrl"
                       className="block text-sm font-medium text-gray-700 mb-2"
@@ -372,6 +379,29 @@ export default function FooterSettingsPage() {
                     />
                     {errors.zaloUrl && (
                       <p className="mt-1 text-sm text-red-600">{errors.zaloUrl}</p>
+                    )}
+                  </div>
+
+                  {/* WhatsApp URL */}
+                  <div>
+                    <label
+                      htmlFor="whatsappUrl"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      WhatsApp URL
+                    </label>
+                    <input
+                      type="url"
+                      id="whatsappUrl"
+                      value={whatsappUrl}
+                      onChange={(e) => setWhatsappUrl(e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.whatsappUrl ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="https://wa.me/1234567890"
+                    />
+                    {errors.whatsappUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.whatsappUrl}</p>
                     )}
                   </div>
                 </div>
@@ -411,6 +441,7 @@ export default function FooterSettingsPage() {
                   twitterUrl={twitterUrl || undefined}
                   tiktokUrl={tiktokUrl || undefined}
                   zaloUrl={zaloUrl || undefined}
+                  whatsappUrl={whatsappUrl || undefined}
                 />
               </div>
 

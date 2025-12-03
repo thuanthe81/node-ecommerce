@@ -438,6 +438,7 @@ model FooterSettings {
   twitterUrl      String?
   tiktokUrl       String?
   zaloUrl         String?
+  whatsappUrl     String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

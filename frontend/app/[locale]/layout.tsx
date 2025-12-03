@@ -140,6 +140,7 @@ export default async function LocaleLayout({
                     twitterUrl={footerSettings.twitterUrl || undefined}
                     tiktokUrl={footerSettings.tiktokUrl || undefined}
                     zaloUrl={footerSettings.zaloUrl || undefined}
+                    whatsappUrl={footerSettings.whatsappUrl || undefined}
                   />
                 )}
               </div>

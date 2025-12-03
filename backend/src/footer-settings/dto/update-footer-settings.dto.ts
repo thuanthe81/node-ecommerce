@@ -36,4 +36,8 @@ export class UpdateFooterSettingsDto {
   @IsUrl({}, { message: 'Zalo URL must be a valid URL' })
   @IsOptional()
   zaloUrl?: string;
+
+  @IsUrl({}, { message: 'WhatsApp URL must be a valid URL' })
+  @IsOptional()
+  whatsappUrl?: string;
 }
