@@ -1523,6 +1523,42 @@
     "wishlist": {
       "en": "Wishlist",
       "vi": "Yêu thích"
+    },
+    "name": {
+      "en": "Name",
+      "vi": "Họ và tên"
+    },
+    "email": {
+      "en": "Email",
+      "vi": "Email"
+    },
+    "subject": {
+      "en": "Subject",
+      "vi": "Chủ đề"
+    },
+    "message": {
+      "en": "Message",
+      "vi": "Tin nhắn"
+    },
+    "sendMessage": {
+      "en": "Send Message",
+      "vi": "Gửi tin nhắn"
+    },
+    "sending": {
+      "en": "Sending...",
+      "vi": "Đang gửi..."
+    },
+    "contactInformation": {
+      "en": "Contact Information",
+      "vi": "Thông tin liên hệ"
+    },
+    "contactPageDescription": {
+      "en": "Have a question or need support? Send us a message and we'll get back to you as soon as possible.",
+      "vi": "Có câu hỏi hoặc cần hỗ trợ? Gửi tin nhắn cho chúng tôi và chúng tôi sẽ phản hồi sớm nhất có thể."
+    },
+    "contactFormSuccess": {
+      "en": "Thank you for contacting us! We'll get back to you soon.",
+      "vi": "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm."
     }
   },
   "footer": {
@@ -2565,6 +2601,28 @@
     "imageLoadError": {
       "en": "Unable to load image",
       "vi": "Không thể tải hình ảnh"
+    }
+  },
+  "contact": {
+    "contactInfoUnavailable": {
+      "en": "Contact information is temporarily unavailable. Please try again later or use the contact form below.",
+      "vi": "Thông tin liên hệ tạm thời không khả dụng. Vui lòng thử lại sau hoặc sử dụng biểu mẫu liên hệ bên dưới."
+    },
+    "failedLoadContactInfo": {
+      "en": "Failed to load contact information",
+      "vi": "Không thể tải thông tin liên hệ"
+    },
+    "viewOnGoogleMaps": {
+      "en": "View on Google Maps",
+      "vi": "Xem trên Google Maps"
+    },
+    "emailUs": {
+      "en": "Send us an email",
+      "vi": "Gửi email cho chúng tôi"
+    },
+    "callUs": {
+      "en": "Call us",
+      "vi": "Gọi cho chúng tôi"
     }
   }
 }
