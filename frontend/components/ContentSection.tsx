@@ -54,7 +54,7 @@ function SectionLeft({
     <section className="w-full bg-white">
       <div className="flex flex-col md:flex-row items-stretch">
         {/* Image - left side on desktop, top on mobile */}
-        <div className="w-full md:w-1/2 relative min-h-[300px] md:min-h-[400px] overflow-hidden bg-gray-200">
+        <div className="w-full md:w-1/2 relative aspect-square overflow-hidden bg-gray-200">
           {imageUrl && (
             <Image
               src={imageUrl}
@@ -106,7 +106,7 @@ function SectionRight({
     <section className="w-full bg-gray-50">
       <div className="flex flex-col md:flex-row-reverse items-stretch">
         {/* Image - right side on desktop, top on mobile */}
-        <div className="w-full md:w-1/2 relative min-h-[300px] md:min-h-[400px] overflow-hidden bg-gray-200">
+        <div className="w-full md:w-1/2 relative aspect-square overflow-hidden bg-gray-200">
           {imageUrl && (
             <Image
               src={imageUrl}
