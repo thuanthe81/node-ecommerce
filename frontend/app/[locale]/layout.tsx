@@ -134,6 +134,8 @@ export default async function LocaleLayout({
                     copyrightText={footerSettings.copyrightText}
                     contactEmail={footerSettings.contactEmail || undefined}
                     contactPhone={footerSettings.contactPhone || undefined}
+                    address={footerSettings.address || undefined}
+                    googleMapsUrl={footerSettings.googleMapsUrl || undefined}
                     facebookUrl={footerSettings.facebookUrl || undefined}
                     twitterUrl={footerSettings.twitterUrl || undefined}
                     tiktokUrl={footerSettings.tiktokUrl || undefined}

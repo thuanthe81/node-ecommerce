@@ -13,6 +13,14 @@ export class UpdateFooterSettingsDto {
   @IsOptional()
   contactPhone?: string;
 
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsUrl({}, { message: 'Google Maps URL must be a valid URL' })
+  @IsOptional()
+  googleMapsUrl?: string;
+
   @IsUrl({}, { message: 'Facebook URL must be a valid URL' })
   @IsOptional()
   facebookUrl?: string;

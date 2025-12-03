@@ -9,6 +9,8 @@ export interface FooterSettings {
   copyrightText: string;
   contactEmail: string | null;
   contactPhone: string | null;
+  address: string | null;
+  googleMapsUrl: string | null;
   facebookUrl: string | null;
   twitterUrl: string | null;
   tiktokUrl: string | null;
@@ -24,6 +26,8 @@ export interface UpdateFooterSettingsDto {
   copyrightText: string;
   contactEmail?: string;
   contactPhone?: string;
+  address?: string;
+  googleMapsUrl?: string;
   facebookUrl?: string;
   twitterUrl?: string;
   tiktokUrl?: string;

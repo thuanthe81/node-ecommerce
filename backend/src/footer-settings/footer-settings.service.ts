@@ -13,6 +13,8 @@ export interface FooterSettings {
   copyrightText: string;
   contactEmail: string | null;
   contactPhone: string | null;
+  address: string | null;
+  googleMapsUrl: string | null;
   facebookUrl: string | null;
   twitterUrl: string | null;
   tiktokUrl: string | null;
@@ -60,6 +62,8 @@ export class FooterSettingsService {
           copyrightText: '',
           contactEmail: null,
           contactPhone: null,
+          address: null,
+          googleMapsUrl: null,
           facebookUrl: null,
           twitterUrl: null,
           tiktokUrl: null,
@@ -108,6 +112,8 @@ export class FooterSettingsService {
             copyrightText: data.copyrightText,
             contactEmail: data.contactEmail || null,
             contactPhone: data.contactPhone || null,
+            address: data.address || null,
+            googleMapsUrl: data.googleMapsUrl || null,
             facebookUrl: data.facebookUrl || null,
             twitterUrl: data.twitterUrl || null,
             tiktokUrl: data.tiktokUrl || null,
@@ -120,6 +126,8 @@ export class FooterSettingsService {
             copyrightText: data.copyrightText,
             contactEmail: data.contactEmail || null,
             contactPhone: data.contactPhone || null,
+            address: data.address || null,
+            googleMapsUrl: data.googleMapsUrl || null,
             facebookUrl: data.facebookUrl || null,
             twitterUrl: data.twitterUrl || null,
             tiktokUrl: data.tiktokUrl || null,

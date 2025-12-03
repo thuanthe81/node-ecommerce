@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { SvgFacebook, SvgTwitter, SvgTikTok, SvgEmail, SvgPhone } from '@/components/Svgs';
+import { SvgFacebook, SvgTwitter, SvgTikTok, SvgEmail, SvgPhone, SvgLocation } from '@/components/Svgs';
 import { ShopInfo } from '@/app/constants';
 
 export interface FooterProps {
   copyrightText: string;
   contactEmail?: string;
   contactPhone?: string;
+  address?: string;
+  googleMapsUrl?: string;
   facebookUrl?: string;
   twitterUrl?: string;
   tiktokUrl?: string;
@@ -18,6 +20,8 @@ export default function Footer({
   copyrightText,
   contactEmail,
   contactPhone,
+  address,
+  googleMapsUrl,
   facebookUrl,
   twitterUrl,
   tiktokUrl,
@@ -133,7 +137,7 @@ export default function Footer({
         </div>
 
         {/* Bottom Section - Copyright and Contact */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           {/* Copyright Section */}
           <div className="flex flex-col items-start justify-center md:justify-start">
             <p className="text-sm text-gray-300">{copyrightText}</p>
@@ -141,11 +145,11 @@ export default function Footer({
           </div>
 
           <div className="flex flex-col items-center justify-center md:justify-start">
-            <p className="text-3xl font-bold text-gray-300">{ShopInfo.name}</p>
+            <p className="text-4xl font-bold text-gray-300">{ShopInfo.name}</p>
           </div>
 
           {/* Contact Information Section */}
-          {(contactEmail || contactPhone) && (
+          {(contactEmail || contactPhone || address) && (
             <div className="m-auto">
               <div className="flex flex-col">
                 {contactEmail && (
@@ -167,6 +171,25 @@ export default function Footer({
                     <SvgPhone className="w-5 h-5" aria-hidden="true" />
                     {contactPhone}
                   </a>
+                )}
+                {address && (
+                  googleMapsUrl ? (
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                      aria-label={`Address: ${address}`}
+                    >
+                      <SvgLocation className="w-5 h-5" aria-hidden="true" />
+                      {address}
+                    </a>
+                  ) : (
+                    <div className="text-sm text-gray-300 inline-flex items-center gap-2">
+                      <SvgLocation className="w-5 h-5" aria-hidden="true" />
+                      {address}
+                    </div>
+                  )
                 )}
               </div>
             </div>

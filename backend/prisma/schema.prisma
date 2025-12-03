@@ -432,6 +432,8 @@ model FooterSettings {
   copyrightText   String
   contactEmail    String?
   contactPhone    String?
+  address         String?
+  googleMapsUrl   String?
   facebookUrl     String?
   twitterUrl      String?
   tiktokUrl       String?

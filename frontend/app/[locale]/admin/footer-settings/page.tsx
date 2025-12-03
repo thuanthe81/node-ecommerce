@@ -25,6 +25,8 @@ export default function FooterSettingsPage() {
   const [copyrightText, setCopyrightText] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   const [facebookUrl, setFacebookUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [tiktokUrl, setTiktokUrl] = useState('');
@@ -41,6 +43,8 @@ export default function FooterSettingsPage() {
         setCopyrightText(settings.copyrightText);
         setContactEmail(settings.contactEmail || '');
         setContactPhone(settings.contactPhone || '');
+        setAddress(settings.address || '');
+        setGoogleMapsUrl(settings.googleMapsUrl || '');
         setFacebookUrl(settings.facebookUrl || '');
         setTwitterUrl(settings.twitterUrl || '');
         setTiktokUrl(settings.tiktokUrl || '');
@@ -85,6 +89,10 @@ export default function FooterSettingsPage() {
       newErrors.tiktokUrl = 'Invalid URL format';
     }
 
+    if (googleMapsUrl && !isValidUrl(googleMapsUrl)) {
+      newErrors.googleMapsUrl = 'Invalid URL format';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -106,6 +114,8 @@ export default function FooterSettingsPage() {
         copyrightText,
         contactEmail: contactEmail || undefined,
         contactPhone: contactPhone || undefined,
+        address: address || undefined,
+        googleMapsUrl: googleMapsUrl || undefined,
         facebookUrl: facebookUrl || undefined,
         twitterUrl: twitterUrl || undefined,
         tiktokUrl: tiktokUrl || undefined,
@@ -218,6 +228,50 @@ export default function FooterSettingsPage() {
                   />
                 </div>
 
+                {/* Address */}
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Address
+                  </label>
+                  <textarea
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="123 Main Street, City, State, ZIP"
+                  />
+                </div>
+
+                {/* Google Maps URL */}
+                <div>
+                  <label
+                    htmlFor="googleMapsUrl"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Google Maps URL
+                  </label>
+                  <input
+                    type="url"
+                    id="googleMapsUrl"
+                    value={googleMapsUrl}
+                    onChange={(e) => setGoogleMapsUrl(e.target.value)}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.googleMapsUrl ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="https://maps.google.com/?q=..."
+                  />
+                  {errors.googleMapsUrl && (
+                    <p className="mt-1 text-sm text-red-600">{errors.googleMapsUrl}</p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    Optional: Add a Google Maps link for the address
+                  </p>
+                </div>
+
                 {/* Social Media Links */}
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold mb-4">Social Media Links</h3>
@@ -321,6 +375,8 @@ export default function FooterSettingsPage() {
                   copyrightText={copyrightText || 'Copyright text will appear here'}
                   contactEmail={contactEmail || undefined}
                   contactPhone={contactPhone || undefined}
+                  address={address || undefined}
+                  googleMapsUrl={googleMapsUrl || undefined}
                   facebookUrl={facebookUrl || undefined}
                   twitterUrl={twitterUrl || undefined}
                   tiktokUrl={tiktokUrl || undefined}
