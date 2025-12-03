@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { SvgFacebook, SvgTwitter, SvgTikTok } from '@/components/Svgs';
+import { useTranslations } from 'next-intl';
+import { SvgFacebook, SvgTwitter, SvgTikTok, SvgEmail, SvgPhone } from '@/components/Svgs';
+import { ShopInfo } from '@/app/constants';
 
 export interface FooterProps {
   copyrightText: string;
@@ -20,77 +22,194 @@ export default function Footer({
   twitterUrl,
   tiktokUrl,
 }: FooterProps) {
+  const t = useTranslations('footer');
+
   return (
     <footer className="bg-gray-900 text-white" role="contentinfo">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+        {/* Information Columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 pb-8 border-b border-gray-700">
+          {/* Customer Column */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">{t('customer')}</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/faq"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('faqs')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/purchasing"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('purchasing')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* About Us Column */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">{t('aboutUs')}</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/about"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('aboutAlaCraft')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/products"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('aboutProducts')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Column */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">{t('legal')}</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('termsOfUse')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('privacyPolicy')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Socials Column */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">{t('socials')}</h3>
+            <ul className="space-y-2">
+              {facebookUrl && (
+                <li>
+                  <a
+                    href={facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                  >
+                    <SvgFacebook className="w-5 h-5" aria-hidden="true" />
+                    {t('facebook')}
+                  </a>
+                </li>
+              )}
+              {tiktokUrl && (
+                <li>
+                  <a
+                    href={tiktokUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                  >
+                    <SvgTikTok className="w-5 h-5" aria-hidden="true" />
+                    {t('tiktok')}
+                  </a>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Section - Copyright and Contact */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Copyright Section */}
-          <div className="flex items-center justify-center md:justify-start">
+          <div className="flex flex-col items-start justify-center md:justify-start">
             <p className="text-sm text-gray-300">{copyrightText}</p>
+            <p className="text-sm text-gray-300">POWERED BY DEVELOPER thuanthe81@gmail.com</p>
+          </div>
+
+          <div className="flex flex-col items-center justify-center md:justify-start">
+            <p className="text-3xl font-bold text-gray-300">{ShopInfo.name}</p>
           </div>
 
           {/* Contact Information Section */}
           {(contactEmail || contactPhone) && (
-            <div className="flex flex-col items-center justify-center space-y-2">
-              {contactEmail && (
-                <a
-                  href={`mailto:${contactEmail}`}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                  aria-label={`Email: ${contactEmail}`}
-                >
-                  {contactEmail}
-                </a>
-              )}
-              {contactPhone && (
-                <a
-                  href={`tel:${contactPhone}`}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                  aria-label={`Phone: ${contactPhone}`}
-                >
-                  {contactPhone}
-                </a>
-              )}
+            <div className="m-auto">
+              <div className="flex flex-col">
+                {contactEmail && (
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                    aria-label={`Email: ${contactEmail}`}
+                  >
+                    <SvgEmail className="w-5 h-5" aria-hidden="true" />
+                    {contactEmail}
+                  </a>
+                )}
+                {contactPhone && (
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                    aria-label={`Phone: ${contactPhone}`}
+                  >
+                    <SvgPhone className="w-5 h-5" aria-hidden="true" />
+                    {contactPhone}
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
           {/* Social Media Links Section */}
-          {(facebookUrl || twitterUrl || tiktokUrl) && (
-            <div className="flex items-center justify-center md:justify-end space-x-6">
-              {facebookUrl && (
-                <a
-                  href={facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Facebook"
-                >
-                  <SvgFacebook className="w-6 h-6" aria-hidden="true" />
-                </a>
-              )}
-              {twitterUrl && (
-                <a
-                  href={twitterUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="Twitter"
-                >
-                  <SvgTwitter className="w-6 h-6" aria-hidden="true" />
-                </a>
-              )}
-              {tiktokUrl && (
-                <a
-                  href={tiktokUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-gray-300 hover:text-white transition-colors"
-                  aria-label="TikTok"
-                >
-                  <SvgTikTok className="w-6 h-6" aria-hidden="true" />
-                </a>
-              )}
-            </div>
-          )}
+          {/*{(facebookUrl || twitterUrl || tiktokUrl) && (*/}
+          {/*  <div className="flex items-center justify-center md:justify-end space-x-6">*/}
+          {/*    {facebookUrl && (*/}
+          {/*      <a*/}
+          {/*        href={facebookUrl}*/}
+          {/*        target="_blank"*/}
+          {/*        rel="noopener noreferrer"*/}
+          {/*        className="text-gray-300 hover:text-white transition-colors"*/}
+          {/*        aria-label="Facebook"*/}
+          {/*      >*/}
+          {/*        <SvgFacebook className="w-6 h-6" aria-hidden="true" />*/}
+          {/*      </a>*/}
+          {/*    )}*/}
+          {/*    {twitterUrl && (*/}
+          {/*      <a*/}
+          {/*        href={twitterUrl}*/}
+          {/*        target="_blank"*/}
+          {/*        rel="noopener noreferrer"*/}
+          {/*        className="text-gray-300 hover:text-white transition-colors"*/}
+          {/*        aria-label="Twitter"*/}
+          {/*      >*/}
+          {/*        <SvgTwitter className="w-6 h-6" aria-hidden="true" />*/}
+          {/*      </a>*/}
+          {/*    )}*/}
+          {/*    {tiktokUrl && (*/}
+          {/*      <a*/}
+          {/*        href={tiktokUrl}*/}
+          {/*        target="_blank"*/}
+          {/*        rel="noopener noreferrer"*/}
+          {/*        className="text-gray-300 hover:text-white transition-colors"*/}
+          {/*        aria-label="TikTok"*/}
+          {/*      >*/}
+          {/*        <SvgTikTok className="w-6 h-6" aria-hidden="true" />*/}
+          {/*      </a>*/}
+          {/*    )}*/}
+          {/*  </div>*/}
+          {/*)}*/}
         </div>
       </div>
     </footer>

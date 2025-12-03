@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import MiniCart from '@/components/MiniCart';
-import { SvgUser, SvgLogout } from '@/components/Svgs';
+import { SvgUser, SvgLogin, SvgLogout } from '@/components/Svgs';
 import { UserActionsProps } from '../types';
 
 /**
@@ -58,10 +58,10 @@ export function UserActions({ isAuthenticated, user, locale, onLogout, getLinkCl
       ) : (
         <Link
           href={`/${locale}/login`}
-          className={getLinkClasses(`/${locale}/login`)}
+          className={getLinkClasses(`/${locale}/login`, 'flex items-center')}
           aria-label={t('auth.login') || 'Login'}
         >
-          {t('auth.login')}
+          <SvgLogin className="w-6 h-6" />
         </Link>
       )}
     </div>

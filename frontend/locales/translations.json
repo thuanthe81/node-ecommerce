@@ -1493,6 +1493,46 @@
     "twitterUrl": {
       "en": "Twitter URL",
       "vi": "URL Twitter"
+    },
+    "customer": {
+      "en": "Customer",
+      "vi": "Khách hàng"
+    },
+    "faqs": {
+      "en": "FAQs",
+      "vi": "Câu hỏi thường gặp"
+    },
+    "purchasing": {
+      "en": "Purchasing",
+      "vi": "Mua hàng"
+    },
+    "aboutAlaCraft": {
+      "en": "About ALA CRAFT",
+      "vi": "Về ALA CRAFT"
+    },
+    "aboutProducts": {
+      "en": "About Products",
+      "vi": "Về sản phẩm"
+    },
+    "legal": {
+      "en": "Legal",
+      "vi": "Pháp lý"
+    },
+    "termsOfUse": {
+      "en": "Terms Of Use",
+      "vi": "Điều khoản sử dụng"
+    },
+    "socials": {
+      "en": "Socials",
+      "vi": "Mạng xã hội"
+    },
+    "facebook": {
+      "en": "Facebook",
+      "vi": "Facebook"
+    },
+    "tiktok": {
+      "en": "Tiktok",
+      "vi": "Tiktok"
     }
   },
   "form": {
