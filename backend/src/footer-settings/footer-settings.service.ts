@@ -18,6 +18,7 @@ export interface FooterSettings {
   facebookUrl: string | null;
   twitterUrl: string | null;
   tiktokUrl: string | null;
+  zaloUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +68,7 @@ export class FooterSettingsService {
           facebookUrl: null,
           twitterUrl: null,
           tiktokUrl: null,
+          zaloUrl: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -117,6 +119,7 @@ export class FooterSettingsService {
             facebookUrl: data.facebookUrl || null,
             twitterUrl: data.twitterUrl || null,
             tiktokUrl: data.tiktokUrl || null,
+            zaloUrl: data.zaloUrl || null,
           },
         });
       } else {
@@ -131,6 +134,7 @@ export class FooterSettingsService {
             facebookUrl: data.facebookUrl || null,
             twitterUrl: data.twitterUrl || null,
             tiktokUrl: data.tiktokUrl || null,
+            zaloUrl: data.zaloUrl || null,
           },
         });
       }

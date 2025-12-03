@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { SvgFacebook, SvgTwitter, SvgTikTok, SvgEmail, SvgPhone, SvgLocation } from '@/components/Svgs';
+import { SvgFacebook, SvgTwitter, SvgTikTok, SvgZalo, SvgEmail, SvgPhone, SvgLocation } from '@/components/Svgs';
 import { ShopInfo } from '@/app/constants';
 
 export interface FooterProps {
@@ -14,6 +14,7 @@ export interface FooterProps {
   facebookUrl?: string;
   twitterUrl?: string;
   tiktokUrl?: string;
+  zaloUrl?: string;
 }
 
 export default function Footer({
@@ -25,6 +26,7 @@ export default function Footer({
   facebookUrl,
   twitterUrl,
   tiktokUrl,
+  zaloUrl,
 }: FooterProps) {
   const t = useTranslations('footer');
 
@@ -129,6 +131,19 @@ export default function Footer({
                   >
                     <SvgTikTok className="w-5 h-5" aria-hidden="true" />
                     {t('tiktok')}
+                  </a>
+                </li>
+              )}
+              {zaloUrl && (
+                <li>
+                  <a
+                    href={zaloUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-gray-300 hover:text-white transition-colors inline-flex items-center gap-2"
+                  >
+                    <SvgZalo className="w-5 h-5" aria-hidden="true" />
+                    {t('zalo')}
                   </a>
                 </li>
               )}

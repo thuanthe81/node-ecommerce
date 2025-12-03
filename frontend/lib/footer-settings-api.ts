@@ -14,6 +14,7 @@ export interface FooterSettings {
   facebookUrl: string | null;
   twitterUrl: string | null;
   tiktokUrl: string | null;
+  zaloUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +32,7 @@ export interface UpdateFooterSettingsDto {
   facebookUrl?: string;
   twitterUrl?: string;
   tiktokUrl?: string;
+  zaloUrl?: string;
 }
 
 /**

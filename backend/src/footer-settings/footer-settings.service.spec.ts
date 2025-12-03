@@ -119,9 +119,12 @@ describe('FooterSettingsService', () => {
           copyrightText: updateDto.copyrightText,
           contactEmail: updateDto.contactEmail,
           contactPhone: updateDto.contactPhone,
+          address: null,
+          googleMapsUrl: null,
           facebookUrl: updateDto.facebookUrl,
           twitterUrl: updateDto.twitterUrl,
           tiktokUrl: updateDto.tiktokUrl,
+          zaloUrl: null,
         },
       });
     });
@@ -170,9 +173,12 @@ describe('FooterSettingsService', () => {
           copyrightText: updateDto.copyrightText,
           contactEmail: updateDto.contactEmail,
           contactPhone: updateDto.contactPhone,
+          address: null,
+          googleMapsUrl: null,
           facebookUrl: updateDto.facebookUrl,
           twitterUrl: null,
           tiktokUrl: null,
+          zaloUrl: null,
         },
       });
     });

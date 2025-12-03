@@ -32,4 +32,8 @@ export class UpdateFooterSettingsDto {
   @IsUrl({}, { message: 'TikTok URL must be a valid URL' })
   @IsOptional()
   tiktokUrl?: string;
+
+  @IsUrl({}, { message: 'Zalo URL must be a valid URL' })
+  @IsOptional()
+  zaloUrl?: string;
 }

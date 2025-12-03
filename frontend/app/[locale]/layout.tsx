@@ -139,6 +139,7 @@ export default async function LocaleLayout({
                     facebookUrl={footerSettings.facebookUrl || undefined}
                     twitterUrl={footerSettings.twitterUrl || undefined}
                     tiktokUrl={footerSettings.tiktokUrl || undefined}
+                    zaloUrl={footerSettings.zaloUrl || undefined}
                   />
                 )}
               </div>

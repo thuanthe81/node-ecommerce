@@ -30,6 +30,7 @@ export default function FooterSettingsPage() {
   const [facebookUrl, setFacebookUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [tiktokUrl, setTiktokUrl] = useState('');
+  const [zaloUrl, setZaloUrl] = useState('');
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,6 +49,7 @@ export default function FooterSettingsPage() {
         setFacebookUrl(settings.facebookUrl || '');
         setTwitterUrl(settings.twitterUrl || '');
         setTiktokUrl(settings.tiktokUrl || '');
+        setZaloUrl(settings.zaloUrl || '');
       } catch (err: any) {
         setError(err.message || 'Failed to load footer settings');
       } finally {
@@ -89,6 +91,10 @@ export default function FooterSettingsPage() {
       newErrors.tiktokUrl = 'Invalid URL format';
     }
 
+    if (zaloUrl && !isValidUrl(zaloUrl)) {
+      newErrors.zaloUrl = 'Invalid URL format';
+    }
+
     if (googleMapsUrl && !isValidUrl(googleMapsUrl)) {
       newErrors.googleMapsUrl = 'Invalid URL format';
     }
@@ -119,6 +125,7 @@ export default function FooterSettingsPage() {
         facebookUrl: facebookUrl || undefined,
         twitterUrl: twitterUrl || undefined,
         tiktokUrl: tiktokUrl || undefined,
+        zaloUrl: zaloUrl || undefined,
       };
 
       await footerSettingsApi.updateFooterSettings(data);
@@ -323,7 +330,7 @@ export default function FooterSettingsPage() {
                   </div>
 
                   {/* TikTok URL */}
-                  <div>
+                  <div className="mb-4">
                     <label
                       htmlFor="tiktokUrl"
                       className="block text-sm font-medium text-gray-700 mb-2"
@@ -342,6 +349,29 @@ export default function FooterSettingsPage() {
                     />
                     {errors.tiktokUrl && (
                       <p className="mt-1 text-sm text-red-600">{errors.tiktokUrl}</p>
+                    )}
+                  </div>
+
+                  {/* Zalo URL */}
+                  <div>
+                    <label
+                      htmlFor="zaloUrl"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Zalo URL
+                    </label>
+                    <input
+                      type="url"
+                      id="zaloUrl"
+                      value={zaloUrl}
+                      onChange={(e) => setZaloUrl(e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.zaloUrl ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="https://zalo.me/alacraft"
+                    />
+                    {errors.zaloUrl && (
+                      <p className="mt-1 text-sm text-red-600">{errors.zaloUrl}</p>
                     )}
                   </div>
                 </div>
@@ -380,6 +410,7 @@ export default function FooterSettingsPage() {
                   facebookUrl={facebookUrl || undefined}
                   twitterUrl={twitterUrl || undefined}
                   tiktokUrl={tiktokUrl || undefined}
+                  zaloUrl={zaloUrl || undefined}
                 />
               </div>
 
