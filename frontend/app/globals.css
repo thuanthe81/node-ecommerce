@@ -127,21 +127,21 @@ body {
 }
 
 /* Ensure links have sufficient contrast */
-a {
-  color: #1d4ed8; /* blue-700 for better contrast */
-}
+/*a {*/
+/*  color: #1d4ed8; !* blue-700 for better contrast *!*/
+/*}*/
 
-a.text-white {
-  color: white;
-}
+/*a.text-white {*/
+/*  color: white;*/
+/*}*/
 
-a:hover {
-  color: #1e40af; /* blue-800 */
-}
+/*a:hover {*/
+/*  color: #1e40af; !* blue-800 *!*/
+/*}*/
 
-a:hover.text-white {
-  color: #dfdfdf; /* blue-800 */
-}
+/*a:hover.text-white {*/
+/*  color: #dfdfdf; !* blue-800 *!*/
+/*}*/
 
 /* Status indicators should not rely on color alone */
 .status-indicator::before {
