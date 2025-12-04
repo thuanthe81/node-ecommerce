@@ -60,7 +60,7 @@ function SectionLeft({
               src={imageUrl}
               alt={imageAlt || title}
               fill
-              className='object-cover object-center'
+              className='object-contain object-center bg-black'
               style={{ opacity: 1 }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={priority}
@@ -112,7 +112,7 @@ function SectionRight({
               src={imageUrl}
               alt={imageAlt || title}
               fill
-              className='object-cover object-center'
+              className='object-contain object-center bg-black'
               style={{ opacity: 1 }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority={priority}

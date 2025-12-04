@@ -101,7 +101,7 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
       <img
         src={image.url}
         alt={altText}
-        className={`w-full h-full object-contain object-center`}
+        className={`w-full h-full object-contain object-center bg-black`}
         style={{opacity: 1}}
         onLoad={handleLoad}
         onError={handleError}

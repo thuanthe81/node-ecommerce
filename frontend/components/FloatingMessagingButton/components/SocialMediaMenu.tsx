@@ -133,7 +133,7 @@ export function SocialMediaMenu({
     <div
       className={`
         absolute pointer-events-none
-        bottom-16 right-16
+        bottom-18 right-18
         transition-opacity duration-200
         ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
       `}
@@ -184,11 +184,11 @@ export function SocialMediaMenu({
               WebkitTapHighlightColor: 'rgba(37, 99, 235, 0.1)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'gray';
+              e.currentTarget.style.backgroundColor = 'white';
               e.currentTarget.style.color = '#ffffff';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.backgroundColor = '#c3c3c3';
               e.currentTarget.style.color = platform.color;
             }}
             onTouchStart={(e) => {
@@ -199,7 +199,7 @@ export function SocialMediaMenu({
             onTouchEnd={(e) => {
               // Reset after touch
               setTimeout(() => {
-                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.backgroundColor = '#c3c3c3';
                 e.currentTarget.style.color = platform.color;
               }, 150);
             }}

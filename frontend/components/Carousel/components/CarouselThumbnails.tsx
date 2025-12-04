@@ -53,7 +53,7 @@ const CarouselThumbnails: React.FC<CarouselThumbnailsProps> = ({
             <img
               src={image.url}
               alt={getAltText(image)}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain bg-black"
             />
           </button>
         );

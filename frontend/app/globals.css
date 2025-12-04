@@ -319,7 +319,7 @@ body {
 /* Enable hardware acceleration for smooth scrolling */
 * {
   -webkit-backface-visibility: hidden;
-  -webkit-perspective: 1000;
+  /*-webkit-perspective: 1000;*/
 }
 
 /* Apply transform only to non-fixed elements to avoid breaking position: fixed */
@@ -347,7 +347,7 @@ img[loading="lazy"].loaded {
 /* Prevent layout shift during image loading */
 img {
   max-width: 100%;
-  height: auto;
+  /*height: auto;*/
 }
 
 /* iOS-specific optimizations */
