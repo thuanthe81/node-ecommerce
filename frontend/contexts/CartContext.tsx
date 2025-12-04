@@ -29,11 +29,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      console.log(`[CartContext] Refreshing cart`);
       const cartData = await cartApi.getCart();
       setCart(cartData);
+      console.log(`[CartContext] Successfully refreshed cart`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load cart');
-      console.error('Error loading cart:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to load cart';
+      console.error('[CartContext] Error loading cart:', {
+        error: errorMessage,
+        details: err.response?.data?.details,
+        timestamp: new Date().toISOString(),
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -84,11 +91,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = async (productId: string, quantity: number) => {
     try {
       setError(null);
+      console.log(`[CartContext] Adding item to cart - ProductId: ${productId}, Quantity: ${quantity}`);
       const updatedCart = await cartApi.addItem(productId, quantity);
       setCart(updatedCart);
       notifyCartUpdate();
+      console.log(`[CartContext] Successfully added item to cart`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to add item to cart');
+      const errorMessage = err.response?.data?.message || 'Failed to add item to cart';
+      console.error(`[CartContext] Error adding item to cart:`, {
+        productId,
+        quantity,
+        error: errorMessage,
+        details: err.response?.data?.details,
+        timestamp: new Date().toISOString(),
+      });
+      setError(errorMessage);
       throw err;
     }
   };
@@ -96,11 +113,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = async (itemId: string, quantity: number) => {
     try {
       setError(null);
+      console.log(`[CartContext] Updating item quantity - ItemId: ${itemId}, Quantity: ${quantity}`);
       const updatedCart = await cartApi.updateItem(itemId, quantity);
       setCart(updatedCart);
       notifyCartUpdate();
+      console.log(`[CartContext] Successfully updated item quantity`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update item');
+      // Check if it's a session mismatch error
+      if (err.response?.data?.message?.includes('does not belong to session') ||
+          err.response?.data?.error === 'CART_SESSION_MISMATCH') {
+        console.log('[CartContext] Session mismatch detected in updateQuantity, refreshing cart and retrying...', {
+          itemId,
+          quantity,
+          errorDetails: err.response?.data?.details,
+        });
+        try {
+          // Refresh cart to sync session ID
+          await refreshCart();
+          console.log('[CartContext] Cart refreshed, retrying updateQuantity...');
+          // Retry the operation once
+          const updatedCart = await cartApi.updateItem(itemId, quantity);
+          setCart(updatedCart);
+          notifyCartUpdate();
+          console.log('[CartContext] Successfully updated item quantity after retry');
+          return; // Success on retry
+        } catch (retryErr: any) {
+          console.error('[CartContext] Retry failed for updateQuantity:', {
+            itemId,
+            quantity,
+            error: retryErr.response?.data?.message,
+            details: retryErr.response?.data?.details,
+            timestamp: new Date().toISOString(),
+          });
+          setError('Failed to update quantity. Please refresh the page and try again.');
+          throw retryErr;
+        }
+      }
+
+      const errorMessage = err.response?.data?.message || 'Failed to update item';
+      console.error(`[CartContext] Error updating item quantity:`, {
+        itemId,
+        quantity,
+        error: errorMessage,
+        details: err.response?.data?.details,
+        timestamp: new Date().toISOString(),
+      });
+      setError(errorMessage);
       throw err;
     }
   };
@@ -108,11 +166,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const removeItem = async (itemId: string) => {
     try {
       setError(null);
+      console.log(`[CartContext] Removing item from cart - ItemId: ${itemId}`);
       const updatedCart = await cartApi.removeItem(itemId);
       setCart(updatedCart);
       notifyCartUpdate();
+      console.log(`[CartContext] Successfully removed item from cart`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to remove item');
+      // Check if it's a session mismatch error
+      if (err.response?.data?.message?.includes('does not belong to session') ||
+          err.response?.data?.error === 'CART_SESSION_MISMATCH') {
+        console.log('[CartContext] Session mismatch detected in removeItem, refreshing cart and retrying...', {
+          itemId,
+          errorDetails: err.response?.data?.details,
+        });
+        try {
+          // Refresh cart to sync session ID
+          await refreshCart();
+          console.log('[CartContext] Cart refreshed, retrying removeItem...');
+          // Retry the operation once
+          const updatedCart = await cartApi.removeItem(itemId);
+          setCart(updatedCart);
+          notifyCartUpdate();
+          console.log('[CartContext] Successfully removed item from cart after retry');
+          return; // Success on retry
+        } catch (retryErr: any) {
+          console.error('[CartContext] Retry failed for removeItem:', {
+            itemId,
+            error: retryErr.response?.data?.message,
+            details: retryErr.response?.data?.details,
+            timestamp: new Date().toISOString(),
+          });
+          setError('Failed to remove item. Please refresh the page and try again.');
+          throw retryErr;
+        }
+      }
+
+      const errorMessage = err.response?.data?.message || 'Failed to remove item';
+      console.error(`[CartContext] Error removing item from cart:`, {
+        itemId,
+        error: errorMessage,
+        details: err.response?.data?.details,
+        timestamp: new Date().toISOString(),
+      });
+      setError(errorMessage);
       throw err;
     }
   };
@@ -120,11 +216,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = async () => {
     try {
       setError(null);
+      console.log(`[CartContext] Clearing cart`);
       const updatedCart = await cartApi.clearCart();
       setCart(updatedCart);
       notifyCartUpdate();
+      console.log(`[CartContext] Successfully cleared cart`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to clear cart');
+      const errorMessage = err.response?.data?.message || 'Failed to clear cart';
+      console.error(`[CartContext] Error clearing cart:`, {
+        error: errorMessage,
+        details: err.response?.data?.details,
+        timestamp: new Date().toISOString(),
+      });
+      setError(errorMessage);
       throw err;
     }
   };

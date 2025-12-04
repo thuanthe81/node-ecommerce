@@ -153,12 +153,47 @@ export class CartService {
     }
 
     // Verify cart ownership
-    if (userId && cartItem.cart.userId !== userId) {
-      throw new BadRequestException('Cart item does not belong to user');
+    // If user is logged in, verify by userId
+    if (userId) {
+      if (cartItem.cart.userId !== userId) {
+        const errorDetails = {
+          operation: 'updateItem',
+          itemId,
+          cartId: cartItem.cart.id,
+          expectedUserId: cartItem.cart.userId,
+          receivedUserId: userId,
+          timestamp: new Date().toISOString(),
+        };
+        console.error(
+          `[Cart Session] User ID mismatch in updateItem - Expected: ${cartItem.cart.userId}, Got: ${userId}, ItemId: ${itemId}`,
+          errorDetails,
+        );
+        throw new BadRequestException({
+          message: `Cart item does not belong to user. Expected: ${cartItem.cart.userId}, Got: ${userId}`,
+          error: 'CART_OWNERSHIP_MISMATCH',
+          details: errorDetails,
+        });
+      }
     }
-
-    if (sessionId && cartItem.cart.sessionId !== sessionId) {
-      throw new BadRequestException('Cart item does not belong to session');
+    // If user is NOT logged in (guest), verify by sessionId
+    else if (sessionId && cartItem.cart.sessionId !== sessionId) {
+      const errorDetails = {
+        operation: 'updateItem',
+        itemId,
+        cartId: cartItem.cart.id,
+        expectedSessionId: cartItem.cart.sessionId,
+        receivedSessionId: sessionId,
+        timestamp: new Date().toISOString(),
+      };
+      console.error(
+        `[Cart Session] Session ID mismatch in updateItem - Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}, ItemId: ${itemId}`,
+        errorDetails,
+      );
+      throw new BadRequestException({
+        message: `Cart item does not belong to session. Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}`,
+        error: 'CART_SESSION_MISMATCH',
+        details: errorDetails,
+      });
     }
 
     // Verify stock
@@ -195,12 +230,47 @@ export class CartService {
     }
 
     // Verify cart ownership
-    if (userId && cartItem.cart.userId !== userId) {
-      throw new BadRequestException('Cart item does not belong to user');
+    // If user is logged in, verify by userId
+    if (userId) {
+      if (cartItem.cart.userId !== userId) {
+        const errorDetails = {
+          operation: 'removeItem',
+          itemId,
+          cartId: cartItem.cart.id,
+          expectedUserId: cartItem.cart.userId,
+          receivedUserId: userId,
+          timestamp: new Date().toISOString(),
+        };
+        console.error(
+          `[Cart Session] User ID mismatch in removeItem - Expected: ${cartItem.cart.userId}, Got: ${userId}, ItemId: ${itemId}`,
+          errorDetails,
+        );
+        throw new BadRequestException({
+          message: `Cart item does not belong to user. Expected: ${cartItem.cart.userId}, Got: ${userId}`,
+          error: 'CART_OWNERSHIP_MISMATCH',
+          details: errorDetails,
+        });
+      }
     }
-
-    if (sessionId && cartItem.cart.sessionId !== sessionId) {
-      throw new BadRequestException('Cart item does not belong to session');
+    // If user is NOT logged in (guest), verify by sessionId
+    else if (sessionId && cartItem.cart.sessionId !== sessionId) {
+      const errorDetails = {
+        operation: 'removeItem',
+        itemId,
+        cartId: cartItem.cart.id,
+        expectedSessionId: cartItem.cart.sessionId,
+        receivedSessionId: sessionId,
+        timestamp: new Date().toISOString(),
+      };
+      console.error(
+        `[Cart Session] Session ID mismatch in removeItem - Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}, ItemId: ${itemId}`,
+        errorDetails,
+      );
+      throw new BadRequestException({
+        message: `Cart item does not belong to session. Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}`,
+        error: 'CART_SESSION_MISMATCH',
+        details: errorDetails,
+      });
     }
 
     // Delete cart item
@@ -362,6 +432,10 @@ export class CartService {
         },
         include: { items: true },
       });
+
+      console.log(
+        `[Cart Session] Created new cart - CartId: ${cart.id}, UserId: ${userId || 'none'}, SessionId: ${sessionId || 'none'}`,
+      );
     } else {
       // Update expiration date
       const expiresAt = new Date();
@@ -372,6 +446,10 @@ export class CartService {
         data: { expiresAt },
         include: { items: true },
       });
+
+      console.log(
+        `[Cart Session] Found existing cart - CartId: ${cart.id}, UserId: ${cart.userId || 'none'}, SessionId: ${cart.sessionId || 'none'}`,
+      );
     }
 
     return cart;

@@ -90,14 +90,22 @@ export class CartController {
    */
   private getSessionId(req: Request): string {
     // Try to get session ID from cookie or header
-    let sessionId = req.cookies?.sessionId || req.headers['x-session-id'];
+    const cookieSessionId = req.cookies?.sessionId;
+    const headerSessionId = req.headers['x-session-id'];
 
-    if (!sessionId) {
-      // Generate new session ID
-      sessionId = this.generateSessionId();
+    // Prefer header over cookie for explicit session ID passing
+    let sessionId = headerSessionId || cookieSessionId;
+
+    if (sessionId) {
+      // Log for debugging - using existing session ID
+      console.log(`[Cart Session] Using existing session ID: ${sessionId} (source: ${headerSessionId ? 'header' : 'cookie'})`);
+      return sessionId as string;
     }
 
-    return sessionId as string;
+    // Only generate new session ID if none provided
+    const newSessionId = this.generateSessionId();
+    console.log(`[Cart Session] Generated new session ID: ${newSessionId}`);
+    return newSessionId;
   }
 
   /**

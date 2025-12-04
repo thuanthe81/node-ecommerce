@@ -1113,6 +1113,14 @@
     "viewCart": {
       "en": "View Cart",
       "vi": "Xem giỏ hàng"
+    },
+    "failedRemoveItem": {
+      "en": "Failed to remove item. Please refresh the page and try again.",
+      "vi": "Không thể xóa sản phẩm. Vui lòng làm mới trang và thử lại."
+    },
+    "failedUpdateQuantity": {
+      "en": "Failed to update quantity. Please refresh the page and try again.",
+      "vi": "Không thể cập nhật số lượng. Vui lòng làm mới trang và thử lại."
     }
   },
   "checkout": {
