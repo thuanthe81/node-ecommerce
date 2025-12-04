@@ -1,0 +1,4 @@
+# This directory will contain custom hooks
+# - useFooterSettings.ts
+# - useMenuState.ts
+# - useClickOutside.ts

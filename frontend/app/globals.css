@@ -753,6 +753,152 @@ img {
 }
 
 /* ============================================================================
+   Floating Messaging Button Responsive Styles
+   ============================================================================ */
+
+/* Base floating button styles */
+.floating-messaging-button {
+  /* Ensure button stays above other content */
+  z-index: 9999;
+  /* Enable hardware acceleration */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .floating-messaging-button button,
+  .floating-messaging-button a {
+    /* Larger touch targets on touch devices */
+    min-width: 48px;
+    min-height: 48px;
+    /* Improve touch responsiveness */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(37, 99, 235, 0.1);
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 767px) {
+  /* Ensure button doesn't interfere with mobile navigation */
+  .floating-messaging-button {
+    /* Adjust position to avoid mobile browser chrome */
+    bottom: max(16px, env(safe-area-inset-bottom));
+    right: max(16px, env(safe-area-inset-right));
+  }
+
+  /* Reduce animation complexity on mobile for better performance */
+  .floating-messaging-button .animate-fade-in {
+    animation-duration: 0.2s;
+  }
+
+  /* Optimize transforms for mobile */
+  .floating-messaging-button button,
+  .floating-messaging-button a {
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 374px) {
+  .floating-messaging-button {
+    /* More compact positioning on very small screens */
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+  .floating-messaging-button {
+    /* Adjust for landscape mode where vertical space is limited */
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* Small viewport height optimization */
+@media (max-height: 599px) {
+  .floating-messaging-button {
+    /* Ensure menu fits in small viewports */
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Tablet-specific styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .floating-messaging-button {
+    /* Standard positioning for tablets */
+    bottom: max(24px, env(safe-area-inset-bottom));
+    right: max(24px, env(safe-area-inset-right));
+  }
+}
+
+/* Desktop-specific styles */
+@media (min-width: 1024px) {
+  .floating-messaging-button {
+    /* Standard positioning for desktop */
+    bottom: 24px;
+    right: 24px;
+  }
+
+  /* Enhanced hover effects on desktop */
+  .floating-messaging-button button:hover {
+    transform: scale(1.05);
+  }
+
+  .floating-messaging-button a:hover {
+    transform: translate(var(--x), var(--y)) scale(1.1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .floating-messaging-button * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .floating-messaging-button .animate-fade-in {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .floating-messaging-button button {
+    border: 2px solid currentColor;
+  }
+
+  .floating-messaging-button a {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .floating-messaging-button button {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
+                0 4px 10px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  .floating-messaging-button a {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
+                0 4px 10px -2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Print styles - hide floating button */
+@media print {
+  .floating-messaging-button {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
    Print Styles - Optimized for Order Confirmation
    ============================================================================ */
 @media print {

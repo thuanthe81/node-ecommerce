@@ -2644,5 +2644,31 @@
       "en": "Call us",
       "vi": "Gọi cho chúng tôi"
     }
+  },
+  "messaging": {
+    "openMessaging": {
+      "en": "Open messaging menu",
+      "vi": "Mở menu nhắn tin"
+    },
+    "closeMessaging": {
+      "en": "Close messaging menu",
+      "vi": "Đóng menu nhắn tin"
+    },
+    "contactViaFacebook": {
+      "en": "Contact us on Facebook",
+      "vi": "Liên hệ qua Facebook"
+    },
+    "contactViaTikTok": {
+      "en": "Contact us on TikTok",
+      "vi": "Liên hệ qua TikTok"
+    },
+    "contactViaZalo": {
+      "en": "Contact us on Zalo",
+      "vi": "Liên hệ qua Zalo"
+    },
+    "contactViaWhatsApp": {
+      "en": "Contact us on WhatsApp",
+      "vi": "Liên hệ qua WhatsApp"
+    }
   }
 }
