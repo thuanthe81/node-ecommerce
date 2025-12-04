@@ -37,7 +37,7 @@ export function TriggerButton({ isOpen, onClick, ariaLabel }: TriggerButtonProps
       aria-label={ariaLabel}
       aria-expanded={isOpen}
       className="
-        absolute bottom-6 right-6
+        relative
         w-14 h-14
         bg-blue-600 hover:bg-blue-700
         text-white

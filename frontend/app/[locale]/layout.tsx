@@ -144,8 +144,8 @@ export default async function LocaleLayout({
                     whatsappUrl={footerSettings.whatsappUrl || undefined}
                   />
                 )}
+                <FloatingMessagingButton />
               </div>
-              <FloatingMessagingButton />
             </CartProvider>
           </AuthProvider>
         </NextIntlClientProvider>

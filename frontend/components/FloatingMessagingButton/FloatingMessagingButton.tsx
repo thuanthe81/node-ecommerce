@@ -77,7 +77,11 @@ const FloatingMessagingButton: React.FC = () => {
   }
 
   return (
-    <div ref={containerRef} style={{ position: 'fixed', bottom: 0, right: 0, zIndex: 9999 }}>
+    <div
+      ref={containerRef}
+      className="fixed bottom-0 right-0 z-[9999]"
+      id="messaging-button-container"
+    >
       <TriggerButton
         isOpen={isOpen}
         onClick={toggle}

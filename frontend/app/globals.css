@@ -318,9 +318,13 @@ body {
 
 /* Enable hardware acceleration for smooth scrolling */
 * {
-  -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   -webkit-perspective: 1000;
+}
+
+/* Apply transform only to non-fixed elements to avoid breaking position: fixed */
+body > *:not(#messaging-button-container) {
+  -webkit-transform: translateZ(0);
 }
 
 /* Optimize font rendering */
@@ -757,13 +761,13 @@ img {
    ============================================================================ */
 
 /* Base floating button styles */
-.floating-messaging-button {
+#messaging-button-container {
   /* Ensure button stays above other content */
   z-index: 9999;
-  /* Enable hardware acceleration */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
+  /* IMPORTANT: Remove transform to allow fixed positioning to work */
+  -webkit-transform: none !important;
+  transform: none !important;
+  will-change: auto;
 }
 
 /* Optimize for touch devices */

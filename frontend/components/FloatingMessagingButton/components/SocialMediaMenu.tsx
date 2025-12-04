@@ -134,8 +134,6 @@ export function SocialMediaMenu({
       className={`
         absolute pointer-events-none
         bottom-16 right-16
-        max-md:bottom-4 max-md:right-4
-        max-sm:bottom-3 max-sm:right-3
         transition-opacity duration-200
         ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
       `}
