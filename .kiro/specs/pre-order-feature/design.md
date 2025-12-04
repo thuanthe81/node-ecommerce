@@ -160,6 +160,24 @@ interface Product {
 
 **Validates: Requirements 4.1**
 
+### Property 10: Add to cart button visibility for pre-order products
+
+*For any* product with zero stock quantity, the "Add to Cart" button SHALL be visible and functional
+
+**Validates: Requirements 5.1**
+
+### Property 11: Quantity selector visibility for pre-order products
+
+*For any* product with zero stock quantity, the quantity selector SHALL be visible and allow quantity selection
+
+**Validates: Requirements 5.2**
+
+### Property 12: Pre-order cart addition functionality
+
+*For any* product with zero stock quantity, adding the product to cart SHALL succeed without stock quantity validation errors
+
+**Validates: Requirements 5.3**
+
 ## Error Handling
 
 No new error handling required. This is a terminology change that does not affect error conditions or validation logic.
@@ -212,6 +230,7 @@ Each property-based test will:
    - `frontend/components/ProductCard.tsx` - Update availability badge text
    - `frontend/components/ProductForm.tsx` - Update form status text
    - `frontend/app/[locale]/admin/products/page.tsx` - Update filter dropdown options
+   - `frontend/app/[locale]/products/[slug]/ProductInfo.tsx` - Enable add to cart for pre-order products
 
 3. **SEO System**:
    - `frontend/lib/seo.ts` - Update type definitions and schema generation
@@ -247,3 +266,29 @@ Both English and Vietnamese translations must be updated consistently:
 ### SEO Considerations
 
 The schema.org PreOrder status is semantically more accurate than OutOfStock for products that can be ordered despite zero inventory. This improves search engine understanding of product availability.
+
+### Pre-Order Cart Functionality
+
+**Current Behavior**: The add to cart button and quantity selector are hidden when `isOutOfStock` is true (line 151 in ProductInfo.tsx).
+
+**New Behavior**:
+- Remove the `{!isOutOfStock && (` conditional wrapper around the add to cart section
+- Always show the add to cart button and quantity selector for all products
+- For pre-order products (zero stock), allow quantity selection without stock quantity restrictions
+- The quantity selector max value should be reasonable (e.g., 99) for pre-order products instead of being limited by `product.stockQuantity`
+
+**Implementation Details**:
+```typescript
+// Current logic (to be changed):
+{!isOutOfStock && (
+  <div className="space-y-4">
+    {/* Quantity selector and add to cart button */}
+  </div>
+)}
+
+// New logic:
+<div className="space-y-4">
+  {/* Always show quantity selector and add to cart button */}
+  {/* For pre-order products, set reasonable max quantity (e.g., 99) */}
+</div>
+```

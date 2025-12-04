@@ -56,3 +56,14 @@ The e-commerce platform currently displays products with zero stock quantity as 
 
 1. WHEN a product has low stock (greater than zero but below threshold), THE Product Catalog System SHALL continue to display the low stock warning unchanged
 2. THE system SHALL NOT modify the "In Stock" terminology for products with available inventory
+
+### Requirement 5
+
+**User Story:** As a customer, I want to add pre-order products to my cart, so that I can purchase items that are temporarily out of stock.
+
+#### Acceptance Criteria
+
+1. WHEN a product has zero stock quantity, THE Product Catalog System SHALL display the "Add to Cart" button
+2. WHEN a product has zero stock quantity, THE Product Catalog System SHALL display the quantity selector
+3. WHEN a customer adds a pre-order product to cart, THE Product Catalog System SHALL allow the addition without stock quantity restrictions
+4. WHEN a product has zero stock quantity, THE Product Catalog System SHALL maintain the same add to cart functionality as in-stock products

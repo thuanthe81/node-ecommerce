@@ -73,5 +73,25 @@
   - **Property 9: Pre-order label positioned at bottom right**
   - **Validates: Requirements 1.6**
 
-- [ ] 8. Final Checkpoint - Ensure all tests pass
+- [x] 8. Enable add to cart functionality for pre-order products
+  - Update `frontend/app/[locale]/products/[slug]/ProductInfo.tsx` to always show add to cart button
+  - Remove conditional wrapper `{!isOutOfStock && (` around add to cart section
+  - Update quantity selector to allow reasonable max quantity (e.g., 99) for pre-order products
+  - Ensure quantity selector works correctly for both in-stock and pre-order products
+  - Maintain all existing functionality for in-stock products
+  - _Requirements: 5.1, 5.2, 5.3, 5.4_
+
+- [ ]* 8.1 Write property test for add to cart button visibility
+  - **Property 10: Add to cart button visible for pre-order products**
+  - **Validates: Requirements 5.1**
+
+- [ ]* 8.2 Write property test for quantity selector visibility
+  - **Property 11: Quantity selector visible for pre-order products**
+  - **Validates: Requirements 5.2**
+
+- [ ]* 8.3 Write property test for pre-order cart addition
+  - **Property 12: Pre-order products can be added to cart**
+  - **Validates: Requirements 5.3**
+
+- [ ] 9. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

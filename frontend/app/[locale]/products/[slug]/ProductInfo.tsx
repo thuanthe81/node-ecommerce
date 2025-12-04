@@ -28,7 +28,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   const isZeroPrice = isContactForPrice(product.price);
 
   const handleQuantityChange = (value: number) => {
-    const newQuantity = Math.max(1, Math.min(value, product.stockQuantity));
+    // For pre-order products (zero stock), allow up to 99 items
+    // For in-stock products, limit to available stock quantity
+    const maxQuantity = isOutOfStock ? 99 : product.stockQuantity;
+    const newQuantity = Math.max(1, Math.min(value, maxQuantity));
     setQuantity(newQuantity);
   };
 
@@ -147,60 +150,58 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Quantity Selector and Add to Cart */}
-      {!isOutOfStock && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <label className="font-semibold">
-              {t('product.quantity')}
-            </label>
-            <div className="flex items-center border border-gray-300 rounded-md">
-              <button
-                onClick={() => handleQuantityChange(quantity - 1)}
-                className="px-4 py-2 hover:bg-gray-100"
-                disabled={quantity <= 1}
-              >
-                -
-              </button>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                className="w-16 text-center border-x border-gray-300 py-2"
-                min="1"
-                max={product.stockQuantity}
-              />
-              <button
-                onClick={() => handleQuantityChange(quantity + 1)}
-                className="px-4 py-2 hover:bg-gray-100"
-                disabled={quantity >= product.stockQuantity}
-              >
-                +
-              </button>
-            </div>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <label className="font-semibold">
+            {t('product.quantity')}
+          </label>
+          <div className="flex items-center border border-gray-300 rounded-md">
+            <button
+              onClick={() => handleQuantityChange(quantity - 1)}
+              className="px-4 py-2 hover:bg-gray-100"
+              disabled={quantity <= 1}
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={quantity}
+              onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+              className="w-16 text-center border-x border-gray-300 py-2"
+              min="1"
+              max={isOutOfStock ? 99 : product.stockQuantity}
+            />
+            <button
+              onClick={() => handleQuantityChange(quantity + 1)}
+              className="px-4 py-2 hover:bg-gray-100"
+              disabled={quantity >= (isOutOfStock ? 99 : product.stockQuantity)}
+            >
+              +
+            </button>
           </div>
-
-          <button
-            onClick={handleAddToCart}
-            disabled={adding}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {adding
-              ? t('cart.addingggg')
-              : addedMessage
-              ? t('cart.added')
-              : t('cart.addToCart')}
-          </button>
-
-          {/* Zero-price product messaging */}
-          {isZeroPrice && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                {getPricingGuidanceText(locale)}
-              </p>
-            </div>
-          )}
         </div>
-      )}
+
+        <button
+          onClick={handleAddToCart}
+          disabled={adding}
+          className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {adding
+            ? t('cart.addingggg')
+            : addedMessage
+            ? t('cart.added')
+            : t('cart.addToCart')}
+        </button>
+
+        {/* Zero-price product messaging */}
+        {isZeroPrice && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              {getPricingGuidanceText(locale)}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Product Details */}
       <div className="border-t pt-6 space-y-2">
