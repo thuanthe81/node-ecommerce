@@ -7,5 +7,5 @@ interface PrivacyPageProps {
 }
 
 export default function PrivacyPage({ params }: PrivacyPageProps) {
-  redirect(`/${params.locale}/pages/privacy-policy`);
+  redirect(`/${params.locale || 'vi'}/pages/privacy-policy`);
 }

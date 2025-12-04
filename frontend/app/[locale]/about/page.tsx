@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 
 interface AboutPageProps {
@@ -9,5 +8,5 @@ interface AboutPageProps {
 
 export default function AboutPage({ params }: AboutPageProps) {
   // Redirect to the dynamic CMS page
-  redirect(`/${params.locale}/pages/about`);
+  redirect(`/${params.locale || 'vi'}/pages/about`);
 }

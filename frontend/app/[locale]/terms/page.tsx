@@ -7,5 +7,5 @@ interface TermsPageProps {
 }
 
 export default function TermsPage({ params }: TermsPageProps) {
-  redirect(`/${params.locale}/pages/terms-of-service`);
+  redirect(`/${params.locale || 'vi'}/pages/terms-of-service`);
 }
