@@ -48,8 +48,15 @@ export function useQuillEditor(
 
     let isMounted = true;
 
-    // Dynamic import of Quill to avoid SSR issues
-    import('quill').then(({ default: Quill }) => {
+    // Dynamic import of Quill and register ImageResize module
+    (async () => {
+      // First, register the ImageResize module
+      const { registerImageResize } = await import('../utils/quillConfig');
+      await registerImageResize();
+
+      // Then import Quill
+      const { default: Quill } = await import('quill');
+
       if (!isMounted || !quillRef.current) return;
 
       // Create Quill configuration
@@ -81,7 +88,7 @@ export function useQuillEditor(
 
       setEditor(quillInstance);
       setIsReady(true);
-    });
+    })();
 
     return () => {
       isMounted = false;

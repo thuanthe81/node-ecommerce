@@ -1464,6 +1464,283 @@ img {
 }
 
 /* ============================================================================
+   Image Resize Module Styles
+   ============================================================================ */
+
+/* Image resize handles - Enhanced visibility and accessibility */
+.rich-text-editor .ql-editor img {
+  cursor: pointer;
+  transition: box-shadow 0.15s ease-in-out;
+}
+
+/* Hover state for images to indicate they're resizable */
+.rich-text-editor .ql-editor img:hover {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+/* Resize handles styling - Enhanced for better visibility */
+.rich-text-editor .ql-editor .img-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #2563eb; /* blue-600 */
+  border: 2px solid #ffffff;
+  border-radius: 3px;
+  cursor: nwse-resize;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Hover state for resize handles */
+.rich-text-editor .ql-editor .img-resize-handle:hover {
+  background-color: #1d4ed8; /* blue-700 */
+  transform: scale(1.2);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Active state for resize handles */
+.rich-text-editor .ql-editor .img-resize-handle:active {
+  background-color: #1e40af; /* blue-800 */
+  transform: scale(1.1);
+}
+
+/* Corner handles with specific cursors */
+.rich-text-editor .ql-editor .img-resize-handle-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nw-resize;
+}
+
+.rich-text-editor .ql-editor .img-resize-handle-ne {
+  top: -5px;
+  right: -5px;
+  cursor: ne-resize;
+}
+
+.rich-text-editor .ql-editor .img-resize-handle-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: sw-resize;
+}
+
+.rich-text-editor .ql-editor .img-resize-handle-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+}
+
+/* Display size tooltip - Enhanced styling */
+.rich-text-editor .ql-editor .img-resize-display-size {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 11;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Image wrapper when resizing */
+.rich-text-editor .ql-editor .img-resize-wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  transition: outline 0.15s ease-in-out;
+}
+
+/* Active resize state - Enhanced visual feedback */
+.rich-text-editor .ql-editor .img-resize-wrapper.active {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Resizing state - Show visual feedback during resize */
+.rich-text-editor .ql-editor .img-resize-wrapper.resizing {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.15);
+}
+
+.rich-text-editor .ql-editor .img-resize-wrapper.resizing img {
+  opacity: 0.9;
+}
+
+/* Mobile responsive styles for image resize */
+@media (max-width: 767px) {
+  /* Larger handles for touch devices */
+  .rich-text-editor .ql-editor .img-resize-handle {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-nw {
+    top: -7px;
+    left: -7px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-ne {
+    top: -7px;
+    right: -7px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-sw {
+    bottom: -7px;
+    left: -7px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-se {
+    bottom: -7px;
+    right: -7px;
+  }
+
+  /* Larger tooltip on mobile */
+  .rich-text-editor .ql-editor .img-resize-display-size {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  /* More prominent outline on mobile */
+  .rich-text-editor .ql-editor .img-resize-wrapper.active {
+    outline-width: 4px;
+  }
+}
+
+/* Tablet responsive styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .rich-text-editor .ql-editor .img-resize-handle {
+    width: 12px;
+    height: 12px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-nw,
+  .rich-text-editor .ql-editor .img-resize-handle-ne {
+    top: -6px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-nw,
+  .rich-text-editor .ql-editor .img-resize-handle-sw {
+    left: -6px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-ne,
+  .rich-text-editor .ql-editor .img-resize-handle-se {
+    right: -6px;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle-sw,
+  .rich-text-editor .ql-editor .img-resize-handle-se {
+    bottom: -6px;
+  }
+}
+
+/* Dark mode support for image resize */
+@media (prefers-color-scheme: dark) {
+  .rich-text-editor .ql-editor img:hover {
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4);
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle {
+    background-color: #3b82f6; /* blue-500 */
+    border-color: #1f2937; /* gray-800 */
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle:hover {
+    background-color: #60a5fa; /* blue-400 */
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle:active {
+    background-color: #2563eb; /* blue-600 */
+  }
+
+  .rich-text-editor .ql-editor .img-resize-display-size {
+    background-color: rgba(31, 41, 55, 0.95); /* gray-800 */
+  }
+
+  .rich-text-editor .ql-editor .img-resize-wrapper.active {
+    outline-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  }
+
+  .rich-text-editor .ql-editor .img-resize-wrapper.resizing {
+    outline-color: #60a5fa;
+    box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.2);
+  }
+}
+
+/* High contrast mode for image resize */
+@media (prefers-contrast: high) {
+  .rich-text-editor .ql-editor .img-resize-handle {
+    border-width: 3px;
+    border-color: #000000;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-wrapper.active {
+    outline-width: 4px;
+    outline-color: #000000;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-display-size {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Reduced motion for image resize */
+@media (prefers-reduced-motion: reduce) {
+  .rich-text-editor .ql-editor img,
+  .rich-text-editor .ql-editor .img-resize-handle,
+  .rich-text-editor .ql-editor .img-resize-wrapper,
+  .rich-text-editor .ql-editor .img-resize-display-size {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle:hover {
+    transform: none !important;
+  }
+}
+
+/* Touch device optimizations for image resize */
+@media (hover: none) and (pointer: coarse) {
+  /* Always show handles on touch devices when image is selected */
+  .rich-text-editor .ql-editor .img-resize-wrapper .img-resize-handle {
+    opacity: 1;
+  }
+
+  /* Remove hover effects on touch devices */
+  .rich-text-editor .ql-editor img:hover {
+    box-shadow: none;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-handle:hover {
+    transform: none;
+    background-color: #2563eb;
+  }
+}
+
+/* Pointer device optimizations */
+@media (hover: hover) and (pointer: fine) {
+  /* Hide handles until hover on precise pointing devices */
+  .rich-text-editor .ql-editor .img-resize-wrapper:not(.active) .img-resize-handle {
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  .rich-text-editor .ql-editor .img-resize-wrapper:hover .img-resize-handle,
+  .rich-text-editor .ql-editor .img-resize-wrapper.active .img-resize-handle {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
    Image Dropdown Styles
    ============================================================================ */
 
@@ -1563,5 +1840,168 @@ img {
 
   .image-dropdown button {
     transition: none !important;
+  }
+}
+
+/* ============================================================================
+   Color Picker Dropdown Styles
+   ============================================================================ */
+
+/* Color picker dropdown container */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color {
+  width: auto;
+}
+
+/* Color picker label (button) */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label {
+  @apply border border-gray-300 rounded px-2 py-1;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label:hover {
+  @apply bg-gray-100 border-gray-400;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-color.ql-expanded .ql-picker-label {
+  @apply bg-gray-100 border-blue-500;
+}
+
+/* Color picker dropdown options container */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options {
+  @apply bg-white border border-gray-300 rounded-lg shadow-lg;
+  padding: 8px;
+  width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Color swatches grid layout */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+  @apply border border-gray-200 rounded;
+  width: 24px;
+  height: 24px;
+  margin: 2px;
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  display: inline-block;
+}
+
+/* Hover state for color swatches */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item:hover {
+  @apply border-gray-400 shadow-md;
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+/* Active/selected color swatch */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item.ql-selected {
+  @apply border-blue-600 shadow-lg;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+/* Focus state for keyboard navigation */
+.rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-1;
+  transform: scale(1.15);
+}
+
+/* Mobile responsive styles for color picker */
+@media (max-width: 767px) {
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options {
+    width: 180px;
+    padding: 6px;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+    width: 28px;
+    height: 28px;
+    margin: 3px;
+  }
+
+  /* Larger touch targets on mobile */
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label {
+    min-width: 44px;
+    min-height: 44px;
+    @apply flex items-center justify-center;
+  }
+}
+
+/* Tablet responsive styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options {
+    width: 190px;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* Dark mode support for color picker */
+@media (prefers-color-scheme: dark) {
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label {
+    @apply border-gray-600 bg-gray-800;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label:hover {
+    @apply bg-gray-700 border-gray-500;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color.ql-expanded .ql-picker-label {
+    @apply bg-gray-700 border-blue-400;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options {
+    @apply bg-gray-800 border-gray-600;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+    @apply border-gray-600;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item:hover {
+    @apply border-gray-400;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item.ql-selected {
+    @apply border-blue-400;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+  }
+}
+
+/* High contrast mode for color picker */
+@media (prefers-contrast: high) {
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label {
+    @apply border-2 border-black;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options {
+    @apply border-2 border-black;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+    @apply border-2;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item.ql-selected {
+    @apply border-4 border-black;
+  }
+}
+
+/* Reduced motion for color picker */
+@media (prefers-reduced-motion: reduce) {
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-label,
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options,
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item:hover,
+  .rich-text-editor .ql-toolbar .ql-picker.ql-color .ql-picker-options .ql-picker-item:focus {
+    transform: none !important;
   }
 }

@@ -100,3 +100,28 @@ This document outlines the requirements for integrating Quill.js rich text edito
 3. WHEN the upload completes THEN the system SHALL return a publicly accessible URL for the uploaded image
 4. WHEN an image URL is inserted into content THEN the system SHALL use absolute or properly resolved relative URLs
 5. WHEN content with images is saved THEN the system SHALL persist the image URLs in the database as part of the HTML Output
+
+### Requirement 8
+
+**User Story:** As a content administrator, I want to apply text color formatting, so that I can emphasize content and match brand colors.
+
+#### Acceptance Criteria
+
+1. WHEN the content form loads THEN the Content Editor SHALL display a color picker button in the toolbar
+2. WHEN a user selects text and clicks the color button THEN the system SHALL display a color picker with predefined color options
+3. WHEN a user selects a color from the picker THEN the Content Editor SHALL apply the selected color to the text
+4. WHEN colored text is saved THEN the system SHALL persist the color formatting in the HTML Output
+5. WHEN colored text is loaded THEN the Content Editor SHALL display the text with the correct color
+
+### Requirement 9
+
+**User Story:** As a content administrator, I want to resize images after inserting them, so that I can control the layout and visual hierarchy of my content.
+
+#### Acceptance Criteria
+
+1. WHEN an image is inserted into the Content Editor THEN the system SHALL set the image width to 300 pixels by default
+2. WHEN an image is inserted into the Content Editor THEN the system SHALL display resize handles on the image
+3. WHEN a user drags a resize handle THEN the Content Editor SHALL update the image dimensions in real-time
+4. WHEN an image is resized THEN the system SHALL maintain the image aspect ratio by default
+5. WHEN a resized image is saved THEN the system SHALL persist the image dimensions in the HTML Output
+6. WHEN content with resized images is loaded THEN the Content Editor SHALL display images at their saved dimensions

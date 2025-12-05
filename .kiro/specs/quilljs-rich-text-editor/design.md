@@ -302,6 +302,26 @@ Property 22: Image URL persistence
 *For any* content with embedded images, saving the content should persist all image URLs in the database as part of the HTML
 **Validates: Requirements 7.5**
 
+Property 23: Color formatting application
+*For any* text selection and any color, applying the color should produce HTML output with the correct color styling
+**Validates: Requirements 8.3**
+
+Property 24: Color persistence round-trip
+*For any* content with colored text, saving and reloading the content should preserve the exact colors
+**Validates: Requirements 8.4, 8.5**
+
+Property 25: Image resize dimension update
+*For any* inserted image and any resize operation, the image dimensions should update in real-time during the resize
+**Validates: Requirements 9.2**
+
+Property 26: Default image width
+*For any* newly inserted image, the image should be inserted with a default width of 300 pixels
+**Validates: Requirements 9.1**
+
+Property 27: Image resize persistence
+*For any* resized image, saving and reloading the content should display the image at the exact saved dimensions
+**Validates: Requirements 9.5, 9.6**
+
 ## Error Handling
 
 ### Editor Initialization Errors
@@ -440,7 +460,7 @@ const imageFileArbitrary = fc.record({
 
 **Formats:**
 - Block: header, list, blockquote
-- Inline: bold, italic, underline, link
+- Inline: bold, italic, underline, link, color
 - Embed: image
 
 **Custom Toolbar:**
@@ -448,6 +468,7 @@ const imageFileArbitrary = fc.record({
 [
   [{ 'header': [1, 2, 3, false] }],
   ['bold', 'italic', 'underline'],
+  [{ 'color': [] }],  // Color picker
   [{ 'list': 'ordered'}, { 'list': 'bullet' }],
   ['link', 'image'],
   ['clean']
@@ -535,6 +556,74 @@ async uploadContentImage(
 - Filename format: `content-{timestamp}-{random}.{ext}`
 - Create directory if not exists
 
+### Color Formatting Implementation
+
+**Quill Color Module:**
+- Use Quill's built-in color format
+- Add color picker to toolbar: `[{ 'color': [] }]`
+- Quill provides default color palette automatically
+- Colors are applied as inline styles: `<span style="color: rgb(r, g, b)">text</span>`
+
+**Custom Color Palette (Optional):**
+```javascript
+const colors = [
+  '#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff',
+  '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff',
+  '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff',
+  '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2',
+  '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'
+];
+
+// Configure in toolbar
+toolbar: {
+  container: [
+    [{ 'color': colors }]
+  ]
+}
+```
+
+### Image Resizing Implementation
+
+**Quill ImageResize Module:**
+- Use `quill-image-resize-module-react` package for React compatibility
+- Provides drag handles for resizing
+- Maintains aspect ratio by default
+- Allows manual width/height adjustment
+
+**Configuration:**
+```javascript
+import ImageResize from 'quill-image-resize-module-react';
+
+Quill.register('modules/imageResize', ImageResize);
+
+const modules = {
+  toolbar: [...],
+  imageResize: {
+    parchment: Quill.import('parchment'),
+    modules: ['Resize', 'DisplaySize', 'Toolbar']
+  }
+};
+```
+
+**Default Image Width:**
+- Intercept image insertion in custom handler
+- Set width attribute to 300px after insertion
+- Implementation:
+```javascript
+const insertImage = (url: string) => {
+  const range = quill.getSelection();
+  quill.insertEmbed(range.index, 'image', url);
+
+  // Set default width
+  const img = quill.root.querySelector(`img[src="${url}"]`);
+  if (img) {
+    img.setAttribute('width', '300');
+  }
+
+  quill.setSelection(range.index + 1);
+};
+```
+
 ### Dependencies
 
 **New Dependencies:**
@@ -542,7 +631,8 @@ async uploadContentImage(
 {
   "dependencies": {
     "quill": "^2.0.0",
-    "react-quill": "^2.0.0"
+    "react-quill": "^2.0.0",
+    "quill-image-resize-module-react": "^3.0.0"
   },
   "devDependencies": {
     "@types/quill": "^2.0.0"
@@ -673,15 +763,103 @@ If issues arise:
 3. Quick rollback by reverting frontend deployment
 4. No data migration needed
 
+## Color Formatting Implementation
+
+### Color Picker Configuration
+
+Quill provides built-in color formatting support. The color picker will be configured with a predefined palette of colors:
+
+**Color Palette:**
+```javascript
+const colors = [
+  // Basic colors
+  '#000000', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff',
+  // Light colors
+  '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff',
+  // Medium colors
+  '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff',
+  // Dark colors
+  '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2',
+  // Very dark colors
+  '#444444', '#5c0000', '#663d00', '#666600', '#003700', '#002966', '#3d1466'
+];
+```
+
+**Toolbar Configuration:**
+```javascript
+{
+  'color': colors  // Predefined color palette
+}
+```
+
+### Color Format Handling
+
+- Quill stores colors as inline styles: `<span style="color: #ff0000">text</span>`
+- Colors are preserved in HTML output
+- No additional sanitization needed (Quill handles safe HTML generation)
+
+## Image Resizing Implementation
+
+### Quill ImageResize Module
+
+To enable image resizing, we'll use the `quill-image-resize-module-react` package, which provides:
+- Resize handles on images
+- Aspect ratio preservation
+- Real-time dimension updates
+- Drag-to-resize functionality
+
+**Installation:**
+```bash
+npm install quill-image-resize-module-react
+```
+
+**Module Configuration:**
+```javascript
+import ImageResize from 'quill-image-resize-module-react';
+
+Quill.register('modules/imageResize', ImageResize);
+
+const modules = {
+  toolbar: [...],
+  imageResize: {
+    parchment: Quill.import('parchment'),
+    modules: ['Resize', 'DisplaySize', 'Toolbar']
+  }
+};
+```
+
+**Resize Module Features:**
+- **Resize:** Drag handles to resize image
+- **DisplaySize:** Show current dimensions while resizing
+- **Toolbar:** Optional toolbar with alignment options
+
+**Image Dimension Storage:**
+- Quill stores dimensions as inline styles: `<img src="..." style="width: 300px; height: 200px;" />`
+- Dimensions are preserved in HTML output
+- Aspect ratio maintained by default
+
+### Styling Considerations
+
+**Resize Handles:**
+- Small squares at corners and edges
+- Visible on hover or when image is selected
+- Match admin panel color scheme
+
+**Size Display:**
+- Show dimensions (e.g., "300 x 200") while resizing
+- Position near image, non-intrusive
+- Auto-hide after resize complete
+
 ## Future Enhancements
 
-1. **Image Editing:** Resize, crop, and adjust images within editor
-2. **Video Embeds:** Support for YouTube/Vimeo embeds
-3. **Tables:** Add table support to editor
-4. **Code Blocks:** Syntax highlighting for code snippets
-5. **Collaborative Editing:** Real-time collaboration features
-6. **Auto-save:** Periodic auto-save of content
-7. **Version History:** Track content changes over time
-8. **Image Optimization:** Automatic image compression and format conversion
-9. **Drag-and-Drop:** Drag images directly into editor
-10. **Markdown Support:** Import/export markdown format
+1. **Advanced Color Features:** Custom color picker, recent colors, color themes
+2. **Image Cropping:** Crop images within editor
+3. **Video Embeds:** Support for YouTube/Vimeo embeds
+4. **Tables:** Add table support to editor
+5. **Code Blocks:** Syntax highlighting for code snippets
+6. **Collaborative Editing:** Real-time collaboration features
+7. **Auto-save:** Periodic auto-save of content
+8. **Version History:** Track content changes over time
+9. **Image Optimization:** Automatic image compression and format conversion
+10. **Drag-and-Drop:** Drag images directly into editor
+11. **Markdown Support:** Import/export markdown format

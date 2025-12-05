@@ -51,6 +51,40 @@ export function useImageInsertion(
       // Insert image at cursor position
       editor.insertEmbed(index, 'image', url);
 
+      // Set default width of 300px immediately after insertion
+      // Use setTimeout to ensure the image is in the DOM
+      setTimeout(() => {
+        const images = editor.root.querySelectorAll('img');
+        // Find the image we just inserted - it should be the last one without a width attribute
+        // or we can find it by checking if the src ends with the same path
+        let targetImg: HTMLImageElement | null = null;
+
+        // Try to find by exact URL match first
+        for (let i = images.length - 1; i >= 0; i--) {
+          const img = images[i] as HTMLImageElement;
+          if (img.src === url || img.src.endsWith(url) || url.endsWith(img.getAttribute('src') || '')) {
+            targetImg = img;
+            break;
+          }
+        }
+
+        // If not found by URL, get the last image without width attribute
+        if (!targetImg) {
+          for (let i = images.length - 1; i >= 0; i--) {
+            const img = images[i] as HTMLImageElement;
+            if (!img.hasAttribute('width')) {
+              targetImg = img;
+              break;
+            }
+          }
+        }
+
+        // Apply default width if we found the image
+        if (targetImg && !targetImg.hasAttribute('width')) {
+          targetImg.setAttribute('width', '300');
+        }
+      }, 0);
+
       // Move cursor after the image
       editor.setSelection(index + 1, 0);
 

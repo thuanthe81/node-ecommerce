@@ -237,5 +237,64 @@
     - Optimize performance
     - _Requirements: All_
 
-- [ ] 12. Final checkpoint - Ensure all tests pass
+- [x] 12. Add color formatting support
+  - [x] 12.1 Add color format to Quill toolbar configuration
+    - Update toolbar config in quillConfig.ts to include color picker
+    - Add 'color' to allowed formats list
+    - Configure custom color palette with brand colors
+    - _Requirements: 8.1, 8.2_
+
+  - [x] 12.2 Test color formatting functionality
+    - Verify color picker appears in toolbar
+    - Test applying colors to selected text
+    - Verify color persists in HTML output
+    - _Requirements: 8.3, 8.4, 8.5_
+
+  - [ ]* 12.3 Write property test for color formatting
+    - **Property 23: Color formatting application**
+    - **Property 24: Color persistence round-trip**
+    - **Validates: Requirements 8.3, 8.4, 8.5**
+
+- [x] 13. Add image resizing support
+  - [x] 13.1 Install and configure quill-image-resize-module-react
+    - Add quill-image-resize-module-react package
+    - Register ImageResize module with Quill
+    - Configure resize options (Resize, DisplaySize, Toolbar modules)
+    - _Requirements: 9.2, 9.3, 9.4_
+
+  - [x] 13.2 Implement default image width on insertion
+    - Update image insertion handler to set width="300" attribute
+    - Apply default width for both product images and uploaded images
+    - Ensure width is set immediately after insertion
+    - _Requirements: 9.1_
+
+  - [ ]* 13.3 Write property test for default image width
+    - **Property 26: Default image width**
+    - **Validates: Requirements 9.1**
+
+  - [x] 13.4 Test image resizing functionality
+    - Verify resize handles appear on inserted images
+    - Test dragging handles updates dimensions in real-time
+    - Verify aspect ratio is maintained
+    - Test resized dimensions persist in HTML
+    - _Requirements: 9.2, 9.3, 9.4, 9.5, 9.6_
+
+  - [ ]* 13.5 Write property test for image resize persistence
+    - **Property 27: Image resize persistence**
+    - **Validates: Requirements 9.5, 9.6**
+
+- [x] 14. Add styling for new features
+  - [x] 14.1 Style color picker dropdown
+    - Ensure color picker matches admin panel theme
+    - Add hover states for color swatches
+    - Make responsive for mobile
+    - _Requirements: 8.1, 8.2_
+
+  - [x] 14.2 Style image resize handles
+    - Ensure resize handles are visible and accessible
+    - Match admin panel styling
+    - Add visual feedback during resize
+    - _Requirements: 9.2_
+
+- [ ] 15. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
