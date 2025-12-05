@@ -202,6 +202,28 @@ interface EditorState {
 *A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
 
+### Acceptance Criteria Testing Prework
+
+10.1 WHEN a product image is inserted from the Product Image Picker THEN the system SHALL wrap the image in a link element pointing to the product page using the product slug
+Thoughts: This is about all product images, not specific ones. We can generate random products with images, insert them, and verify the resulting HTML contains both an image and a link wrapping it with the correct product URL using the slug.
+Testable: yes - property
+
+10.2 WHEN content is displayed in view mode THEN the system SHALL render product images as clickable links
+Thoughts: This is about the rendering behavior in view mode. We can generate random content with product images, render it in view mode, and verify that the images are wrapped in anchor tags.
+Testable: yes - property
+
+10.3 WHEN a user clicks on a product image in view mode THEN the system SHALL navigate to the corresponding product detail page
+Thoughts: This is a UI interaction test. We can simulate clicking on a product image link and verify the navigation occurs to the correct URL.
+Testable: yes - property
+
+10.4 WHEN a product image link is generated THEN the system SHALL use the correct locale-aware product URL format with the product slug (/${locale}/products/${slug})
+Thoughts: This is about URL format correctness across different locales. We can generate random products with slugs and locales, create links, and verify they follow the correct format pattern using the slug.
+Testable: yes - property
+
+10.5 WHEN content with product image links is saved THEN the system SHALL persist the link structure in the HTML Output
+Thoughts: This is a round-trip property. We can create content with product image links, save it, reload it, and verify the link structure is preserved.
+Testable: yes - property
+
 ### Property Reflection
 
 After reviewing the prework analysis, several properties can be consolidated:
@@ -321,6 +343,26 @@ Property 26: Default image width
 Property 27: Image resize persistence
 *For any* resized image, saving and reloading the content should display the image at the exact saved dimensions
 **Validates: Requirements 9.5, 9.6**
+
+Property 28: Product image link wrapping
+*For any* product image inserted from the Product Image Picker, the resulting HTML should contain the image wrapped in an anchor tag with the correct product page URL using the product slug
+**Validates: Requirements 10.1**
+
+Property 29: Product image link rendering in view mode
+*For any* content containing product images, rendering in view mode should display all product images as clickable links
+**Validates: Requirements 10.2**
+
+Property 30: Product image link navigation
+*For any* product image link in view mode, clicking the link should navigate to the corresponding product detail page
+**Validates: Requirements 10.3**
+
+Property 31: Locale-aware product URL format
+*For any* product and locale combination, the generated product image link should follow the correct locale-aware URL format using the product slug (e.g., /en/products/[slug] or /vi/products/[slug])
+**Validates: Requirements 10.4**
+
+Property 32: Product image link persistence
+*For any* content with product image links, saving and reloading the content should preserve the complete link structure including the anchor tag and href attribute
+**Validates: Requirements 10.5**
 
 ## Error Handling
 
@@ -850,6 +892,82 @@ const modules = {
 - Position near image, non-intrusive
 - Auto-hide after resize complete
 
+### Product Image Link Implementation
+
+**Purpose:** Make product images inserted from the Product Image Picker clickable links that navigate to the product page.
+
+**Implementation Approach:**
+
+When a product image is selected from the Product Image Picker:
+1. The system receives both the image URL and the product slug
+2. Generate a locale-aware product URL: `/${locale}/products/${slug}`
+3. Insert HTML structure: `<a href="/${locale}/products/${slug}"><img src="${imageUrl}" width="300" /></a>`
+4. In edit mode, the link is non-functional (editor behavior)
+5. In view mode (read-only), the link becomes clickable
+
+**Data Flow:**
+```typescript
+// Product Image Picker returns
+interface ProductImageSelection {
+  url: string;
+  slug: string;
+}
+
+// Image insertion handler
+const insertProductImage = (selection: ProductImageSelection, locale: string) => {
+  const productUrl = `/${locale}/products/${selection.slug}`;
+  const html = `<a href="${productUrl}"><img src="${selection.url}" width="300" /></a>`;
+
+  // Insert into Quill editor
+  const range = quill.getSelection();
+  quill.clipboard.dangerouslyPasteHTML(range.index, html);
+  quill.setSelection(range.index + 1);
+};
+```
+
+**ImagePickerModal Updates:**
+
+The existing ImagePickerModal component needs to be updated to pass product slug along with image URL:
+
+```typescript
+// Current behavior: onSelect(imageUrl)
+// New behavior: onSelect({ url: imageUrl, slug: product.slug })
+
+interface ImagePickerModalProps {
+  // ... existing props
+  onSelect: (selection: ProductImageSelection) => void;
+}
+```
+
+**View Mode Behavior:**
+
+In read-only/preview mode:
+- Quill renders the HTML as-is
+- Links are clickable by default in read-only mode
+- No additional configuration needed
+
+**Edit Mode Behavior:**
+
+In edit mode:
+- Links are visible but not clickable (standard Quill behavior)
+- Users can edit/delete the linked image
+- Resize handles work on the image within the link
+
+**URL Format:**
+
+Product URLs follow Next.js internationalized routing using product slugs:
+- English: `/en/products/[slug]`
+- Vietnamese: `/vi/products/[slug]`
+
+The locale is obtained from the current editor context (passed as prop to RichTextEditor).
+
+**Uploaded Images:**
+
+Images uploaded from disk (not from products) should NOT be wrapped in links:
+- Only product images get link wrapping
+- Uploaded images remain as standalone `<img>` tags
+- This distinction is based on the insertion source
+
 ## Future Enhancements
 
 1. **Advanced Color Features:** Custom color picker, recent colors, color themes
@@ -863,3 +981,4 @@ const modules = {
 9. **Image Optimization:** Automatic image compression and format conversion
 10. **Drag-and-Drop:** Drag images directly into editor
 11. **Markdown Support:** Import/export markdown format
+12. **Link Editing:** Allow users to edit or remove links from product images

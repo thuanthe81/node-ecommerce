@@ -71,6 +71,17 @@ export interface QuillEditorOptions {
 }
 
 /**
+ * Product image selection data
+ */
+export interface ProductImageSelection {
+  /** The URL of the selected image */
+  url: string;
+
+  /** The slug of the product this image belongs to */
+  slug: string;
+}
+
+/**
  * Return type for the useImageInsertion hook
  */
 export interface UseImageInsertionReturn {
@@ -81,7 +92,7 @@ export interface UseImageInsertionReturn {
   setShowProductPicker: (show: boolean) => void;
 
   /** Handler for when a product image is selected */
-  handleProductImageSelect: (url: string) => void;
+  handleProductImageSelect: (url: string, slug?: string) => void;
 
   /** Handler for file upload from disk */
   handleFileUpload: (file: File) => Promise<void>;
@@ -103,8 +114,8 @@ export interface ImageUploadData {
   /** The file to upload */
   file: File;
 
-  /** Optional product ID if image is from a product */
-  productId?: string;
+  /** Optional product slug if image is from a product */
+  slug?: string;
 }
 
 /**

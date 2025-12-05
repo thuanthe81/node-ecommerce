@@ -39,54 +39,70 @@ export function useImageInsertion(
 
   /**
    * Insert an image URL into the editor at the current cursor position
+   * If slug is provided, wraps the image in a link to the product page
    */
   const insertImageAtCursor = useCallback(
-    (url: string) => {
+    (url: string, slug?: string) => {
       if (!editor) return;
 
       // Get current cursor position
       const range = editor.getSelection(true);
       const index = range ? range.index : editor.getLength();
 
-      // Insert image at cursor position
-      editor.insertEmbed(index, 'image', url);
+      // If this is a product image, insert as a linked image
+      if (slug) {
+        // Generate locale-aware product URL
+        const productUrl = `/products/${slug}`;
 
-      // Set default width of 300px immediately after insertion
-      // Use setTimeout to ensure the image is in the DOM
-      setTimeout(() => {
-        const images = editor.root.querySelectorAll('img');
-        // Find the image we just inserted - it should be the last one without a width attribute
-        // or we can find it by checking if the src ends with the same path
-        let targetImg: HTMLImageElement | null = null;
+        // Create HTML with link wrapping the image
+        const html = `<a href="${productUrl}"><img src="${url}" width="300" /></a>`;
 
-        // Try to find by exact URL match first
-        for (let i = images.length - 1; i >= 0; i--) {
-          const img = images[i] as HTMLImageElement;
-          if (img.src === url || img.src.endsWith(url) || url.endsWith(img.getAttribute('src') || '')) {
-            targetImg = img;
-            break;
-          }
-        }
+        // Insert the HTML using clipboard API
+        editor.clipboard.dangerouslyPasteHTML(index, html);
 
-        // If not found by URL, get the last image without width attribute
-        if (!targetImg) {
+        // Move cursor after the inserted content
+        editor.setSelection(index + 1, 0);
+      } else {
+        // For uploaded images (no slug), insert as standalone image
+        editor.insertEmbed(index, 'image', url);
+
+        // Set default width of 300px immediately after insertion
+        // Use setTimeout to ensure the image is in the DOM
+        setTimeout(() => {
+          const images = editor.root.querySelectorAll('img');
+          // Find the image we just inserted - it should be the last one without a width attribute
+          // or we can find it by checking if the src ends with the same path
+          let targetImg: HTMLImageElement | null = null;
+
+          // Try to find by exact URL match first
           for (let i = images.length - 1; i >= 0; i--) {
             const img = images[i] as HTMLImageElement;
-            if (!img.hasAttribute('width')) {
+            if (img.src === url || img.src.endsWith(url) || url.endsWith(img.getAttribute('src') || '')) {
               targetImg = img;
               break;
             }
           }
-        }
 
-        // Apply default width if we found the image
-        if (targetImg && !targetImg.hasAttribute('width')) {
-          targetImg.setAttribute('width', '300');
-        }
-      }, 0);
+          // If not found by URL, get the last image without width attribute
+          if (!targetImg) {
+            for (let i = images.length - 1; i >= 0; i--) {
+              const img = images[i] as HTMLImageElement;
+              if (!img.hasAttribute('width')) {
+                targetImg = img;
+                break;
+              }
+            }
+          }
 
-      // Move cursor after the image
-      editor.setSelection(index + 1, 0);
+          // Apply default width if we found the image
+          if (targetImg && !targetImg.hasAttribute('width')) {
+            targetImg.setAttribute('width', '300');
+          }
+        }, 0);
+
+        // Move cursor after the image
+        editor.setSelection(index + 1, 0);
+      }
 
       // Show success message
       const message = locale === 'vi'
@@ -111,12 +127,12 @@ export function useImageInsertion(
    * Handle product image selection from the picker modal
    */
   const handleProductImageSelect = useCallback(
-    (url: string) => {
+    (url: string, slug?: string) => {
       // Clear any previous messages
       setUploadError(null);
       setSuccessMessage(null);
 
-      insertImageAtCursor(url);
+      insertImageAtCursor(url, slug);
       setShowProductPicker(false);
     },
     [insertImageAtCursor]

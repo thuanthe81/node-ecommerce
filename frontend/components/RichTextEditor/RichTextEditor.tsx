@@ -136,7 +136,10 @@ export function RichTextEditor({
       <ImagePickerModal
         isOpen={showProductPicker}
         onClose={() => setShowProductPicker(false)}
-        onSelectImage={handleProductImageSelect}
+        onSelectImage={(imageUrl, product) => {
+          // Pass both the image URL and product slug to the handler
+          handleProductImageSelect(imageUrl, product?.slug);
+        }}
         locale={locale}
       />
 

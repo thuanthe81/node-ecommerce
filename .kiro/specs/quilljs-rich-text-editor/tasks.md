@@ -296,5 +296,40 @@
     - Add visual feedback during resize
     - _Requirements: 9.2_
 
-- [ ] 15. Final checkpoint - Ensure all tests pass
+- [x] 15. Add product image linking functionality
+  - [x] 15.1 Update ImagePickerModal to return product slug with image URL
+    - Modify onSelect callback to pass both url and slug
+    - Update ProductImageSelection interface in types
+    - Ensure product slug is available from product data
+    - _Requirements: 10.1_
+
+  - [x] 15.2 Update image insertion handler to wrap product images in links
+    - Detect when image is from product (has slug)
+    - Generate locale-aware product URL (/${locale}/products/${slug})
+    - Insert HTML with anchor tag wrapping image
+    - Ensure uploaded images (no slug) remain as standalone images
+    - _Requirements: 10.1, 10.4_
+
+  - [ ]* 15.3 Write property test for product image link wrapping
+    - **Property 28: Product image link wrapping**
+    - **Property 31: Locale-aware product URL format**
+    - **Validates: Requirements 10.1, 10.4**
+
+  - [x] 15.4 Test product image links in view mode
+    - Verify links are clickable in read-only mode
+    - Test navigation to product page works correctly
+    - Verify links work for both English and Vietnamese locales
+    - _Requirements: 10.2, 10.3_
+
+  - [ ]* 15.5 Write property test for product image link persistence
+    - **Property 32: Product image link persistence**
+    - **Validates: Requirements 10.5**
+
+  - [x] 15.6 Update RichTextEditor types and interfaces
+    - Add ProductImageSelection interface
+    - Update useImageInsertion hook to handle product slugs
+    - Update component props if needed
+    - _Requirements: 10.1_
+
+- [ ] 16. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
