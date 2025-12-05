@@ -1,5 +1,6 @@
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { LanguageTab, ValidationErrors } from '../types';
+import { RichTextEditor } from '../../RichTextEditor';
 
 /**
  * Props for the ContentFields component
@@ -24,7 +25,7 @@ interface ContentFieldsProps {
   /** Callback when title changes */
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   /** Callback when content changes */
-  onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onContentChange: (html: string) => void;
 }
 
 /**
@@ -59,6 +60,7 @@ export function ContentFields({
   onContentChange,
 }: ContentFieldsProps) {
   const t = useTranslations();
+  const locale = useLocale();
 
   const isEnglish = activeTab === 'en';
   const titleValue = isEnglish ? titleEn : titleVi;
@@ -78,7 +80,7 @@ export function ContentFields({
           type="text"
           name={titleName}
           value={titleValue}
-          onChange={isEnglish ? onTitleChange : onContentChange as any}
+          onChange={onTitleChange}
           required
           className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
             validationErrors[titleName] ? 'border-red-500' : 'border-gray-300'
@@ -102,24 +104,15 @@ export function ContentFields({
             {previewMode ? t('common.edit') : t('admin.preview')}
           </button>
         </div>
-        {previewMode ? (
-          <div
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 min-h-[300px] prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: contentValue }}
-          />
-        ) : (
-          <textarea
-            name={contentName}
-            value={contentValue}
-            onChange={onContentChange}
-            required
-            rows={12}
-            className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm ${
-              validationErrors[contentName] ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder={t('admin.htmlPlaceholder')}
-          />
-        )}
+        <RichTextEditor
+          value={contentValue}
+          onChange={onContentChange}
+          readOnly={previewMode}
+          showToolbar={!previewMode}
+          placeholder={t('admin.htmlPlaceholder')}
+          locale={locale}
+          hasError={!!validationErrors[contentName]}
+        />
         {validationErrors[contentName] && (
           <p className="text-sm text-red-600 mt-1">{validationErrors[contentName]}</p>
         )}

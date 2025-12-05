@@ -253,6 +253,8 @@ export function useContentForm(
     previewMode,
     setActiveTab,
     setPreviewMode,
+    setFormData,
+    setValidationErrors,
     handleChange,
     handleTitleChange,
     handleImageSelect,

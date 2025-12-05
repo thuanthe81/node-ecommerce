@@ -1210,3 +1210,358 @@ img {
     print-color-adjust: exact;
   }
 }
+
+/* Quill Editor Styles */
+@import 'quill/dist/quill.snow.css';
+
+/* ============================================================================
+   RichTextEditor Component Styles
+   ============================================================================ */
+
+/* Base editor container */
+.rich-text-editor {
+  @apply w-full;
+}
+
+/* Toolbar styling - match admin panel theme */
+.rich-text-editor .ql-toolbar.ql-snow {
+  @apply border border-gray-300 rounded-t-lg bg-gray-50;
+  padding: 8px;
+  border-bottom: none;
+}
+
+/* Toolbar buttons */
+.rich-text-editor .ql-toolbar .ql-stroke {
+  stroke: #4b5563; /* gray-600 */
+}
+
+.rich-text-editor .ql-toolbar .ql-fill {
+  fill: #4b5563; /* gray-600 */
+}
+
+.rich-text-editor .ql-toolbar button:hover,
+.rich-text-editor .ql-toolbar button:focus {
+  @apply bg-gray-200;
+}
+
+.rich-text-editor .ql-toolbar button.ql-active {
+  @apply bg-blue-100;
+}
+
+.rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #2563eb; /* blue-600 */
+}
+
+.rich-text-editor .ql-toolbar button.ql-active .ql-fill {
+  fill: #2563eb; /* blue-600 */
+}
+
+/* Editor container - match form field styling */
+.rich-text-editor .ql-container.ql-snow {
+  @apply border border-gray-300 rounded-b-lg bg-white;
+  min-height: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+  font-family: inherit;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Editor content area */
+.rich-text-editor .ql-editor {
+  @apply px-4 py-2;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #1f2937; /* gray-800 */
+}
+
+/* Placeholder text */
+.rich-text-editor .ql-editor.ql-blank::before {
+  @apply text-gray-400 italic;
+  font-style: italic;
+}
+
+/* Focus state - match other form fields */
+.rich-text-editor .ql-container.ql-snow:focus-within {
+  @apply ring-2 ring-blue-500 border-transparent;
+  outline: none;
+}
+
+.rich-text-editor .ql-toolbar.ql-snow:focus-within {
+  @apply border-blue-500;
+}
+
+/* Read-only mode styles */
+.rich-text-editor--readonly .ql-container {
+  @apply bg-gray-50 cursor-default;
+}
+
+.rich-text-editor--readonly .ql-editor {
+  @apply cursor-default;
+}
+
+.rich-text-editor--readonly .ql-toolbar {
+  @apply hidden;
+}
+
+/* No toolbar mode */
+.rich-text-editor--no-toolbar .ql-toolbar {
+  @apply hidden;
+}
+
+.rich-text-editor--no-toolbar .ql-container {
+  @apply rounded-lg border-gray-300;
+}
+
+/* Preview mode specific styling */
+.rich-text-editor--readonly.rich-text-editor--no-toolbar .ql-container {
+  @apply border-gray-300 bg-white;
+}
+
+/* Error state - match form field error styling */
+.rich-text-editor--error .ql-container.ql-snow {
+  @apply border-red-500;
+}
+
+.rich-text-editor--error .ql-toolbar.ql-snow {
+  @apply border-red-500;
+  border-bottom: none;
+}
+
+.rich-text-editor--error .ql-container.ql-snow:focus-within {
+  @apply ring-2 ring-red-500 border-transparent;
+}
+
+/* Ensure images in editor are responsive */
+.rich-text-editor .ql-editor img {
+  @apply max-w-full h-auto;
+  display: inline-block;
+  margin: 0.5rem 0;
+}
+
+/* Formatted content styling */
+.rich-text-editor .ql-editor h1 {
+  @apply text-2xl font-bold mb-2;
+}
+
+.rich-text-editor .ql-editor h2 {
+  @apply text-xl font-bold mb-2;
+}
+
+.rich-text-editor .ql-editor h3 {
+  @apply text-lg font-bold mb-2;
+}
+
+.rich-text-editor .ql-editor ul,
+.rich-text-editor .ql-editor ol {
+  @apply pl-6 mb-2;
+}
+
+.rich-text-editor .ql-editor li {
+  @apply mb-1;
+}
+
+.rich-text-editor .ql-editor a {
+  @apply text-blue-600 underline;
+}
+
+.rich-text-editor .ql-editor blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-2;
+}
+
+/* Loading state */
+.rich-text-editor--loading {
+  @apply opacity-50 pointer-events-none;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 767px) {
+  .rich-text-editor .ql-container.ql-snow {
+    min-height: 250px;
+    max-height: 400px;
+  }
+
+  .rich-text-editor .ql-toolbar.ql-snow {
+    padding: 6px;
+  }
+
+  .rich-text-editor .ql-editor {
+    @apply px-3 py-2;
+    font-size: 0.9375rem; /* 15px */
+  }
+
+  /* Make toolbar buttons touch-friendly */
+  .rich-text-editor .ql-toolbar button {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Wrap toolbar on mobile */
+  .rich-text-editor .ql-toolbar.ql-snow .ql-formats {
+    margin-right: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Tablet responsive styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .rich-text-editor .ql-container.ql-snow {
+    min-height: 280px;
+    max-height: 500px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  .rich-text-editor .ql-container.ql-snow {
+    min-height: 300px;
+    max-height: 600px;
+  }
+
+  /* Enhanced hover effects on desktop */
+  .rich-text-editor .ql-toolbar button:hover {
+    @apply bg-gray-200;
+    transition: background-color 0.15s ease-in-out;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .rich-text-editor .ql-toolbar.ql-snow {
+    @apply bg-gray-800 border-gray-600;
+  }
+
+  .rich-text-editor .ql-container.ql-snow {
+    @apply bg-gray-900 border-gray-600;
+  }
+
+  .rich-text-editor .ql-editor {
+    @apply text-gray-100;
+  }
+
+  .rich-text-editor .ql-toolbar .ql-stroke {
+    stroke: #9ca3af; /* gray-400 */
+  }
+
+  .rich-text-editor .ql-toolbar .ql-fill {
+    fill: #9ca3af; /* gray-400 */
+  }
+
+  .rich-text-editor .ql-toolbar button:hover {
+    @apply bg-gray-700;
+  }
+
+  .rich-text-editor .ql-toolbar button.ql-active {
+    @apply bg-blue-900;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .rich-text-editor .ql-container.ql-snow,
+  .rich-text-editor .ql-toolbar button {
+    transition: none !important;
+  }
+}
+
+/* ============================================================================
+   Image Dropdown Styles
+   ============================================================================ */
+
+/* Image dropdown container */
+.image-dropdown {
+  @apply absolute z-50 bg-white border border-gray-300 rounded-lg shadow-lg py-1;
+  min-width: 200px;
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Dropdown menu items */
+.image-dropdown button {
+  @apply w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.image-dropdown button:focus {
+  @apply bg-gray-100 outline-none ring-2 ring-blue-500 ring-inset;
+}
+
+.image-dropdown button:active {
+  @apply bg-gray-200;
+}
+
+/* Dropdown icons */
+.image-dropdown svg {
+  @apply w-5 h-5 text-gray-500 flex-shrink-0;
+}
+
+.image-dropdown button:hover svg {
+  @apply text-gray-700;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 767px) {
+  .image-dropdown {
+    min-width: 180px;
+  }
+
+  .image-dropdown button {
+    @apply py-3;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .image-dropdown svg {
+    @apply w-6 h-6;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .image-dropdown {
+    @apply bg-gray-800 border-gray-600;
+  }
+
+  .image-dropdown button {
+    @apply text-gray-200 hover:bg-gray-700;
+  }
+
+  .image-dropdown button:focus {
+    @apply bg-gray-700;
+  }
+
+  .image-dropdown button:active {
+    @apply bg-gray-600;
+  }
+
+  .image-dropdown svg {
+    @apply text-gray-400;
+  }
+
+  .image-dropdown button:hover svg {
+    @apply text-gray-200;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .image-dropdown {
+    @apply border-2 border-black;
+  }
+
+  .image-dropdown button {
+    @apply border-b border-gray-300;
+  }
+
+  .image-dropdown button:last-child {
+    @apply border-b-0;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .image-dropdown {
+    animation: none !important;
+  }
+
+  .image-dropdown button {
+    transition: none !important;
+  }
+}

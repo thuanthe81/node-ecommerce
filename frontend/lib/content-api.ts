@@ -87,6 +87,18 @@ export const contentApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/content/${id}`);
   },
+
+  uploadImage: async (file: File): Promise<{ url: string; filename: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiClient.post('/content/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 };
 
 // Helper functions for easier usage
@@ -100,3 +112,4 @@ export const getContentBySlug = (slug: string) => contentApi.getBySlug(slug);
 export const createContent = (data: CreateContentData) => contentApi.create(data);
 export const updateContent = (id: string, data: Partial<CreateContentData>) => contentApi.update(id, data);
 export const deleteContent = (id: string) => contentApi.delete(id);
+export const uploadContentImage = (file: File) => contentApi.uploadImage(file);

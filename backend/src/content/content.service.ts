@@ -10,6 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { Content, ContentType } from '@prisma/client';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class ContentService {
@@ -253,5 +255,72 @@ export class ContentService {
    */
   private async invalidateHomepageSectionsCache(): Promise<void> {
     await this.cacheManager.del(this.HOMEPAGE_SECTIONS_CACHE_KEY);
+  }
+
+  /**
+   * Upload an image for content editor
+   * @param file - The uploaded image file
+   * @returns Object containing the public URL and filename
+   */
+  async uploadContentImage(
+    file: Express.Multer.File,
+  ): Promise<{ url: string; filename: string }> {
+    // Validate file type
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.',
+      );
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new BadRequestException('File size exceeds 5MB limit');
+    }
+
+    // Determine upload directory
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    const baseUploadPath = path.isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
+
+    const contentUploadDir = path.join(baseUploadPath, 'content');
+
+    // Ensure content upload directory exists
+    await fs.mkdir(contentUploadDir, { recursive: true });
+
+    // Generate unique filename with timestamp and random string
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const ext = path.extname(file.originalname);
+    const filename = `content-${timestamp}-${randomSuffix}${ext}`;
+    const filepath = path.join(contentUploadDir, filename);
+
+    try {
+      // Save file to disk
+      await fs.writeFile(filepath, file.buffer);
+
+      // Return public URL and filename
+      const url = `/uploads/content/${filename}`;
+
+      return {
+        url,
+        filename,
+      };
+    } catch (error) {
+      // Clean up file if something goes wrong
+      try {
+        await fs.unlink(filepath);
+      } catch (unlinkError) {
+        console.error('Error cleaning up file:', unlinkError);
+      }
+      throw new BadRequestException('Failed to save image file');
+    }
   }
 }

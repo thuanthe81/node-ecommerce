@@ -894,6 +894,38 @@
       "en": "Upload Image",
       "vi": "Tải lên hình ảnh"
     },
+    "richTextEditor": {
+      "en": "Rich Text Editor",
+      "vi": "Trình soạn thảo văn bản"
+    },
+    "insertImage": {
+      "en": "Insert Image",
+      "vi": "Chèn hình ảnh"
+    },
+    "fromProducts": {
+      "en": "From Products",
+      "vi": "Từ sản phẩm"
+    },
+    "uploadFromDisk": {
+      "en": "Upload from Disk",
+      "vi": "Tải lên từ máy tính"
+    },
+    "imageUploadFailed": {
+      "en": "Failed to upload image. Please try again.",
+      "vi": "Không thể tải lên hình ảnh. Vui lòng thử lại."
+    },
+    "invalidImageType": {
+      "en": "Please select a valid image file (JPEG, PNG, GIF, or WebP)",
+      "vi": "Vui lòng chọn tệp hình ảnh hợp lệ (JPEG, PNG, GIF hoặc WebP)"
+    },
+    "imageTooLarge": {
+      "en": "Image file is too large. Maximum size is 5MB.",
+      "vi": "Tệp hình ảnh quá lớn. Kích thước tối đa là 5MB."
+    },
+    "uploadingImage": {
+      "en": "Uploading image...",
+      "vi": "Đang tải lên hình ảnh..."
+    },
     "urlFriendlyHint": {
       "en": "URL-friendly identifier (e.g., handmade-jewelry)",
       "vi": "URL thân thiện (ví dụ: trang-suc-thu-cong)"

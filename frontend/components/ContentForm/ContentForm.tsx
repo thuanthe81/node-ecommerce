@@ -47,6 +47,8 @@ export default function ContentForm({
     previewMode,
     setActiveTab,
     setPreviewMode,
+    setFormData,
+    setValidationErrors,
     handleChange,
     handleTitleChange,
     handleImageSelect,
@@ -112,8 +114,35 @@ export default function ContentForm({
         validationErrors={validationErrors}
         previewMode={previewMode}
         onPreviewToggle={() => setPreviewMode(!previewMode)}
-        onTitleChange={handleTitleChange}
-        onContentChange={handleChange as any}
+        onTitleChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          const { name, value } = e.target;
+          setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+            // Only auto-generate slug from English title when creating new content
+            ...(name === 'titleEn' && !content ? { slug: value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') } : {}),
+          }));
+          // Clear validation error for this field
+          if (validationErrors[name]) {
+            setValidationErrors((prev) => {
+              const newErrors = { ...prev };
+              delete newErrors[name];
+              return newErrors;
+            });
+          }
+        }}
+        onContentChange={(html: string) => {
+          const fieldName = activeTab === 'en' ? 'contentEn' : 'contentVi';
+          setFormData((prev) => ({ ...prev, [fieldName]: html }));
+          // Clear validation error for this field
+          if (validationErrors[fieldName]) {
+            setValidationErrors((prev) => {
+              const newErrors = { ...prev };
+              delete newErrors[fieldName];
+              return newErrors;
+            });
+          }
+        }}
       />
 
       <ButtonTextSection
