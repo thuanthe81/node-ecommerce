@@ -31,6 +31,7 @@ export class CreateContentDto {
   contentVi: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.imageUrl !== '' && o.imageUrl !== null)
   @IsString()
   @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {
     message: 'imageUrl must be a valid URL or relative path',
@@ -38,6 +39,7 @@ export class CreateContentDto {
   imageUrl?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.linkUrl !== '' && o.linkUrl !== null)
   @IsString()
   @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {
     message: 'linkUrl must be a valid URL or relative path',
