@@ -111,6 +111,14 @@ export default function Footer({
                   {t('returnPolicy')}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/shipping-policy"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('shippingPolicy')}
+                </Link>
+              </li>
             </ul>
           </div>
 

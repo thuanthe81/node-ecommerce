@@ -7,5 +7,5 @@ interface ShippingPolicyPageProps {
 }
 
 export default function ShippingPolicyPage({ params }: ShippingPolicyPageProps) {
-  redirect(`/${params.locale}/pages/shipping-policy`);
+  redirect(`/${params.locale || 'vi'}/pages/shipping-policy`);
 }
