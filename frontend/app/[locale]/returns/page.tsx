@@ -7,5 +7,5 @@ interface ReturnsPageProps {
 }
 
 export default function ReturnsPage({ params }: ReturnsPageProps) {
-  redirect(`/${params.locale}/pages/return-policy`);
+  redirect(`/${params.locale || 'vi'}/pages/return-policy`);
 }
