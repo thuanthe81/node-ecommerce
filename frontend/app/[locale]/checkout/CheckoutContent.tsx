@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,10 +18,12 @@ export default function CheckoutContent() {
   const tCheckout = useTranslations('checkout');
   const tCommon = useTranslations('common');
   const tCart = useTranslations('cart');
+  const tAuth = useTranslations('auth');
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const { cart, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,15 @@ export default function CheckoutContent() {
   const [newShippingAddress, setNewShippingAddress] = useState<any>(null);
   const [newBillingAddress, setNewBillingAddress] = useState<any>(null);
   const [useSameAddress, setUseSameAddress] = useState(true);
+
+  // Authentication check - redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Redirect to login with checkout URL as redirect parameter
+      const redirectUrl = encodeURIComponent(pathname);
+      router.push(`/${locale}/login?redirect=${redirectUrl}`);
+    }
+  }, [isAuthenticated, isLoading, router, locale, pathname]);
 
   useEffect(() => {
     // Don't redirect if order was just completed
@@ -296,6 +307,25 @@ export default function CheckoutContent() {
     discountAmount: number;
     promotionId: string;
   } | null>(null);
+
+  // Show loading state during authentication check
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-gray-600">{tCommon('loading')}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render checkout if not authenticated (will redirect via useEffect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (!cart || cart.items.length === 0) {
     return null;

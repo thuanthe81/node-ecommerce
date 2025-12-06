@@ -39,6 +39,7 @@ export default function CustomerListContent({ locale }: CustomerListContentProps
       export: { en: 'Export CSV', vi: 'Xuất CSV' },
       email: { en: 'Email', vi: 'Email' },
       name: { en: 'Name', vi: 'Tên' },
+      oauthProviders: { en: 'OAuth Providers', vi: 'Nhà cung cấp OAuth' },
       registrationDate: { en: 'Registration Date', vi: 'Ngày đăng ký' },
       totalOrders: { en: 'Total Orders', vi: 'Tổng đơn hàng' },
       totalSpent: { en: 'Total Spent', vi: 'Tổng chi tiêu' },
@@ -54,6 +55,9 @@ export default function CustomerListContent({ locale }: CustomerListContentProps
       loading: { en: 'Loading...', vi: 'Đang tải...' },
       error: { en: 'Error loading customers', vi: 'Lỗi khi tải danh sách khách hàng' },
       retry: { en: 'Retry', vi: 'Thử lại' },
+      google: { en: 'Google', vi: 'Google' },
+      facebook: { en: 'Facebook', vi: 'Facebook' },
+      noOAuthProviders: { en: 'None', vi: 'Không có' },
     };
     return translations[key]?.[locale] || translations[key]?.en || key;
   };
@@ -273,6 +277,9 @@ export default function CustomerListContent({ locale }: CustomerListContentProps
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('name')}
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('oauthProviders')}
+                    </th>
                     <th
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                       onClick={() => handleSort('createdAt')}
@@ -307,6 +314,23 @@ export default function CustomerListContent({ locale }: CustomerListContentProps
                           {customer.firstName || customer.lastName
                             ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim()
                             : '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex gap-2">
+                          {customer.googleId && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              {t('google')}
+                            </span>
+                          )}
+                          {customer.facebookId && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {t('facebook')}
+                            </span>
+                          )}
+                          {!customer.googleId && !customer.facebookId && (
+                            <span className="text-sm text-gray-500">{t('noOAuthProviders')}</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -5,6 +5,9 @@ export interface Customer {
   email: string;
   firstName: string | null;
   lastName: string | null;
+  username: string | null;
+  googleId: string | null;
+  facebookId: string | null;
   createdAt: string;
   updatedAt: string;
   totalOrders: number;

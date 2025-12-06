@@ -11,32 +11,25 @@ export interface User {
   updatedAt: string;
 }
 
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
 export interface AuthResponse {
   user: User;
   accessToken: string;
   refreshToken: string;
 }
 
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
 export const authApi = {
-  register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/register', data);
+  login: async (data: LoginData): Promise<AuthResponse> => {
+    const response = await apiClient.post('/auth/login', data);
     return response.data;
   },
 
-  login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/login', data);
+  getCurrentUser: async (): Promise<User> => {
+    const response = await apiClient.get('/auth/me');
     return response.data;
   },
 

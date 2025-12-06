@@ -9,6 +9,8 @@ Next.js 14+ frontend application with TypeScript, App Router, and TailwindCSS.
 - TailwindCSS for styling
 - ESLint and Prettier for code quality
 - Internationalization support (Vietnamese and English)
+- OAuth 2.0 authentication (Google, Facebook)
+- Protected checkout flow
 
 ## Getting Started
 
@@ -25,6 +27,16 @@ Copy `.env.local.example` to `.env.local` and configure:
 ```bash
 cp .env.local.example .env.local
 ```
+
+**Required Configuration:**
+
+- `NEXT_PUBLIC_API_URL` — Backend API URL (e.g., `http://localhost:3001`)
+
+**OAuth Authentication:**
+
+The frontend uses OAuth-only authentication. Users can sign in with Google or Facebook accounts. The backend must be configured with OAuth credentials before the frontend authentication will work.
+
+See the [OAuth Setup Guide](../OAUTH_SETUP.md) for complete setup instructions.
 
 ### Run Development Server
 

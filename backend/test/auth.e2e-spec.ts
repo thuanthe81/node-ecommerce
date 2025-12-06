@@ -23,9 +23,9 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('/auth/register (POST)', () => {
-    it('should have register endpoint', () => {
+    it('should return 404 as register endpoint is removed', () => {
       const registerDto = {
-        email: 'invalid-email',
+        email: 'test@example.com',
         password: 'Password123!',
         firstName: 'Test',
         lastName: 'User',
@@ -34,25 +34,19 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/auth/register')
         .send(registerDto)
-        .expect((res) => {
-          // Endpoint exists and returns a response
-          expect([400, 500]).toContain(res.status);
-        });
+        .expect(404);
     });
   });
 
   describe('/auth/login (POST)', () => {
-    it('should have login endpoint', () => {
+    it('should return 404 as login endpoint is removed', () => {
       return request(app.getHttpServer())
         .post('/auth/login')
         .send({
           email: 'test@example.com',
           password: 'Password123!',
         })
-        .expect((res) => {
-          // Endpoint exists and returns a response
-          expect([400, 401, 500]).toContain(res.status);
-        });
+        .expect(404);
     });
   });
 

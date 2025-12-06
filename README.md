@@ -55,17 +55,55 @@ Or using psql:
 psql -U postgres -c "CREATE DATABASE handmade_ecommerce;"
 ```
 
-### 3. Set Up Environment Variables
+### 3. Configure OAuth Authentication
 
-Create `.env` files in both frontend and backend directories (see respective README files).
+This application uses OAuth-only authentication with Google and Facebook. You must configure OAuth credentials before running the application.
 
-### 4. Run Development Servers
+**Quick Setup:**
+1. Follow the [OAuth Setup Guide](./OAUTH_SETUP.md) to create OAuth apps
+2. Copy credentials to `backend/.env` (see `backend/.env.example`)
+3. Configure callback URLs in provider consoles
+
+**Required OAuth Providers:**
+- Google OAuth (via Google Cloud Console)
+- Facebook OAuth (via Facebook Developers)
+
+See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for detailed step-by-step instructions.
+
+### 4. Set Up Environment Variables
+
+Create `.env` files in both frontend and backend directories:
+
+**Backend (`backend/.env`):**
+```bash
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your OAuth credentials
+```
+
+**Frontend (`frontend/.env.local`):**
+```bash
+cp frontend/.env.local.example frontend/.env.local
+# Edit frontend/.env.local if needed
+```
+
+See respective README files and [OAUTH_SETUP.md](./OAUTH_SETUP.md) for details.
+
+### 5. Run Database Migrations
+
+```bash
+cd backend
+npm run prisma:migrate
+```
+
+### 6. Run Development Servers
 
 ```bash
 npm run dev
 ```
 
 This will start both frontend (http://localhost:3000) and backend (http://localhost:3001) servers.
+
+**Note:** The backend will validate OAuth configuration on startup. If credentials are missing, you'll see a detailed error message with setup instructions.
 
 ## Available Scripts
 
@@ -92,6 +130,48 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 - **Database**: PostgreSQL 15+
 - **Cache**: Redis 7+
 - **ORM**: Prisma
+- **Authentication**: OAuth 2.0 (Google, Facebook)
+
+## Authentication
+
+This application uses **OAuth-only authentication**. Traditional email/password registration and login have been removed in favor of secure third-party authentication.
+
+### Supported Providers
+
+- **Google OAuth**: Sign in with Google account
+- **Facebook OAuth**: Sign in with Facebook account
+
+### Key Features
+
+- Automatic account creation on first OAuth login
+- Email-based account linking (same email across providers = one account)
+- Checkout requires authentication
+- Admin panel shows OAuth provider information
+
+### Setup
+
+OAuth credentials are required to run the application. See [OAUTH_SETUP.md](./OAUTH_SETUP.md) for complete setup instructions including:
+
+- Google Cloud Console configuration
+- Facebook Developers configuration
+- Environment variable setup
+- Callback URL configuration
+- Production deployment guide
+
+### Quick Reference
+
+**Environment Variables (backend/.env):**
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3001/auth/google/callback
+
+FACEBOOK_APP_ID=your-facebook-app-id
+FACEBOOK_APP_SECRET=your-facebook-app-secret
+FACEBOOK_CALLBACK_URL=http://localhost:3001/auth/facebook/callback
+```
+
+For detailed setup instructions, see [OAUTH_SETUP.md](./OAUTH_SETUP.md).
 
 ## License
 

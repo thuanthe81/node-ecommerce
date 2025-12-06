@@ -137,10 +137,12 @@ apiClient.interceptors.response.use(
           const isOrderConfirmation =  currentPath.includes('/checkout') || currentPath.includes('/orders/') || currentPath.includes('/confirmation');
 
           if (!isOrderConfirmation) {
-            window.location.href = '/login';
-            // Dispatch custom event for authentication failure
+            // Dispatch custom event for session expiration
             // This will be handled by AuthContext to perform client-side navigation
-            // window.dispatchEvent(new CustomEvent('auth:logout'));
+            // with session expiration message and redirect preservation
+            window.dispatchEvent(new CustomEvent('auth:session-expired', {
+              detail: { currentPath }
+            }));
           }
         }
 

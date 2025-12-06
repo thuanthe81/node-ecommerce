@@ -17,6 +17,7 @@ import {
 import { User, UserRole } from '@prisma/client';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { OAuthUserData, AuthResponse } from './dto/oauth-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -103,6 +104,11 @@ export class AuthService {
     });
 
     if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Check if user has a password (OAuth users don't have passwords)
+    if (!user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -212,6 +218,97 @@ export class AuthService {
     return this.prisma.user.findUnique({
       where: { id: userId },
     });
+  }
+
+  /**
+   * Find or create OAuth user
+   * Implements account linking based on email
+   */
+  async findOrCreateOAuthUser(oauthData: OAuthUserData): Promise<User> {
+    const { email, firstName, lastName, provider, providerId, username } =
+      oauthData;
+
+    // Check if user exists by email
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      // User exists - link OAuth provider to existing account
+      return this.linkOAuthProvider(
+        existingUser.id,
+        provider,
+        providerId,
+        username,
+      );
+    }
+
+    // User doesn't exist - create new user with OAuth data
+    const newUser = await this.prisma.user.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        username,
+        role: UserRole.CUSTOMER,
+        isEmailVerified: true, // OAuth users have verified emails
+        googleId: provider === 'google' ? providerId : null,
+        facebookId: provider === 'facebook' ? providerId : null,
+        passwordHash: null, // OAuth users don't have passwords
+      },
+    });
+
+    return newUser;
+  }
+
+  /**
+   * Link OAuth provider to existing user account
+   * Maintains multiple provider IDs in user record
+   */
+  async linkOAuthProvider(
+    userId: string,
+    provider: 'google' | 'facebook',
+    providerId: string,
+    username?: string,
+  ): Promise<User> {
+    // Prepare update data based on provider
+    const updateData: any = {};
+
+    if (provider === 'google') {
+      updateData.googleId = providerId;
+    } else if (provider === 'facebook') {
+      updateData.facebookId = providerId;
+    }
+
+    // Update username if provided and not already set
+    if (username) {
+      updateData.username = username;
+    }
+
+    // Update user record with OAuth provider information
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    return updatedUser;
+  }
+
+  /**
+   * Validate OAuth user and generate tokens
+   */
+  async validateOAuthUser(oauthData: OAuthUserData): Promise<AuthResponse> {
+    // Find or create user based on OAuth data
+    const user = await this.findOrCreateOAuthUser(oauthData);
+
+    // Generate JWT tokens for user
+    const tokens = await this.generateTokens(user);
+
+    // Return user and tokens
+    return {
+      user: this.sanitizeUser(user),
+      ...tokens,
+    };
   }
 
   /**

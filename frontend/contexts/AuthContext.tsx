@@ -2,14 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { authApi, User, RegisterData, LoginData } from '@/lib/auth-api';
+import { authApi, LoginData, User } from '@/lib/auth-api';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -40,6 +39,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Handle OAuth callback tokens from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
+    const redirect = params.get('redirect');
+
+    if (accessToken && refreshToken) {
+      // Store tokens
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      // Fetch user data after storing tokens
+      const fetchUser = async () => {
+        try {
+          const { userApi } = await import('@/lib/user-api');
+          const userData = await userApi.getProfile();
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
+
+          // Redirect to the specified URL after successful authentication
+          if (redirect) {
+            router.push(redirect);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user after OAuth:', error);
+        }
+      };
+
+      fetchUser();
+
+      // Clean URL after extracting tokens (only if not redirecting)
+      if (!redirect) {
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    }
+  }, [router]);
+
+  useEffect(() => {
     // Handle authentication logout event from API client
     const handleAuthLogout = () => {
       // Clear user state
@@ -54,12 +92,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push(`/${locale}/login`);
     };
 
-    // Add event listener for custom auth:logout event
-    window.addEventListener('auth:logout', handleAuthLogout);
+    // Handle session expiration event from API client
+    const handleSessionExpired = (event: CustomEvent) => {
+      // Clear user state
+      setUser(null);
 
-    // Cleanup event listener on component unmount
+      // Extract locale from current pathname
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const locale = pathSegments[0] || 'en';
+
+      // Preserve current page URL for post-login redirect
+      const currentPath = event.detail?.currentPath || pathname;
+      const redirectParam = encodeURIComponent(currentPath);
+
+      // Redirect to login with session expiration message and redirect parameter
+      router.push(`/${locale}/login?expired=true&redirect=${redirectParam}`);
+    };
+
+    // Add event listeners
+    window.addEventListener('auth:logout', handleAuthLogout);
+    window.addEventListener('auth:session-expired', handleSessionExpired as EventListener);
+
+    // Cleanup event listeners on component unmount
     return () => {
       window.removeEventListener('auth:logout', handleAuthLogout);
+      window.removeEventListener('auth:session-expired', handleSessionExpired as EventListener);
     };
   }, [router, pathname]);
 
@@ -75,22 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.user);
     } catch (error) {
       console.error('Login failed:', error);
-      throw error;
-    }
-  };
-
-  const register = async (data: RegisterData) => {
-    try {
-      const response = await authApi.register(data);
-
-      // Store tokens and user
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-      localStorage.setItem('user', JSON.stringify(response.user));
-
-      setUser(response.user);
-    } catch (error) {
-      console.error('Registration failed:', error);
       throw error;
     }
   };
@@ -130,7 +171,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
-        register,
         logout,
         refreshUser,
       }}

@@ -25,6 +25,9 @@ export default function CustomerDetailContent({ customerId, locale }: CustomerDe
       email: { en: 'Email', vi: 'Email' },
       name: { en: 'Name', vi: 'Tên' },
       registrationDate: { en: 'Registration Date', vi: 'Ngày đăng ký' },
+      oauthProviders: { en: 'OAuth Providers', vi: 'Nhà cung cấp OAuth' },
+      oauthUsername: { en: 'OAuth Username', vi: 'Tên người dùng OAuth' },
+      oauthProviderId: { en: 'Provider ID', vi: 'ID nhà cung cấp' },
       statistics: { en: 'Statistics', vi: 'Thống kê' },
       totalOrders: { en: 'Total Orders', vi: 'Tổng đơn hàng' },
       totalSpent: { en: 'Total Spent', vi: 'Tổng chi tiêu' },
@@ -46,6 +49,9 @@ export default function CustomerDetailContent({ customerId, locale }: CustomerDe
       error: { en: 'Error loading customer details', vi: 'Lỗi khi tải thông tin khách hàng' },
       retry: { en: 'Retry', vi: 'Thử lại' },
       notFound: { en: 'Customer not found', vi: 'Không tìm thấy khách hàng' },
+      google: { en: 'Google', vi: 'Google' },
+      facebook: { en: 'Facebook', vi: 'Facebook' },
+      noOAuthProviders: { en: 'None', vi: 'Không có' },
       // Order statuses
       PENDING: { en: 'Pending', vi: 'Chờ xử lý' },
       PROCESSING: { en: 'Processing', vi: 'Đang xử lý' },
@@ -195,7 +201,70 @@ export default function CustomerDetailContent({ customerId, locale }: CustomerDe
             <label className="block text-sm font-medium text-gray-500">{t('registrationDate')}</label>
             <p className="mt-1 text-sm text-gray-900">{formatDate(customer.createdAt)}</p>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-500">{t('oauthProviders')}</label>
+            <div className="mt-1 flex gap-2">
+              {customer.googleId && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  {t('google')}
+                </span>
+              )}
+              {customer.facebookId && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {t('facebook')}
+                </span>
+              )}
+              {!customer.googleId && !customer.facebookId && (
+                <span className="text-sm text-gray-500">{t('noOAuthProviders')}</span>
+              )}
+            </div>
+          </div>
+          {customer.username && (
+            <div>
+              <label className="block text-sm font-medium text-gray-500">{t('oauthUsername')}</label>
+              <p className="mt-1 text-sm text-gray-900">{customer.username}</p>
+            </div>
+          )}
         </div>
+
+        {/* OAuth Provider Details */}
+        {(customer.googleId || customer.facebookId) && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">OAuth Provider Details</h3>
+            <div className="space-y-4">
+              {customer.googleId && (
+                <div className="bg-red-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      {t('google')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">{t('oauthProviderId')}</label>
+                      <p className="mt-1 text-sm text-gray-900 font-mono">{customer.googleId}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {customer.facebookId && (
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {t('facebook')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600">{t('oauthProviderId')}</label>
+                      <p className="mt-1 text-sm text-gray-900 font-mono">{customer.facebookId}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Statistics */}

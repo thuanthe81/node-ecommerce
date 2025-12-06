@@ -83,6 +83,63 @@ MIGRATION_BATCH_SIZE=100 npm run deploy:staging
 - Database corruption detected
 - Need to revert to previous state
 
+## OAuth Configuration for Deployment
+
+### Production OAuth Setup
+
+Before deploying to production, you must configure OAuth credentials for the production environment.
+
+**Important:** Use separate OAuth apps for development, staging, and production environments.
+
+#### Google OAuth for Production
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create a new OAuth 2.0 Client ID for production
+3. Add production authorized redirect URIs:
+   - `https://yourdomain.com/auth/google/callback`
+   - `https://api.yourdomain.com/auth/google/callback` (if using separate API domain)
+4. Copy production Client ID and Client Secret
+5. Add to production environment variables
+
+#### Facebook OAuth for Production
+
+1. Go to [Facebook Developers](https://developers.facebook.com/apps/)
+2. Create a new app for production or switch existing app to Live mode
+3. Configure Valid OAuth Redirect URIs:
+   - `https://yourdomain.com/auth/facebook/callback`
+   - `https://api.yourdomain.com/auth/facebook/callback` (if using separate API domain)
+4. Submit app for review if required
+5. Copy production App ID and App Secret
+6. Add to production environment variables
+
+#### Production Environment Variables
+
+Ensure these OAuth variables are set in your production environment:
+
+```env
+# OAuth - Google (Production)
+GOOGLE_CLIENT_ID=production-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=production-client-secret
+GOOGLE_CALLBACK_URL=https://yourdomain.com/auth/google/callback
+
+# OAuth - Facebook (Production)
+FACEBOOK_APP_ID=production-app-id
+FACEBOOK_APP_SECRET=production-app-secret
+FACEBOOK_CALLBACK_URL=https://yourdomain.com/auth/facebook/callback
+
+# Frontend URL (Production)
+FRONTEND_URL=https://yourdomain.com
+```
+
+**Security Notes:**
+- Always use HTTPS for production callback URLs
+- Never commit OAuth credentials to version control
+- Use different credentials for each environment
+- Store credentials in a secure secrets manager
+- Rotate credentials regularly
+
+For detailed OAuth setup instructions, see [OAUTH_SETUP.md](./OAUTH_SETUP.md).
+
 ## Deployment Process
 
 ### 1. Pre-Deployment
@@ -167,7 +224,33 @@ curl http://localhost:3001/api/products
 
 # Check image URLs
 curl http://localhost:3001/api/products/[product-slug]
+
+# Test OAuth endpoints
+curl http://localhost:3001/auth/google
+curl http://localhost:3001/auth/facebook
 ```
+
+#### Test OAuth Authentication
+
+1. Open application in browser
+2. Navigate to login page
+3. Test Google OAuth flow:
+   - Click "Sign in with Google"
+   - Complete authentication
+   - Verify redirect back to application
+   - Check user is authenticated
+4. Test Facebook OAuth flow:
+   - Log out
+   - Click "Sign in with Facebook"
+   - Complete authentication
+   - Verify redirect back to application
+   - Check user is authenticated
+5. Test checkout protection:
+   - Log out
+   - Navigate to checkout
+   - Verify redirect to login
+   - Complete OAuth authentication
+   - Verify redirect back to checkout
 
 #### Monitor Logs
 
@@ -369,6 +452,8 @@ Set up alerts for:
 
 ## Related Documentation
 
+- [OAuth Setup Guide](./OAUTH_SETUP.md) - Complete OAuth configuration guide
+- [OAuth Configuration](backend/src/auth/config/README.md) - OAuth validation documentation
 - [Migration Runbook](backend/scripts/MIGRATION_RUNBOOK.md) - Detailed migration guide
 - [Image Storage API](backend/src/products/IMAGE_STORAGE_API.md) - API documentation
 - [Products Module](backend/src/products/README.md) - Module documentation

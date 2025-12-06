@@ -290,6 +290,34 @@
       "en": "Dashboard",
       "vi": "Bảng điều khiển"
     },
+    "facebook": {
+      "en": "Facebook",
+      "vi": "Facebook"
+    },
+    "google": {
+      "en": "Google",
+      "vi": "Google"
+    },
+    "noOAuthProviders": {
+      "en": "None",
+      "vi": "Không có"
+    },
+    "oauthEmail": {
+      "en": "OAuth Email",
+      "vi": "Email OAuth"
+    },
+    "oauthProviderId": {
+      "en": "Provider ID",
+      "vi": "ID nhà cung cấp"
+    },
+    "oauthProviders": {
+      "en": "OAuth Providers",
+      "vi": "Nhà cung cấp OAuth"
+    },
+    "oauthUsername": {
+      "en": "OAuth Username",
+      "vi": "Tên người dùng OAuth"
+    },
     "dashboardWelcome": {
       "en": "Welcome to your admin dashboard",
       "vi": "Chào mừng đến với bảng điều khiển quản trị"
@@ -1007,6 +1035,50 @@
     "rememberMe": {
       "en": "Remember Me",
       "vi": "Ghi nhớ đăng nhập"
+    },
+    "sessionExpired": {
+      "en": "Your session has expired. Please sign in again.",
+      "vi": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại."
+    },
+    "authenticationRequired": {
+      "en": "Please sign in to continue",
+      "vi": "Vui lòng đăng nhập để tiếp tục"
+    },
+    "signInWithGoogle": {
+      "en": "Sign in with Google",
+      "vi": "Đăng nhập bằng Google"
+    },
+    "signInWithFacebook": {
+      "en": "Sign in with Facebook",
+      "vi": "Đăng nhập bằng Facebook"
+    },
+    "signInToAccount": {
+      "en": "Sign in to your account",
+      "vi": "Đăng nhập vào tài khoản của bạn"
+    },
+    "authenticationCancelled": {
+      "en": "Authentication was cancelled",
+      "vi": "Xác thực đã bị hủy"
+    },
+    "authenticationFailed": {
+      "en": "Authentication failed. Please try again.",
+      "vi": "Xác thực thất bại. Vui lòng thử lại."
+    },
+    "providerError": {
+      "en": "An error occurred with the authentication provider. Please try again.",
+      "vi": "Đã xảy ra lỗi với nhà cung cấp xác thực. Vui lòng thử lại."
+    },
+    "connectionError": {
+      "en": "Connection problem. Please check your internet and try again.",
+      "vi": "Vấn đề kết nối. Vui lòng kiểm tra internet và thử lại."
+    },
+    "invalidCredentials": {
+      "en": "Authentication was unsuccessful. Please try again.",
+      "vi": "Xác thực không thành công. Vui lòng thử lại."
+    },
+    "retryAuthentication": {
+      "en": "Retry",
+      "vi": "Thử lại"
     }
   },
   "cart": {

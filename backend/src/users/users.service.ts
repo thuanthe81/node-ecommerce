@@ -71,6 +71,13 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    // OAuth users don't have passwords
+    if (!user.passwordHash) {
+      throw new UnauthorizedException(
+        'Cannot update password for OAuth-authenticated users',
+      );
+    }
+
     const isPasswordValid = await bcrypt.compare(
       updatePasswordDto.oldPassword,
       user.passwordHash,
@@ -391,6 +398,9 @@ export class UsersService {
         email: true,
         firstName: true,
         lastName: true,
+        username: true,
+        googleId: true,
+        facebookId: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -422,6 +432,9 @@ export class UsersService {
           email: customer.email,
           firstName: customer.firstName,
           lastName: customer.lastName,
+          username: customer.username,
+          googleId: customer.googleId,
+          facebookId: customer.facebookId,
           createdAt: customer.createdAt,
           updatedAt: customer.updatedAt,
           totalOrders: customer._count.orders,
@@ -455,6 +468,9 @@ export class UsersService {
         email: true,
         firstName: true,
         lastName: true,
+        username: true,
+        googleId: true,
+        facebookId: true,
         createdAt: true,
         updatedAt: true,
         orders: {

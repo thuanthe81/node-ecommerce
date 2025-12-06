@@ -7,9 +7,11 @@ NestJS backend API with TypeScript, PostgreSQL, and Redis.
 - NestJS framework with TypeScript
 - PostgreSQL database with Prisma ORM
 - Redis for caching and session management
-- JWT authentication
+- OAuth 2.0 authentication (Google, Facebook)
+- JWT token management
 - RESTful API design
 - Swagger API documentation
+- Automatic OAuth configuration validation
 
 ## Getting Started
 
@@ -27,8 +29,34 @@ Copy `.env.example` to `.env` and configure:
 cp .env.example .env
 ```
 
-Key variables:
-- `UPLOAD_DIR` — directory for static uploads served at `/uploads/*`. Accepts absolute paths or project-relative (default `uploads`).
+**Required OAuth Configuration:**
+
+This application requires OAuth credentials to function. You must configure both Google and Facebook OAuth before starting the application.
+
+See the [OAuth Setup Guide](../OAUTH_SETUP.md) for detailed instructions on:
+- Creating OAuth apps in Google Cloud Console
+- Creating OAuth apps in Facebook Developers
+- Configuring callback URLs
+- Setting up environment variables
+
+**Key Environment Variables:**
+
+- `GOOGLE_CLIENT_ID` — OAuth 2.0 Client ID from Google Cloud Console
+- `GOOGLE_CLIENT_SECRET` — OAuth 2.0 Client Secret from Google Cloud Console
+- `GOOGLE_CALLBACK_URL` — Callback URL for Google OAuth (e.g., `http://localhost:3001/auth/google/callback`)
+- `FACEBOOK_APP_ID` — App ID from Facebook Developers
+- `FACEBOOK_APP_SECRET` — App Secret from Facebook Developers
+- `FACEBOOK_CALLBACK_URL` — Callback URL for Facebook OAuth (e.g., `http://localhost:3001/auth/facebook/callback`)
+- `FRONTEND_URL` — Frontend application URL for post-auth redirects (e.g., `http://localhost:3000`)
+- `UPLOAD_DIR` — Directory for static uploads served at `/uploads/*`. Accepts absolute paths or project-relative (default `uploads`)
+
+**OAuth Configuration Validation:**
+
+The application automatically validates OAuth credentials on startup. If any required credentials are missing, the application will fail to start with a detailed error message including setup instructions.
+
+For more details, see:
+- [OAuth Setup Guide](../OAUTH_SETUP.md) - Complete setup instructions
+- [OAuth Configuration Documentation](./src/auth/config/README.md) - Technical details
 
 ### Database Setup
 
@@ -88,6 +116,12 @@ backend/
 - `npm run prisma:migrate` - Run database migrations
 - `npm run prisma:seed` - Seed database with sample data
 - `npm run prisma:studio` - Open Prisma Studio
+
+### OAuth Testing
+- `npm run test:oauth-validation` - Test OAuth configuration validation
+- `npm run test:oauth-api` - Test OAuth API responses
+- `npm run test:oauth-visibility` - Verify OAuth visibility in admin panel
+- `npm run create:oauth-test-user` - Create test user with OAuth data
 
 ### Image Management
 - `npm run generate:images` - Generate sample product images
