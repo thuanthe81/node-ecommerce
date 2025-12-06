@@ -7,5 +7,5 @@ interface PurchasingPageProps {
 }
 
 export default function PurchasingPage({ params }: PurchasingPageProps) {
-  redirect(`/${params.locale || 'vi'}/pages/purchasing`);
+  redirect(`/${params.locale || 'vi'}/pages/purchasing-guide`);
 }

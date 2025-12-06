@@ -52,7 +52,7 @@ export function useImageInsertion(
       // If this is a product image, insert as a linked image
       if (slug) {
         // Generate locale-aware product URL
-        const productUrl = `/products/${slug}`;
+        const productUrl = `/${locale}/products/${slug}`;
 
         // Create HTML with link wrapping the image
         const html = `<a href="${productUrl}"><img src="${url}" width="300" /></a>`;

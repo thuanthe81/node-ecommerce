@@ -57,6 +57,14 @@ export default function Footer({
                   {t('purchasing')}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/returns"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {t('returnPolicy')}
+                </Link>
+              </li>
             </ul>
           </div>
 
