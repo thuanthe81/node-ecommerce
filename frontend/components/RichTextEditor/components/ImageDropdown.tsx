@@ -18,6 +18,9 @@ interface ImageDropdownProps {
   /** Callback when "From Products" is selected */
   onSelectFromProducts: () => void;
 
+  /** Callback when "From Media Library" is selected */
+  onSelectFromMediaLibrary: () => void;
+
   /** Callback when "Upload from Disk" is selected */
   onSelectUploadFromDisk: () => void;
 
@@ -35,6 +38,7 @@ export function ImageDropdown({
   isOpen,
   onClose,
   onSelectFromProducts,
+  onSelectFromMediaLibrary,
   onSelectUploadFromDisk,
   position,
   locale,
@@ -64,6 +68,7 @@ export function ImageDropdown({
 
   const translations = {
     fromProducts: locale === 'vi' ? 'Từ sản phẩm' : 'From Products',
+    fromMediaLibrary: locale === 'vi' ? 'Từ thư viện phương tiện' : 'From Media Library',
     uploadFromDisk: locale === 'vi' ? 'Tải lên từ máy tính' : 'Upload from Disk',
   };
 
@@ -101,6 +106,30 @@ export function ImageDropdown({
           />
         </svg>
         <span>{translations.fromProducts}</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          onSelectFromMediaLibrary();
+          onClose();
+        }}
+        role="menuitem"
+        aria-label={translations.fromMediaLibrary}
+      >
+        <svg
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        <span>{translations.fromMediaLibrary}</span>
       </button>
       <button
         type="button"

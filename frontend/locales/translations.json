@@ -578,6 +578,10 @@
       "en": "Banners",
       "vi": "Banner"
     },
+    "mediaLibrary": {
+      "en": "Media Library",
+      "vi": "Thư viện phương tiện"
+    },
     "htmlPlaceholder": {
       "en": "You can use HTML tags for formatting",
       "vi": "Bạn có thể sử dụng thẻ HTML để định dạng"
@@ -934,6 +938,10 @@
       "en": "From Products",
       "vi": "Từ sản phẩm"
     },
+    "fromMediaLibrary": {
+      "en": "From Media Library",
+      "vi": "Từ thư viện phương tiện"
+    },
     "uploadFromDisk": {
       "en": "Upload from Disk",
       "vi": "Tải lên từ máy tính"
@@ -969,6 +977,140 @@
     "viewOrders": {
       "en": "View orders",
       "vi": "Xem đơn hàng"
+    },
+    "contentMedia": {
+      "title": {
+        "en": "Content Media Library",
+        "vi": "Thư viện phương tiện nội dung"
+      },
+      "description": {
+        "en": "Manage images for use in content across your site",
+        "vi": "Quản lý hình ảnh để sử dụng trong nội dung trên trang web của bạn"
+      },
+      "uploadFile": {
+        "en": "Upload file",
+        "vi": "Tải lên file"
+      },
+      "dragAndDrop": {
+        "en": "or drag and drop",
+        "vi": "hoặc kéo và thả"
+      },
+      "fileTypeHint": {
+        "en": "PNG, JPG, GIF, WebP up to 5MB",
+        "vi": "PNG, JPG, GIF, WebP tối đa 5MB"
+      },
+      "uploadingImage": {
+        "en": "Uploading image...",
+        "vi": "Đang tải lên hình ảnh..."
+      },
+      "invalidFileType": {
+        "en": "Please select a valid image file (JPEG, PNG, GIF, or WebP)",
+        "vi": "Vui lòng chọn tệp hình ảnh hợp lệ (JPEG, PNG, GIF hoặc WebP)"
+      },
+      "fileTooLarge": {
+        "en": "Image file is too large. Maximum size is 5MB.",
+        "vi": "Tệp hình ảnh quá lớn. Kích thước tối đa là 5MB."
+      },
+      "uploadError": {
+        "en": "Failed to upload image. Please try again.",
+        "vi": "Không thể tải lên hình ảnh. Vui lòng thử lại."
+      },
+      "uploadSuccess": {
+        "en": "Image uploaded successfully",
+        "vi": "Tải lên hình ảnh thành công"
+      },
+      "searchPlaceholder": {
+        "en": "Search media by filename...",
+        "vi": "Tìm kiếm phương tiện theo tên file..."
+      },
+      "search": {
+        "en": "Search",
+        "vi": "Tìm kiếm"
+      },
+      "clearSearch": {
+        "en": "Clear",
+        "vi": "Xóa"
+      },
+      "loading": {
+        "en": "Loading...",
+        "vi": "Đang tải..."
+      },
+      "loadError": {
+        "en": "Failed to load media library",
+        "vi": "Không thể tải thư viện phương tiện"
+      },
+      "noMediaItems": {
+        "en": "No media items yet",
+        "vi": "Chưa có mục phương tiện nào"
+      },
+      "uploadFirstMedia": {
+        "en": "Upload your first image to get started",
+        "vi": "Tải lên hình ảnh đầu tiên để bắt đầu"
+      },
+      "noResults": {
+        "en": "No media items found",
+        "vi": "Không tìm thấy mục phương tiện"
+      },
+      "noResultsMessage": {
+        "en": "Try adjusting your search query",
+        "vi": "Thử điều chỉnh truy vấn tìm kiếm của bạn"
+      },
+      "copyUrl": {
+        "en": "Copy URL",
+        "vi": "Sao chép URL"
+      },
+      "delete": {
+        "en": "Delete",
+        "vi": "Xóa"
+      },
+      "confirmDelete": {
+        "en": "Delete Media Item?",
+        "vi": "Xóa mục phương tiện?"
+      },
+      "confirmDeleteMessage": {
+        "en": "Are you sure you want to delete this media item? This action cannot be undone.",
+        "vi": "Bạn có chắc muốn xóa mục phương tiện này? Hành động này không thể hoàn tác."
+      },
+      "cancel": {
+        "en": "Cancel",
+        "vi": "Hủy"
+      },
+      "deleting": {
+        "en": "Deleting...",
+        "vi": "Đang xóa..."
+      },
+      "deleteSuccess": {
+        "en": "Media item deleted successfully",
+        "vi": "Xóa mục phương tiện thành công"
+      },
+      "deleteError": {
+        "en": "Failed to delete media item",
+        "vi": "Không thể xóa mục phương tiện"
+      },
+      "urlCopied": {
+        "en": "URL copied to clipboard",
+        "vi": "Đã sao chép URL vào clipboard"
+      },
+      "page": {
+        "en": "Page",
+        "vi": "Trang"
+      },
+      "of": {
+        "en": "of",
+        "vi": "của"
+      },
+      "previous": {
+        "en": "Previous",
+        "vi": "Trước"
+      },
+      "next": {
+        "en": "Next",
+        "vi": "Tiếp theo"
+      },
+      "selectImageFile": {
+        "en": "Select image file",
+        "vi": "Chọn file hình ảnh"
+      }
     }
   },
   "auth": {
@@ -2781,6 +2923,114 @@
     "contactViaWhatsApp": {
       "en": "Contact us on WhatsApp",
       "vi": "Liên hệ qua WhatsApp"
+    }
+  },
+  "admin": {
+    "contentMedia": {
+      "title": {
+        "en": "Content Media Library",
+        "vi": "Thư viện phương tiện nội dung"
+      },
+      "description": {
+        "en": "Manage images for use in content across your site",
+        "vi": "Quản lý hình ảnh để sử dụng trong nội dung trên trang web của bạn"
+      },
+      "searchPlaceholder": {
+        "en": "Search media by filename...",
+        "vi": "Tìm kiếm phương tiện theo tên file..."
+      },
+      "search": {
+        "en": "Search",
+        "vi": "Tìm kiếm"
+      },
+      "clearSearch": {
+        "en": "Clear",
+        "vi": "Xóa"
+      },
+      "noResults": {
+        "en": "No media items found",
+        "vi": "Không tìm thấy mục phương tiện"
+      },
+      "noResultsMessage": {
+        "en": "Try adjusting your search query",
+        "vi": "Thử điều chỉnh truy vấn tìm kiếm của bạn"
+      },
+      "page": {
+        "en": "Page",
+        "vi": "Trang"
+      },
+      "of": {
+        "en": "of",
+        "vi": "của"
+      },
+      "previous": {
+        "en": "Previous",
+        "vi": "Trước"
+      },
+      "next": {
+        "en": "Next",
+        "vi": "Sau"
+      },
+      "uploadSuccess": {
+        "en": "Media uploaded successfully",
+        "vi": "Đã tải lên phương tiện thành công"
+      },
+      "uploadError": {
+        "en": "Failed to upload media",
+        "vi": "Không thể tải lên phương tiện"
+      },
+      "deleteSuccess": {
+        "en": "Media deleted successfully",
+        "vi": "Đã xóa phương tiện thành công"
+      },
+      "deleteError": {
+        "en": "Failed to delete media",
+        "vi": "Không thể xóa phương tiện"
+      },
+      "loadError": {
+        "en": "Failed to load media library",
+        "vi": "Không thể tải thư viện phương tiện"
+      },
+      "confirmDelete": {
+        "en": "Delete Media Item?",
+        "vi": "Xóa mục phương tiện?"
+      },
+      "confirmDeleteMessage": {
+        "en": "Are you sure you want to delete this media item? This action cannot be undone.",
+        "vi": "Bạn có chắc muốn xóa mục phương tiện này? Hành động này không thể hoàn tác."
+      },
+      "cancel": {
+        "en": "Cancel",
+        "vi": "Hủy"
+      },
+      "delete": {
+        "en": "Delete",
+        "vi": "Xóa"
+      },
+      "deleting": {
+        "en": "Deleting...",
+        "vi": "Đang xóa..."
+      },
+      "copyUrl": {
+        "en": "Copy URL",
+        "vi": "Sao chép URL"
+      },
+      "urlCopied": {
+        "en": "URL copied to clipboard",
+        "vi": "Đã sao chép URL vào clipboard"
+      },
+      "noMediaItems": {
+        "en": "No media items",
+        "vi": "Không có mục phương tiện"
+      },
+      "uploadFirstMedia": {
+        "en": "Upload your first media item to get started",
+        "vi": "Tải lên mục phương tiện đầu tiên để bắt đầu"
+      },
+      "loading": {
+        "en": "Loading media...",
+        "vi": "Đang tải phương tiện..."
+      }
     }
   }
 }

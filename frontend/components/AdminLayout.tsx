@@ -4,7 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings } from '@/components/Svgs';
+import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings, SvgImage } from '@/components/Svgs';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -127,6 +127,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           name: t('homepageSections'),
           href: `${prefUri}/content/homepage-sections`,
           type: 'HOMEPAGE_SECTION',
+        },
+        {
+          name: t('mediaLibrary'),
+          href: `${prefUri}/content-media`,
+          type: 'MEDIA',
         },
       ],
     },

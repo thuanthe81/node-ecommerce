@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentSettingsModule } from './payment-settings/payment-settings.module';
 import { FooterSettingsModule } from './footer-settings/footer-settings.module';
+import { ContentMediaModule } from './content-media/content-media.module';
 import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware';
 
 @Module({
@@ -58,6 +59,7 @@ import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware'
     NotificationsModule,
     PaymentSettingsModule,
     FooterSettingsModule,
+    ContentMediaModule,
   ],
   controllers: [AppController],
   providers: [

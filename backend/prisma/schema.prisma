@@ -452,3 +452,18 @@ model FooterSettings {
 
   @@map("footer_settings")
 }
+
+// Content Media Model
+model ContentMedia {
+  id           String   @id @default(uuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+  @@map("content_media")
+}

@@ -14,6 +14,7 @@ import { useQuillEditor } from './hooks/useQuillEditor';
 import { useImageInsertion } from './hooks/useImageInsertion';
 import { ImageDropdown } from './components/ImageDropdown';
 import ImagePickerModal from '../ImagePickerModal';
+import { MediaPickerModal } from '../MediaPickerModal/MediaPickerModal';
 
 /**
  * Main RichTextEditor component
@@ -34,6 +35,7 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Custom image handler for Quill toolbar
@@ -75,6 +77,26 @@ export function RichTextEditor({
   const handleSelectFromProducts = useCallback(() => {
     setShowProductPicker(true);
   }, [setShowProductPicker]);
+
+  // Handle "From Media Library" option
+  const handleSelectFromMediaLibrary = useCallback(() => {
+    setShowMediaPicker(true);
+  }, []);
+
+  // Handle media selection from media library
+  const handleMediaSelect = useCallback(
+    (url: string) => {
+      if (editor) {
+        const range = editor.getSelection();
+        if (range) {
+          editor.insertEmbed(range.index, 'image', url);
+          editor.setSelection(range.index + 1, 0);
+        }
+      }
+      setShowMediaPicker(false);
+    },
+    [editor]
+  );
 
   // Handle "Upload from Disk" option
   const handleSelectUploadFromDisk = useCallback(() => {
@@ -127,6 +149,7 @@ export function RichTextEditor({
         isOpen={showImageDropdown}
         onClose={() => setShowImageDropdown(false)}
         onSelectFromProducts={handleSelectFromProducts}
+        onSelectFromMediaLibrary={handleSelectFromMediaLibrary}
         onSelectUploadFromDisk={handleSelectUploadFromDisk}
         position={dropdownPosition}
         locale={locale}
@@ -140,6 +163,14 @@ export function RichTextEditor({
           // Pass both the image URL and product slug to the handler
           handleProductImageSelect(imageUrl, product?.slug);
         }}
+        locale={locale}
+      />
+
+      {/* Content media picker modal */}
+      <MediaPickerModal
+        isOpen={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        onSelectMedia={handleMediaSelect}
         locale={locale}
       />
 
