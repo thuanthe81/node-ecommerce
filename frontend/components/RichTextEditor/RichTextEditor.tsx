@@ -36,7 +36,7 @@ export function RichTextEditor({
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showMediaPicker, setShowMediaPicker] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Custom image handler for Quill toolbar
   const handleImageButtonClick = useCallback(() => {
@@ -67,10 +67,10 @@ export function RichTextEditor({
     showProductPicker,
     setShowProductPicker,
     handleProductImageSelect,
-    handleFileUpload,
-    isUploading,
-    uploadError,
-    successMessage,
+    // handleFileUpload,
+    // isUploading,
+    // uploadError,
+    // successMessage,
   } = useImageInsertion(editor, onImageInsert, locale);
 
   // Handle "From Products" option
@@ -84,39 +84,40 @@ export function RichTextEditor({
   }, []);
 
   // Handle media selection from media library
-  const handleMediaSelect = useCallback(
-    (url: string) => {
-      if (editor) {
-        const range = editor.getSelection();
-        if (range) {
-          editor.insertEmbed(range.index, 'image', url);
-          editor.setSelection(range.index + 1, 0);
-        }
-      }
-      setShowMediaPicker(false);
-    },
-    [editor]
-  );
+  // const handleMediaSelect = useCallback(
+  //   (url: string) => {
+  //     if (editor) {
+  //       handleProductImageSelect()
+  //       // const range = editor.getSelection();
+  //       // if (range) {
+  //       //   editor.insertEmbed(range.index, 'image', url);
+  //       //   editor.setSelection(range.index + 1, 0);
+  //       // }
+  //     }
+  //     setShowMediaPicker(false);
+  //   },
+  //   [editor]
+  // );
 
-  // Handle "Upload from Disk" option
-  const handleSelectUploadFromDisk = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+  // // Handle "Upload from Disk" option
+  // const handleSelectUploadFromDisk = useCallback(() => {
+  //   fileInputRef.current?.click();
+  // }, []);
 
   // Handle file selection from disk
-  const handleFileChange = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        await handleFileUpload(file);
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }
-    },
-    [handleFileUpload]
-  );
+  // const handleFileChange = useCallback(
+  //   async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //     const file = event.target.files?.[0];
+  //     if (file) {
+  //       await handleFileUpload(file);
+  //       // Reset file input
+  //       if (fileInputRef.current) {
+  //         fileInputRef.current.value = '';
+  //       }
+  //     }
+  //   },
+  //   [handleFileUpload]
+  // );
 
   // Determine CSS classes based on state
   const containerClasses = [
@@ -135,14 +136,14 @@ export function RichTextEditor({
       <div ref={quillRef} />
 
       {/* Hidden file input for disk uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
-        onChange={handleFileChange}
-        className="hidden"
-        aria-label={locale === 'vi' ? 'Chọn tệp hình ảnh' : 'Select image file'}
-      />
+      {/*<input*/}
+      {/*  ref={fileInputRef}*/}
+      {/*  type="file"*/}
+      {/*  accept="image/jpeg,image/png,image/gif,image/webp"*/}
+      {/*  onChange={handleFileChange}*/}
+      {/*  className="hidden"*/}
+      {/*  aria-label={locale === 'vi' ? 'Chọn tệp hình ảnh' : 'Select image file'}*/}
+      {/*/>*/}
 
       {/* Image insertion dropdown */}
       <ImageDropdown
@@ -150,7 +151,7 @@ export function RichTextEditor({
         onClose={() => setShowImageDropdown(false)}
         onSelectFromProducts={handleSelectFromProducts}
         onSelectFromMediaLibrary={handleSelectFromMediaLibrary}
-        onSelectUploadFromDisk={handleSelectUploadFromDisk}
+        // onSelectUploadFromDisk={handleSelectUploadFromDisk}
         position={dropdownPosition}
         locale={locale}
       />
@@ -170,90 +171,92 @@ export function RichTextEditor({
       <MediaPickerModal
         isOpen={showMediaPicker}
         onClose={() => setShowMediaPicker(false)}
-        onSelectMedia={handleMediaSelect}
+        onSelectMedia={(imageUrl) => {
+          handleProductImageSelect(imageUrl);
+        }}
         locale={locale}
       />
 
       {/* Status messages container */}
-      <div className="mt-2 space-y-2">
-        {/* Upload loading indicator with spinner */}
-        {isUploading && (
-          <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 animate-fade-in">
-            <svg
-              className="animate-spin h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            <span>
-              {locale === 'vi' ? 'Đang tải lên hình ảnh...' : 'Uploading image...'}
-            </span>
-          </div>
-        )}
+      {/*<div className="mt-2 space-y-2">*/}
+      {/*   Upload loading indicator with spinner */}
+      {/*  {isUploading && (*/}
+      {/*    <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 animate-fade-in">*/}
+      {/*      <svg*/}
+      {/*        className="animate-spin h-4 w-4"*/}
+      {/*        xmlns="http://www.w3.org/2000/svg"*/}
+      {/*        fill="none"*/}
+      {/*        viewBox="0 0 24 24"*/}
+      {/*        aria-hidden="true"*/}
+      {/*      >*/}
+      {/*        <circle*/}
+      {/*          className="opacity-25"*/}
+      {/*          cx="12"*/}
+      {/*          cy="12"*/}
+      {/*          r="10"*/}
+      {/*          stroke="currentColor"*/}
+      {/*          strokeWidth="4"*/}
+      {/*        />*/}
+      {/*        <path*/}
+      {/*          className="opacity-75"*/}
+      {/*          fill="currentColor"*/}
+      {/*          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"*/}
+      {/*        />*/}
+      {/*      </svg>*/}
+      {/*      <span>*/}
+      {/*        {locale === 'vi' ? 'Đang tải lên hình ảnh...' : 'Uploading image...'}*/}
+      {/*      </span>*/}
+      {/*    </div>*/}
+      {/*  )}*/}
 
-        {/* Success message */}
-        {successMessage && (
-          <div
-            className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 animate-fade-in"
-            role="status"
-            aria-live="polite"
-          >
-            <svg
-              className="h-5 w-5 flex-shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>{successMessage}</span>
-          </div>
-        )}
+      {/*  /!* Success message *!/*/}
+      {/*  {successMessage && (*/}
+      {/*    <div*/}
+      {/*      className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 animate-fade-in"*/}
+      {/*      role="status"*/}
+      {/*      aria-live="polite"*/}
+      {/*    >*/}
+      {/*      <svg*/}
+      {/*        className="h-5 w-5 flex-shrink-0"*/}
+      {/*        xmlns="http://www.w3.org/2000/svg"*/}
+      {/*        viewBox="0 0 20 20"*/}
+      {/*        fill="currentColor"*/}
+      {/*        aria-hidden="true"*/}
+      {/*      >*/}
+      {/*        <path*/}
+      {/*          fillRule="evenodd"*/}
+      {/*          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"*/}
+      {/*          clipRule="evenodd"*/}
+      {/*        />*/}
+      {/*      </svg>*/}
+      {/*      <span>{successMessage}</span>*/}
+      {/*    </div>*/}
+      {/*  )}*/}
 
-        {/* Upload error message */}
-        {uploadError && (
-          <div
-            className="flex items-start gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 animate-fade-in"
-            role="alert"
-            aria-live="polite"
-          >
-            <svg
-              className="h-5 w-5 flex-shrink-0 mt-0.5"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>{uploadError}</span>
-          </div>
-        )}
-      </div>
+      {/*  /!* Upload error message *!/*/}
+      {/*  {uploadError && (*/}
+      {/*    <div*/}
+      {/*      className="flex items-start gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 animate-fade-in"*/}
+      {/*      role="alert"*/}
+      {/*      aria-live="polite"*/}
+      {/*    >*/}
+      {/*      <svg*/}
+      {/*        className="h-5 w-5 flex-shrink-0 mt-0.5"*/}
+      {/*        xmlns="http://www.w3.org/2000/svg"*/}
+      {/*        viewBox="0 0 20 20"*/}
+      {/*        fill="currentColor"*/}
+      {/*        aria-hidden="true"*/}
+      {/*      >*/}
+      {/*        <path*/}
+      {/*          fillRule="evenodd"*/}
+      {/*          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"*/}
+      {/*          clipRule="evenodd"*/}
+      {/*        />*/}
+      {/*      </svg>*/}
+      {/*      <span>{uploadError}</span>*/}
+      {/*    </div>*/}
+      {/*  )}*/}
+      {/*</div>*/}
     </div>
   );
 }

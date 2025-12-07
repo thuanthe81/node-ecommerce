@@ -9,8 +9,8 @@
 import { useState, useCallback } from 'react';
 import type Quill from 'quill';
 import type { UseImageInsertionReturn } from '../types';
-import { validateImageFile } from '../utils/fileValidation';
-import { uploadImageWithRetry, formatUploadError } from '../utils/imageUpload';
+// import { validateImageFile } from '../utils/fileValidation';
+// import { uploadImageWithRetry, formatUploadError } from '../utils/imageUpload';
 
 /**
  * Hook for managing image insertion into the Quill editor
@@ -33,7 +33,7 @@ export function useImageInsertion(
   locale: string = 'en'
 ): UseImageInsertionReturn {
   const [showProductPicker, setShowProductPicker] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  // const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -141,51 +141,51 @@ export function useImageInsertion(
   /**
    * Handle file upload from disk with validation
    */
-  const handleFileUpload = useCallback(
-    async (file: File) => {
-      // Clear any previous messages
-      setUploadError(null);
-      setSuccessMessage(null);
-
-      // Validate the file before uploading
-      const validationResult = validateImageFile(file, locale);
-      if (!validationResult.isValid) {
-        setUploadError(validationResult.error);
-        return;
-      }
-
-      // Start upload
-      setIsUploading(true);
-
-      try {
-        // Upload the file with retry logic
-        const imageUrl = await uploadImageWithRetry(file, {
-          maxRetries: 1,
-          retryDelay: 1000,
-        });
-
-        // Insert the uploaded image URL
-        insertImageAtCursor(imageUrl);
-
-        // Clear any errors on success
-        setUploadError(null);
-      } catch (error) {
-        console.error('Failed to upload image:', error);
-        const errorMessage = formatUploadError(error, locale);
-        setUploadError(errorMessage);
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [insertImageAtCursor, locale]
-  );
+  // const handleFileUpload = useCallback(
+  //   async (file: File) => {
+  //     // Clear any previous messages
+  //     setUploadError(null);
+  //     setSuccessMessage(null);
+  //
+  //     // Validate the file before uploading
+  //     const validationResult = validateImageFile(file, locale);
+  //     if (!validationResult.isValid) {
+  //       setUploadError(validationResult.error);
+  //       return;
+  //     }
+  //
+  //     // Start upload
+  //     setIsUploading(true);
+  //
+  //     try {
+  //       // Upload the file with retry logic
+  //       const imageUrl = await uploadImageWithRetry(file, {
+  //         maxRetries: 1,
+  //         retryDelay: 1000,
+  //       });
+  //
+  //       // Insert the uploaded image URL
+  //       insertImageAtCursor(imageUrl);
+  //
+  //       // Clear any errors on success
+  //       setUploadError(null);
+  //     } catch (error) {
+  //       console.error('Failed to upload image:', error);
+  //       const errorMessage = formatUploadError(error, locale);
+  //       setUploadError(errorMessage);
+  //     } finally {
+  //       setIsUploading(false);
+  //     }
+  //   },
+  //   [insertImageAtCursor, locale]
+  // );
 
   return {
     showProductPicker,
     setShowProductPicker,
     handleProductImageSelect,
-    handleFileUpload,
-    isUploading,
+    // handleFileUpload,
+    // isUploading,
     uploadError,
     successMessage,
   };

@@ -65,8 +65,7 @@ export function ModalBody({
                 alt={item.originalName}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all" />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-100 group-hover:opacity-100 transition-opacity">
                 <p className="text-white text-xs truncate">{item.originalName}</p>
               </div>
             </button>

@@ -95,10 +95,10 @@ export interface UseImageInsertionReturn {
   handleProductImageSelect: (url: string, slug?: string) => void;
 
   /** Handler for file upload from disk */
-  handleFileUpload: (file: File) => Promise<void>;
+  // handleFileUpload: (file: File) => Promise<void>;
 
   /** Whether an image upload is in progress */
-  isUploading: boolean;
+  // isUploading: boolean;
 
   /** Error message from upload failure (null if no error) */
   uploadError: string | null;

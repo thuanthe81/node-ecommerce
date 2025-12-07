@@ -21,8 +21,8 @@ interface ImageDropdownProps {
   /** Callback when "From Media Library" is selected */
   onSelectFromMediaLibrary: () => void;
 
-  /** Callback when "Upload from Disk" is selected */
-  onSelectUploadFromDisk: () => void;
+  // /** Callback when "Upload from Disk" is selected */
+  // onSelectUploadFromDisk: () => void;
 
   /** Position of the dropdown (relative to image button) */
   position: { top: number; left: number };
@@ -39,7 +39,7 @@ export function ImageDropdown({
   onClose,
   onSelectFromProducts,
   onSelectFromMediaLibrary,
-  onSelectUploadFromDisk,
+  // onSelectUploadFromDisk,
   position,
   locale,
 }: ImageDropdownProps) {
@@ -131,30 +131,30 @@ export function ImageDropdown({
         </svg>
         <span>{translations.fromMediaLibrary}</span>
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          onSelectUploadFromDisk();
-          onClose();
-        }}
-        role="menuitem"
-        aria-label={translations.uploadFromDisk}
-      >
-        <svg
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
-        <span>{translations.uploadFromDisk}</span>
-      </button>
+      {/*<button*/}
+      {/*  type="button"*/}
+      {/*  onClick={() => {*/}
+      {/*    onSelectUploadFromDisk();*/}
+      {/*    onClose();*/}
+      {/*  }}*/}
+      {/*  role="menuitem"*/}
+      {/*  aria-label={translations.uploadFromDisk}*/}
+      {/*>*/}
+      {/*  <svg*/}
+      {/*    fill="none"*/}
+      {/*    stroke="currentColor"*/}
+      {/*    viewBox="0 0 24 24"*/}
+      {/*    aria-hidden="true"*/}
+      {/*  >*/}
+      {/*    <path*/}
+      {/*      strokeLinecap="round"*/}
+      {/*      strokeLinejoin="round"*/}
+      {/*      strokeWidth={2}*/}
+      {/*      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"*/}
+      {/*    />*/}
+      {/*  </svg>*/}
+      {/*  <span>{translations.uploadFromDisk}</span>*/}
+      {/*</button>*/}
     </div>
   );
 }
