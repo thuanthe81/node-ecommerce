@@ -18,19 +18,21 @@ export class CartService {
   ) {}
 
   /**
-   * Get cart for user or session
+   * Get cart for authenticated user only
    */
-  async getCart(userId?: string, sessionId?: string) {
+  async getCart(userId: string) {
     // Try to get from Redis cache first
-    const cacheKey = this.getCacheKey(userId, sessionId);
+    const cacheKey = this.getCacheKey(userId);
     const cachedCart = await this.cacheManager.get(cacheKey);
 
     if (cachedCart) {
+      console.log(`[Cart Service] Cart retrieved from cache - UserId: ${userId}`);
       return cachedCart;
     }
 
     // If not in cache, get from database
-    const cart = await this.findOrCreateCart(userId, sessionId);
+    console.log(`[Cart Service] Cart not in cache, fetching from database - UserId: ${userId}`);
+    const cart = await this.findOrCreateCart(userId);
     const cartWithItems = await this.prisma.cart.findUnique({
       where: { id: cart.id },
       include: {
@@ -51,19 +53,20 @@ export class CartService {
 
     // Cache the cart
     await this.cacheManager.set(cacheKey, cartWithItems, 60 * 60 * 24 * 7); // 7 days
+    console.log(`[Cart Service] Cart cached - UserId: ${userId}, Items: ${cartWithItems?.items?.length || 0}`);
 
     return cartWithItems;
   }
 
   /**
-   * Add item to cart
+   * Add item to cart - handles quantity merging automatically
    */
-  async addItem(
-    addToCartDto: AddToCartDto,
-    userId?: string,
-    sessionId?: string,
-  ) {
+  async addItem(addToCartDto: AddToCartDto, userId: string) {
     const { productId, quantity } = addToCartDto;
+
+    console.log(
+      `[Cart Service] Adding item to cart - UserId: ${userId}, ProductId: ${productId}, Quantity: ${quantity}`,
+    );
 
     // Verify product exists and has sufficient stock
     const product = await this.prisma.product.findUnique({
@@ -71,10 +74,12 @@ export class CartService {
     });
 
     if (!product) {
+      console.error(`[Cart Service] Product not found - ProductId: ${productId}`);
       throw new NotFoundException('Product not found');
     }
 
     if (!product.isActive) {
+      console.warn(`[Cart Service] Product not available - ProductId: ${productId}`);
       throw new BadRequestException('Product is not available');
     }
 
@@ -82,11 +87,15 @@ export class CartService {
     // Zero-price products can be added to cart regardless of stock
     const isZeroPrice = Number(product.price) === 0;
     if (!isZeroPrice && product.stockQuantity < quantity) {
+      console.warn(
+        `[Cart Service] Insufficient stock - ProductId: ${productId}, ` +
+        `Requested: ${quantity}, Available: ${product.stockQuantity}`,
+      );
       throw new BadRequestException('Insufficient stock');
     }
 
     // Find or create cart
-    const cart = await this.findOrCreateCart(userId, sessionId);
+    const cart = await this.findOrCreateCart(userId);
 
     // Check if item already exists in cart
     const existingItem = await this.prisma.cartItem.findUnique({
@@ -98,21 +107,39 @@ export class CartService {
       },
     });
 
-    let cartItem;
     if (existingItem) {
-      // Update quantity
+      // Merge quantities
       const newQuantity = existingItem.quantity + quantity;
-      if (!isZeroPrice && product.stockQuantity < newQuantity) {
-        throw new BadRequestException('Insufficient stock');
-      }
 
-      cartItem = await this.prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: newQuantity },
-      });
+      // Check stock limit
+      if (!isZeroPrice && product.stockQuantity < newQuantity) {
+        // Set to max available stock
+        await this.prisma.cartItem.update({
+          where: { id: existingItem.id },
+          data: { quantity: product.stockQuantity },
+        });
+
+        console.log(
+          `[Cart Service] Quantity merging - UserId: ${userId}, ProductId: ${productId}, ` +
+          `Original quantity: ${existingItem.quantity}, Requested quantity: ${quantity}, ` +
+          `Combined would be: ${newQuantity}, Stock available: ${product.stockQuantity}, ` +
+          `Final quantity: ${product.stockQuantity} (capped at stock limit)`,
+        );
+      } else {
+        await this.prisma.cartItem.update({
+          where: { id: existingItem.id },
+          data: { quantity: newQuantity },
+        });
+
+        console.log(
+          `[Cart Service] Quantity merging - UserId: ${userId}, ProductId: ${productId}, ` +
+          `Original quantity: ${existingItem.quantity}, Added quantity: ${quantity}, ` +
+          `New quantity: ${newQuantity}`,
+        );
+      }
     } else {
       // Create new cart item (price will be 0 for zero-price products)
-      cartItem = await this.prisma.cartItem.create({
+      await this.prisma.cartItem.create({
         data: {
           cartId: cart.id,
           productId,
@@ -120,12 +147,17 @@ export class CartService {
           price: product.price,
         },
       });
+
+      console.log(
+        `[Cart Service] Created new cart item - UserId: ${userId}, ProductId: ${productId}, ` +
+        `Quantity: ${quantity}, Price: ${product.price}`,
+      );
     }
 
     // Invalidate cache
-    await this.invalidateCache(userId, sessionId);
+    await this.invalidateCache(userId);
 
-    return this.getCart(userId, sessionId);
+    return this.getCart(userId);
   }
 
   /**
@@ -134,10 +166,13 @@ export class CartService {
   async updateItem(
     itemId: string,
     updateCartItemDto: UpdateCartItemDto,
-    userId?: string,
-    sessionId?: string,
+    userId: string,
   ) {
     const { quantity } = updateCartItemDto;
+
+    console.log(
+      `[Cart Service] Updating cart item - UserId: ${userId}, ItemId: ${itemId}, New quantity: ${quantity}`,
+    );
 
     // Find cart item
     const cartItem = await this.prisma.cartItem.findUnique({
@@ -149,55 +184,25 @@ export class CartService {
     });
 
     if (!cartItem) {
+      console.error(`[Cart Service] Cart item not found - ItemId: ${itemId}`);
       throw new NotFoundException('Cart item not found');
     }
 
     // Verify cart ownership
-    // If user is logged in, verify by userId
-    if (userId) {
-      if (cartItem.cart.userId !== userId) {
-        const errorDetails = {
-          operation: 'updateItem',
-          itemId,
-          cartId: cartItem.cart.id,
-          expectedUserId: cartItem.cart.userId,
-          receivedUserId: userId,
-          timestamp: new Date().toISOString(),
-        };
-        console.error(
-          `[Cart Session] User ID mismatch in updateItem - Expected: ${cartItem.cart.userId}, Got: ${userId}, ItemId: ${itemId}`,
-          errorDetails,
-        );
-        throw new BadRequestException({
-          message: `Cart item does not belong to user. Expected: ${cartItem.cart.userId}, Got: ${userId}`,
-          error: 'CART_OWNERSHIP_MISMATCH',
-          details: errorDetails,
-        });
-      }
-    }
-    // If user is NOT logged in (guest), verify by sessionId
-    else if (sessionId && cartItem.cart.sessionId !== sessionId) {
-      const errorDetails = {
-        operation: 'updateItem',
-        itemId,
-        cartId: cartItem.cart.id,
-        expectedSessionId: cartItem.cart.sessionId,
-        receivedSessionId: sessionId,
-        timestamp: new Date().toISOString(),
-      };
+    if (cartItem.cart.userId !== userId) {
       console.error(
-        `[Cart Session] Session ID mismatch in updateItem - Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}, ItemId: ${itemId}`,
-        errorDetails,
+        `[Cart Service] Cart ownership mismatch - ItemId: ${itemId}, ` +
+        `Expected UserId: ${userId}, Actual UserId: ${cartItem.cart.userId}`,
       );
-      throw new BadRequestException({
-        message: `Cart item does not belong to session. Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}`,
-        error: 'CART_SESSION_MISMATCH',
-        details: errorDetails,
-      });
+      throw new BadRequestException('Cart item does not belong to user');
     }
 
     // Verify stock
     if (cartItem.product.stockQuantity < quantity) {
+      console.warn(
+        `[Cart Service] Insufficient stock for update - ProductId: ${cartItem.productId}, ` +
+        `Requested: ${quantity}, Available: ${cartItem.product.stockQuantity}`,
+      );
       throw new BadRequestException('Insufficient stock');
     }
 
@@ -207,16 +212,23 @@ export class CartService {
       data: { quantity },
     });
 
-    // Invalidate cache
-    await this.invalidateCache(userId, sessionId);
+    console.log(
+      `[Cart Service] Cart item updated successfully - ItemId: ${itemId}, ` +
+      `Old quantity: ${cartItem.quantity}, New quantity: ${quantity}`,
+    );
 
-    return this.getCart(userId, sessionId);
+    // Invalidate cache
+    await this.invalidateCache(userId);
+
+    return this.getCart(userId);
   }
 
   /**
    * Remove item from cart
    */
-  async removeItem(itemId: string, userId?: string, sessionId?: string) {
+  async removeItem(itemId: string, userId: string) {
+    console.log(`[Cart Service] Removing cart item - UserId: ${userId}, ItemId: ${itemId}`);
+
     // Find cart item
     const cartItem = await this.prisma.cartItem.findUnique({
       where: { id: itemId },
@@ -226,51 +238,17 @@ export class CartService {
     });
 
     if (!cartItem) {
+      console.error(`[Cart Service] Cart item not found - ItemId: ${itemId}`);
       throw new NotFoundException('Cart item not found');
     }
 
     // Verify cart ownership
-    // If user is logged in, verify by userId
-    if (userId) {
-      if (cartItem.cart.userId !== userId) {
-        const errorDetails = {
-          operation: 'removeItem',
-          itemId,
-          cartId: cartItem.cart.id,
-          expectedUserId: cartItem.cart.userId,
-          receivedUserId: userId,
-          timestamp: new Date().toISOString(),
-        };
-        console.error(
-          `[Cart Session] User ID mismatch in removeItem - Expected: ${cartItem.cart.userId}, Got: ${userId}, ItemId: ${itemId}`,
-          errorDetails,
-        );
-        throw new BadRequestException({
-          message: `Cart item does not belong to user. Expected: ${cartItem.cart.userId}, Got: ${userId}`,
-          error: 'CART_OWNERSHIP_MISMATCH',
-          details: errorDetails,
-        });
-      }
-    }
-    // If user is NOT logged in (guest), verify by sessionId
-    else if (sessionId && cartItem.cart.sessionId !== sessionId) {
-      const errorDetails = {
-        operation: 'removeItem',
-        itemId,
-        cartId: cartItem.cart.id,
-        expectedSessionId: cartItem.cart.sessionId,
-        receivedSessionId: sessionId,
-        timestamp: new Date().toISOString(),
-      };
+    if (cartItem.cart.userId !== userId) {
       console.error(
-        `[Cart Session] Session ID mismatch in removeItem - Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}, ItemId: ${itemId}`,
-        errorDetails,
+        `[Cart Service] Cart ownership mismatch - ItemId: ${itemId}, ` +
+        `Expected UserId: ${userId}, Actual UserId: ${cartItem.cart.userId}`,
       );
-      throw new BadRequestException({
-        message: `Cart item does not belong to session. Expected: ${cartItem.cart.sessionId}, Got: ${sessionId}`,
-        error: 'CART_SESSION_MISMATCH',
-        details: errorDetails,
-      });
+      throw new BadRequestException('Cart item does not belong to user');
     }
 
     // Delete cart item
@@ -278,96 +256,42 @@ export class CartService {
       where: { id: itemId },
     });
 
-    // Invalidate cache
-    await this.invalidateCache(userId, sessionId);
+    console.log(
+      `[Cart Service] Cart item removed successfully - ItemId: ${itemId}, ProductId: ${cartItem.productId}`,
+    );
 
-    return this.getCart(userId, sessionId);
+    // Invalidate cache
+    await this.invalidateCache(userId);
+
+    return this.getCart(userId);
   }
 
   /**
    * Clear cart
    */
-  async clearCart(userId?: string, sessionId?: string) {
-    const cart = await this.findCart(userId, sessionId);
+  async clearCart(userId: string) {
+    console.log(`[Cart Service] Clearing cart - UserId: ${userId}`);
+
+    const cart = await this.findCart(userId);
 
     if (cart) {
+      const itemCount = cart.items.length;
       await this.prisma.cartItem.deleteMany({
         where: { cartId: cart.id },
       });
 
+      console.log(`[Cart Service] Cart cleared successfully - UserId: ${userId}, Items removed: ${itemCount}`);
+
       // Invalidate cache
-      await this.invalidateCache(userId, sessionId);
+      await this.invalidateCache(userId);
+    } else {
+      console.log(`[Cart Service] No cart found to clear - UserId: ${userId}`);
     }
-
-    return this.getCart(userId, sessionId);
-  }
-
-  /**
-   * Merge guest cart with user cart on login
-   */
-  async mergeGuestCart(userId: string, sessionId: string) {
-    const guestCart = await this.findCart(undefined, sessionId);
-    const userCart = await this.findOrCreateCart(userId);
-
-    if (!guestCart || guestCart.items.length === 0) {
-      return userCart;
-    }
-
-    // Get guest cart items
-    const guestItems = await this.prisma.cartItem.findMany({
-      where: { cartId: guestCart.id },
-      include: { product: true },
-    });
-
-    // Merge items into user cart
-    for (const guestItem of guestItems) {
-      const existingItem = await this.prisma.cartItem.findUnique({
-        where: {
-          cartId_productId: {
-            cartId: userCart.id,
-            productId: guestItem.productId,
-          },
-        },
-      });
-
-      if (existingItem) {
-        // Update quantity (ensure we don't exceed stock)
-        const newQuantity = Math.min(
-          existingItem.quantity + guestItem.quantity,
-          guestItem.product.stockQuantity,
-        );
-
-        await this.prisma.cartItem.update({
-          where: { id: existingItem.id },
-          data: { quantity: newQuantity },
-        });
-      } else {
-        // Create new item in user cart
-        await this.prisma.cartItem.create({
-          data: {
-            cartId: userCart.id,
-            productId: guestItem.productId,
-            quantity: Math.min(
-              guestItem.quantity,
-              guestItem.product.stockQuantity,
-            ),
-            price: guestItem.price,
-          },
-        });
-      }
-    }
-
-    // Delete guest cart
-    await this.prisma.cart.delete({
-      where: { id: guestCart.id },
-    });
-
-    // Invalidate both caches
-    await this.invalidateCache(userId);
-    await this.invalidateCache(undefined, sessionId);
 
     return this.getCart(userId);
   }
+
+
 
   /**
    * Clean up expired carts
@@ -388,10 +312,9 @@ export class CartService {
       });
 
       // Invalidate cache
-      await this.invalidateCache(
-        cart.userId || undefined,
-        cart.sessionId || undefined,
-      );
+      if (cart.userId) {
+        await this.invalidateCache(cart.userId);
+      }
     }
 
     return { deleted: expiredCarts.length };
@@ -401,23 +324,15 @@ export class CartService {
    * Private helper methods
    */
 
-  private async findCart(userId?: string, sessionId?: string) {
-    if (userId) {
-      return this.prisma.cart.findFirst({
-        where: { userId },
-        include: { items: true },
-      });
-    } else if (sessionId) {
-      return this.prisma.cart.findFirst({
-        where: { sessionId },
-        include: { items: true },
-      });
-    }
-    return null;
+  private async findCart(userId: string) {
+    return this.prisma.cart.findFirst({
+      where: { userId },
+      include: { items: true },
+    });
   }
 
-  private async findOrCreateCart(userId?: string, sessionId?: string) {
-    let cart = await this.findCart(userId, sessionId);
+  private async findOrCreateCart(userId: string) {
+    let cart = await this.findCart(userId);
 
     if (!cart) {
       // Create new cart with 7 days expiration
@@ -426,16 +341,13 @@ export class CartService {
 
       cart = await this.prisma.cart.create({
         data: {
-          userId: userId || undefined,
-          sessionId: sessionId || undefined,
+          userId,
           expiresAt,
         },
         include: { items: true },
       });
 
-      console.log(
-        `[Cart Session] Created new cart - CartId: ${cart.id}, UserId: ${userId || 'none'}, SessionId: ${sessionId || 'none'}`,
-      );
+      console.log(`[Cart Service] Created new cart for user: ${userId}`);
     } else {
       // Update expiration date
       const expiresAt = new Date();
@@ -446,26 +358,18 @@ export class CartService {
         data: { expiresAt },
         include: { items: true },
       });
-
-      console.log(
-        `[Cart Session] Found existing cart - CartId: ${cart.id}, UserId: ${cart.userId || 'none'}, SessionId: ${cart.sessionId || 'none'}`,
-      );
     }
 
     return cart;
   }
 
-  private getCacheKey(userId?: string, sessionId?: string): string {
-    if (userId) {
-      return `cart:user:${userId}`;
-    } else if (sessionId) {
-      return `cart:session:${sessionId}`;
-    }
-    throw new BadRequestException('Either userId or sessionId is required');
+  private getCacheKey(userId: string): string {
+    return `cart:user:${userId}`;
   }
 
-  private async invalidateCache(userId?: string, sessionId?: string) {
-    const cacheKey = this.getCacheKey(userId, sessionId);
+  private async invalidateCache(userId: string) {
+    const cacheKey = this.getCacheKey(userId);
     await this.cacheManager.del(cacheKey);
+    console.log(`[Cart Service] Cache invalidated for user: ${userId}`);
   }
 }

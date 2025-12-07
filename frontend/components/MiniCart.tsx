@@ -11,7 +11,7 @@ import { formatMoney } from '@/app/utils';
 export default function MiniCart() {
   const locale = useLocale();
   const t = useTranslations('cart');
-  const { cart, itemCount, subtotal, removeItem } = useCart();
+  const { cart, guestCartItems, itemCount, subtotal, removeItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -83,14 +83,15 @@ export default function MiniCart() {
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {!cart || cart.items.length === 0 ? (
+            {itemCount === 0 ? (
               <div className="p-8 text-center text-gray-500" role="status">
                 <SvgCart className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
                 <p>{t('emptyCart')}</p>
               </div>
             ) : (
               <ul className="divide-y" role="list">
-                {cart.items.map((item) => {
+                {/* Display authenticated user cart items */}
+                {cart?.items.map((item) => {
                   const productName = locale === 'vi' ? item.product.nameVi : item.product.nameEn;
                   const imageUrl = item.product.images[0]?.url || '/placeholder.png';
                   const imageAlt = locale === 'vi'
@@ -137,15 +138,64 @@ export default function MiniCart() {
                     </li>
                   );
                 })}
+
+                {/* Display guest cart items */}
+                {guestCartItems.map((item) => {
+                  const productName = locale === 'vi' ? item.product.nameVi : item.product.nameEn;
+                  const imageUrl = item.product.images[0]?.url || '/placeholder.png';
+                  const imageAlt = locale === 'vi'
+                    ? item.product.images[0]?.altTextVi || productName
+                    : item.product.images[0]?.altTextEn || productName;
+
+                  return (
+                    <li key={item.productId}>
+                      <Link
+                        href={`/${locale}/products/${item.product.slug}`}
+                        className="flex gap-3 p-4 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsOpen(false)}
+                        aria-label={`${productName} - ${item.quantity} × ${formatMoney(item.product.price)}`}
+                      >
+                        <Image
+                          src={imageUrl}
+                          alt={imageAlt}
+                          width={60}
+                          height={60}
+                          style={{ opacity: 1 }}
+                          priority={true}
+                          unoptimized
+                          className="object-cover object-center rounded"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium line-clamp-2">{productName}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {item.quantity} × {formatMoney(item.product.price)}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end justify-between">
+                          <button
+                            onClick={(e) => handleRemoveItem(item.productId, e)}
+                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            aria-label={`${t('remove')} ${productName}`}
+                          >
+                            <SvgClose className="w-4 h-4" aria-hidden="true" />
+                          </button>
+                          <p className="text-sm font-semibold">
+                            {formatMoney(item.product.price * item.quantity)}
+                          </p>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>
 
-          {cart && cart.items.length > 0 && (
+          {itemCount > 0 && (
             <div className="p-4 border-t bg-gray-50 rounded-b-lg">
               <div className="flex justify-between mb-3">
                 <span className="font-semibold">{t('subtotal')}</span>
-                <span className="font-semibold" aria-label={`${t('subtotal')} $${subtotal.toFixed(2)}`}>
+                <span className="font-semibold" aria-label={`${t('subtotal')} ${subtotal.toFixed(2)}`}>
                   {formatMoney(subtotal)}
                 </span>
               </div>

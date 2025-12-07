@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
 import CartItem from '@/components/CartItem';
+import GuestCartItem from '@/components/GuestCartItem';
 import CartSummary from '@/components/CartSummary';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
@@ -11,7 +12,7 @@ import { isContactForPrice, getCartQuoteMessage } from '@/app/utils';
 export default function CartPageContent() {
   const locale = useLocale();
   const t = useTranslations('cart');
-  const { cart, loading, error, clearCart } = useCart();
+  const { cart, guestCartItems, loading, error, clearCart, itemCount } = useCart();
 
   const handleClearCart = async () => {
     if (confirm(t('confirmClearCart'))) {
@@ -51,7 +52,7 @@ export default function CartPageContent() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (itemCount === 0) {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto text-center">
@@ -82,15 +83,15 @@ export default function CartPageContent() {
   }
 
   // Check if cart contains any zero-price items
-  const hasZeroPriceItems = cart.items.some(item =>
-    isContactForPrice(parseFloat(item.price))
-  );
+  const hasZeroPriceItems =
+    (cart?.items.some(item => isContactForPrice(parseFloat(item.price))) || false) ||
+    guestCartItems.some(item => isContactForPrice(item.product.price));
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">{t('shoppingCart')}</h1>
-        {cart.items.length > 0 && (
+        {itemCount > 0 && (
           <button
             onClick={handleClearCart}
             className="text-sm text-red-600 hover:text-red-700"
@@ -127,9 +128,21 @@ export default function CartPageContent() {
 
           <div className="bg-white rounded-lg shadow-sm border">
             <div className="divide-y">
-              {cart.items.map((item) => (
+              {/* Display authenticated user cart items */}
+              {cart?.items.map((item) => (
                 <div key={item.id} className="px-6">
                   <CartItem item={item} />
+                </div>
+              ))}
+
+              {/* Display guest cart items */}
+              {guestCartItems.map((item) => (
+                <div key={item.productId} className="px-6">
+                  <GuestCartItem
+                    productId={item.productId}
+                    quantity={item.quantity}
+                    product={item.product}
+                  />
                 </div>
               ))}
             </div>

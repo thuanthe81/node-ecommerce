@@ -1393,6 +1393,34 @@
     "viewCart": {
       "en": "View Cart",
       "vi": "Xem giỏ hàng"
+    },
+    "syncingCart": {
+      "en": "Syncing your cart...",
+      "vi": "Đang đồng bộ giỏ hàng..."
+    },
+    "syncSuccess": {
+      "en": "Cart synced successfully!",
+      "vi": "Đồng bộ giỏ hàng thành công!"
+    },
+    "syncPartialSuccess": {
+      "en": "{successCount} of {totalCount} items added successfully",
+      "vi": "Đã thêm thành công {successCount} trong số {totalCount} sản phẩm"
+    },
+    "syncError": {
+      "en": "Failed to sync cart",
+      "vi": "Đồng bộ giỏ hàng thất bại"
+    },
+    "syncRetry": {
+      "en": "Retry Sync",
+      "vi": "Thử lại"
+    },
+    "syncFailedItems": {
+      "en": "Failed items:",
+      "vi": "Sản phẩm thất bại:"
+    },
+    "syncSuccessItems": {
+      "en": "Successfully added:",
+      "vi": "Đã thêm thành công:"
     }
   },
   "checkout": {
@@ -1607,6 +1635,10 @@
     "discount": {
       "en": "Discount",
       "vi": "Giảm giá"
+    },
+    "dismiss": {
+      "en": "Dismiss",
+      "vi": "Đóng"
     },
     "edit": {
       "en": "Edit",

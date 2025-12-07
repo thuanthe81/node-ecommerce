@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { formatMoney } from '@/app/utils';
 
 interface ShippingMethod {
   id: string;
@@ -86,7 +87,7 @@ export default function ShippingMethodSelector({
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-semibold">${method.cost.toFixed(2)}</div>
+                <div className="font-semibold">{formatMoney(method.cost)}</div>
                 <div className="text-sm text-gray-600">
                   {locale == 'vi'? method.estimatedDaysVi : method.estimatedDaysEn}
                 </div>

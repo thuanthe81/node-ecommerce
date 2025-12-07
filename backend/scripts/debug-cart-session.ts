@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function debugCartSessions() {
-  console.log('=== Cart Session Debug ===\n');
+  console.log('=== Cart Debug ===\n');
 
   // Get all carts
   const carts = await prisma.cart.findMany({
@@ -18,6 +18,14 @@ async function debugCartSessions() {
           },
         },
       },
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
     },
   });
 
@@ -25,8 +33,8 @@ async function debugCartSessions() {
 
   for (const cart of carts) {
     console.log(`Cart ID: ${cart.id}`);
-    console.log(`User ID: ${cart.userId || 'null (guest cart)'}`);
-    console.log(`Session ID: ${cart.sessionId || 'null'}`);
+    console.log(`User ID: ${cart.userId}`);
+    console.log(`User: ${cart.user.firstName} ${cart.user.lastName} (${cart.user.email})`);
     console.log(`Expires At: ${cart.expiresAt}`);
     console.log(`Items: ${cart.items.length}`);
 

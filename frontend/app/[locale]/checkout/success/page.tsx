@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { orderApi, Order } from '@/lib/order-api';
+import { formatMoney } from '@/app/utils';
 
 function SuccessContent() {
   const tCheckout = useTranslations('checkout');
@@ -149,10 +150,10 @@ function SuccessContent() {
                 <div className="flex-1">
                   <div className="font-medium">{item.productNameEn}</div>
                   <div className="text-sm text-gray-600">
-                    Qty: {item.quantity} × ${item.price}
+                    Qty: {item.quantity} × {formatMoney(item.price)}
                   </div>
                 </div>
-                <div className="font-semibold">${item.total.toFixed(2)}</div>
+                <div className="font-semibold">{formatMoney(item.total)}</div>
               </div>
             ))}
           </div>
@@ -162,29 +163,29 @@ function SuccessContent() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal:</span>
-              <span className="font-medium">${order.subtotal.toFixed(2)}</span>
+              <span className="font-medium">{formatMoney(order.subtotal)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Shipping:</span>
               <span className="font-medium">
-                ${order.shippingCost.toFixed(2)}
+                {formatMoney(order.shippingCost)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Tax:</span>
-              <span className="font-medium">${order.taxAmount.toFixed(2)}</span>
+              <span className="font-medium">{formatMoney(order.taxAmount)}</span>
             </div>
             {order.discountAmount > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount:</span>
                 <span className="font-medium">
-                  -${order.discountAmount.toFixed(2)}
+                  -{formatMoney(order.discountAmount)}
                 </span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold border-t pt-2">
               <span>Total:</span>
-              <span>${order.total.toFixed(2)}</span>
+              <span>{formatMoney(order.total)}</span>
             </div>
           </div>
         </div>

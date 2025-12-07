@@ -57,106 +57,8 @@ describe('CartService - Error Handling', () => {
     jest.clearAllMocks();
   });
 
-  describe('Session ID mismatch error handling', () => {
-    it('should throw detailed error with session ID information on removeItem mismatch', async () => {
-      const itemId = 'item-1';
-      const cartSessionId = 'sess_123';
-      const requestSessionId = 'sess_456';
-
-      const mockCartItem = {
-        id: itemId,
-        cartId: 'cart-1',
-        productId: 'product-1',
-        quantity: 1,
-        price: '100',
-        cart: {
-          id: 'cart-1',
-          userId: null,
-          sessionId: cartSessionId,
-          expiresAt: new Date(),
-        },
-      };
-
-      jest.spyOn(prisma.cartItem, 'findUnique').mockResolvedValue(mockCartItem as any);
-
-      try {
-        await service.removeItem(itemId, undefined, requestSessionId);
-        fail('Should have thrown BadRequestException');
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        const response = error.getResponse() as any;
-
-        // Verify error message includes session ID details
-        expect(response.message).toContain('does not belong to session');
-        expect(response.message).toContain(cartSessionId);
-        expect(response.message).toContain(requestSessionId);
-
-        // Verify error code
-        expect(response.error).toBe('CART_SESSION_MISMATCH');
-
-        // Verify error details
-        expect(response.details).toBeDefined();
-        expect(response.details.operation).toBe('removeItem');
-        expect(response.details.itemId).toBe(itemId);
-        expect(response.details.cartId).toBe('cart-1');
-        expect(response.details.expectedSessionId).toBe(cartSessionId);
-        expect(response.details.receivedSessionId).toBe(requestSessionId);
-        expect(response.details.timestamp).toBeDefined();
-      }
-    });
-
-    it('should throw detailed error with session ID information on updateItem mismatch', async () => {
-      const itemId = 'item-1';
-      const cartSessionId = 'sess_123';
-      const requestSessionId = 'sess_456';
-
-      const mockCartItem = {
-        id: itemId,
-        cartId: 'cart-1',
-        productId: 'product-1',
-        quantity: 1,
-        price: '100',
-        cart: {
-          id: 'cart-1',
-          userId: null,
-          sessionId: cartSessionId,
-          expiresAt: new Date(),
-        },
-        product: {
-          id: 'product-1',
-          stockQuantity: 10,
-        },
-      };
-
-      jest.spyOn(prisma.cartItem, 'findUnique').mockResolvedValue(mockCartItem as any);
-
-      try {
-        await service.updateItem(itemId, { quantity: 2 }, undefined, requestSessionId);
-        fail('Should have thrown BadRequestException');
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        const response = error.getResponse() as any;
-
-        // Verify error message includes session ID details
-        expect(response.message).toContain('does not belong to session');
-        expect(response.message).toContain(cartSessionId);
-        expect(response.message).toContain(requestSessionId);
-
-        // Verify error code
-        expect(response.error).toBe('CART_SESSION_MISMATCH');
-
-        // Verify error details
-        expect(response.details).toBeDefined();
-        expect(response.details.operation).toBe('updateItem');
-        expect(response.details.itemId).toBe(itemId);
-        expect(response.details.cartId).toBe('cart-1');
-        expect(response.details.expectedSessionId).toBe(cartSessionId);
-        expect(response.details.receivedSessionId).toBe(requestSessionId);
-        expect(response.details.timestamp).toBeDefined();
-      }
-    });
-
-    it('should throw detailed error with user ID information on removeItem mismatch', async () => {
+  describe('User ID mismatch error handling', () => {
+    it('should throw error when cart item does not belong to user on removeItem', async () => {
       const itemId = 'item-1';
       const cartUserId = 'user-123';
       const requestUserId = 'user-456';
@@ -170,37 +72,52 @@ describe('CartService - Error Handling', () => {
         cart: {
           id: 'cart-1',
           userId: cartUserId,
-          sessionId: null,
           expiresAt: new Date(),
         },
       };
 
       jest.spyOn(prisma.cartItem, 'findUnique').mockResolvedValue(mockCartItem as any);
 
-      try {
-        await service.removeItem(itemId, requestUserId, undefined);
-        fail('Should have thrown BadRequestException');
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        const response = error.getResponse() as any;
+      await expect(
+        service.removeItem(itemId, requestUserId)
+      ).rejects.toThrow(BadRequestException);
 
-        // Verify error message includes user ID details
-        expect(response.message).toContain('does not belong to user');
-        expect(response.message).toContain(cartUserId);
-        expect(response.message).toContain(requestUserId);
+      await expect(
+        service.removeItem(itemId, requestUserId)
+      ).rejects.toThrow('Cart item does not belong to user');
+    });
 
-        // Verify error code
-        expect(response.error).toBe('CART_OWNERSHIP_MISMATCH');
+    it('should throw error when cart item does not belong to user on updateItem', async () => {
+      const itemId = 'item-1';
+      const cartUserId = 'user-123';
+      const requestUserId = 'user-456';
 
-        // Verify error details
-        expect(response.details).toBeDefined();
-        expect(response.details.operation).toBe('removeItem');
-        expect(response.details.itemId).toBe(itemId);
-        expect(response.details.cartId).toBe('cart-1');
-        expect(response.details.expectedUserId).toBe(cartUserId);
-        expect(response.details.receivedUserId).toBe(requestUserId);
-        expect(response.details.timestamp).toBeDefined();
-      }
+      const mockCartItem = {
+        id: itemId,
+        cartId: 'cart-1',
+        productId: 'product-1',
+        quantity: 1,
+        price: '100',
+        cart: {
+          id: 'cart-1',
+          userId: cartUserId,
+          expiresAt: new Date(),
+        },
+        product: {
+          id: 'product-1',
+          stockQuantity: 10,
+        },
+      };
+
+      jest.spyOn(prisma.cartItem, 'findUnique').mockResolvedValue(mockCartItem as any);
+
+      await expect(
+        service.updateItem(itemId, { quantity: 2 }, requestUserId)
+      ).rejects.toThrow(BadRequestException);
+
+      await expect(
+        service.updateItem(itemId, { quantity: 2 }, requestUserId)
+      ).rejects.toThrow('Cart item does not belong to user');
     });
   });
 
@@ -211,11 +128,11 @@ describe('CartService - Error Handling', () => {
       jest.spyOn(prisma.cartItem, 'findUnique').mockResolvedValue(null);
 
       await expect(
-        service.removeItem(itemId, undefined, 'sess_123')
+        service.removeItem(itemId, 'user-123')
       ).rejects.toThrow(NotFoundException);
 
       await expect(
-        service.removeItem(itemId, undefined, 'sess_123')
+        service.removeItem(itemId, 'user-123')
       ).rejects.toThrow('Cart item not found');
     });
   });

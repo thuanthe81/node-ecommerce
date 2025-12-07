@@ -22,7 +22,7 @@ export default function CheckoutContent() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, syncing, syncResults, guestCartItems } = useCart();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -308,14 +308,16 @@ export default function CheckoutContent() {
     promotionId: string;
   } | null>(null);
 
-  // Show loading state during authentication check
-  if (isLoading) {
+  // Show loading state during authentication check or cart sync
+  if (isLoading || syncing) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-600">{tCommon('loading')}</p>
+            <p className="text-gray-600">
+              {syncing ? tCart('syncingCart') : tCommon('loading')}
+            </p>
           </div>
         </div>
       </div>
@@ -357,6 +359,72 @@ export default function CheckoutContent() {
       <h1 className="text-3xl font-bold mb-8">{tCheckout('title')}</h1>
 
       <CheckoutStepper currentStep={currentStep} />
+
+      {/* Display cart sync results if any */}
+      {syncResults && syncResults.length > 0 && (
+        <div className="mb-6">
+          {syncResults.some(r => !r.success) ? (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start">
+                <svg
+                  className="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-yellow-800 mb-2">
+                    {tCart('syncPartialSuccess', {
+                      successCount: syncResults.filter(r => r.success).length,
+                      totalCount: syncResults.length,
+                    })}
+                  </p>
+                  {syncResults.filter(r => !r.success).length > 0 && (
+                    <div className="text-sm text-yellow-700">
+                      <p className="font-medium mb-1">{tCart('syncFailedItems')}</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {syncResults
+                          .filter(r => !r.success)
+                          .map((result, idx) => (
+                            <li key={idx}>
+                              {result.error || 'Unknown error'}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start">
+                <svg
+                  className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-sm text-green-800">{tCart('syncSuccess')}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
