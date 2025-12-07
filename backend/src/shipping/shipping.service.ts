@@ -6,7 +6,8 @@ import {
 import { CalculateShippingDto } from './dto/calculate-shipping.dto';
 import { GenerateLabelDto } from './dto/generate-label.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, ShippingMethod } from '@prisma/client';
+import { ShippingMethodsService } from './shipping-methods.service';
 
 export interface ShippingRate {
   method: string;
@@ -15,6 +16,8 @@ export interface ShippingRate {
   cost: number;
   estimatedDays: string;
   carrier?: string;
+  isFreeShipping?: boolean;
+  originalCost?: number;
 }
 
 export interface ShippingLabel {
@@ -28,9 +31,13 @@ export interface ShippingLabel {
 
 @Injectable()
 export class ShippingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private shippingMethodsService: ShippingMethodsService,
+  ) {}
   /**
    * Calculate shipping rates based on destination and package details
+   * Fetches active shipping methods from database and applies pricing rules
    */
   async calculateShipping(
     calculateShippingDto: CalculateShippingDto,
@@ -43,234 +50,209 @@ export class ShippingService {
       0,
     );
 
-    // Calculate total volume (if dimensions provided)
-    const totalVolume = items.reduce((sum, item) => {
-      if (item.length && item.width && item.height) {
-        return sum + item.length * item.width * item.height * item.quantity;
-      }
-      return sum;
-    }, 0);
+    // Fetch active shipping methods from database
+    const activeMethods = await this.shippingMethodsService.findAllActive();
 
-    // Base rates (simplified calculation)
-    const rates: ShippingRate[] = [];
+    // Calculate cost for each method
+    const rates: ShippingRate[] = activeMethods.map((method) => {
+      const cost = this.calculateMethodCost(
+        method,
+        totalWeight,
+        orderValue || 0,
+        destinationCountry,
+      );
 
-    // Domestic shipping (Vietnam)
-    if (destinationCountry.toLowerCase() === 'vietnam') {
-      rates.push({
-        method: 'standard',
-        name: 'Standard Shipping',
-        description: 'Delivery in 5-7 business days',
-        cost: this.calculateDomesticStandardRate(totalWeight, orderValue),
-        estimatedDays: '5-7 days',
-        carrier: 'Vietnam Post',
-      });
-
-      rates.push({
-        method: 'express',
-        name: 'Express Shipping',
-        description: 'Delivery in 2-3 business days',
-        cost: this.calculateDomesticExpressRate(totalWeight, orderValue),
-        estimatedDays: '2-3 days',
-        carrier: 'Express Delivery',
-      });
-
-      rates.push({
-        method: 'overnight',
-        name: 'Overnight Shipping',
-        description: 'Next business day delivery',
-        cost: this.calculateDomesticOvernightRate(totalWeight, orderValue),
-        estimatedDays: '1 day',
-        carrier: 'Express Delivery',
-      });
-    } else {
-      // International shipping
-      rates.push({
-        method: 'international_standard',
-        name: 'International Standard',
-        description: 'Delivery in 10-15 business days',
-        cost: this.calculateInternationalStandardRate(
-          totalWeight,
-          destinationCountry,
-        ),
-        estimatedDays: '10-15 days',
-        carrier: 'International Post',
-      });
-
-      rates.push({
-        method: 'international_express',
-        name: 'International Express',
-        description: 'Delivery in 5-7 business days',
-        cost: this.calculateInternationalExpressRate(
-          totalWeight,
-          destinationCountry,
-        ),
-        estimatedDays: '5-7 days',
-        carrier: 'DHL/FedEx',
-      });
-    }
-
-    // Apply free shipping for orders over a certain amount
-    if (orderValue && orderValue >= 100) {
-      rates.forEach((rate) => {
-        if (rate.method === 'standard') {
-          rate.cost = 0;
-          rate.description += ' (FREE)';
-        }
-      });
-    }
+      return {
+        method: method.methodId,
+        name: method.nameEn,
+        description: method.descriptionEn,
+        cost: cost.finalCost,
+        estimatedDays: `${method.estimatedDaysMin}-${method.estimatedDaysMax} days`,
+        carrier: method.carrier || undefined,
+        isFreeShipping: cost.isFreeShipping,
+        originalCost: cost.isFreeShipping ? cost.originalCost : undefined,
+      };
+    });
 
     return rates;
   }
 
   /**
-   * Calculate domestic standard shipping rate
+   * Calculate cost for a specific shipping method
+   * Applies base rate, weight-based charges, regional pricing, and free shipping threshold
    */
-  private calculateDomesticStandardRate(
+  private calculateMethodCost(
+    method: ShippingMethod,
     weight: number,
-    orderValue?: number,
-  ): number {
-    // Base rate
-    let cost = 5.0;
-
-    // Add weight-based charges (per kg)
-    if (weight > 1) {
-      cost += (weight - 1) * 2.0;
-    }
-
-    return Math.round(cost * 100) / 100;
-  }
-
-  /**
-   * Calculate domestic express shipping rate
-   */
-  private calculateDomesticExpressRate(
-    weight: number,
-    orderValue?: number,
-  ): number {
-    // Base rate
-    let cost = 15.0;
-
-    // Add weight-based charges (per kg)
-    if (weight > 1) {
-      cost += (weight - 1) * 3.0;
-    }
-
-    return Math.round(cost * 100) / 100;
-  }
-
-  /**
-   * Calculate domestic overnight shipping rate
-   */
-  private calculateDomesticOvernightRate(
-    weight: number,
-    orderValue?: number,
-  ): number {
-    // Base rate
-    let cost = 25.0;
-
-    // Add weight-based charges (per kg)
-    if (weight > 1) {
-      cost += (weight - 1) * 5.0;
-    }
-
-    return Math.round(cost * 100) / 100;
-  }
-
-  /**
-   * Calculate international standard shipping rate
-   */
-  private calculateInternationalStandardRate(
-    weight: number,
+    orderValue: number,
     country: string,
-  ): number {
-    // Base rate varies by region
-    let baseRate = 20.0;
+  ): { finalCost: number; originalCost?: number; isFreeShipping: boolean } {
+    // Get base rate (or regional rate if applicable)
+    let cost = this.getRegionalRate(method, country);
 
-    // Adjust base rate by region
-    const asianCountries = [
-      'china',
-      'japan',
-      'korea',
-      'thailand',
-      'singapore',
-      'malaysia',
-    ];
-    const europeanCountries = [
-      'uk',
-      'france',
-      'germany',
-      'italy',
-      'spain',
-      'netherlands',
-    ];
+    // Apply weight-based charges
+    cost = this.applyWeightCharges(cost, method, weight);
 
-    if (asianCountries.includes(country.toLowerCase())) {
-      baseRate = 15.0;
-    } else if (europeanCountries.includes(country.toLowerCase())) {
-      baseRate = 25.0;
-    } else if (country.toLowerCase() === 'usa') {
-      baseRate = 30.0;
-    }
+    // Round to 2 decimal places
+    cost = Math.round(cost * 100) / 100;
 
-    // Add weight-based charges (per kg)
-    if (weight > 1) {
-      baseRate += (weight - 1) * 5.0;
-    }
+    // Apply free shipping threshold
+    const result = this.applyFreeShipping(cost, method, orderValue);
 
-    return Math.round(baseRate * 100) / 100;
+    return result;
   }
 
   /**
-   * Calculate international express shipping rate
+   * Get the appropriate rate for a shipping method based on destination country
+   * Checks regional pricing configuration and falls back to base rate
    */
-  private calculateInternationalExpressRate(
+  private getRegionalRate(method: ShippingMethod, country: string): number {
+    const baseRate = Number(method.baseRate);
+
+    // If no regional pricing configured, return base rate
+    if (!method.regionalPricing) {
+      return baseRate;
+    }
+
+    const regionalPricing = method.regionalPricing as Record<string, number>;
+    const countryLower = country.toLowerCase();
+
+    // Check for country-specific rate (highest precedence)
+    if (regionalPricing[countryLower] !== undefined) {
+      return regionalPricing[countryLower];
+    }
+
+    // Check for region-specific rate
+    // Common regions: asia, europe, north_america, south_america, africa, oceania
+    const regionMap: Record<string, string[]> = {
+      asia: [
+        'china',
+        'japan',
+        'korea',
+        'south korea',
+        'thailand',
+        'singapore',
+        'malaysia',
+        'indonesia',
+        'philippines',
+        'india',
+      ],
+      europe: [
+        'uk',
+        'united kingdom',
+        'france',
+        'germany',
+        'italy',
+        'spain',
+        'netherlands',
+        'belgium',
+        'switzerland',
+        'austria',
+      ],
+      north_america: ['usa', 'united states', 'canada', 'mexico'],
+      south_america: ['brazil', 'argentina', 'chile', 'colombia', 'peru'],
+      africa: [
+        'south africa',
+        'egypt',
+        'nigeria',
+        'kenya',
+        'morocco',
+        'algeria',
+      ],
+      oceania: ['australia', 'new zealand', 'fiji'],
+    };
+
+    // Find which region the country belongs to
+    for (const [region, countries] of Object.entries(regionMap)) {
+      if (countries.includes(countryLower)) {
+        if (regionalPricing[region] !== undefined) {
+          return regionalPricing[region];
+        }
+      }
+    }
+
+    // Fall back to base rate
+    return baseRate;
+  }
+
+  /**
+   * Apply weight-based charges to the base rate
+   * Adds additional cost for weight exceeding the threshold
+   */
+  private applyWeightCharges(
+    baseRate: number,
+    method: ShippingMethod,
     weight: number,
-    country: string,
   ): number {
-    // Express is typically 2-3x standard rate
-    const standardRate = this.calculateInternationalStandardRate(
-      weight,
-      country,
-    );
-    return Math.round(standardRate * 2.5 * 100) / 100;
+    // If no weight-based pricing configured, return base rate
+    if (!method.weightThreshold || !method.weightRate) {
+      return baseRate;
+    }
+
+    const weightThreshold = Number(method.weightThreshold);
+    const weightRate = Number(method.weightRate);
+
+    // If weight is under threshold, no additional charges
+    if (weight <= weightThreshold) {
+      return baseRate;
+    }
+
+    // Calculate additional weight charges
+    const excessWeight = weight - weightThreshold;
+    const weightCharge = excessWeight * weightRate;
+
+    return baseRate + weightCharge;
+  }
+
+  /**
+   * Apply free shipping threshold
+   * Sets cost to 0 if order value meets or exceeds threshold
+   */
+  private applyFreeShipping(
+    cost: number,
+    method: ShippingMethod,
+    orderValue: number,
+  ): { finalCost: number; originalCost?: number; isFreeShipping: boolean } {
+    // If no free shipping threshold configured, return original cost
+    if (!method.freeShippingThreshold) {
+      return { finalCost: cost, isFreeShipping: false };
+    }
+
+    const threshold = Number(method.freeShippingThreshold);
+
+    // If order value meets or exceeds threshold, apply free shipping
+    if (orderValue >= threshold) {
+      return {
+        finalCost: 0,
+        originalCost: cost,
+        isFreeShipping: true,
+      };
+    }
+
+    return { finalCost: cost, isFreeShipping: false };
   }
 
   /**
    * Get shipping method details by method ID
+   * Fetches from database instead of hardcoded values
    */
-  getShippingMethodDetails(method: string): {
+  async getShippingMethodDetails(methodId: string): Promise<{
     name: string;
     description: string;
-  } {
-    const methods: Record<string, { name: string; description: string }> = {
-      standard: {
-        name: 'Standard Shipping',
-        description: 'Delivery in 5-7 business days',
-      },
-      express: {
-        name: 'Express Shipping',
-        description: 'Delivery in 2-3 business days',
-      },
-      overnight: {
-        name: 'Overnight Shipping',
-        description: 'Next business day delivery',
-      },
-      international_standard: {
-        name: 'International Standard',
-        description: 'Delivery in 10-15 business days',
-      },
-      international_express: {
-        name: 'International Express',
-        description: 'Delivery in 5-7 business days',
-      },
-    };
-
-    return (
-      methods[method] || {
+  }> {
+    try {
+      const method = await this.shippingMethodsService.findByMethodId(methodId);
+      return {
+        name: method.nameEn,
+        description: method.descriptionEn,
+      };
+    } catch (error) {
+      // Fallback for backward compatibility
+      return {
         name: 'Standard Shipping',
         description: 'Standard delivery',
-      }
-    );
+      };
+    }
   }
 
   /**

@@ -63,6 +63,30 @@ export default function CheckoutContent() {
     }
   }, [user]);
 
+  // Load address when user selects a saved address
+  useEffect(() => {
+    const loadSelectedAddress = async () => {
+      if (shippingAddressId && user) {
+        try {
+          const addresses = await userApi.getAddresses();
+          const selected = addresses.find(addr => addr.id === shippingAddressId);
+          if (selected) {
+            setCurrentShippingAddress({
+              city: selected.city,
+              state: selected.state,
+              postalCode: selected.postalCode,
+              country: selected.country,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to load selected address:', err);
+        }
+      }
+    };
+
+    loadSelectedAddress();
+  }, [shippingAddressId, user]);
+
   const handleShippingAddressSelect = (addressId: string) => {
     console.log('[CheckoutContent] Saved address selected:', addressId);
     setShippingAddressId(addressId);
@@ -74,10 +98,41 @@ export default function CheckoutContent() {
     }
   };
 
+  const handleShippingMethodSelect = (methodId: string) => {
+    setShippingMethod(methodId);
+
+    // Find the selected method and update the cost
+    const selectedRate = shippingRates.find(rate => rate.method === methodId);
+    if (selectedRate) {
+      setCalculatedShippingCost(selectedRate.cost);
+    }
+  };
+
+  const handleRatesCalculated = (rates: any[]) => {
+    setShippingRates(rates);
+
+    // If a method is already selected, update its cost
+    if (shippingMethod) {
+      const selectedRate = rates.find(rate => rate.method === shippingMethod);
+      if (selectedRate) {
+        setCalculatedShippingCost(selectedRate.cost);
+      }
+    }
+  };
+
   const handleNewShippingAddress = async (address: any) => {
     console.log('[CheckoutContent] handleNewShippingAddress called - storing address in state only');
     console.log('[CheckoutContent] Address data:', address);
     setNewShippingAddress(address);
+
+    // Update current shipping address for rate calculation
+    setCurrentShippingAddress({
+      city: address.city,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+    });
+
     console.log('[CheckoutContent] Shipping address stored in component state, will be created during order placement');
   };
 
@@ -344,12 +399,21 @@ export default function CheckoutContent() {
     },
     0,
   );
-  const shippingCost =
-    shippingMethod === 'standard'
-      ? 5.0
-      : shippingMethod === 'express'
-        ? 15.0
-        : 25.0;
+
+  // State for calculated shipping cost
+  const [calculatedShippingCost, setCalculatedShippingCost] = useState<number>(0);
+  const [shippingRates, setShippingRates] = useState<any[]>([]);
+
+  // State to track the current shipping address for calculation
+  const [currentShippingAddress, setCurrentShippingAddress] = useState<{
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  } | null>(null);
+
+  // Use calculated shipping cost or default to 0
+  const shippingCost = calculatedShippingCost;
   const tax = subtotal * 0.1;
   const discountAmount = appliedPromo?.discountAmount || 0;
   const total = Math.max(0, subtotal + shippingCost + tax - discountAmount);
@@ -488,7 +552,11 @@ export default function CheckoutContent() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <ShippingMethodSelector
                 selectedMethod={shippingMethod}
-                onMethodSelect={setShippingMethod}
+                onMethodSelect={handleShippingMethodSelect}
+                onRatesCalculated={handleRatesCalculated}
+                shippingAddress={currentShippingAddress || undefined}
+                cartItems={cart.items}
+                orderValue={subtotal}
               />
 
               <div className="mt-6 flex justify-between">

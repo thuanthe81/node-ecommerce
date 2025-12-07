@@ -820,6 +820,10 @@
       "en": "Pages",
       "vi": "Trang"
     },
+    "shippingMethodsNav": {
+      "en": "Shipping Methods",
+      "vi": "Phương thức vận chuyển"
+    },
     "parentCategory": {
       "en": "Parent Category",
       "vi": "Danh mục cha"
@@ -1111,6 +1115,316 @@
     "zaloUrl": {
       "en": "Zalo URL",
       "vi": "Liên kết Zalo"
+    },
+    "shippingMethods": {
+      "active": {
+        "en": "Active",
+        "vi": "Hoạt động"
+      },
+      "activeMethod": {
+        "en": "Active shipping method",
+        "vi": "Kích hoạt phương thức vận chuyển"
+      },
+      "addShippingMethod": {
+        "en": "Add Shipping Method",
+        "vi": "Thêm phương thức vận chuyển"
+      },
+      "activeMethodHelp": {
+        "en": "Inactive methods will not be shown to customers during checkout",
+        "vi": "Phương thức không hoạt động sẽ không hiển thị cho khách hàng khi thanh toán"
+      },
+      "addRegionalRate": {
+        "en": "Add Regional Rate",
+        "vi": "Thêm giá theo khu vực"
+      },
+      "baseRate": {
+        "en": "Base Rate",
+        "vi": "Giá cơ bản"
+      },
+      "baseRateHelp": {
+        "en": "Starting cost for this shipping method (in USD)",
+        "vi": "Chi phí khởi điểm cho phương thức vận chuyển này (bằng USD)"
+      },
+      "basicInformation": {
+        "en": "Basic Information",
+        "vi": "Thông tin cơ bản"
+      },
+      "cancel": {
+        "en": "Cancel",
+        "vi": "Hủy"
+      },
+      "cannotDeleteWithOrders": {
+        "en": "Cannot delete shipping method that is used by existing orders",
+        "vi": "Không thể xóa phương thức vận chuyển đang được sử dụng bởi đơn hàng"
+      },
+      "carrier": {
+        "en": "Carrier",
+        "vi": "Đơn vị vận chuyển"
+      },
+      "confirmDelete": {
+        "en": "Confirm Delete",
+        "vi": "Xác nhận xóa"
+      },
+      "confirmDeleteMessage": {
+        "en": "Are you sure you want to delete this shipping method? This action cannot be undone.",
+        "vi": "Bạn có chắc chắn muốn xóa phương thức vận chuyển này? Hành động này không thể hoàn tác."
+      },
+      "carrierHelp": {
+        "en": "Shipping company or service provider (optional)",
+        "vi": "Công ty hoặc nhà cung cấp dịch vụ vận chuyển (tùy chọn)"
+      },
+      "carrierPlaceholder": {
+        "en": "Vietnam Post, DHL, FedEx",
+        "vi": "Bưu điện Việt Nam, DHL, FedEx"
+      },
+      "content": {
+        "en": "Content",
+        "vi": "Nội dung"
+      },
+      "countryOrRegionPlaceholder": {
+        "en": "vietnam, usa, asia",
+        "vi": "vietnam, usa, asia"
+      },
+      "delete": {
+        "en": "Delete",
+        "vi": "Xóa"
+      },
+      "deleteError": {
+        "en": "Failed to delete shipping method",
+        "vi": "Không thể xóa phương thức vận chuyển"
+      },
+      "description": {
+        "en": "Description",
+        "vi": "Mô tả"
+      },
+      "descriptionPlaceholder": {
+        "en": "Standard delivery within 3-5 business days",
+        "vi": "Giao hàng tiêu chuẩn trong 3-5 ngày làm việc"
+      },
+      "displayOrder": {
+        "en": "Display Order",
+        "vi": "Thứ tự hiển thị"
+      },
+      "displayOrderHelp": {
+        "en": "Order number for sorting shipping methods (0 = first)",
+        "vi": "Số thứ tự để sắp xếp phương thức vận chuyển (0 = đầu tiên)"
+      },
+      "estimatedDaysHelp": {
+        "en": "Estimated delivery time range in business days",
+        "vi": "Khoảng thời gian giao hàng ước tính tính bằng ngày làm việc"
+      },
+      "estimatedDaysMax": {
+        "en": "Maximum Days",
+        "vi": "Số ngày tối đa"
+      },
+      "estimatedDaysMin": {
+        "en": "Minimum Days",
+        "vi": "Số ngày tối thiểu"
+      },
+      "estimatedDelivery": {
+        "en": "Estimated Delivery",
+        "vi": "Thời gian giao hàng"
+      },
+      "edit": {
+        "en": "Edit",
+        "vi": "Sửa"
+      },
+      "freeShipping": {
+        "en": "Free Shipping",
+        "vi": "Miễn phí vận chuyển"
+      },
+      "freeShippingThreshold": {
+        "en": "Free Shipping Threshold",
+        "vi": "Ngưỡng miễn phí vận chuyển"
+      },
+      "freeShippingThresholdHelp": {
+        "en": "Minimum order value for free shipping (0 = disabled)",
+        "vi": "Giá trị đơn hàng tối thiểu để miễn phí vận chuyển (0 = tắt)"
+      },
+      "methodId": {
+        "en": "Method ID",
+        "vi": "Mã phương thức"
+      },
+      "methodIdHelp": {
+        "en": "Unique identifier (e.g., standard-shipping). Cannot be changed after creation.",
+        "vi": "Mã định danh duy nhất (ví dụ: standard-shipping). Không thể thay đổi sau khi tạo."
+      },
+      "inactive": {
+        "en": "Inactive",
+        "vi": "Không hoạt động"
+      },
+      "loading": {
+        "en": "Loading...",
+        "vi": "Đang tải..."
+      },
+      "manageShippingMethods": {
+        "en": "Manage shipping methods and pricing",
+        "vi": "Quản lý phương thức vận chuyển và định giá"
+      },
+      "name": {
+        "en": "Name",
+        "vi": "Tên"
+      },
+      "noShippingMethods": {
+        "en": "No shipping methods yet",
+        "vi": "Chưa có phương thức vận chuyển nào"
+      },
+      "namePlaceholder": {
+        "en": "Standard Shipping",
+        "vi": "Vận chuyển tiêu chuẩn"
+      },
+      "noRegionalRates": {
+        "en": "No regional rates configured. Click 'Add Regional Rate' to set country or region specific pricing.",
+        "vi": "Chưa cấu hình giá theo khu vực. Nhấp 'Thêm giá theo khu vực' để đặt giá theo quốc gia hoặc khu vực."
+      },
+      "pricing": {
+        "en": "Pricing",
+        "vi": "Định giá"
+      },
+      "ratePlaceholder": {
+        "en": "0.00",
+        "vi": "0.00"
+      },
+      "regionalPricing": {
+        "en": "Regional Pricing",
+        "vi": "Giá theo khu vực"
+      },
+      "regionalPricingHelp": {
+        "en": "Define different base rates for specific countries or regions. Country-specific rates take precedence over regional rates.",
+        "vi": "Xác định giá cơ bản khác nhau cho các quốc gia hoặc khu vực cụ thể. Giá theo quốc gia được ưu tiên hơn giá theo khu vực."
+      },
+      "removeRegionalRate": {
+        "en": "Remove regional rate",
+        "vi": "Xóa giá theo khu vực"
+      },
+      "save": {
+        "en": "Save",
+        "vi": "Lưu"
+      },
+      "saving": {
+        "en": "Saving...",
+        "vi": "Đang lưu..."
+      },
+      "settings": {
+        "en": "Settings",
+        "vi": "Cài đặt"
+      },
+      "shippingMethodManagement": {
+        "en": "Shipping Method Management",
+        "vi": "Quản lý phương thức vận chuyển"
+      },
+      "status": {
+        "en": "Status",
+        "vi": "Trạng thái"
+      },
+      "weightBasedPricing": {
+        "en": "Weight-Based Pricing",
+        "vi": "Giá theo cân nặng"
+      },
+      "weightRate": {
+        "en": "Weight Rate",
+        "vi": "Giá theo cân nặng"
+      },
+      "weightRateHelp": {
+        "en": "Additional cost per kg over threshold (0 = disabled)",
+        "vi": "Chi phí bổ sung mỗi kg vượt ngưỡng (0 = tắt)"
+      },
+      "weightThreshold": {
+        "en": "Weight Threshold (kg)",
+        "vi": "Ngưỡng cân nặng (kg)"
+      },
+      "weightThresholdHelp": {
+        "en": "Weight threshold in kilograms (0 = disabled)",
+        "vi": "Ngưỡng cân nặng tính bằng kilogram (0 = tắt)"
+      },
+      "addNewShippingMethod": {
+        "en": "Add New Shipping Method",
+        "vi": "Thêm phương thức vận chuyển mới"
+      },
+      "createNewShippingMethod": {
+        "en": "Create a new shipping method with pricing rules",
+        "vi": "Tạo phương thức vận chuyển mới với quy tắc định giá"
+      },
+      "editShippingMethod": {
+        "en": "Edit Shipping Method",
+        "vi": "Chỉnh sửa phương thức vận chuyển"
+      },
+      "toggleActive": {
+        "en": "Toggle active status",
+        "vi": "Chuyển đổi trạng thái hoạt động"
+      },
+      "toggleError": {
+        "en": "Failed to update shipping method status",
+        "vi": "Không thể cập nhật trạng thái phương thức vận chuyển"
+      },
+      "activateMethod": {
+        "en": "Activate shipping method",
+        "vi": "Kích hoạt phương thức vận chuyển"
+      },
+      "deactivateMethod": {
+        "en": "Deactivate shipping method",
+        "vi": "Vô hiệu hóa phương thức vận chuyển"
+      },
+      "updateShippingMethodInfo": {
+        "en": "Update shipping method information and pricing",
+        "vi": "Cập nhật thông tin và định giá phương thức vận chuyển"
+      },
+      "failedToLoadShippingMethod": {
+        "en": "Failed to load shipping method",
+        "vi": "Không thể tải phương thức vận chuyển"
+      },
+      "shippingMethodCreatedSuccess": {
+        "en": "Shipping method created successfully",
+        "vi": "Tạo phương thức vận chuyển thành công"
+      },
+      "shippingMethodUpdatedSuccess": {
+        "en": "Shipping method updated successfully",
+        "vi": "Cập nhật phương thức vận chuyển thành công"
+      },
+      "failedToCreateShippingMethod": {
+        "en": "Failed to create shipping method",
+        "vi": "Không thể tạo phương thức vận chuyển"
+      },
+      "failedToUpdateShippingMethod": {
+        "en": "Failed to update shipping method",
+        "vi": "Không thể cập nhật phương thức vận chuyển"
+      },
+      "methodIdRequired": {
+        "en": "Please enter method ID",
+        "vi": "Vui lòng nhập mã phương thức"
+      },
+      "nameRequired": {
+        "en": "Please enter name in both English and Vietnamese",
+        "vi": "Vui lòng nhập tên bằng cả tiếng Anh và tiếng Việt"
+      },
+      "descriptionRequired": {
+        "en": "Please enter description in both English and Vietnamese",
+        "vi": "Vui lòng nhập mô tả bằng cả tiếng Anh và tiếng Việt"
+      },
+      "baseRateNonNegative": {
+        "en": "Base rate cannot be negative",
+        "vi": "Giá cơ bản không được âm"
+      },
+      "estimatedDaysNonNegative": {
+        "en": "Estimated days cannot be negative",
+        "vi": "Số ngày giao hàng không được âm"
+      },
+      "minDaysLessThanMax": {
+        "en": "Minimum days cannot be greater than maximum days",
+        "vi": "Số ngày tối thiểu không được lớn hơn số ngày tối đa"
+      },
+      "weightValuesNonNegative": {
+        "en": "Weight threshold and rate cannot be negative",
+        "vi": "Ngưỡng cân nặng và giá theo cân nặng không được âm"
+      },
+      "freeShippingNonNegative": {
+        "en": "Free shipping threshold cannot be negative",
+        "vi": "Ngưỡng miễn phí vận chuyển không được âm"
+      },
+      "displayOrderNonNegative": {
+        "en": "Display order cannot be negative",
+        "vi": "Thứ tự hiển thị không được âm"
+      }
     }
   },
   "auth": {
@@ -1549,6 +1863,18 @@
     "title": {
       "en": "Checkout",
       "vi": "Thanh toán"
+    },
+    "noShippingMethodsAvailable": {
+      "en": "No shipping methods are currently available. Please contact support.",
+      "vi": "Hiện không có phương thức vận chuyển nào. Vui lòng liên hệ hỗ trợ."
+    },
+    "shippingCalculationError": {
+      "en": "Failed to calculate shipping rates. Please try again.",
+      "vi": "Không thể tính phí vận chuyển. Vui lòng thử lại."
+    },
+    "freeShipping": {
+      "en": "Free",
+      "vi": "Miễn phí"
     }
   },
   "common": {

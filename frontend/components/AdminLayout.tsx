@@ -4,7 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings, SvgImage } from '@/components/Svgs';
+import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings, SvgImage, SvgTruck } from '@/components/Svgs';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -92,6 +92,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       name: locale === 'vi' ? 'Đơn hàng' : 'Orders',
       href: `${prefUri}/orders`,
       icon: <SvgClipboard className="w-5 h-5" />,
+    },
+    {
+      name: t('shippingMethodsNav'),
+      href: `${prefUri}/shipping-methods`,
+      icon: <SvgTruck className="w-5 h-5" />,
     },
     {
       name: locale === 'vi' ? 'Khách hàng' : 'Customers',

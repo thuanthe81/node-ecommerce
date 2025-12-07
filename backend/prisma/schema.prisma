@@ -465,3 +465,29 @@ model ContentMedia {
   @@index([createdAt])
   @@map("content_media")
 }
+
+// Shipping Method Model
+model ShippingMethod {
+  id                    String   @id @default(uuid())
+  methodId              String   @unique
+  nameEn                String
+  nameVi                String
+  descriptionEn         String
+  descriptionVi         String
+  carrier               String?
+  baseRate              Decimal  @db.Decimal(10, 2)
+  estimatedDaysMin      Int
+  estimatedDaysMax      Int
+  weightThreshold       Decimal? @db.Decimal(10, 2)
+  weightRate            Decimal? @db.Decimal(10, 2)
+  freeShippingThreshold Decimal? @db.Decimal(10, 2)
+  regionalPricing       Json?
+  isActive              Boolean  @default(true)
+  displayOrder          Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([isActive, displayOrder])
+  @@index([methodId])
+  @@map("shipping_methods")
+}
