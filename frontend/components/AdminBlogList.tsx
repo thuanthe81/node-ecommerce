@@ -4,27 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { blogApi } from '@/lib/blog-api';
+import { blogApi, BlogPost } from '@/lib/blog-api';
 import { blogCategoryApi } from '@/lib/blog-category-api';
 import Pagination from './Pagination';
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleVi: string;
-  authorName: string;
-  isPublished: boolean;
-  publishedAt: string | null;
-  createdAt: string;
-  blogCategories: Array<{
-    category: {
-      id: string;
-      nameEn: string;
-      nameVi: string;
-    };
-  }>;
-}
 
 interface BlogCategory {
   id: string;

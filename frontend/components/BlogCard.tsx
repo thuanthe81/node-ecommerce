@@ -3,26 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleVi: string;
-  excerptEn: string;
-  excerptVi: string;
-  authorName: string;
-  imageUrl: string | null;
-  publishedAt: string;
-  blogCategories: Array<{
-    category: {
-      id: string;
-      slug: string;
-      nameEn: string;
-      nameVi: string;
-    };
-  }>;
-}
+import { BlogPost } from '@/lib/blog-api';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -37,7 +18,7 @@ export default function BlogCard({ post }: BlogCardProps) {
   const imageUrl = post.imageUrl || '/placeholder-product.png';
 
   // Format publication date
-  const publishedDate = new Date(post.publishedAt);
+  const publishedDate = post.publishedAt ? new Date(post.publishedAt) : new Date();
   const formattedDate = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
     year: 'numeric',
     month: 'long',
@@ -125,7 +106,7 @@ export default function BlogCard({ post }: BlogCardProps) {
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <time dateTime={post.publishedAt}>{formattedDate}</time>
+                <time dateTime={post.publishedAt || ''}>{formattedDate}</time>
               </span>
             </div>
           </div>

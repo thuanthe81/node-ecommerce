@@ -5,28 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import BlogCard from './BlogCard';
 import Pagination from './Pagination';
-import { getBlogPosts } from '@/lib/blog-api';
+import { getBlogPosts, BlogPost } from '@/lib/blog-api';
 import { getBlogCategories } from '@/lib/blog-category-api';
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleVi: string;
-  excerptEn: string;
-  excerptVi: string;
-  authorName: string;
-  imageUrl: string | null;
-  publishedAt: string;
-  blogCategories: Array<{
-    category: {
-      id: string;
-      slug: string;
-      nameEn: string;
-      nameVi: string;
-    };
-  }>;
-}
 
 interface BlogCategory {
   id: string;

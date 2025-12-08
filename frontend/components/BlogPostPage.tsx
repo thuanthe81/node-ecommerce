@@ -7,30 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Breadcrumb from './Breadcrumb';
 import BlogCard from './BlogCard';
-import { getBlogPost, getRelatedPosts } from '@/lib/blog-api';
-
-interface BlogPost {
-  id: string;
-  slug: string;
-  titleEn: string;
-  titleVi: string;
-  contentEn: string;
-  contentVi: string;
-  excerptEn: string;
-  excerptVi: string;
-  authorName: string;
-  imageUrl: string | null;
-  publishedAt: string;
-  updatedAt: string;
-  blogCategories: Array<{
-    category: {
-      id: string;
-      slug: string;
-      nameEn: string;
-      nameVi: string;
-    };
-  }>;
-}
+import { getBlogPost, getRelatedPosts, BlogPost } from '@/lib/blog-api';
 
 interface BlogPostPageProps {
   slug: string;
@@ -101,7 +78,7 @@ export default function BlogPostPage({ slug }: BlogPostPageProps) {
   const imageUrl = post.imageUrl || '/placeholder-product.png';
 
   // Format publication date
-  const publishedDate = new Date(post.publishedAt);
+  const publishedDate = new Date(post.publishedAt || '1970');
   const formattedDate = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
     year: 'numeric',
     month: 'long',

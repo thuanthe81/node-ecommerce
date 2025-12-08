@@ -59,7 +59,7 @@ export async function BlogPostPageWithSEO({ slug, locale }: BlogPostPageWithSEOP
       description: excerpt,
       image: imageUrl,
       author: post.authorName,
-      datePublished: post.publishedAt,
+      datePublished: post.publishedAt || '1970',
       dateModified: post.updatedAt,
       url,
     });
