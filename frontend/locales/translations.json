@@ -3608,5 +3608,373 @@
       "en": "Valid",
       "vi": "Hợp lệ"
     }
+  },
+  "email": {
+    "orderConfirmation": {
+      "subject": {
+        "en": "Order Confirmation - Order #{orderNumber}",
+        "vi": "Xác nhận đơn hàng - Đơn hàng #{orderNumber}"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "thankYou": {
+        "en": "Thank you for your order!",
+        "vi": "Cảm ơn bạn đã đặt hàng!"
+      },
+      "orderReceived": {
+        "en": "We have received your order and will process it shortly.",
+        "vi": "Chúng tôi đã nhận được đơn hàng của bạn và sẽ xử lý trong thời gian sớm nhất."
+      },
+      "orderDetails": {
+        "en": "Order Details",
+        "vi": "Chi tiết đơn hàng"
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "orderDate": {
+        "en": "Order Date",
+        "vi": "Ngày đặt hàng"
+      },
+      "items": {
+        "en": "Items",
+        "vi": "Sản phẩm"
+      },
+      "quantity": {
+        "en": "Quantity",
+        "vi": "Số lượng"
+      },
+      "price": {
+        "en": "Price",
+        "vi": "Giá"
+      },
+      "total": {
+        "en": "Total",
+        "vi": "Tổng"
+      },
+      "subtotal": {
+        "en": "Subtotal",
+        "vi": "Tạm tính"
+      },
+      "shipping": {
+        "en": "Shipping",
+        "vi": "Phí vận chuyển"
+      },
+      "tax": {
+        "en": "Tax",
+        "vi": "Thuế"
+      },
+      "discount": {
+        "en": "Discount",
+        "vi": "Giảm giá"
+      },
+      "grandTotal": {
+        "en": "Grand Total",
+        "vi": "Tổng cộng"
+      },
+      "shippingAddress": {
+        "en": "Shipping Address",
+        "vi": "Địa chỉ giao hàng"
+      },
+      "paymentMethod": {
+        "en": "Payment Method",
+        "vi": "Phương thức thanh toán"
+      },
+      "contactUs": {
+        "en": "If you have any questions, please contact us.",
+        "vi": "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
+      }
+    },
+    "adminOrderNotification": {
+      "subject": {
+        "en": "New Order Received - Order #{orderNumber}",
+        "vi": "Đơn hàng mới - Đơn hàng #{orderNumber}"
+      },
+      "newOrder": {
+        "en": "New Order Received",
+        "vi": "Đơn hàng mới"
+      },
+      "orderReceived": {
+        "en": "A new order has been placed and requires your attention.",
+        "vi": "Một đơn hàng mới đã được đặt và cần được xử lý."
+      },
+      "customerInformation": {
+        "en": "Customer Information",
+        "vi": "Thông tin khách hàng"
+      },
+      "customerName": {
+        "en": "Name",
+        "vi": "Tên"
+      },
+      "customerEmail": {
+        "en": "Email",
+        "vi": "Email"
+      },
+      "customerPhone": {
+        "en": "Phone",
+        "vi": "Điện thoại"
+      },
+      "orderDetails": {
+        "en": "Order Details",
+        "vi": "Chi tiết đơn hàng"
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "orderDate": {
+        "en": "Order Date",
+        "vi": "Ngày đặt hàng"
+      },
+      "items": {
+        "en": "Items",
+        "vi": "Sản phẩm"
+      },
+      "product": {
+        "en": "Product",
+        "vi": "Sản phẩm"
+      },
+      "sku": {
+        "en": "SKU",
+        "vi": "Mã SP"
+      },
+      "quantity": {
+        "en": "Quantity",
+        "vi": "Số lượng"
+      },
+      "price": {
+        "en": "Price",
+        "vi": "Giá"
+      },
+      "total": {
+        "en": "Total",
+        "vi": "Tổng"
+      },
+      "subtotal": {
+        "en": "Subtotal",
+        "vi": "Tạm tính"
+      },
+      "shipping": {
+        "en": "Shipping",
+        "vi": "Phí vận chuyển"
+      },
+      "shippingMethod": {
+        "en": "Shipping Method",
+        "vi": "Phương thức vận chuyển"
+      },
+      "tax": {
+        "en": "Tax",
+        "vi": "Thuế"
+      },
+      "discount": {
+        "en": "Discount",
+        "vi": "Giảm giá"
+      },
+      "grandTotal": {
+        "en": "Grand Total",
+        "vi": "Tổng cộng"
+      },
+      "shippingAddress": {
+        "en": "Shipping Address",
+        "vi": "Địa chỉ giao hàng"
+      },
+      "billingAddress": {
+        "en": "Billing Address",
+        "vi": "Địa chỉ thanh toán"
+      },
+      "paymentMethod": {
+        "en": "Payment Method",
+        "vi": "Phương thức thanh toán"
+      },
+      "paymentStatus": {
+        "en": "Payment Status",
+        "vi": "Trạng thái thanh toán"
+      },
+      "customerNotes": {
+        "en": "Customer Notes",
+        "vi": "Ghi chú của khách hàng"
+      },
+      "noNotes": {
+        "en": "No notes provided",
+        "vi": "Không có ghi chú"
+      }
+    },
+    "orderStatusUpdate": {
+      "subject": {
+        "en": "Order Status Update - Order #{orderNumber}",
+        "vi": "Cập nhật trạng thái đơn hàng - Đơn hàng #{orderNumber}"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "statusUpdated": {
+        "en": "Your order status has been updated.",
+        "vi": "Trạng thái đơn hàng của bạn đã được cập nhật."
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "newStatus": {
+        "en": "New Status",
+        "vi": "Trạng thái mới"
+      },
+      "statusMessages": {
+        "pending": {
+          "en": "Your order has been received and is awaiting processing.",
+          "vi": "Đơn hàng của bạn đã được nhận và đang chờ xử lý."
+        },
+        "processing": {
+          "en": "Your order is currently being processed and prepared for shipment.",
+          "vi": "Đơn hàng của bạn đang được xử lý và chuẩn bị để gửi hàng."
+        },
+        "shipped": {
+          "en": "Your order has been shipped and is on its way to you.",
+          "vi": "Đơn hàng của bạn đã được gửi đi và đang trên đường đến bạn."
+        },
+        "delivered": {
+          "en": "Your order has been successfully delivered.",
+          "vi": "Đơn hàng của bạn đã được giao thành công."
+        },
+        "cancelled": {
+          "en": "Your order has been cancelled. If you have any questions, please contact us.",
+          "vi": "Đơn hàng của bạn đã bị hủy. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
+        },
+        "refunded": {
+          "en": "Your order has been refunded. The refund will be processed to your original payment method.",
+          "vi": "Đơn hàng của bạn đã được hoàn tiền. Số tiền sẽ được hoàn lại vào phương thức thanh toán ban đầu của bạn."
+        }
+      },
+      "trackingNumber": {
+        "en": "Tracking Number",
+        "vi": "Mã vận đơn"
+      },
+      "trackYourOrder": {
+        "en": "You can track your order using the tracking number above.",
+        "vi": "Bạn có thể theo dõi đơn hàng của mình bằng mã vận đơn ở trên."
+      },
+      "contactUs": {
+        "en": "If you have any questions, please contact us.",
+        "vi": "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
+      }
+    },
+    "orderStatus": {
+      "pending": {
+        "en": "Pending",
+        "vi": "Chờ xử lý"
+      },
+      "processing": {
+        "en": "Processing",
+        "vi": "Đang xử lý"
+      },
+      "shipped": {
+        "en": "Shipped",
+        "vi": "Đã gửi hàng"
+      },
+      "delivered": {
+        "en": "Delivered",
+        "vi": "Đã giao hàng"
+      },
+      "cancelled": {
+        "en": "Cancelled",
+        "vi": "Đã hủy"
+      },
+      "refunded": {
+        "en": "Refunded",
+        "vi": "Đã hoàn tiền"
+      }
+    },
+    "paymentMethod": {
+      "bankTransfer": {
+        "en": "Bank Transfer",
+        "vi": "Chuyển khoản ngân hàng"
+      },
+      "cashOnDelivery": {
+        "en": "Cash on Delivery",
+        "vi": "Thanh toán khi nhận hàng"
+      },
+      "creditCard": {
+        "en": "Credit Card",
+        "vi": "Thẻ tín dụng"
+      },
+      "paypal": {
+        "en": "PayPal",
+        "vi": "PayPal"
+      }
+    },
+    "paymentStatus": {
+      "pending": {
+        "en": "Pending",
+        "vi": "Chờ thanh toán"
+      },
+      "paid": {
+        "en": "Paid",
+        "vi": "Đã thanh toán"
+      },
+      "failed": {
+        "en": "Failed",
+        "vi": "Thất bại"
+      },
+      "refunded": {
+        "en": "Refunded",
+        "vi": "Đã hoàn tiền"
+      }
+    },
+    "shippingMethod": {
+      "standard": {
+        "en": "Standard Shipping",
+        "vi": "Vận chuyển tiêu chuẩn"
+      },
+      "express": {
+        "en": "Express Shipping",
+        "vi": "Vận chuyển nhanh"
+      },
+      "overnight": {
+        "en": "Overnight Shipping",
+        "vi": "Vận chuyển qua đêm"
+      },
+      "international": {
+        "en": "International Shipping",
+        "vi": "Vận chuyển quốc tế"
+      }
+    },
+    "common": {
+      "viewOrder": {
+        "en": "View Order",
+        "vi": "Xem đơn hàng"
+      },
+      "thankYou": {
+        "en": "Thank you",
+        "vi": "Cảm ơn"
+      },
+      "regards": {
+        "en": "Best regards",
+        "vi": "Trân trọng"
+      },
+      "team": {
+        "en": "The Team",
+        "vi": "Đội ngũ"
+      },
+      "contactInfo": {
+        "en": "Contact Information",
+        "vi": "Thông tin liên hệ"
+      },
+      "email": {
+        "en": "Email",
+        "vi": "Email"
+      },
+      "phone": {
+        "en": "Phone",
+        "vi": "Điện thoại"
+      },
+      "address": {
+        "en": "Address",
+        "vi": "Địa chỉ"
+      }
+    }
   }
 }

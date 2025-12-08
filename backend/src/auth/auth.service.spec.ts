@@ -101,7 +101,7 @@ describe('AuthService', () => {
         subject: 'Welcome',
         html: '<p>Welcome</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.register(registerDto);
 
@@ -260,7 +260,7 @@ describe('AuthService', () => {
         subject: 'Password Reset',
         html: '<p>Reset your password</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.requestPasswordReset(mockUser.email);
 

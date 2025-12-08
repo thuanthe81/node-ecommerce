@@ -12,6 +12,7 @@ import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 
 @Injectable()
 export class OrdersService {
@@ -19,6 +20,7 @@ export class OrdersService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private emailTemplateService: EmailTemplateService,
+    private footerSettingsService: FooterSettingsService,
   ) {}
 
   /**
@@ -274,13 +276,34 @@ export class OrdersService {
     // Send order confirmation email
     await this.sendOrderConfirmationEmail(order);
 
+    // Send admin notification email
+    await this.sendAdminOrderNotification(order);
+
     return order;
   }
 
   /**
-   * Send order confirmation email
+   * Send order confirmation email to customer
+   *
+   * Sends a professionally formatted HTML email to the customer with complete order details.
+   * Email failures are logged but do not interrupt order processing.
+   *
+   * @param order - The order object with items, addresses, and totals
+   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   *
+   * @example
+   * ```typescript
+   * // Automatically called after order creation
+   * await this.sendOrderConfirmationEmail(order);
+   * ```
+   *
+   * @remarks
+   * - Uses EmailTemplateService to generate bilingual HTML template
+   * - Defaults to English locale (can be enhanced to use customer preference)
+   * - Logs success/failure without throwing exceptions
+   * - Includes order number, items, totals, and shipping address
    */
-  private async sendOrderConfirmationEmail(order: any) {
+  private async sendOrderConfirmationEmail(order: any): Promise<void> {
     try {
       const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English, can be determined from user preferences
@@ -296,6 +319,8 @@ export class OrdersService {
         })),
         subtotal: Number(order.subtotal),
         shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount),
+        discountAmount: Number(order.discountAmount),
         total: Number(order.total),
         shippingAddress: order.shippingAddress,
       };
@@ -306,15 +331,129 @@ export class OrdersService {
           locale,
         );
 
-      await this.emailService.sendEmail({
+      const emailSent = await this.emailService.sendEmail({
         to: order.email,
         subject: template.subject,
         html: template.html,
         locale,
       });
+
+      if (emailSent) {
+        console.log(`Order confirmation email sent to ${order.email} for order ${order.orderNumber}`);
+      } else {
+        console.warn(`Failed to send order confirmation email to ${order.email} for order ${order.orderNumber}`);
+      }
     } catch (error) {
       // Log error but don't fail the order creation
-      console.error('Failed to send order confirmation email:', error);
+      console.error(`Failed to send order confirmation email for order ${order.orderNumber}:`, error);
+    }
+  }
+
+  /**
+   * Send admin order notification email to shop owner
+   *
+   * Sends a comprehensive order notification to the admin email configured in footer settings.
+   * Includes all order details, customer information, and payment status for quick order review.
+   * Gracefully handles missing admin email configuration.
+   *
+   * @param order - The order object with complete details including items, addresses, and customer info
+   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   *
+   * @example
+   * ```typescript
+   * // Automatically called after order creation and customer email
+   * await this.sendAdminOrderNotification(order);
+   * ```
+   *
+   * @remarks
+   * - Queries FooterSettingsService for admin email address
+   * - Skips sending if contactEmail is not configured (logs warning)
+   * - Includes customer name, email, phone, and all order items with SKUs
+   * - Shows both shipping and billing addresses
+   * - Displays payment method, status, and customer notes
+   * - Uses English locale by default for admin emails
+   * - Email failures are logged but do not interrupt order processing
+   *
+   * @see FooterSettingsService.getFooterSettings
+   * @see EmailTemplateService.getAdminOrderNotificationTemplate
+   */
+  private async sendAdminOrderNotification(order: any): Promise<void> {
+    try {
+      // Query footer settings for admin email
+      const footerSettings = await this.footerSettingsService.getFooterSettings();
+
+      // Handle missing admin email gracefully
+      if (!footerSettings.contactEmail) {
+        console.warn(`Admin email not configured, skipping admin notification for order ${order.orderNumber}`);
+        return;
+      }
+
+      const locale = 'en' as 'en' | 'vi'; // Default to English for admin emails
+
+      // Prepare admin email data with all required fields
+      const adminEmailData = {
+        orderNumber: order.orderNumber,
+        orderDate: order.createdAt.toLocaleDateString(),
+        customerName: order.shippingAddress.fullName,
+        customerEmail: order.email,
+        customerPhone: order.shippingAddress.phone,
+        items: order.items.map((item: any) => ({
+          nameEn: item.productNameEn,
+          nameVi: item.productNameVi,
+          sku: item.sku,
+          quantity: item.quantity,
+          price: Number(item.price),
+          total: Number(item.total),
+        })),
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        shippingMethod: order.shippingMethod,
+        taxAmount: Number(order.taxAmount),
+        discountAmount: Number(order.discountAmount),
+        total: Number(order.total),
+        shippingAddress: {
+          fullName: order.shippingAddress.fullName,
+          phone: order.shippingAddress.phone,
+          addressLine1: order.shippingAddress.addressLine1,
+          addressLine2: order.shippingAddress.addressLine2,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+          postalCode: order.shippingAddress.postalCode,
+          country: order.shippingAddress.country,
+        },
+        billingAddress: {
+          fullName: order.billingAddress.fullName,
+          phone: order.billingAddress.phone,
+          addressLine1: order.billingAddress.addressLine1,
+          addressLine2: order.billingAddress.addressLine2,
+          city: order.billingAddress.city,
+          state: order.billingAddress.state,
+          postalCode: order.billingAddress.postalCode,
+          country: order.billingAddress.country,
+        },
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
+        notes: order.notes,
+      };
+
+      // Generate admin email template
+      const template = this.emailTemplateService.getAdminOrderNotificationTemplate(
+        adminEmailData,
+        locale,
+      );
+
+      // Send email to admin
+      await this.emailService.sendEmail({
+        to: footerSettings.contactEmail,
+        subject: template.subject,
+        html: template.html,
+        locale,
+      });
+
+      console.log(`Admin notification sent to ${footerSettings.contactEmail} for order ${order.orderNumber}`);
+    } catch (error) {
+      // Log error but don't fail the order creation
+      console.error(`Failed to send admin notification for order ${order.orderNumber}:`, error);
     }
   }
 
@@ -686,9 +825,28 @@ export class OrdersService {
   }
 
   /**
-   * Send shipping notification email
+   * Send shipping notification email to customer
+   *
+   * Notifies the customer that their order has been shipped.
+   * Includes tracking number if available.
+   *
+   * @param order - The order object with shipping details
+   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   *
+   * @example
+   * ```typescript
+   * // Automatically called when order status changes to SHIPPED
+   * if (updateOrderStatusDto.status === OrderStatus.SHIPPED) {
+   *   await this.sendShippingNotificationEmail(updatedOrder);
+   * }
+   * ```
+   *
+   * @remarks
+   * - Uses EmailTemplateService to generate shipping notification template
+   * - Includes tracking number if available in order data
+   * - Email failures are logged but do not interrupt status update
    */
-  private async sendShippingNotificationEmail(order: any) {
+  private async sendShippingNotificationEmail(order: any): Promise<void> {
     try {
       const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English
@@ -705,6 +863,8 @@ export class OrdersService {
         })),
         subtotal: Number(order.subtotal),
         shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount),
+        discountAmount: Number(order.discountAmount),
         total: Number(order.total),
         shippingAddress: order.shippingAddress,
         trackingNumber: undefined,
@@ -716,21 +876,45 @@ export class OrdersService {
           locale,
         );
 
-      await this.emailService.sendEmail({
+      const emailSent = await this.emailService.sendEmail({
         to: order.email,
         subject: template.subject,
         html: template.html,
         locale,
       });
+
+      if (emailSent) {
+        console.log(`Shipping notification email sent to ${order.email} for order ${order.orderNumber}`);
+      } else {
+        console.warn(`Failed to send shipping notification email to ${order.email} for order ${order.orderNumber}`);
+      }
     } catch (error) {
-      console.error('Failed to send shipping notification email:', error);
+      console.error(`Failed to send shipping notification email for order ${order.orderNumber}:`, error);
     }
   }
 
   /**
-   * Send order status update email
+   * Send order status update email to customer
+   *
+   * Notifies the customer when their order status changes.
+   * Includes status-specific messages explaining what the status means.
+   *
+   * @param order - The order object with current status
+   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   *
+   * @example
+   * ```typescript
+   * // Automatically called when order status changes (except SHIPPED which uses shipping notification)
+   * await this.sendOrderStatusUpdateEmail(updatedOrder);
+   * ```
+   *
+   * @remarks
+   * - Uses EmailTemplateService to generate status update template
+   * - Includes localized status names and status-specific messages
+   * - Supports statuses: PENDING, PROCESSING, DELIVERED, CANCELLED, REFUNDED
+   * - Email failures are logged but do not interrupt status update
    */
-  private async sendOrderStatusUpdateEmail(order: any) {
+  private async sendOrderStatusUpdateEmail(order: any): Promise<void> {
     try {
       const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English
@@ -747,6 +931,8 @@ export class OrdersService {
         })),
         subtotal: Number(order.subtotal),
         shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount),
+        discountAmount: Number(order.discountAmount),
         total: Number(order.total),
         shippingAddress: order.shippingAddress,
         status: order.status,
@@ -758,14 +944,20 @@ export class OrdersService {
           locale,
         );
 
-      await this.emailService.sendEmail({
+      const emailSent = await this.emailService.sendEmail({
         to: order.email,
         subject: template.subject,
         html: template.html,
         locale,
       });
+
+      if (emailSent) {
+        console.log(`Order status update email sent to ${order.email} for order ${order.orderNumber} (status: ${order.status})`);
+      } else {
+        console.warn(`Failed to send order status update email to ${order.email} for order ${order.orderNumber}`);
+      }
     } catch (error) {
-      console.error('Failed to send order status update email:', error);
+      console.error(`Failed to send order status update email for order ${order.orderNumber}:`, error);
     }
   }
 

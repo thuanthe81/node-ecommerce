@@ -3,6 +3,7 @@ import { OrdersService } from './orders.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import {
   NotFoundException,
   BadRequestException,
@@ -15,6 +16,7 @@ describe('OrdersService', () => {
   let prismaService: PrismaService;
   let emailService: EmailService;
   let emailTemplateService: EmailTemplateService;
+  let footerSettingsService: FooterSettingsService;
 
   const mockAddress = {
     id: 'addr-1',
@@ -107,6 +109,11 @@ describe('OrdersService', () => {
     getOrderConfirmationTemplate: jest.fn(),
     getShippingNotificationTemplate: jest.fn(),
     getOrderStatusUpdateTemplate: jest.fn(),
+    getAdminOrderNotificationTemplate: jest.fn(),
+  };
+
+  const mockFooterSettingsService = {
+    getFooterSettings: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -116,6 +123,7 @@ describe('OrdersService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EmailService, useValue: mockEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: FooterSettingsService, useValue: mockFooterSettingsService },
       ],
     }).compile();
 
@@ -124,6 +132,9 @@ describe('OrdersService', () => {
     emailService = module.get<EmailService>(EmailService);
     emailTemplateService = module.get<EmailTemplateService>(
       EmailTemplateService,
+    );
+    footerSettingsService = module.get<FooterSettingsService>(
+      FooterSettingsService,
     );
 
     jest.clearAllMocks();
@@ -181,7 +192,26 @@ describe('OrdersService', () => {
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailTemplateService.getAdminOrderNotificationTemplate.mockReturnValue({
+        subject: 'New Order Notification',
+        html: '<p>New order received</p>',
+      });
+      mockFooterSettingsService.getFooterSettings.mockResolvedValue({
+        id: 'footer-1',
+        contactEmail: 'admin@example.com',
+        contactPhone: null,
+        address: null,
+        copyrightText: 'Copyright 2024',
+        googleMapsUrl: null,
+        facebookUrl: null,
+        twitterUrl: null,
+        tiktokUrl: null,
+        zaloUrl: null,
+        whatsappUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.create(createOrderDto, 'user-1');
 
@@ -243,7 +273,7 @@ describe('OrdersService', () => {
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.create(createOrderDto, undefined);
 
@@ -288,7 +318,7 @@ describe('OrdersService', () => {
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.create(createOrderDto, 'user-1');
 
@@ -505,7 +535,7 @@ describe('OrdersService', () => {
         subject: 'Order Shipped',
         html: '<p>Your order has been shipped</p>',
       });
-      mockEmailService.sendEmail.mockResolvedValue(undefined);
+      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.updateStatus('order-1', updateStatusDto);
 

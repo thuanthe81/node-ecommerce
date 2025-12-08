@@ -3,16 +3,21 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { promotionApi } from '@/lib/promotion-api';
 import { SvgCheck } from '@/components/Svgs';
 import { formatMoney } from '@/app/utils';
 
 export default function CartSummary() {
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
   const t = useTranslations('cart');
   const { subtotal, itemCount } = useCart();
+  const { isAuthenticated, isLoading } = useAuth();
 
   const [promoCode, setPromoCode] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
@@ -58,6 +63,16 @@ export default function CartSummary() {
   const finalTotal = appliedPromo
     ? Math.max(0, subtotal - appliedPromo.discountAmount)
     : subtotal;
+
+  const handleProceedToCheckout = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // If user is not authenticated, redirect to login with cart page as redirect
+    if (!isAuthenticated && !isLoading) {
+      e.preventDefault();
+      const redirectUrl = encodeURIComponent(pathname);
+      router.push(`/${locale}/login?redirect=${redirectUrl}`);
+    }
+    // If authenticated, the Link will work normally
+  };
 
   return (
     <div className="bg-gray-50 rounded-lg p-6">
@@ -144,6 +159,7 @@ export default function CartSummary() {
 
       <Link
         href={`/${locale}/checkout`}
+        onClick={handleProceedToCheckout}
         className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
       >
         {t('proceedToCheckout')}

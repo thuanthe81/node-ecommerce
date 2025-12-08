@@ -323,14 +323,12 @@ export default function CheckoutContent() {
         const order = await orderApi.createOrder(orderData);
         console.log('[CheckoutContent] Order created successfully:', order.id);
 
-        // Set flag to prevent useEffect from redirecting to cart
-        setOrderCompleted(true);
-
-        // Redirect to order confirmation page
-        router.push(`/${locale}/orders/${order.id}/confirmation`);
-
-        // Clear cart after redirect is initiated
+        // Clear cart
         await clearCart();
+
+        // Use window.location for immediate redirect to prevent useEffect interference
+        // This causes a full page navigation which bypasses React's routing and useEffect hooks
+        window.location.href = `/${locale}/orders/${order.id}/confirmation`;
       } catch (err: any) {
         console.error('[CheckoutContent] Failed to create order:', err);
         // Provide specific error message for order creation failure

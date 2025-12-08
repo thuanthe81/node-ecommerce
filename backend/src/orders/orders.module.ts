@@ -3,9 +3,10 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule],
   controllers: [OrdersController],
   providers: [OrdersService],
   exports: [OrdersService],
