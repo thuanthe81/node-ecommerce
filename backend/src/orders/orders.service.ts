@@ -55,6 +55,7 @@ export class OrdersService {
       shippingAddressId,
       billingAddressId,
       shippingMethod,
+      shippingCost: providedShippingCost,
       paymentMethod,
       items,
       promotionCode,
@@ -157,8 +158,9 @@ export class OrdersService {
       });
     }
 
-    // Calculate shipping cost (simplified - can be enhanced with shipping service)
-    const shippingCost = this.calculateShippingCost(shippingMethod);
+    // Use provided shipping cost from frontend (calculated by shipping service)
+    // Fall back to calculated cost if not provided (for backward compatibility)
+    const shippingCost = providedShippingCost ?? this.calculateShippingCost(shippingMethod);
 
     // Calculate tax (simplified - 10% tax rate)
     const taxAmount = subtotal * 0.1;

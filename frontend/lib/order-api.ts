@@ -10,6 +10,7 @@ export interface CreateOrderData {
   shippingAddressId: string;
   billingAddressId: string;
   shippingMethod: string;
+  shippingCost: number;
   paymentMethod: string;
   items: CreateOrderItem[];
   promotionCode?: string;

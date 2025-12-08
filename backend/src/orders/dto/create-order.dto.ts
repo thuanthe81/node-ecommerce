@@ -39,6 +39,10 @@ export class CreateOrderDto {
   @IsNotEmpty()
   shippingMethod: string;
 
+  @IsNumber()
+  @Min(0)
+  shippingCost: number;
+
   @IsString()
   @IsNotEmpty()
   paymentMethod: string;

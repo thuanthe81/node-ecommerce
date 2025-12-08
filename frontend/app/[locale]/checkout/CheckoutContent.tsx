@@ -22,7 +22,7 @@ export default function CheckoutContent() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { cart, clearCart, syncing, syncResults, guestCartItems } = useCart();
+  const { cart, refreshCart, clearCart, syncing, syncResults, guestCartItems } = useCart();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -99,21 +99,26 @@ export default function CheckoutContent() {
   };
 
   const handleShippingMethodSelect = (methodId: string) => {
+    console.log('[CheckoutContent] Shipping method selected:', methodId);
     setShippingMethod(methodId);
 
     // Find the selected method and update the cost
     const selectedRate = shippingRates.find(rate => rate.method === methodId);
+    console.log('[CheckoutContent] Selected rate:', selectedRate);
     if (selectedRate) {
+      console.log('[CheckoutContent] Setting shipping cost to:', selectedRate.cost);
       setCalculatedShippingCost(selectedRate.cost);
     }
   };
 
   const handleRatesCalculated = (rates: any[]) => {
+    console.log('[CheckoutContent] Rates calculated:', rates);
     setShippingRates(rates);
 
     // If a method is already selected, update its cost
     if (shippingMethod) {
       const selectedRate = rates.find(rate => rate.method === shippingMethod);
+      console.log('[CheckoutContent] Auto-updating cost for selected method:', shippingMethod, selectedRate);
       if (selectedRate) {
         setCalculatedShippingCost(selectedRate.cost);
       }
@@ -308,6 +313,7 @@ export default function CheckoutContent() {
         shippingAddressId: finalShippingAddressId,
         billingAddressId: finalBillingAddressId,
         shippingMethod,
+        shippingCost: calculatedShippingCost,
         paymentMethod,
         items: cart.items.map((item) => ({
           productId: item.product.id,
@@ -318,6 +324,7 @@ export default function CheckoutContent() {
       };
 
       console.log('[CheckoutContent] Creating order with data:', orderData);
+      console.log('[CheckoutContent] Calculated shipping cost at order time:', calculatedShippingCost);
 
       try {
         const order = await orderApi.createOrder(orderData);
@@ -328,7 +335,8 @@ export default function CheckoutContent() {
 
         // Use window.location for immediate redirect to prevent useEffect interference
         // This causes a full page navigation which bypasses React's routing and useEffect hooks
-        window.location.href = `/${locale}/orders/${order.id}/confirmation`;
+        // window.location.href = `/${locale}/orders/${order.id}/confirmation`;
+        router.push(`/${locale}/orders/${order.id}/confirmation`);
       } catch (err: any) {
         console.error('[CheckoutContent] Failed to create order:', err);
         // Provide specific error message for order creation failure
@@ -359,6 +367,18 @@ export default function CheckoutContent() {
     code: string;
     discountAmount: number;
     promotionId: string;
+  } | null>(null);
+
+  // State for calculated shipping cost
+  const [calculatedShippingCost, setCalculatedShippingCost] = useState<number>(0);
+  const [shippingRates, setShippingRates] = useState<any[]>([]);
+
+  // State to track the current shipping address for calculation
+  const [currentShippingAddress, setCurrentShippingAddress] = useState<{
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
   } | null>(null);
 
   // Show loading state during authentication check or cart sync
@@ -397,18 +417,6 @@ export default function CheckoutContent() {
     },
     0,
   );
-
-  // State for calculated shipping cost
-  const [calculatedShippingCost, setCalculatedShippingCost] = useState<number>(0);
-  const [shippingRates, setShippingRates] = useState<any[]>([]);
-
-  // State to track the current shipping address for calculation
-  const [currentShippingAddress, setCurrentShippingAddress] = useState<{
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  } | null>(null);
 
   // Use calculated shipping cost or default to 0
   const shippingCost = calculatedShippingCost;
