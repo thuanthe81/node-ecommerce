@@ -8,6 +8,7 @@ import {
   Min,
   IsObject,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateShippingMethodDto {
   @IsString()
@@ -47,16 +48,28 @@ export class CreateShippingMethodDto {
   estimatedDaysMax: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    return Number(value);
+  })
   @IsNumber()
   @Min(0)
   weightThreshold?: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    return Number(value);
+  })
   @IsNumber()
   @Min(0)
   weightRate?: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === null || value === undefined || value === '') return undefined;
+    return Number(value);
+  })
   @IsNumber()
   @Min(0)
   freeShippingThreshold?: number;

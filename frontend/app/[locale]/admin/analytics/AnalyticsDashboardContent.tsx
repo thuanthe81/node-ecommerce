@@ -10,6 +10,7 @@ import {
   DashboardMetrics,
   SalesReport,
 } from '@/lib/analytics-api';
+import { formatMoney } from '@/app/utils';
 
 export default function AnalyticsDashboardContent() {
   const locale = useLocale();
@@ -46,13 +47,6 @@ export default function AnalyticsDashboardContent() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-      style: 'currency',
-      currency: locale === 'vi' ? 'VND' : 'USD',
-    }).format(Number(amount));
   };
 
   const formatDate = (dateStr: string) => {
@@ -147,7 +141,7 @@ export default function AnalyticsDashboardContent() {
                     {locale === 'vi' ? 'Tổng doanh thu' : 'Total Revenue'}
                   </h3>
                   <p className="text-2xl font-bold mt-2">
-                    {formatCurrency(metrics.revenue.totalRevenue)}
+                    {formatMoney(metrics.revenue.totalRevenue, locale)}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
                     {metrics.revenue.totalOrders}{' '}
@@ -247,7 +241,7 @@ export default function AnalyticsDashboardContent() {
                               : item.week || item.month}
                           </td>
                           <td className="text-right py-2">
-                            {formatCurrency(item.revenue)}
+                            {formatMoney(item.revenue, locale)}
                           </td>
                           <td className="text-right py-2">{item.orders}</td>
                         </tr>
