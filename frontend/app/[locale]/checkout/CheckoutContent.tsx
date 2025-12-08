@@ -22,7 +22,7 @@ export default function CheckoutContent() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { cart, refreshCart, clearCart, syncing, syncResults, guestCartItems } = useCart();
+  const { cart, clearCart, syncing, syncResults, guestCartItems } = useCart();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -329,9 +329,6 @@ export default function CheckoutContent() {
       try {
         const order = await orderApi.createOrder(orderData);
         console.log('[CheckoutContent] Order created successfully:', order.id);
-
-        // Clear cart
-        await clearCart();
 
         // Use window.location for immediate redirect to prevent useEffect interference
         // This causes a full page navigation which bypasses React's routing and useEffect hooks
