@@ -101,6 +101,20 @@ export function MobileNav({ isOpen, locale, user, isActiveLink, onClose, onLogou
               </li>
               <li>
                 <Link
+                  href={`/${locale}/blog`}
+                  className={`block px-4 py-3 rounded-md transition-colors font-medium touch-manipulation ${
+                    isActiveLink(`/${locale}/blog`)
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-blue-600'
+                  }`}
+                  onClick={onClose}
+                  style={{ minHeight: '44px' }}
+                >
+                  {t('nav.blog') || 'Blog'}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`/${locale}/contact`}
                   className={`block px-4 py-3 rounded-md transition-colors font-medium touch-manipulation ${
                     isActiveLink(`/${locale}/contact`)

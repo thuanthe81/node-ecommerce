@@ -524,6 +524,14 @@
       "en": "Edit Content",
       "vi": "Chỉnh sửa nội dung"
     },
+    "english": {
+      "en": "English",
+      "vi": "Tiếng Anh"
+    },
+    "vietnamese": {
+      "en": "Vietnamese",
+      "vi": "Tiếng Việt"
+    },
     "editFooterContent": {
       "en": "Edit Footer Content",
       "vi": "Chỉnh sửa nội dung chân trang"
@@ -1116,6 +1124,286 @@
       "en": "Zalo URL",
       "vi": "Liên kết Zalo"
     },
+    "blog": {
+      "createPost": {
+        "en": "Create Post",
+        "vi": "Tạo bài viết"
+      },
+      "editPost": {
+        "en": "Edit Post",
+        "vi": "Chỉnh sửa bài viết"
+      },
+      "deletePost": {
+        "en": "Delete Post",
+        "vi": "Xóa bài viết"
+      },
+      "title": {
+        "en": "Title",
+        "vi": "Tiêu đề"
+      },
+      "titlePlaceholder": {
+        "en": "Enter blog post title",
+        "vi": "Nhập tiêu đề bài viết"
+      },
+      "titleRequired": {
+        "en": "Title is required",
+        "vi": "Tiêu đề là bắt buộc"
+      },
+      "slug": {
+        "en": "Slug",
+        "vi": "Slug"
+      },
+      "slugRequired": {
+        "en": "Slug is required",
+        "vi": "Slug là bắt buộc"
+      },
+      "slugFormatError": {
+        "en": "Slug must contain only lowercase letters, numbers, and hyphens",
+        "vi": "Slug chỉ được chứa chữ thường, số và dấu gạch ngang"
+      },
+      "excerpt": {
+        "en": "Excerpt",
+        "vi": "Trích đoạn"
+      },
+      "excerptPlaceholder": {
+        "en": "Enter a short summary of the blog post",
+        "vi": "Nhập tóm tắt ngắn của bài viết"
+      },
+      "excerptRequired": {
+        "en": "Excerpt is required",
+        "vi": "Trích đoạn là bắt buộc"
+      },
+      "excerptHint": {
+        "en": "A brief summary shown in blog listings and search results",
+        "vi": "Tóm tắt ngắn hiển thị trong danh sách blog và kết quả tìm kiếm"
+      },
+      "content": {
+        "en": "Content",
+        "vi": "Nội dung"
+      },
+      "contentPlaceholder": {
+        "en": "Write your blog post content here...",
+        "vi": "Viết nội dung bài viết của bạn ở đây..."
+      },
+      "contentRequired": {
+        "en": "Content is required",
+        "vi": "Nội dung là bắt buộc"
+      },
+      "author": {
+        "en": "Author",
+        "vi": "Tác giả"
+      },
+      "authorPlaceholder": {
+        "en": "Enter author name",
+        "vi": "Nhập tên tác giả"
+      },
+      "authorRequired": {
+        "en": "Author is required",
+        "vi": "Tác giả là bắt buộc"
+      },
+      "featuredImage": {
+        "en": "Featured Image",
+        "vi": "Hình ảnh nổi bật"
+      },
+      "selectImage": {
+        "en": "Select Image",
+        "vi": "Chọn hình ảnh"
+      },
+      "changeImage": {
+        "en": "Change Image",
+        "vi": "Thay đổi hình ảnh"
+      },
+      "categories": {
+        "en": "Categories",
+        "vi": "Danh mục"
+      },
+      "loadingCategories": {
+        "en": "Loading categories...",
+        "vi": "Đang tải danh mục..."
+      },
+      "noCategories": {
+        "en": "No categories available. Create categories first.",
+        "vi": "Không có danh mục nào. Tạo danh mục trước."
+      },
+      "failedToLoadCategories": {
+        "en": "Failed to load categories",
+        "vi": "Không thể tải danh mục"
+      },
+      "displayOrder": {
+        "en": "Display Order",
+        "vi": "Thứ tự hiển thị"
+      },
+      "published": {
+        "en": "Published",
+        "vi": "Đã xuất bản"
+      },
+      "draft": {
+        "en": "Draft",
+        "vi": "Bản nháp"
+      },
+      "publish": {
+        "en": "Publish",
+        "vi": "Xuất bản"
+      },
+      "unpublish": {
+        "en": "Unpublish",
+        "vi": "Hủy xuất bản"
+      },
+      "managePosts": {
+        "en": "Manage Posts",
+        "vi": "Quản lý bài viết"
+      },
+      "manageCategories": {
+        "en": "Manage Categories",
+        "vi": "Quản lý danh mục"
+      },
+      "loading": {
+        "en": "Loading...",
+        "vi": "Đang tải..."
+      },
+      "loadError": {
+        "en": "Failed to load blog posts",
+        "vi": "Không thể tải bài viết"
+      },
+      "noPosts": {
+        "en": "No blog posts found",
+        "vi": "Không tìm thấy bài viết nào"
+      },
+      "searchByTitle": {
+        "en": "Search by title",
+        "vi": "Tìm kiếm theo tiêu đề"
+      },
+      "searchPlaceholder": {
+        "en": "Enter title to search...",
+        "vi": "Nhập tiêu đề để tìm kiếm..."
+      },
+      "filterByStatus": {
+        "en": "Filter by status",
+        "vi": "Lọc theo trạng thái"
+      },
+      "filterByCategory": {
+        "en": "Filter by category",
+        "vi": "Lọc theo danh mục"
+      },
+      "allPosts": {
+        "en": "All Posts",
+        "vi": "Tất cả bài viết"
+      },
+      "allCategories": {
+        "en": "All Categories",
+        "vi": "Tất cả danh mục"
+      },
+      "status": {
+        "en": "Status",
+        "vi": "Trạng thái"
+      },
+      "publishedDate": {
+        "en": "Published Date",
+        "vi": "Ngày xuất bản"
+      },
+      "toggleError": {
+        "en": "Failed to toggle publish status",
+        "vi": "Không thể thay đổi trạng thái xuất bản"
+      },
+      "deleteError": {
+        "en": "Failed to delete blog post",
+        "vi": "Không thể xóa bài viết"
+      },
+      "confirmDelete": {
+        "en": "Confirm Delete",
+        "vi": "Xác nhận xóa"
+      },
+      "validationError": {
+        "en": "Please fix the validation errors",
+        "vi": "Vui lòng sửa các lỗi xác thực"
+      },
+      "submitError": {
+        "en": "Failed to save blog post",
+        "vi": "Không thể lưu bài viết"
+      },
+      "postNotFound": {
+        "en": "Blog post not found",
+        "vi": "Không tìm thấy bài viết"
+      }
+    },
+    "blogCategories": {
+      "createCategory": {
+        "en": "Create Category",
+        "vi": "Tạo danh mục"
+      },
+      "editCategory": {
+        "en": "Edit Category",
+        "vi": "Chỉnh sửa danh mục"
+      },
+      "deleteCategory": {
+        "en": "Delete Category",
+        "vi": "Xóa danh mục"
+      },
+      "manageCategories": {
+        "en": "Manage Categories",
+        "vi": "Quản lý danh mục"
+      },
+      "name": {
+        "en": "Name",
+        "vi": "Tên"
+      },
+      "nameEn": {
+        "en": "Name (English)",
+        "vi": "Tên (Tiếng Anh)"
+      },
+      "nameVi": {
+        "en": "Name (Vietnamese)",
+        "vi": "Tên (Tiếng Việt)"
+      },
+      "slug": {
+        "en": "Slug",
+        "vi": "Slug"
+      },
+      "postCount": {
+        "en": "Post Count",
+        "vi": "Số bài viết"
+      },
+      "loading": {
+        "en": "Loading...",
+        "vi": "Đang tải..."
+      },
+      "loadError": {
+        "en": "Failed to load categories",
+        "vi": "Không thể tải danh mục"
+      },
+      "noCategories": {
+        "en": "No categories found",
+        "vi": "Không tìm thấy danh mục nào"
+      },
+      "allFieldsRequired": {
+        "en": "All fields are required",
+        "vi": "Tất cả các trường là bắt buộc"
+      },
+      "createError": {
+        "en": "Failed to create category",
+        "vi": "Không thể tạo danh mục"
+      },
+      "updateError": {
+        "en": "Failed to update category",
+        "vi": "Không thể cập nhật danh mục"
+      },
+      "deleteError": {
+        "en": "Failed to delete category",
+        "vi": "Không thể xóa danh mục"
+      },
+      "confirmDelete": {
+        "en": "Confirm Delete",
+        "vi": "Xác nhận xóa"
+      },
+      "creating": {
+        "en": "Creating...",
+        "vi": "Đang tạo..."
+      },
+      "create": {
+        "en": "Create",
+        "vi": "Tạo"
+      }
+    },
     "shippingMethods": {
       "active": {
         "en": "Active",
@@ -1425,6 +1713,40 @@
         "en": "Display order cannot be negative",
         "vi": "Thứ tự hiển thị không được âm"
       }
+    }
+  },
+  "blog": {
+    "title": {
+      "en": "Blog",
+      "vi": "Blog"
+    },
+    "readMore": {
+      "en": "Read More",
+      "vi": "Đọc thêm"
+    },
+    "relatedPosts": {
+      "en": "Related Posts",
+      "vi": "Bài viết liên quan"
+    },
+    "noPostsFound": {
+      "en": "No blog posts found",
+      "vi": "Không tìm thấy bài viết nào"
+    },
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
+    },
+    "author": {
+      "en": "Author",
+      "vi": "Tác giả"
+    },
+    "publishedOn": {
+      "en": "Published on",
+      "vi": "Xuất bản vào"
+    },
+    "backToList": {
+      "en": "Back to Blog",
+      "vi": "Quay lại Blog"
     }
   },
   "auth": {
@@ -1885,6 +2207,10 @@
     "account": {
       "en": "Account",
       "vi": "Tài khoản"
+    },
+    "actions": {
+      "en": "Actions",
+      "vi": "Hành động"
     },
     "addToCart": {
       "en": "Add to Cart",
@@ -2557,6 +2883,10 @@
     "admin": {
       "en": "Admin Panel",
       "vi": "Quản trị"
+    },
+    "blog": {
+      "en": "Blog",
+      "vi": "Blog"
     },
     "cart": {
       "en": "Shopping Cart",

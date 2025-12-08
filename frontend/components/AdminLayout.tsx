@@ -141,6 +141,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       ],
     },
     {
+      name: locale === 'vi' ? 'Blog' : 'Blog',
+      href: `${prefUri}/blog`,
+      icon: <SvgDocument className="w-5 h-5" />,
+      subItems: [
+        {
+          name: locale === 'vi' ? 'Bài viết' : 'Posts',
+          href: `${prefUri}/blog`,
+          type: 'BLOG_POSTS',
+        },
+        {
+          name: locale === 'vi' ? 'Danh mục' : 'Categories',
+          href: `${prefUri}/blog/categories`,
+          type: 'BLOG_CATEGORIES',
+        },
+      ],
+    },
+    {
       name: locale === 'vi' ? 'Phân tích' : 'Analytics',
       href: `${prefUri}/analytics`,
       icon: <SvgChart className="w-5 h-5" />,

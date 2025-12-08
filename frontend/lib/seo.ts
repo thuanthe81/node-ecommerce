@@ -196,3 +196,39 @@ export function generateReviewSchema(review: {
     },
   };
 }
+
+export function generateBlogPostSchema(post: {
+  title: string;
+  description: string;
+  image: string;
+  author: string;
+  datePublished: string;
+  dateModified: string;
+  url: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.description,
+    image: post.image,
+    author: {
+      '@type': 'Person',
+      name: post.author,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Handmade E-commerce',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    datePublished: post.datePublished,
+    dateModified: post.dateModified,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': post.url,
+    },
+  };
+}

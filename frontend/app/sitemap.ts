@@ -113,5 +113,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching content pages for sitemap:', error);
   }
 
+  // Add blog listing page
+  staticRoutes.push({
+    url: `${SITE_URL}/blog`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.7,
+    alternates: {
+      languages: {
+        vi: `${SITE_URL}/blog`,
+        en: `${SITE_URL}/en/blog`,
+      },
+    },
+  });
+
+  // Fetch dynamic blog posts
+  try {
+    const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/content/blog?limit=1000`);
+    if (blogResponse.ok) {
+      const blogData = await blogResponse.json();
+      const posts = blogData.posts || [];
+
+      for (const post of posts) {
+        staticRoutes.push({
+          url: `${SITE_URL}/blog/${post.slug}`,
+          lastModified: new Date(post.updatedAt || post.publishedAt),
+          changeFrequency: 'weekly',
+          priority: 0.7,
+          alternates: {
+            languages: {
+              vi: `${SITE_URL}/blog/${post.slug}`,
+              en: `${SITE_URL}/en/blog/${post.slug}`,
+            },
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching blog posts for sitemap:', error);
+  }
+
   return staticRoutes;
 }

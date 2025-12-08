@@ -371,13 +371,20 @@ model Content {
   buttonTextEn String?
   buttonTextVi String?
   layout       String?
+  authorName   String?
+  excerptEn    String?
+  excerptVi    String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  blogCategories BlogCategoryAssociation[]
 
   @@index([slug])
   @@index([type])
   @@index([isPublished])
   @@index([type, isPublished, displayOrder])
+  @@index([type, isPublished, displayOrder, publishedAt])
+  @@index([type, isPublished, slug])
   @@map("contents")
 }
 
@@ -386,6 +393,36 @@ enum ContentType {
   FAQ
   BANNER
   HOMEPAGE_SECTION
+  BLOG
+}
+
+model BlogCategory {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  nameEn    String
+  nameVi    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts BlogCategoryAssociation[]
+
+  @@index([slug])
+  @@map("blog_categories")
+}
+
+model BlogCategoryAssociation {
+  id         String   @id @default(uuid())
+  contentId  String
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  content  Content      @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  category BlogCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, categoryId])
+  @@index([contentId])
+  @@index([categoryId])
+  @@map("blog_category_associations")
 }
 
 // Analytics Models

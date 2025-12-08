@@ -61,6 +61,33 @@ export class ContentController {
     return this.contentService.getHomepageSections();
   }
 
+  @Get('blog')
+  @Public()
+  getBlogPosts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('categorySlug') categorySlug?: string,
+  ) {
+    return this.contentService.findBlogPosts({
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+      categorySlug,
+      published: true,
+    });
+  }
+
+  @Get('blog/:slug')
+  @Public()
+  getBlogPostBySlug(@Param('slug') slug: string) {
+    return this.contentService.findBlogPostBySlug(slug, true);
+  }
+
+  @Get('blog/:id/related')
+  @Public()
+  getRelatedPosts(@Param('id') id: string) {
+    return this.contentService.findRelatedPosts(id, 3);
+  }
+
   @Get('slug/:slug')
   @Public()
   findBySlug(@Param('slug') slug: string) {

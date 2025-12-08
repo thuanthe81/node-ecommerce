@@ -8,6 +8,7 @@ import {
   ValidateIf,
   IsIn,
   Matches,
+  IsArray,
 } from 'class-validator';
 import { ContentType } from '@prisma/client';
 
@@ -70,4 +71,26 @@ export class CreateContentDto {
   @IsIn(['centered', 'image-left', 'image-right'])
   @IsOptional()
   layout?: string;
+
+  // Blog specific fields
+  @ValidateIf((o) => o.type === ContentType.BLOG)
+  @IsString()
+  @IsOptional()
+  authorName?: string;
+
+  @ValidateIf((o) => o.type === ContentType.BLOG)
+  @IsString()
+  @IsOptional()
+  excerptEn?: string;
+
+  @ValidateIf((o) => o.type === ContentType.BLOG)
+  @IsString()
+  @IsOptional()
+  excerptVi?: string;
+
+  @ValidateIf((o) => o.type === ContentType.BLOG)
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  categoryIds?: string[];
 }
