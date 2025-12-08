@@ -55,12 +55,12 @@ export function DesktopNav({ locale, user, isActiveLink, getLinkClasses }: Deskt
       >
         {t('nav.blog') || 'Blog'}
       </Link>
-      <Link
-        href={`/${locale}/contact`}
-        className={getLinkClasses(`/${locale}/contact`, 'flex items-center h-full px-4')}
-      >
-        {t('nav.contact') || 'Contact'}
-      </Link>
+      {/*<Link*/}
+      {/*  href={`/${locale}/contact`}*/}
+      {/*  className={getLinkClasses(`/${locale}/contact`, 'flex items-center h-full px-4')}*/}
+      {/*>*/}
+      {/*  {t('nav.contact') || 'Contact'}*/}
+      {/*</Link>*/}
     </nav>
   );
 }

@@ -31,6 +31,7 @@ export default function Footer({
   whatsappUrl,
 }: FooterProps) {
   const t = useTranslations('footer');
+  const tNav =  useTranslations('nav')
 
   return (
     <footer className="bg-gray-900 text-white" role="contentinfo">
@@ -78,6 +79,14 @@ export default function Footer({
                   className="text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   {t('aboutProducts')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  {tNav('contact')}
                 </Link>
               </li>
             </ul>
