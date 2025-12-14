@@ -34,7 +34,7 @@ async function testSwaksEmail(recipientEmail: string) {
   const smtpPort = process.env.SMTP_PORT || '25';
   const smtpFrom = process.env.SMTP_FROM || 'noreply@alacraft.com';
   const smtpUser = process.env.SMTP_USER || '';
-  const smtpPassword = process.env.SMTP_PASSWORD || '';
+  const smtpPassword = process.env.SMTP_PASSWORD || ''
 
   console.log('📧 SMTP Configuration:');
   console.log(`   Server: ${smtpServer}:${smtpPort}`);
@@ -82,7 +82,7 @@ async function testSwaksEmail(recipientEmail: string) {
 
   try {
     // Build swaks command
-    let command = `swaks --to "${recipientEmail}" --from "${smtpFrom}" --server "${smtpServer}:${smtpPort}" --subject "${subject}"`;
+    let command = `swaks --to "${recipientEmail}" --from "${smtpFrom}" --server "${smtpServer}" --port "${smtpPort}" --h-Subject "${subject}"`;
 
     // Add authentication if credentials are provided
     if (smtpUser && smtpPassword) {
@@ -90,7 +90,7 @@ async function testSwaksEmail(recipientEmail: string) {
     }
 
     // Add HTML body
-    command += ` --body "${htmlBody.replace(/"/g, '\\"').replace(/\n/g, '\\n')}" --add-header "Content-Type: text/html; charset=UTF-8"`;
+    command += ` --body '${htmlBody.replace(/"/g, '\\"').replace(/\n/g, '\\n')}" --attach-type "text/html"'`;
 
     console.log('📤 Sending test email...\n');
 

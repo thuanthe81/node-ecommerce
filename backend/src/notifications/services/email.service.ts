@@ -51,26 +51,26 @@ export class EmailService {
         return false;
       }
 
-      // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || 'smtp.gmail.com';
-      const smtpPort = process.env.SMTP_PORT || '587';
-      const smtpUser = process.env.SMTP_USER || '';
-      const smtpPassword = process.env.SMTP_PASSWORD || '';
-
       // Get contact email from footer settings to use as "from" address
       const footerSettings = await this.footerSettingsService.getFooterSettings();
       const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || 'noreply@example.com';
 
+      // Get SMTP configuration from environment variables
+      const smtpServer = process.env.SMTP_SERVER || 'smtp.gmail.com';
+      const smtpPort = process.env.SMTP_PORT || '587';
+      const smtpUser = smtpFrom || process.env.SMTP_USER || '';
+      const smtpPassword = process.env.SMTP_PASSWORD || '';
+
       // Build swaks command with proper escaping
-      let command = `swaks --to "${to}" --from "${smtpFrom}" --server "${smtpServer}:${smtpPort}" --subject "${subject.replace(/"/g, '\\"')}"`;
+      let command = `swaks --to "${to}" --server "${smtpServer}" --port "${smtpPort}" --h-Subject "${subject.replace(/"/g, '\\"')}"`;
 
       // Add authentication if credentials are provided
       if (smtpUser && smtpPassword) {
-        command += ` --auth LOGIN --auth-user "${smtpUser}" --auth-password "${smtpPassword}"`;
+        command += ` --tls --auth-user "${smtpUser}" --auth-password "${smtpPassword}"`;
       }
 
       // Add HTML body
-      command += ` --body "${html.replace(/"/g, '\\"').replace(/\n/g, '\\n')}" --add-header "Content-Type: text/html; charset=UTF-8"`;
+      command += ` --body '${html.replace(/"/g, '\\"')}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: text/html"`;
 
       await execAsync(command);
 
