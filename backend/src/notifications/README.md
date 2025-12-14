@@ -1,6 +1,6 @@
 # Notifications Module
 
-This module handles all email notifications in the application using the Linux `mail` command.
+This module handles all email notifications in the application using the `swaks` command.
 
 ## Features
 
@@ -11,20 +11,24 @@ This module handles all email notifications in the application using the Linux `
 - **User Account Emails**: Welcome emails and password reset
 - **Contact Form**: Admin notifications for contact form submissions
 - **Graceful Error Handling**: Email failures don't interrupt order processing
+- **SMTP Support**: Full SMTP configuration with authentication support
 
 ## Prerequisites
 
-The email service requires the `mail` command to be available on the system. Install it using:
+The email service requires the `swaks` command to be available on the system. Install it using:
 
 ```bash
 # Ubuntu/Debian
-sudo apt-get install mailutils
+sudo apt-get install swaks
 
 # CentOS/RHEL
-sudo yum install mailx
+sudo yum install swaks
 
-# macOS
-# mail command is pre-installed
+# macOS (using Homebrew)
+brew install swaks
+
+# Or install from CPAN
+cpan Net::SSLeay IO::Socket::SSL
 ```
 
 ## Email Templates
@@ -103,6 +107,49 @@ Add the following to your `.env` file:
 ```env
 # Frontend URL for email links (password reset, email verification)
 FRONTEND_URL=http://localhost:3000
+
+# SMTP Configuration for swaks
+SMTP_SERVER=localhost              # SMTP server hostname or IP
+SMTP_PORT=25                       # SMTP server port (25, 587, or 465)
+SMTP_FROM=noreply@alacraft.com    # From email address
+SMTP_USER=                         # SMTP username (optional, for authenticated SMTP)
+SMTP_PASSWORD=                     # SMTP password (optional, for authenticated SMTP)
+```
+
+### SMTP Configuration Examples
+
+#### Local Mail Server (No Authentication)
+```env
+SMTP_SERVER=localhost
+SMTP_PORT=25
+SMTP_FROM=noreply@alacraft.com
+```
+
+#### Gmail SMTP
+```env
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_FROM=your-email@gmail.com
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+```
+
+#### SendGrid SMTP
+```env
+SMTP_SERVER=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_FROM=noreply@alacraft.com
+SMTP_USER=apikey
+SMTP_PASSWORD=your-sendgrid-api-key
+```
+
+#### AWS SES SMTP
+```env
+SMTP_SERVER=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_FROM=noreply@alacraft.com
+SMTP_USER=your-ses-smtp-username
+SMTP_PASSWORD=your-ses-smtp-password
 ```
 
 ## Usage
@@ -171,11 +218,13 @@ await this.sendPasswordResetEmail(user, resetToken);
 
 ## Email Service
 
-The `EmailService` uses the Linux `mail` command to send emails. It:
+The `EmailService` uses the `swaks` (Swiss Army Knife for SMTP) command to send emails. It:
 
-1. Converts HTML templates to plain text
-2. Executes the mail command with proper escaping
-3. Logs success/failure without breaking the application flow
+1. Sends HTML emails directly (no conversion needed)
+2. Supports SMTP authentication for secure email delivery
+3. Executes the swaks command with proper escaping
+4. Logs success/failure without breaking the application flow
+5. Configurable SMTP server, port, and credentials via environment variables
 
 ## Email Template Service
 
@@ -375,6 +424,24 @@ For production environments, consider:
    - Template versioning
    - A/B testing
 
+## Migration from mail to swaks
+
+**December 2025**: The email service was migrated from the Linux `mail` command to `swaks` for better SMTP support and HTML email capabilities.
+
+### Benefits of swaks:
+- ✅ Native HTML email support (no conversion needed)
+- ✅ SMTP authentication support
+- ✅ Works with all major email providers (Gmail, SendGrid, AWS SES, etc.)
+- ✅ Better error messages and debugging
+- ✅ More reliable delivery
+- ✅ Production-ready without additional services
+
+### Migration Steps:
+1. Install swaks on your system
+2. Add SMTP configuration to `.env` file
+3. Test with the provided test script: `ts-node backend/scripts/test-swaks-email.ts`
+4. No code changes needed - the EmailService handles everything
+
 ## Future Enhancements
 
 - [ ] Email verification for new users
@@ -383,6 +450,7 @@ For production environments, consider:
 - [ ] Email preferences management
 - [x] HTML email templates with better styling ✅ (Completed)
 - [x] Admin order notifications ✅ (Completed)
+- [x] SMTP support with authentication ✅ (Completed - swaks migration)
 - [ ] Email analytics and tracking
 - [ ] Email queue with retry logic (Bull/BullMQ)
 - [ ] Multiple admin email recipients

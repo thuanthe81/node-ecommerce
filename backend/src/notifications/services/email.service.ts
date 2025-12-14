@@ -26,14 +26,15 @@ export class EmailService {
     }
 
     // RFC 5322 compliant email regex (simplified but robust)
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
     return emailRegex.test(email);
   }
 
   /**
-   * Send email using Linux mail command
-   * Note: Requires mailutils or similar to be installed on the system
+   * Send email using swaks command
+   * Note: Requires swaks to be installed on the system
    * @param options - Email options including recipient, subject, and HTML content
    * @returns Promise<boolean> - true if email sent successfully, false otherwise
    */
@@ -47,15 +48,29 @@ export class EmailService {
         return false;
       }
 
-      // Convert HTML to plain text for mail command
-      const plainText = this.htmlToPlainText(html);
+      // Get SMTP configuration from environment variables
+      const smtpServer = process.env.SMTP_SERVER || 'localhost';
+      const smtpPort = process.env.SMTP_PORT || '25';
+      const smtpFrom = process.env.SMTP_FROM || 'noreply@ala-market.com';
+      const smtpUser = process.env.SMTP_USER || '';
+      const smtpPassword = process.env.SMTP_PASSWORD || '';
 
-      // Use echo and pipe to mail command
-      const command = `echo "${plainText.replace(/"/g, '\\"')}" | mail -s "${subject.replace(/"/g, '\\"')}" "${to}"`;
+      // Build swaks command with proper escaping
+      let command = `swaks --to "${to}" --from "${smtpFrom}" --server "${smtpServer}:${smtpPort}" --subject "${subject.replace(/"/g, '\\"')}"`;
+
+      // Add authentication if credentials are provided
+      if (smtpUser && smtpPassword) {
+        command += ` --auth LOGIN --auth-user "${smtpUser}" --auth-password "${smtpPassword}"`;
+      }
+
+      // Add HTML body
+      command += ` --body "${html.replace(/"/g, '\\"').replace(/\n/g, '\\n')}" --add-header "Content-Type: text/html; charset=UTF-8"`;
 
       await execAsync(command);
 
-      this.logger.log(`Email sent successfully to ${to} with subject: "${subject}"`);
+      this.logger.log(
+        `Email sent successfully to ${to} with subject: "${subject}"`,
+      );
       return true;
     } catch (error) {
       this.logger.error(
@@ -77,7 +92,10 @@ export class EmailService {
     let text = html;
 
     // Handle headings with emphasis
-    text = text.replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '\n\n$1\n' + '='.repeat(50) + '\n');
+    text = text.replace(
+      /<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi,
+      '\n\n$1\n' + '='.repeat(50) + '\n',
+    );
 
     // Handle list items with bullets/numbers
     text = text.replace(/<li[^>]*>(.*?)<\/li>/gi, '  • $1\n');

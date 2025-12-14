@@ -214,12 +214,13 @@ export class EmailTemplateService {
    * @returns Formatted currency string
    */
   private formatCurrency(amount: number, locale: 'en' | 'vi'): string {
-    if (locale === 'vi') {
-      // VND uses 0 decimal places
-      return `${amount.toLocaleString('vi-VN')} ₫`;
-    }
-    // USD uses 2 decimal places
-    return `$${amount.toFixed(2)}`;
+    return `${amount.toLocaleString('vi-VN')} ₫`;
+    // if (locale === 'vi') {
+    //   // VND uses 0 decimal places
+    //   return `${amount.toLocaleString('vi-VN')} ₫`;
+    // }
+    // // USD uses 2 decimal places
+    // return `$${amount.toFixed(2)}`;
   }
 
   /**

@@ -2,16 +2,19 @@
 
 ## Overview
 
-Successfully implemented a complete email notification system for the handmade e-commerce platform using the Linux `mail` command with bilingual support (English and Vietnamese).
+Successfully implemented a complete email notification system for the handmade e-commerce platform using `swaks` (Swiss Army Knife for SMTP) with bilingual support (English and Vietnamese) and full SMTP authentication support.
 
 ## Components Created
 
 ### 1. Core Services
 
 #### EmailService (`services/email.service.ts`)
-- Sends emails using Linux `mail` command
-- Converts HTML to plain text
+- Sends emails using `swaks` command with full SMTP support
+- Sends HTML emails directly (no conversion needed)
+- Supports SMTP authentication (LOGIN method)
+- Configurable SMTP server, port, and credentials via environment variables
 - Handles errors gracefully without breaking application flow
+- Validates email addresses before sending
 - Supports locale parameter for future enhancements
 
 #### EmailTemplateService (`services/email-template.service.ts`)
@@ -37,11 +40,11 @@ Successfully implemented a complete email notification system for the handmade e
 - **Order Confirmation**: Automatically sent when order is created
   - Includes order details, items, totals, and shipping address
   - Bilingual support
-  
+
 - **Shipping Notification**: Sent when order status changes to "shipped"
   - Includes tracking number if available
   - Bilingual support
-  
+
 - **Order Status Update**: Sent for other status changes
   - Includes new status information
   - Bilingual support
@@ -61,7 +64,7 @@ Successfully implemented a complete email notification system for the handmade e
   - Welcomes new users
   - Includes optional email verification link placeholder
   - Bilingual support
-  
+
 - **Password Reset**: Sent when user requests password reset
   - Includes reset link with JWT token
   - 1-hour expiration notice
@@ -92,7 +95,40 @@ Successfully implemented a complete email notification system for the handmade e
 Added to `.env.example`:
 ```env
 ADMIN_EMAIL=admin@example.com
+
+# SMTP Configuration for swaks
+SMTP_SERVER=localhost
+SMTP_PORT=25
+SMTP_FROM=noreply@alacraft.com
+SMTP_USER=
+SMTP_PASSWORD=
 ```
+
+### SMTP Configuration Options
+
+The system supports various SMTP configurations:
+
+1. **Local Mail Server** (no authentication):
+   - SMTP_SERVER=localhost
+   - SMTP_PORT=25
+
+2. **Gmail SMTP**:
+   - SMTP_SERVER=smtp.gmail.com
+   - SMTP_PORT=587
+   - SMTP_USER=your-email@gmail.com
+   - SMTP_PASSWORD=your-app-password
+
+3. **SendGrid SMTP**:
+   - SMTP_SERVER=smtp.sendgrid.net
+   - SMTP_PORT=587
+   - SMTP_USER=apikey
+   - SMTP_PASSWORD=your-sendgrid-api-key
+
+4. **AWS SES SMTP**:
+   - SMTP_SERVER=email-smtp.us-east-1.amazonaws.com
+   - SMTP_PORT=587
+   - SMTP_USER=your-ses-smtp-username
+   - SMTP_PASSWORD=your-ses-smtp-password
 
 ## Email Templates
 
@@ -130,10 +166,12 @@ All templates support both English and Vietnamese:
 ## Technical Details
 
 ### Email Sending Mechanism
-- Uses Node.js `child_process.exec` to run Linux `mail` command
-- Converts HTML templates to plain text automatically
+- Uses Node.js `child_process.exec` to run `swaks` command
+- Sends HTML emails directly with proper Content-Type headers
+- Supports SMTP authentication (LOGIN method)
 - Properly escapes special characters in subject and body
 - Async/await pattern for clean error handling
+- Configurable SMTP server, port, from address, and credentials
 
 ### Error Handling
 - All email sending is wrapped in try-catch blocks
@@ -148,21 +186,35 @@ All templates support both English and Vietnamese:
 
 ## Testing Recommendations
 
-1. **Install mail command**:
+1. **Install swaks**:
    ```bash
    # Ubuntu/Debian
-   sudo apt-get install mailutils
-   
-   # macOS (pre-installed)
-   # No action needed
+   sudo apt-get install swaks
+
+   # CentOS/RHEL
+   sudo yum install swaks
+
+   # macOS
+   brew install swaks
    ```
 
-2. **Configure admin email** in `.env`:
+2. **Configure SMTP settings** in `.env`:
    ```env
+   SMTP_SERVER=localhost
+   SMTP_PORT=25
+   SMTP_FROM=noreply@alacraft.com
+   SMTP_USER=
+   SMTP_PASSWORD=
    ADMIN_EMAIL=your-email@example.com
    ```
 
-3. **Test scenarios**:
+3. **Test swaks installation**:
+   ```bash
+   # Run the test script
+   ts-node backend/scripts/test-swaks-email.ts your-email@example.com
+   ```
+
+4. **Test scenarios**:
    - Create an order → Check for confirmation email
    - Update order to "shipped" → Check for shipping notification
    - Register new user → Check for welcome email
@@ -173,11 +225,12 @@ All templates support both English and Vietnamese:
 
 ### Recommended Improvements for Production:
 
-1. **Replace Linux mail with proper email service**:
-   - SendGrid
-   - AWS SES
-   - Mailgun
-   - Postmark
+1. **Use production-ready SMTP service**:
+   - SendGrid SMTP
+   - AWS SES SMTP
+   - Mailgun SMTP
+   - Postmark SMTP
+   - Note: swaks already supports all major SMTP providers
 
 2. **Implement email queue**:
    - Use Bull or BullMQ
