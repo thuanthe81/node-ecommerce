@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 
 const execAsync = promisify(exec);
 
@@ -14,6 +15,8 @@ export interface EmailOptions {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
+
+  constructor(private footerSettingsService: FooterSettingsService) {}
 
   /**
    * Validate email address format
@@ -49,11 +52,14 @@ export class EmailService {
       }
 
       // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || 'localhost';
-      const smtpPort = process.env.SMTP_PORT || '25';
-      const smtpFrom = process.env.SMTP_FROM || 'noreply@ala-market.com';
+      const smtpServer = process.env.SMTP_SERVER || 'smtp.gmail.com';
+      const smtpPort = process.env.SMTP_PORT || '587';
       const smtpUser = process.env.SMTP_USER || '';
       const smtpPassword = process.env.SMTP_PASSWORD || '';
+
+      // Get contact email from footer settings to use as "from" address
+      const footerSettings = await this.footerSettingsService.getFooterSettings();
+      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || 'noreply@example.com';
 
       // Build swaks command with proper escaping
       let command = `swaks --to "${to}" --from "${smtpFrom}" --server "${smtpServer}:${smtpPort}" --subject "${subject.replace(/"/g, '\\"')}"`;
