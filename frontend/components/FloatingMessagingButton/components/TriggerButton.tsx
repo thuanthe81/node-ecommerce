@@ -36,7 +36,7 @@ export function TriggerButton({ isOpen, onClick, ariaLabel }: TriggerButtonProps
       onKeyDown={handleKeyDown}
       aria-label={ariaLabel}
       aria-expanded={isOpen}
-      className="
+      className={`
         relative
         w-14 h-14
         bg-blue-600 hover:bg-blue-700
@@ -45,7 +45,7 @@ export function TriggerButton({ isOpen, onClick, ariaLabel }: TriggerButtonProps
         shadow-lg hover:shadow-xl
         transition-all duration-200 ease-in-out
         flex items-center justify-center
-        focus:outline-none focus:ring-4 focus:ring-blue-300
+        ${isOpen? 'focus:outline-none focus:ring-4 focus:ring-blue-300': ''}
         active:scale-95
         md:bottom-6 md:right-6
         max-md:bottom-4 max-md:right-4
@@ -55,7 +55,7 @@ export function TriggerButton({ isOpen, onClick, ariaLabel }: TriggerButtonProps
         max-[374px]:w-10 max-[374px]:h-10
         min-w-[44px] min-h-[44px]
         touch-manipulation
-      "
+        `}
       style={{
         WebkitTapHighlightColor: 'rgba(37, 99, 235, 0.1)',
       }}

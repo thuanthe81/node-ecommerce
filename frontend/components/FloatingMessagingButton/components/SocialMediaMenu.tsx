@@ -135,7 +135,7 @@ export function SocialMediaMenu({
         absolute pointer-events-none
         bottom-18 right-18
         transition-opacity duration-200
-        ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        ${isOpen ? '' : 'hidden'}
       `}
       role="menu"
       aria-label={t('openMessaging')}
@@ -164,7 +164,6 @@ export function SocialMediaMenu({
               flex items-center justify-center
               transition-all duration-150 ease-in-out
               hover:scale-110
-              focus:outline-none focus:ring-4 focus:ring-blue-300
               min-w-[44px] min-h-[44px]
               touch-manipulation
               active:scale-95
