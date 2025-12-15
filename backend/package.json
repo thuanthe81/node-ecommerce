@@ -48,6 +48,7 @@
     "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^6.19.0",
     "@types/cookie-parser": "^1.4.10",
+    "@types/puppeteer": "^5.4.7",
     "bcrypt": "^6.0.0",
     "cache-manager": "^7.2.4",
     "cache-manager-ioredis-yet": "^2.1.2",
@@ -65,6 +66,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "puppeteer": "^24.33.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.5"

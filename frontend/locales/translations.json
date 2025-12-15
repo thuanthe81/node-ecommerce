@@ -3609,6 +3609,108 @@
       "vi": "Hợp lệ"
     }
   },
+  "pdf": {
+    "orderConfirmation": {
+      "title": {
+        "en": "Order Confirmation",
+        "vi": "Xác nhận đơn hàng"
+      },
+      "subtitle": {
+        "en": "Thank you for your order",
+        "vi": "Cảm ơn bạn đã đặt hàng"
+      },
+      "downloadButton": {
+        "en": "Download PDF",
+        "vi": "Tải xuống PDF"
+      },
+      "printButton": {
+        "en": "Print Order",
+        "vi": "In đơn hàng"
+      },
+      "emailButton": {
+        "en": "Email PDF",
+        "vi": "Gửi PDF qua email"
+      },
+      "generating": {
+        "en": "Generating PDF...",
+        "vi": "Đang tạo PDF..."
+      },
+      "generationComplete": {
+        "en": "PDF generated successfully",
+        "vi": "Tạo PDF thành công"
+      },
+      "generationFailed": {
+        "en": "Failed to generate PDF",
+        "vi": "Tạo PDF thất bại"
+      }
+    },
+    "features": {
+      "professionalLayout": {
+        "en": "Professional layout with company branding",
+        "vi": "Bố cục chuyên nghiệp với thương hiệu công ty"
+      },
+      "completeOrderDetails": {
+        "en": "Complete order details and itemized breakdown",
+        "vi": "Chi tiết đơn hàng đầy đủ và phân tích từng mục"
+      },
+      "printOptimized": {
+        "en": "Optimized for printing on standard paper sizes",
+        "vi": "Tối ưu hóa để in trên khổ giấy tiêu chuẩn"
+      },
+      "mobileCompatible": {
+        "en": "Mobile-friendly viewing experience",
+        "vi": "Trải nghiệm xem thân thiện với di động"
+      },
+      "accessibilitySupport": {
+        "en": "Accessibility features for screen readers",
+        "vi": "Tính năng hỗ trợ cho trình đọc màn hình"
+      },
+      "multiLanguage": {
+        "en": "Available in English and Vietnamese",
+        "vi": "Có sẵn bằng tiếng Anh và tiếng Việt"
+      }
+    },
+    "status": {
+      "ready": {
+        "en": "PDF Ready",
+        "vi": "PDF sẵn sàng"
+      },
+      "processing": {
+        "en": "Processing...",
+        "vi": "Đang xử lý..."
+      },
+      "failed": {
+        "en": "Generation Failed",
+        "vi": "Tạo thất bại"
+      },
+      "expired": {
+        "en": "PDF Expired",
+        "vi": "PDF đã hết hạn"
+      }
+    },
+    "messages": {
+      "downloadReady": {
+        "en": "Your PDF is ready for download",
+        "vi": "PDF của bạn đã sẵn sàng để tải xuống"
+      },
+      "emailSent": {
+        "en": "PDF has been sent to your email",
+        "vi": "PDF đã được gửi đến email của bạn"
+      },
+      "printInstructions": {
+        "en": "Use your browser's print function to print this PDF",
+        "vi": "Sử dụng chức năng in của trình duyệt để in PDF này"
+      },
+      "mobileViewTip": {
+        "en": "Tap to zoom and scroll to view all details",
+        "vi": "Chạm để phóng to và cuộn để xem tất cả chi tiết"
+      },
+      "saveForRecords": {
+        "en": "Save this PDF for your records",
+        "vi": "Lưu PDF này để lưu trữ"
+      }
+    }
+  },
   "email": {
     "orderConfirmation": {
       "subject": {
@@ -4192,6 +4294,266 @@
       "printReceipt": {
         "en": "Print Receipt",
         "vi": "In biên lai"
+      }
+    },
+    "pdfAttachment": {
+      "subject": {
+        "en": "Order Confirmation - Order #{orderNumber}",
+        "vi": "Xác nhận đơn hàng - Đơn hàng #{orderNumber}"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "thankYou": {
+        "en": "Thank you for your order at AlaCraft!",
+        "vi": "Cảm ơn bạn đã đặt hàng tại AlaCraft!"
+      },
+      "orderDetails": {
+        "en": "Your order details:",
+        "vi": "Chi tiết đơn hàng của bạn:"
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "orderDate": {
+        "en": "Order Date",
+        "vi": "Ngày đặt hàng"
+      },
+      "total": {
+        "en": "Total",
+        "vi": "Tổng cộng"
+      },
+      "pdfAttachmentNotice": {
+        "en": "Please see the attached PDF for detailed information about your order.",
+        "vi": "Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn."
+      },
+      "contactInfo": {
+        "en": "If you have any questions, please contact us.",
+        "vi": "Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi."
+      },
+      "signature": {
+        "en": "Best regards,\\nThe AlaCraft Team",
+        "vi": "Trân trọng,\\nĐội ngũ AlaCraft"
+      },
+      "resendSuccess": {
+        "en": "Order confirmation email has been resent successfully",
+        "vi": "Email xác nhận đã được gửi lại thành công"
+      },
+      "resendError": {
+        "en": "Failed to resend email. Please try again later.",
+        "vi": "Không thể gửi lại email. Vui lòng thử lại sau."
+      },
+      "resendEmail": {
+        "en": "Resend Email",
+        "vi": "Gửi lại Email"
+      },
+      "resendEmailDescription": {
+        "en": "Resend order confirmation email with PDF attachment",
+        "vi": "Gửi lại email xác nhận đơn hàng với file PDF đính kèm"
+      },
+      "resendingEmail": {
+        "en": "Sending...",
+        "vi": "Đang gửi..."
+      },
+      "resendRateLimit": {
+        "en": "You have exceeded the email resend limit. Please try again later.",
+        "vi": "Bạn đã vượt quá giới hạn gửi lại email. Vui lòng thử lại sau."
+      },
+      "rateLimitExceeded": {
+        "en": "Rate limit exceeded. Please try again after {resetTime}",
+        "vi": "Bạn đã vượt quá giới hạn gửi lại. Vui lòng thử lại sau {resetTime}"
+      },
+      "pdfGeneration": {
+        "generating": {
+          "en": "Generating PDF...",
+          "vi": "Đang tạo PDF..."
+        },
+        "generationFailed": {
+          "en": "Failed to generate PDF document",
+          "vi": "Không thể tạo tài liệu PDF"
+        },
+        "generationSuccess": {
+          "en": "PDF document generated successfully",
+          "vi": "Tạo tài liệu PDF thành công"
+        },
+        "attachmentFailed": {
+          "en": "Failed to attach PDF to email",
+          "vi": "Không thể đính kèm PDF vào email"
+        },
+        "attachmentSuccess": {
+          "en": "PDF attached to email successfully",
+          "vi": "Đính kèm PDF vào email thành công"
+        },
+        "compressionApplied": {
+          "en": "PDF compressed for email delivery",
+          "vi": "PDF đã được nén để gửi email"
+        },
+        "sizeTooLarge": {
+          "en": "PDF file is too large for email attachment",
+          "vi": "File PDF quá lớn để đính kèm email"
+        },
+        "fallbackNotification": {
+          "en": "PDF will be available for download from your order page",
+          "vi": "PDF sẽ có sẵn để tải xuống từ trang đơn hàng của bạn"
+        }
+      },
+      "pdfContent": {
+        "orderConfirmation": {
+          "en": "Order Confirmation",
+          "vi": "Xác nhận đơn hàng"
+        },
+        "invoice": {
+          "en": "Invoice",
+          "vi": "Hóa đơn"
+        },
+        "receipt": {
+          "en": "Receipt",
+          "vi": "Biên lai"
+        },
+        "orderSummary": {
+          "en": "Order Summary",
+          "vi": "Tóm tắt đơn hàng"
+        },
+        "customerInformation": {
+          "en": "Customer Information",
+          "vi": "Thông tin khách hàng"
+        },
+        "billingAddress": {
+          "en": "Billing Address",
+          "vi": "Địa chỉ thanh toán"
+        },
+        "shippingAddress": {
+          "en": "Shipping Address",
+          "vi": "Địa chỉ giao hàng"
+        },
+        "paymentInformation": {
+          "en": "Payment Information",
+          "vi": "Thông tin thanh toán"
+        },
+        "shippingInformation": {
+          "en": "Shipping Information",
+          "vi": "Thông tin vận chuyển"
+        },
+        "businessInformation": {
+          "en": "Business Information",
+          "vi": "Thông tin doanh nghiệp"
+        },
+        "termsAndConditions": {
+          "en": "Terms and Conditions",
+          "vi": "Điều khoản và điều kiện"
+        },
+        "returnPolicy": {
+          "en": "Return Policy",
+          "vi": "Chính sách đổi trả"
+        },
+        "customerService": {
+          "en": "Customer Service",
+          "vi": "Dịch vụ khách hàng"
+        },
+        "contactInformation": {
+          "en": "Contact Information",
+          "vi": "Thông tin liên hệ"
+        },
+        "thankYouMessage": {
+          "en": "Thank you for your business!",
+          "vi": "Cảm ơn bạn đã tin tưởng chúng tôi!"
+        },
+        "pageNumber": {
+          "en": "Page {current} of {total}",
+          "vi": "Trang {current} trong số {total}"
+        },
+        "generatedOn": {
+          "en": "Generated on {date}",
+          "vi": "Được tạo vào {date}"
+        },
+        "documentId": {
+          "en": "Document ID: {id}",
+          "vi": "Mã tài liệu: {id}"
+        }
+      },
+      "emailTemplate": {
+        "simplifiedNotice": {
+          "en": "This email has been simplified to ensure reliable delivery.",
+          "vi": "Email này đã được đơn giản hóa để đảm bảo gửi thành công."
+        },
+        "pdfAttached": {
+          "en": "Your complete order details are attached as a PDF document.",
+          "vi": "Chi tiết đầy đủ đơn hàng của bạn được đính kèm dưới dạng tài liệu PDF."
+        },
+        "viewInEmailClient": {
+          "en": "Please open the PDF attachment in your email client to view your order details.",
+          "vi": "Vui lòng mở file PDF đính kèm trong ứng dụng email để xem chi tiết đơn hàng."
+        },
+        "downloadPdf": {
+          "en": "Download PDF",
+          "vi": "Tải xuống PDF"
+        },
+        "printFriendly": {
+          "en": "This PDF is optimized for printing.",
+          "vi": "PDF này được tối ưu hóa để in."
+        },
+        "mobileOptimized": {
+          "en": "This PDF is optimized for mobile viewing.",
+          "vi": "PDF này được tối ưu hóa để xem trên di động."
+        },
+        "accessibilityNote": {
+          "en": "This PDF includes accessibility features for screen readers.",
+          "vi": "PDF này bao gồm các tính năng hỗ trợ cho trình đọc màn hình."
+        }
+      },
+      "errors": {
+        "pdfGenerationTimeout": {
+          "en": "PDF generation timed out. Please try again.",
+          "vi": "Tạo PDF hết thời gian. Vui lòng thử lại."
+        },
+        "pdfCorrupted": {
+          "en": "Generated PDF file is corrupted. Please contact support.",
+          "vi": "File PDF được tạo bị lỗi. Vui lòng liên hệ hỗ trợ."
+        },
+        "emailDeliveryFailed": {
+          "en": "Email delivery failed. PDF is available in your account.",
+          "vi": "Gửi email thất bại. PDF có sẵn trong tài khoản của bạn."
+        },
+        "attachmentTooLarge": {
+          "en": "PDF attachment is too large for email. Download link sent instead.",
+          "vi": "File PDF quá lớn để đính kèm email. Đã gửi liên kết tải xuống thay thế."
+        },
+        "templateNotFound": {
+          "en": "PDF template not found. Using default template.",
+          "vi": "Không tìm thấy mẫu PDF. Sử dụng mẫu mặc định."
+        },
+        "dataValidationFailed": {
+          "en": "Order data validation failed. Cannot generate PDF.",
+          "vi": "Xác thực dữ liệu đơn hàng thất bại. Không thể tạo PDF."
+        },
+        "storageError": {
+          "en": "PDF storage error. Please try again later.",
+          "vi": "Lỗi lưu trữ PDF. Vui lòng thử lại sau."
+        },
+        "cleanupFailed": {
+          "en": "PDF cleanup failed. Old files may remain.",
+          "vi": "Dọn dẹp PDF thất bại. Các file cũ có thể còn lại."
+        }
+      },
+      "accessibility": {
+        "pdfDocument": {
+          "en": "PDF document containing order details",
+          "vi": "Tài liệu PDF chứa chi tiết đơn hàng"
+        },
+        "downloadLink": {
+          "en": "Download order confirmation PDF",
+          "vi": "Tải xuống PDF xác nhận đơn hàng"
+        },
+        "printButton": {
+          "en": "Print order confirmation",
+          "vi": "In xác nhận đơn hàng"
+        },
+        "resendButton": {
+          "en": "Resend order confirmation email",
+          "vi": "Gửi lại email xác nhận đơn hàng"
+        }
       }
     },
     "styling": {

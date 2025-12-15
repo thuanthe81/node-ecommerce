@@ -94,6 +94,17 @@ export interface SetOrderItemPriceData {
   price: number;
 }
 
+export interface ResendEmailData {
+  email: string;
+  locale?: 'en' | 'vi';
+}
+
+export interface ResendEmailResponse {
+  success: boolean;
+  message: string;
+  rateLimited?: boolean;
+}
+
 export const orderApi = {
   /**
    * Create a new order
@@ -162,6 +173,17 @@ export const orderApi = {
       `/orders/${orderId}/items/${orderItemId}/price`,
       data
     );
+    return response.data;
+  },
+
+  /**
+   * Resend order confirmation email with PDF attachment
+   */
+  async resendOrderEmail(
+    orderNumber: string,
+    data: ResendEmailData
+  ): Promise<ResendEmailResponse> {
+    const response = await apiClient.post(`/orders/${orderNumber}/resend-email`, data);
     return response.data;
   },
 };

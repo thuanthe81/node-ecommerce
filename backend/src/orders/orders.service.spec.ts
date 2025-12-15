@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
+import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
+import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import {
   NotFoundException,
   BadRequestException,
@@ -17,6 +19,8 @@ describe('OrdersService', () => {
   let emailService: EmailService;
   let emailTemplateService: EmailTemplateService;
   let footerSettingsService: FooterSettingsService;
+  let emailAttachmentService: EmailAttachmentService;
+  let resendEmailHandlerService: ResendEmailHandlerService;
 
   const mockAddress = {
     id: 'addr-1',
@@ -106,14 +110,22 @@ describe('OrdersService', () => {
   };
 
   const mockEmailTemplateService = {
-    getOrderConfirmationTemplate: jest.fn(),
-    getShippingNotificationTemplate: jest.fn(),
-    getOrderStatusUpdateTemplate: jest.fn(),
-    getAdminOrderNotificationTemplate: jest.fn(),
+    getSimplifiedOrderConfirmationTemplate: jest.fn(),
+    getSimplifiedShippingNotificationTemplate: jest.fn(),
+    getSimplifiedOrderStatusUpdateTemplate: jest.fn(),
+    getSimplifiedAdminOrderNotificationTemplate: jest.fn(),
   };
 
   const mockFooterSettingsService = {
     getFooterSettings: jest.fn(),
+  };
+
+  const mockEmailAttachmentService = {
+    sendOrderConfirmationWithPDF: jest.fn(),
+  };
+
+  const mockResendEmailHandlerService = {
+    handleResendRequest: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -124,6 +136,8 @@ describe('OrdersService', () => {
         { provide: EmailService, useValue: mockEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
+        { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
+        { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
       ],
     }).compile();
 
@@ -136,6 +150,8 @@ describe('OrdersService', () => {
     footerSettingsService = module.get<FooterSettingsService>(
       FooterSettingsService,
     );
+    emailAttachmentService = module.get<EmailAttachmentService>(EmailAttachmentService);
+    resendEmailHandlerService = module.get<ResendEmailHandlerService>(ResendEmailHandlerService);
 
     jest.clearAllMocks();
   });
@@ -188,11 +204,11 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getOrderConfirmationTemplate.mockReturnValue({
+      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
-      mockEmailTemplateService.getAdminOrderNotificationTemplate.mockReturnValue({
+      mockEmailTemplateService.getSimplifiedAdminOrderNotificationTemplate.mockReturnValue({
         subject: 'New Order Notification',
         html: '<p>New order received</p>',
       });
@@ -269,7 +285,7 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getOrderConfirmationTemplate.mockReturnValue({
+      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
@@ -314,7 +330,7 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getOrderConfirmationTemplate.mockReturnValue({
+      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
         subject: 'Order Confirmation',
         html: '<p>Order confirmed</p>',
       });
@@ -531,7 +547,7 @@ describe('OrdersService', () => {
         status: OrderStatus.SHIPPED,
         trackingNumber: 'TRACK-123',
       });
-      mockEmailTemplateService.getShippingNotificationTemplate.mockReturnValue({
+      mockEmailTemplateService.getSimplifiedShippingNotificationTemplate.mockReturnValue({
         subject: 'Order Shipped',
         html: '<p>Your order has been shipped</p>',
       });

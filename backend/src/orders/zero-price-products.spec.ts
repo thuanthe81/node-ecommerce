@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
+import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
+import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 describe('OrdersService - Zero Price Products', () => {
@@ -94,7 +96,7 @@ describe('OrdersService - Zero Price Products', () => {
   };
 
   const mockEmailTemplateService = {
-    getOrderConfirmationTemplate: jest.fn().mockReturnValue({
+    getSimplifiedOrderConfirmationTemplate: jest.fn().mockReturnValue({
       subject: 'Order Confirmation',
       html: '<p>Order confirmed</p>',
     }),
@@ -102,6 +104,14 @@ describe('OrdersService - Zero Price Products', () => {
 
   const mockFooterSettingsService = {
     getFooterSettings: jest.fn(),
+  };
+
+  const mockEmailAttachmentService = {
+    sendOrderConfirmationWithPDF: jest.fn(),
+  };
+
+  const mockResendEmailHandlerService = {
+    handleResendRequest: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -112,6 +122,8 @@ describe('OrdersService - Zero Price Products', () => {
         { provide: EmailService, useValue: mockEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
+        { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
+        { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
       ],
     }).compile();
 

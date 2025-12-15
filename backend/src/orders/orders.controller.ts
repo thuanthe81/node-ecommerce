@@ -7,12 +7,15 @@ import {
   Param,
   Query,
   UseGuards,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
+import { ResendEmailDto } from './dto/resend-email.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -115,5 +118,63 @@ export class OrdersController {
       orderItemId,
       setOrderItemPriceDto,
     );
+  }
+
+  @Post(':orderNumber/resend-email')
+  @Public()
+  async resendEmail(
+    @Param('orderNumber') orderNumber: string,
+    @Body() resendEmailDto: ResendEmailDto,
+  ) {
+    try {
+      const result = await this.ordersService.resendOrderConfirmationEmail(
+        orderNumber,
+        resendEmailDto.email,
+        resendEmailDto.locale || 'en'
+      );
+
+      if (!result.success) {
+        if (result.rateLimited) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.TOO_MANY_REQUESTS,
+              message: result.message,
+              error: 'Too Many Requests',
+              rateLimited: true,
+            },
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: result.message,
+            error: result.error || 'Bad Request',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: result.message,
+        success: true,
+      };
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'An error occurred while resending the email',
+          error: 'Internal Server Error',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

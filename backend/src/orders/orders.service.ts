@@ -13,6 +13,9 @@ import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
+import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
+import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
+import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +24,8 @@ export class OrdersService {
     private emailService: EmailService,
     private emailTemplateService: EmailTemplateService,
     private footerSettingsService: FooterSettingsService,
+    private emailAttachmentService: EmailAttachmentService,
+    private resendEmailHandlerService: ResendEmailHandlerService,
   ) {}
 
   /**
@@ -285,10 +290,11 @@ export class OrdersService {
   }
 
   /**
-   * Send order confirmation email to customer
+   * Send order confirmation email to customer with PDF attachment
    *
-   * Sends a professionally formatted HTML email to the customer with complete order details.
-   * Email failures are logged but do not interrupt order processing.
+   * Generates a professional PDF document containing complete order details and sends it
+   * as an attachment with a simplified HTML email. This approach eliminates swaks syntax
+   * errors while providing customers with comprehensive, printable order records.
    *
    * @param order - The order object with items, addresses, and totals
    * @returns Promise<void> - Resolves when email sending is complete (success or failure)
@@ -300,15 +306,595 @@ export class OrdersService {
    * ```
    *
    * @remarks
-   * - Uses EmailTemplateService to generate bilingual HTML template
+   * - Uses EmailAttachmentService to generate PDF and send simplified email
    * - Defaults to English locale (can be enhanced to use customer preference)
    * - Logs success/failure without throwing exceptions
-   * - Includes order number, items, totals, and shipping address
+   * - Includes comprehensive order information in PDF format
+   * - Handles PDF generation failures gracefully with fallback notifications
    */
   private async sendOrderConfirmationEmail(order: any): Promise<void> {
     try {
-      const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English, can be determined from user preferences
+
+      // Convert order data to PDF format
+      const orderPDFData = await this.convertOrderToPDFData(order, locale);
+
+      // Send email with PDF attachment using the new system
+      const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
+        order.email,
+        orderPDFData,
+        locale
+      );
+
+      if (result.success) {
+        console.log(`Order confirmation email with PDF sent to ${order.email} for order ${order.orderNumber}`);
+      } else {
+        console.warn(`Failed to send order confirmation email with PDF to ${order.email} for order ${order.orderNumber}: ${result.error}`);
+
+        // Fallback to original email system if PDF attachment fails
+        await this.sendFallbackOrderConfirmationEmail(order, locale);
+      }
+    } catch (error) {
+      // Log error but don't fail the order creation
+      console.error(`Failed to send order confirmation email for order ${order.orderNumber}:`, error);
+
+      // Attempt fallback email without PDF
+      try {
+        await this.sendFallbackOrderConfirmationEmail(order, 'en');
+      } catch (fallbackError) {
+        console.error(`Fallback email also failed for order ${order.orderNumber}:`, fallbackError);
+      }
+    }
+  }
+
+  /**
+   * Convert order data to PDF data format with comprehensive validation and edge case handling
+   * @param order - The order object from database
+   * @param locale - Language locale for the PDF
+   * @returns Promise<OrderPDFData> - Formatted data for PDF generation
+   */
+  private async convertOrderToPDFData(order: any, locale: 'en' | 'vi'): Promise<OrderPDFData> {
+    // Validate order data before conversion
+    this.validateOrderDataForPDF(order);
+
+    // Get business information from footer settings
+    const footerSettings = await this.footerSettingsService.getFooterSettings();
+
+    // Convert address data with fallback handling for missing data
+    const billingAddress: AddressData = this.convertAddressData(
+      order.billingAddress,
+      'Billing Address Not Available',
+      locale
+    );
+
+    const shippingAddress: AddressData = this.convertAddressData(
+      order.shippingAddress,
+      'Shipping Address Not Available',
+      locale
+    );
+
+    // Convert order items with special handling for different order types
+    const items: OrderItemData[] = this.convertOrderItems(order.items, locale);
+
+    // Convert payment method data with comprehensive payment type support
+    const paymentMethod: PaymentMethodData = await this.convertPaymentMethodData(
+      order.paymentMethod,
+      order.paymentStatus,
+      locale
+    );
+
+    // Convert shipping method data with enhanced shipping option support
+    const shippingMethod: ShippingMethodData = this.convertShippingMethodData(
+      order.shippingMethod,
+      order.status,
+      locale
+    );
+
+    // Create business info with fallback values
+    const businessInfo: BusinessInfoData = this.createBusinessInfo(footerSettings, locale);
+
+    // Handle special order types and statuses
+    const orderDate = this.formatOrderDate(order.createdAt, locale);
+    const customerInfo = this.extractCustomerInfo(order, shippingAddress);
+
+    return {
+      orderNumber: order.orderNumber || 'N/A',
+      orderDate,
+      customerInfo,
+      billingAddress,
+      shippingAddress,
+      items,
+      pricing: {
+        subtotal: Number(order.subtotal) || 0,
+        shippingCost: Number(order.shippingCost) || 0,
+        taxAmount: Number(order.taxAmount) || 0,
+        discountAmount: Number(order.discountAmount) || 0,
+        total: Number(order.total) || 0,
+      },
+      paymentMethod,
+      shippingMethod,
+      businessInfo,
+      locale,
+    };
+  }
+
+  /**
+   * Validate order data before PDF generation
+   * @param order - Order object to validate
+   * @throws Error if critical data is missing
+   */
+  private validateOrderDataForPDF(order: any): void {
+    const errors: string[] = [];
+
+    if (!order) {
+      throw new Error('Order data is required for PDF generation');
+    }
+
+    if (!order.orderNumber) {
+      errors.push('Order number is missing');
+    }
+
+    if (!order.email) {
+      errors.push('Customer email is missing');
+    }
+
+    if (!order.items || !Array.isArray(order.items) || order.items.length === 0) {
+      errors.push('Order must contain at least one item');
+    }
+
+    if (!order.shippingAddress) {
+      errors.push('Shipping address is required');
+    }
+
+    if (!order.billingAddress) {
+      errors.push('Billing address is required');
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Order data validation failed: ${errors.join(', ')}`);
+    }
+  }
+
+  /**
+   * Convert address data with fallback handling
+   * @param address - Address object from order
+   * @param fallbackName - Fallback name if address is missing
+   * @param locale - Language locale
+   * @returns AddressData with fallback values
+   */
+  private convertAddressData(
+    address: any,
+    fallbackName: string,
+    locale: 'en' | 'vi'
+  ): AddressData {
+    if (!address) {
+      const notAvailable = locale === 'vi' ? 'Không có thông tin' : 'Not Available';
+      return {
+        fullName: fallbackName,
+        addressLine1: notAvailable,
+        city: notAvailable,
+        state: notAvailable,
+        postalCode: notAvailable,
+        country: notAvailable,
+      };
+    }
+
+    return {
+      fullName: address.fullName || fallbackName,
+      addressLine1: address.addressLine1 || (locale === 'vi' ? 'Không có địa chỉ' : 'No address provided'),
+      addressLine2: address.addressLine2 || undefined,
+      city: address.city || (locale === 'vi' ? 'Không xác định' : 'Unknown'),
+      state: address.state || (locale === 'vi' ? 'Không xác định' : 'Unknown'),
+      postalCode: address.postalCode || '00000',
+      country: address.country || (locale === 'vi' ? 'Việt Nam' : 'Vietnam'),
+      phone: address.phone || undefined,
+    };
+  }
+
+  /**
+   * Convert order items with special handling for different order types
+   * @param items - Array of order items
+   * @param locale - Language locale
+   * @returns Array of OrderItemData with proper handling for all item types
+   */
+  private convertOrderItems(items: any[], locale: 'en' | 'vi'): OrderItemData[] {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+
+    return items.map((item: any, index: number) => {
+      // Handle zero-price products
+      const unitPrice = Number(item.price) || 0;
+      const quantity = Number(item.quantity) || 1;
+      const totalPrice = Number(item.total) || (unitPrice * quantity);
+
+      // Handle missing product names
+      let itemName = '';
+      if (locale === 'vi' && item.productNameVi) {
+        itemName = item.productNameVi;
+      } else if (item.productNameEn) {
+        itemName = item.productNameEn;
+      } else if (item.productNameVi) {
+        itemName = item.productNameVi;
+      } else {
+        itemName = locale === 'vi' ? `Sản phẩm ${index + 1}` : `Product ${index + 1}`;
+      }
+
+      // Handle missing or incomplete product data
+      const description = item.product?.descriptionEn ||
+                         item.product?.descriptionVi ||
+                         (locale === 'vi' ? 'Không có mô tả' : 'No description available');
+
+      // Handle product images
+      let imageUrl: string | undefined;
+      if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+        imageUrl = item.product.images[0].url;
+      }
+
+      return {
+        id: item.id || `item-${index}`,
+        name: itemName,
+        description: description,
+        sku: item.sku || `SKU-${index + 1}`,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        totalPrice: totalPrice,
+        imageUrl: imageUrl,
+        category: item.product?.category?.nameEn ||
+                 item.product?.category?.nameVi ||
+                 (locale === 'vi' ? 'Khác' : 'Other'),
+      };
+    });
+  }
+
+  /**
+   * Convert payment method data with comprehensive payment type support
+   * @param paymentMethod - Payment method string from order
+   * @param paymentStatus - Payment status from order
+   * @param locale - Language locale
+   * @returns PaymentMethodData with complete payment information
+   */
+  private async convertPaymentMethodData(
+    paymentMethod: string,
+    paymentStatus: string,
+    locale: 'en' | 'vi'
+  ): Promise<PaymentMethodData> {
+    const method = (paymentMethod || 'bank_transfer').toLowerCase();
+    const type = this.mapPaymentMethodType(method);
+
+    const paymentData: PaymentMethodData = {
+      type,
+      displayName: this.getPaymentMethodDisplayName(method, locale),
+      details: this.getPaymentMethodDetails(method, locale),
+      status: this.mapPaymentStatus(paymentStatus),
+    };
+
+    // Add specific payment method enhancements
+    if (type === 'bank_transfer') {
+      // For bank transfers, we could enhance with actual bank details
+      // This would typically come from payment settings
+      paymentData.instructions = locale === 'vi'
+        ? 'Vui lòng chuyển khoản theo thông tin được cung cấp và gửi ảnh chụp biên lai để xác nhận.'
+        : 'Please transfer payment according to the provided information and send receipt photo for confirmation.';
+    } else if (type === 'cash_on_delivery') {
+      paymentData.instructions = locale === 'vi'
+        ? 'Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.'
+        : 'Pay with cash upon delivery. Please prepare exact amount.';
+    } else if (type === 'qr_code') {
+      paymentData.instructions = locale === 'vi'
+        ? 'Quét mã QR bằng ứng dụng ngân hàng để thanh toán.'
+        : 'Scan QR code with your banking app to make payment.';
+    }
+
+    return paymentData;
+  }
+
+  /**
+   * Convert shipping method data with enhanced shipping option support
+   * @param shippingMethod - Shipping method string from order
+   * @param orderStatus - Current order status
+   * @param locale - Language locale
+   * @returns ShippingMethodData with complete shipping information
+   */
+  private convertShippingMethodData(
+    shippingMethod: string,
+    orderStatus: string,
+    locale: 'en' | 'vi'
+  ): ShippingMethodData {
+    const method = (shippingMethod || 'standard').toLowerCase();
+
+    const shippingData: ShippingMethodData = {
+      name: this.getShippingMethodDisplayName(method, locale),
+      description: this.getShippingMethodDescription(method, locale),
+    };
+
+    // Add estimated delivery based on shipping method
+    if (method.includes('standard')) {
+      shippingData.estimatedDelivery = locale === 'vi' ? '3-5 ngày làm việc' : '3-5 business days';
+    } else if (method.includes('express')) {
+      shippingData.estimatedDelivery = locale === 'vi' ? '1-2 ngày làm việc' : '1-2 business days';
+    } else if (method.includes('overnight')) {
+      shippingData.estimatedDelivery = locale === 'vi' ? 'Trong ngày' : 'Same day';
+    } else {
+      shippingData.estimatedDelivery = locale === 'vi' ? '3-7 ngày làm việc' : '3-7 business days';
+    }
+
+    // Add tracking information if order is shipped
+    if (orderStatus && orderStatus.toLowerCase() === 'shipped') {
+      // In a real implementation, this would come from the order tracking system
+      shippingData.trackingNumber = 'Will be provided when available';
+      shippingData.carrier = 'Local Carrier';
+    }
+
+    return shippingData;
+  }
+
+  /**
+   * Create comprehensive business information with legal content integration
+   * @param footerSettings - Footer settings from database
+   * @param locale - Language locale
+   * @returns BusinessInfoData with complete business and legal information
+   */
+  private createBusinessInfo(footerSettings: any, locale: 'en' | 'vi'): BusinessInfoData {
+    const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
+
+    return {
+      companyName,
+      logoUrl: undefined, // Can be enhanced with actual logo URL from assets
+      contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
+      contactPhone: footerSettings?.contactPhone || undefined,
+      website: this.constructWebsiteUrl(footerSettings),
+      address: this.createBusinessAddress(footerSettings, companyName, locale),
+      returnPolicy: this.getReturnPolicy(locale),
+      termsAndConditions: this.getTermsAndConditions(locale),
+    };
+  }
+
+  /**
+   * Construct website URL from available settings
+   * @param footerSettings - Footer settings from database
+   * @returns Website URL or undefined
+   */
+  private constructWebsiteUrl(footerSettings: any): string | undefined {
+    // Try to construct website URL from available social media links or contact info
+    if (footerSettings?.facebookUrl) {
+      // Extract domain from Facebook URL if it's a business page
+      const match = footerSettings.facebookUrl.match(/facebook\.com\/([^\/]+)/);
+      if (match && !match[1].includes('profile.php')) {
+        return `https://www.${match[1]}.com`; // Attempt to guess website
+      }
+    }
+
+    // Default to a placeholder that can be updated
+    return 'https://www.alacraft.com';
+  }
+
+  /**
+   * Create comprehensive business address
+   * @param footerSettings - Footer settings from database
+   * @param companyName - Company name
+   * @param locale - Language locale
+   * @returns Complete business address
+   */
+  private createBusinessAddress(footerSettings: any, companyName: string, locale: 'en' | 'vi'): AddressData {
+    return {
+      fullName: companyName,
+      addressLine1: footerSettings?.address || this.getDefaultBusinessAddress(locale),
+      addressLine2: undefined,
+      city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
+      state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
+      postalCode: '70000',
+      country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
+      phone: footerSettings?.contactPhone || undefined,
+    };
+  }
+
+  /**
+   * Get default business address based on locale
+   * @param locale - Language locale
+   * @returns Default business address string
+   */
+  private getDefaultBusinessAddress(locale: 'en' | 'vi'): string {
+    return locale === 'vi'
+      ? 'Địa chỉ: Quận 1, Thành phố Hồ Chí Minh'
+      : 'Address: District 1, Ho Chi Minh City';
+  }
+
+  /**
+   * Get comprehensive return policy based on locale
+   * @param locale - Language locale
+   * @returns Detailed return policy text
+   */
+  private getReturnPolicy(locale: 'en' | 'vi'): string {
+    if (locale === 'vi') {
+      return `CHÍNH SÁCH ĐỔI TRẢ HÀNG
+
+1. Thời gian đổi trả: Trong vòng 7 ngày kể từ ngày nhận hàng
+2. Điều kiện đổi trả:
+   - Sản phẩm còn nguyên vẹn, chưa qua sử dụng
+   - Còn đầy đủ bao bì, nhãn mác gốc
+   - Có hóa đơn mua hàng hoặc email xác nhận đơn hàng
+
+3. Sản phẩm không được đổi trả:
+   - Sản phẩm đã qua sử dụng hoặc bị hư hỏng do lỗi người dùng
+   - Sản phẩm làm theo yêu cầu riêng (custom)
+
+4. Liên hệ đổi trả:
+   - Email: contact@alacraft.com
+   - Điện thoại: (nếu có trong thông tin liên hệ)
+
+Lưu ý: Phí vận chuyển đổi trả sẽ do khách hàng chịu trừ trường hợp lỗi từ phía AlaCraft.`;
+    } else {
+      return `RETURN POLICY
+
+1. Return Period: Within 7 days from delivery date
+2. Return Conditions:
+   - Product must be in original condition, unused
+   - Original packaging and labels must be intact
+   - Must have purchase receipt or order confirmation email
+
+3. Non-returnable Items:
+   - Used or damaged products due to customer error
+   - Custom-made products
+
+4. Return Contact:
+   - Email: contact@alacraft.com
+   - Phone: (if available in contact information)
+
+Note: Return shipping costs are customer's responsibility unless the error is from AlaCraft's side.`;
+    }
+  }
+
+  /**
+   * Get comprehensive terms and conditions based on locale
+   * @param locale - Language locale
+   * @returns Detailed terms and conditions text
+   */
+  private getTermsAndConditions(locale: 'en' | 'vi'): string {
+    if (locale === 'vi') {
+      return `ĐIỀU KHOẢN VÀ ĐIỀU KIỆN
+
+1. CHẤP NHẬN ĐIỀU KHOẢN
+Bằng việc đặt hàng, quý khách đồng ý với các điều khoản và điều kiện sau.
+
+2. SẢN PHẨM VÀ GIA CẢ
+- Tất cả sản phẩm được mô tả chính xác nhất có thể
+- Giá cả có thể thay đổi mà không cần báo trước
+- Sản phẩm handmade có thể có sự khác biệt nhỏ về màu sắc và kích thước
+
+3. THANH TOÁN
+- Chấp nhận các hình thức thanh toán được liệt kê trên website
+- Đơn hàng chỉ được xử lý sau khi thanh toán thành công
+
+4. GIAO HÀNG
+- Thời gian giao hàng là ước tính và có thể thay đổi
+- AlaCraft không chịu trách nhiệm về sự chậm trễ do bên thứ ba
+
+5. BẢO MẬT THÔNG TIN
+- Thông tin khách hàng được bảo mật theo chính sách riêng tư
+- Không chia sẻ thông tin với bên thứ ba không liên quan
+
+6. LIÊN HỆ
+Mọi thắc mắc xin liên hệ: contact@alacraft.com
+
+Điều khoản có hiệu lực từ ngày ${new Date().toLocaleDateString('vi-VN')}`;
+    } else {
+      return `TERMS AND CONDITIONS
+
+1. ACCEPTANCE OF TERMS
+By placing an order, you agree to these terms and conditions.
+
+2. PRODUCTS AND PRICING
+- All products are described as accurately as possible
+- Prices may change without prior notice
+- Handmade products may have slight variations in color and size
+
+3. PAYMENT
+- We accept payment methods listed on our website
+- Orders are processed only after successful payment
+
+4. SHIPPING
+- Delivery times are estimates and may vary
+- AlaCraft is not responsible for delays caused by third parties
+
+5. PRIVACY
+- Customer information is protected according to our privacy policy
+- We do not share information with unrelated third parties
+
+6. CONTACT
+For any questions, please contact: contact@alacraft.com
+
+Terms effective as of ${new Date().toLocaleDateString('en-US')}`;
+    }
+  }
+
+  /**
+   * Format order date based on locale
+   * @param createdAt - Order creation date
+   * @param locale - Language locale
+   * @returns Formatted date string
+   */
+  private formatOrderDate(createdAt: Date, locale: 'en' | 'vi'): string {
+    if (!createdAt) {
+      return locale === 'vi' ? 'Không xác định' : 'Unknown';
+    }
+
+    const date = new Date(createdAt);
+    if (locale === 'vi') {
+      return date.toLocaleDateString('vi-VN');
+    } else {
+      return date.toLocaleDateString('en-US');
+    }
+  }
+
+  /**
+   * Extract customer information with fallback handling
+   * @param order - Order object
+   * @param shippingAddress - Shipping address data
+   * @returns Customer information object
+   */
+  private extractCustomerInfo(order: any, shippingAddress: AddressData): {
+    name: string;
+    email: string;
+    phone?: string;
+  } {
+    return {
+      name: shippingAddress.fullName || order.email || 'Customer',
+      email: order.email || 'no-email@example.com',
+      phone: shippingAddress.phone || order.shippingAddress?.phone || undefined,
+    };
+  }
+
+  /**
+   * Map payment status to standardized format
+   * @param paymentStatus - Payment status from order
+   * @returns Standardized payment status
+   */
+  private mapPaymentStatus(paymentStatus: string): 'pending' | 'completed' | 'failed' {
+    if (!paymentStatus) return 'pending';
+
+    const status = paymentStatus.toLowerCase();
+    if (status.includes('completed') || status.includes('paid') || status.includes('success')) {
+      return 'completed';
+    }
+    if (status.includes('failed') || status.includes('error') || status.includes('declined')) {
+      return 'failed';
+    }
+    return 'pending';
+  }
+
+  /**
+   * Get display name for shipping method
+   * @param shippingMethod - Shipping method string
+   * @param locale - Language locale
+   * @returns Display name for shipping method
+   */
+  private getShippingMethodDisplayName(shippingMethod: string, locale: 'en' | 'vi'): string {
+    const method = shippingMethod.toLowerCase();
+
+    if (method.includes('standard')) {
+      return locale === 'vi' ? 'Giao hàng tiêu chuẩn' : 'Standard Shipping';
+    }
+    if (method.includes('express')) {
+      return locale === 'vi' ? 'Giao hàng nhanh' : 'Express Shipping';
+    }
+    if (method.includes('overnight')) {
+      return locale === 'vi' ? 'Giao hàng trong ngày' : 'Overnight Shipping';
+    }
+
+    return shippingMethod || (locale === 'vi' ? 'Giao hàng tiêu chuẩn' : 'Standard Shipping');
+  }
+
+  /**
+   * Send fallback order confirmation email without PDF attachment
+   * @param order - The order object
+   * @param locale - Language locale
+   */
+  private async sendFallbackOrderConfirmationEmail(order: any, locale: 'en' | 'vi'): Promise<void> {
+    try {
+      console.log(`Sending fallback order confirmation email for order ${order.orderNumber}`);
+
+      const customerName = order.shippingAddress.fullName;
 
       const emailData = {
         orderNumber: order.orderNumber,
@@ -327,11 +913,10 @@ export class OrdersService {
         shippingAddress: order.shippingAddress,
       };
 
-      const template =
-        this.emailTemplateService.getOrderConfirmationTemplate(
-          emailData,
-          locale,
-        );
+      const template = this.emailTemplateService.getSimplifiedOrderConfirmationTemplate(
+        emailData,
+        locale,
+      );
 
       const emailSent = await this.emailService.sendEmail({
         to: order.email,
@@ -341,14 +926,105 @@ export class OrdersService {
       });
 
       if (emailSent) {
-        console.log(`Order confirmation email sent to ${order.email} for order ${order.orderNumber}`);
+        console.log(`Fallback order confirmation email sent to ${order.email} for order ${order.orderNumber}`);
       } else {
-        console.warn(`Failed to send order confirmation email to ${order.email} for order ${order.orderNumber}`);
+        console.warn(`Fallback order confirmation email also failed for ${order.email} for order ${order.orderNumber}`);
       }
     } catch (error) {
-      // Log error but don't fail the order creation
-      console.error(`Failed to send order confirmation email for order ${order.orderNumber}:`, error);
+      console.error(`Fallback order confirmation email failed for order ${order.orderNumber}:`, error);
     }
+  }
+
+  /**
+   * Map payment method string to PaymentMethodData type
+   * @param paymentMethod - Payment method string from order
+   * @returns Mapped payment method type
+   */
+  private mapPaymentMethodType(paymentMethod: string): 'bank_transfer' | 'cash_on_delivery' | 'qr_code' {
+    const method = paymentMethod.toLowerCase();
+    if (method.includes('bank') || method.includes('transfer')) {
+      return 'bank_transfer';
+    }
+    if (method.includes('cash') || method.includes('cod')) {
+      return 'cash_on_delivery';
+    }
+    if (method.includes('qr')) {
+      return 'qr_code';
+    }
+    // Default to bank transfer for unknown methods
+    return 'bank_transfer';
+  }
+
+  /**
+   * Get display name for payment method
+   * @param paymentMethod - Payment method string
+   * @param locale - Language locale
+   * @returns Display name for payment method
+   */
+  private getPaymentMethodDisplayName(paymentMethod: string, locale: 'en' | 'vi'): string {
+    const method = paymentMethod.toLowerCase();
+
+    if (method.includes('bank') || method.includes('transfer')) {
+      return locale === 'vi' ? 'Chuyển khoản ngân hàng' : 'Bank Transfer';
+    }
+    if (method.includes('cash') || method.includes('cod')) {
+      return locale === 'vi' ? 'Thanh toán khi nhận hàng' : 'Cash on Delivery';
+    }
+    if (method.includes('qr')) {
+      return locale === 'vi' ? 'Thanh toán QR Code' : 'QR Code Payment';
+    }
+
+    return paymentMethod;
+  }
+
+  /**
+   * Get payment method details
+   * @param paymentMethod - Payment method string
+   * @param locale - Language locale
+   * @returns Payment method details
+   */
+  private getPaymentMethodDetails(paymentMethod: string, locale: 'en' | 'vi'): string {
+    const method = paymentMethod.toLowerCase();
+
+    if (method.includes('bank') || method.includes('transfer')) {
+      return locale === 'vi'
+        ? 'Vui lòng chuyển khoản theo thông tin trong PDF đính kèm'
+        : 'Please transfer payment according to the information in the attached PDF';
+    }
+    if (method.includes('cash') || method.includes('cod')) {
+      return locale === 'vi'
+        ? 'Thanh toán bằng tiền mặt khi nhận hàng'
+        : 'Pay with cash upon delivery';
+    }
+    if (method.includes('qr')) {
+      return locale === 'vi'
+        ? 'Quét mã QR để thanh toán'
+        : 'Scan QR code to make payment';
+    }
+
+    return '';
+  }
+
+  /**
+   * Get shipping method description
+   * @param shippingMethod - Shipping method string
+   * @param locale - Language locale
+   * @returns Shipping method description
+   */
+  private getShippingMethodDescription(shippingMethod: string, locale: 'en' | 'vi'): string {
+    const method = shippingMethod.toLowerCase();
+
+    if (method.includes('standard')) {
+      return locale === 'vi' ? 'Giao hàng tiêu chuẩn (3-5 ngày)' : 'Standard delivery (3-5 days)';
+    }
+    if (method.includes('express')) {
+      return locale === 'vi' ? 'Giao hàng nhanh (1-2 ngày)' : 'Express delivery (1-2 days)';
+    }
+    if (method.includes('overnight')) {
+      return locale === 'vi' ? 'Giao hàng trong ngày' : 'Overnight delivery';
+    }
+
+    return shippingMethod;
   }
 
   /**
@@ -438,8 +1114,8 @@ export class OrdersService {
         notes: order.notes,
       };
 
-      // Generate admin email template
-      const template = this.emailTemplateService.getAdminOrderNotificationTemplate(
+      // Generate simplified admin email template
+      const template = this.emailTemplateService.getSimplifiedAdminOrderNotificationTemplate(
         adminEmailData,
         locale,
       );
@@ -873,7 +1549,7 @@ export class OrdersService {
       };
 
       const template =
-        this.emailTemplateService.getShippingNotificationTemplate(
+        this.emailTemplateService.getSimplifiedShippingNotificationTemplate(
           emailData,
           locale,
         );
@@ -941,7 +1617,7 @@ export class OrdersService {
       };
 
       const template =
-        this.emailTemplateService.getOrderStatusUpdateTemplate(
+        this.emailTemplateService.getSimplifiedOrderStatusUpdateTemplate(
           emailData,
           locale,
         );
@@ -1004,5 +1680,40 @@ export class OrdersService {
     });
 
     return updatedOrder;
+  }
+
+  /**
+   * Resend order confirmation email with PDF attachment
+   * @param orderNumber - Order number to resend
+   * @param customerEmail - Customer's email address
+   * @param locale - Language locale for email content
+   * @returns Promise<ResendResult> - Result of resend operation
+   */
+  async resendOrderConfirmationEmail(
+    orderNumber: string,
+    customerEmail: string,
+    locale: 'en' | 'vi' = 'en'
+  ): Promise<ResendResult> {
+    try {
+      // Use the ResendEmailHandlerService to handle the request
+      const result = await this.resendEmailHandlerService.handleResendRequest(
+        orderNumber,
+        customerEmail,
+        locale
+      );
+
+      return result;
+
+    } catch (error) {
+      console.error(`Failed to resend order confirmation email for order ${orderNumber}:`, error);
+
+      return {
+        success: false,
+        message: locale === 'vi'
+          ? 'Đã xảy ra lỗi khi gửi lại email. Vui lòng thử lại sau.'
+          : 'An error occurred while resending the email. Please try again later.',
+        error: error.message,
+      };
+    }
   }
 }

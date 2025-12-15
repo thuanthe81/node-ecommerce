@@ -4483,6 +4483,88 @@ export class EmailTemplateService {
    * - Shows customer notes if provided
    * - Optimized for quick order review by shop owners
    */
+  /**
+   * Get simplified admin order notification template that works with swaks
+   * @param data - Admin order email data
+   * @param locale - Language locale
+   * @returns Simplified admin email template
+   */
+  getSimplifiedAdminOrderNotificationTemplate(
+    data: AdminOrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): { subject: string; html: string } {
+    const translations = {
+      en: {
+        subject: `New Order Received - Order #${data.orderNumber}`,
+        title: 'New Order Received',
+        orderNumber: 'Order Number',
+        orderDate: 'Order Date',
+        customerName: 'Customer Name',
+        customerEmail: 'Customer Email',
+        total: 'Total',
+        paymentMethod: 'Payment Method',
+        paymentStatus: 'Payment Status',
+        viewOrder: 'View Order Details',
+      },
+      vi: {
+        subject: `Đơn hàng mới - Đơn hàng #${data.orderNumber}`,
+        title: 'Đã nhận đơn hàng mới',
+        orderNumber: 'Mã đơn hàng',
+        orderDate: 'Ngày đặt hàng',
+        customerName: 'Tên khách hàng',
+        customerEmail: 'Email khách hàng',
+        total: 'Tổng cộng',
+        paymentMethod: 'Phương thức thanh toán',
+        paymentStatus: 'Trạng thái thanh toán',
+        viewOrder: 'Xem chi tiết đơn hàng',
+      },
+    };
+
+    const t = translations[locale];
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${t.subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+
+<div style="background-color: #e74c3c; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
+<h1 style="margin: 0;">${t.title}</h1>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #e74c3c;">
+<h3 style="margin-top: 0;">Order Information</h3>
+<p><strong>${t.orderNumber}:</strong> ${data.orderNumber}</p>
+<p><strong>${t.orderDate}:</strong> ${data.orderDate}</p>
+<p><strong>${t.customerName}:</strong> ${data.customerName}</p>
+<p><strong>${t.customerEmail}:</strong> ${data.customerEmail}</p>
+<p><strong>${t.total}:</strong> ${this.formatCurrency(data.total, locale)}</p>
+<p><strong>${t.paymentMethod}:</strong> ${data.paymentMethod}</p>
+<p><strong>${t.paymentStatus}:</strong> ${data.paymentStatus}</p>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+<a href="${process.env.FRONTEND_URL || 'https://alacraft.com'}/admin/orders/${data.orderNumber}"
+   style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+${t.viewOrder}
+</a>
+</div>
+
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+<p>&copy; ${new Date().getFullYear()} AlaCraft Admin System</p>
+</div>
+
+</body>
+</html>`;
+
+    return {
+      subject: t.subject,
+      html,
+    };
+  }
+
   getAdminOrderNotificationTemplate(
     data: AdminOrderEmailData,
     locale: 'en' | 'vi' = 'en',
@@ -4884,6 +4966,88 @@ export class EmailTemplateService {
    * - Includes responsive design for mobile devices
    * - Shows discount and tax if applicable
    */
+  /**
+   * Get simplified order confirmation template that works with swaks
+   * This method generates minimal HTML to avoid swaks syntax errors
+   * @param data - Order email data
+   * @param locale - Language locale
+   * @returns Simplified email template
+   */
+  getSimplifiedOrderConfirmationTemplate(
+    data: OrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): { subject: string; html: string } {
+    const translations = {
+      en: {
+        subject: `Order Confirmation - Order #${data.orderNumber}`,
+        greeting: `Hello ${data.customerName},`,
+        thankYou: 'Thank you for your order at AlaCraft!',
+        orderDetails: 'Your order details:',
+        orderNumber: 'Order Number',
+        orderDate: 'Order Date',
+        total: 'Total',
+        pdfAttachment: 'Please see the attached PDF for detailed information about your order.',
+        contactInfo: 'If you have any questions, please contact us.',
+        signature: 'Best regards,<br>The AlaCraft Team',
+      },
+      vi: {
+        subject: `Xác nhận đơn hàng - Đơn hàng #${data.orderNumber}`,
+        greeting: `Xin chào ${data.customerName},`,
+        thankYou: 'Cảm ơn bạn đã đặt hàng tại AlaCraft!',
+        orderDetails: 'Chi tiết đơn hàng của bạn:',
+        orderNumber: 'Mã đơn hàng',
+        orderDate: 'Ngày đặt hàng',
+        total: 'Tổng cộng',
+        pdfAttachment: 'Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.',
+        contactInfo: 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.',
+        signature: 'Trân trọng,<br>Đội ngũ AlaCraft',
+      },
+    };
+
+    const t = translations[locale];
+
+    // Generate simplified HTML that works with swaks
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${t.subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+
+<div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
+<h1 style="margin: 0;">AlaCraft</h1>
+</div>
+
+<p>${t.greeting}</p>
+
+<p>${t.thankYou}</p>
+
+<div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
+<h3 style="margin-top: 0;">${t.orderDetails}</h3>
+<p><strong>${t.orderNumber}:</strong> ${data.orderNumber}</p>
+<p><strong>${t.orderDate}:</strong> ${data.orderDate}</p>
+<p><strong>${t.total}:</strong> ${this.formatCurrency(data.total, locale)}</p>
+</div>
+
+<p><strong>${t.pdfAttachment}</strong></p>
+
+<p>${t.contactInfo}</p>
+
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+<p>${t.signature}</p>
+<p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+</div>
+
+</body>
+</html>`;
+
+    return {
+      subject: t.subject,
+      html,
+    };
+  }
+
   getOrderConfirmationTemplate(
     data: OrderEmailData,
     locale: 'en' | 'vi' = 'en',
@@ -5177,6 +5341,76 @@ export class EmailTemplateService {
    * - Shows tracking number prominently if provided
    * - Includes shipping address for reference
    */
+  /**
+   * Get simplified shipping notification template that works with swaks
+   * @param data - Order email data
+   * @param locale - Language locale
+   * @returns Simplified shipping notification template
+   */
+  getSimplifiedShippingNotificationTemplate(
+    data: OrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): { subject: string; html: string } {
+    const translations = {
+      en: {
+        subject: `Order #${data.orderNumber} has been shipped`,
+        greeting: `Hello ${data.customerName},`,
+        title: 'Your order has been shipped!',
+        orderNumber: 'Order Number',
+        trackingNumber: 'Tracking Number',
+        shippingAddress: 'Shipping Address',
+        message: 'Your order is on its way to you.',
+        signature: 'Best regards,<br>The AlaCraft Team',
+      },
+      vi: {
+        subject: `Đơn hàng #${data.orderNumber} đã được gửi`,
+        greeting: `Xin chào ${data.customerName},`,
+        title: 'Đơn hàng của bạn đã được gửi!',
+        orderNumber: 'Mã đơn hàng',
+        trackingNumber: 'Mã vận đơn',
+        shippingAddress: 'Địa chỉ giao hàng',
+        message: 'Đơn hàng của bạn đang trên đường đến với bạn.',
+        signature: 'Trân trọng,<br>Đội ngũ AlaCraft',
+      },
+    };
+
+    const t = translations[locale];
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${t.subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+
+<div style="background-color: #27ae60; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
+<h1 style="margin: 0;">${t.title}</h1>
+</div>
+
+<p>${t.greeting}</p>
+
+<p>${t.message}</p>
+
+<div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #27ae60;">
+<p><strong>${t.orderNumber}:</strong> ${data.orderNumber}</p>
+${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(data as any).trackingNumber}</p>` : ''}
+</div>
+
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+<p>${t.signature}</p>
+<p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+</div>
+
+</body>
+</html>`;
+
+    return {
+      subject: t.subject,
+      html,
+    };
+  }
+
   getShippingNotificationTemplate(
     data: OrderEmailData,
     locale: 'en' | 'vi' = 'en',
@@ -5461,6 +5695,74 @@ export class EmailTemplateService {
    * - Includes helpful status-specific messages for each status
    * - Supports both English and Vietnamese
    */
+  /**
+   * Get simplified order status update template that works with swaks
+   * @param data - Order email data
+   * @param locale - Language locale
+   * @returns Simplified status update template
+   */
+  getSimplifiedOrderStatusUpdateTemplate(
+    data: OrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): { subject: string; html: string } {
+    const translations = {
+      en: {
+        subject: `Order #${data.orderNumber} Status Update`,
+        greeting: `Hello ${data.customerName},`,
+        title: 'Order Status Update',
+        orderNumber: 'Order Number',
+        newStatus: 'New Status',
+        message: 'Your order status has been updated.',
+        signature: 'Best regards,<br>The AlaCraft Team',
+      },
+      vi: {
+        subject: `Cập nhật trạng thái đơn hàng #${data.orderNumber}`,
+        greeting: `Xin chào ${data.customerName},`,
+        title: 'Cập nhật trạng thái đơn hàng',
+        orderNumber: 'Mã đơn hàng',
+        newStatus: 'Trạng thái mới',
+        message: 'Trạng thái đơn hàng của bạn đã được cập nhật.',
+        signature: 'Trân trọng,<br>Đội ngũ AlaCraft',
+      },
+    };
+
+    const t = translations[locale];
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${t.subject}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+
+<div style="background-color: #3498db; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
+<h1 style="margin: 0;">${t.title}</h1>
+</div>
+
+<p>${t.greeting}</p>
+
+<p>${t.message}</p>
+
+<div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
+<p><strong>${t.orderNumber}:</strong> ${data.orderNumber}</p>
+<p><strong>${t.newStatus}:</strong> ${(data as any).newStatus || 'Updated'}</p>
+</div>
+
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+<p>${t.signature}</p>
+<p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+</div>
+
+</body>
+</html>`;
+
+    return {
+      subject: t.subject,
+      html,
+    };
+  }
+
   getOrderStatusUpdateTemplate(
     data: OrderEmailData,
     locale: 'en' | 'vi' = 'en',

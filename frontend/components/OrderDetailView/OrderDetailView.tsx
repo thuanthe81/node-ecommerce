@@ -27,6 +27,7 @@ import { OrderSummary } from './components/OrderSummary';
 import { OrderItems } from './components/OrderItems';
 import { ShippingInfo } from './components/ShippingInfo';
 import { BankTransferInfo } from './components/BankTransferInfo';
+import { ResendEmailButton } from './components/ResendEmailButton';
 
 export default function OrderDetailView({
   orderId,
@@ -212,6 +213,28 @@ export default function OrderDetailView({
               {t('continueShopping')}
             </Link>
           </nav>
+
+          {/* Resend Email Section - Only shown on order confirmation pages */}
+          {showSuccessBanner && (
+            <div className="mt-8 pt-6 border-t border-gray-200 print:hidden">
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {t('resendEmailDescription')}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  {locale === 'vi'
+                    ? 'Nếu bạn không nhận được email xác nhận, vui lòng nhấn nút bên dưới để gửi lại.'
+                    : 'If you didn\'t receive the confirmation email, please click the button below to resend it.'
+                  }
+                </p>
+                <ResendEmailButton
+                  orderNumber={order.orderNumber}
+                  customerEmail={order.email}
+                  locale={locale as 'en' | 'vi'}
+                />
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
