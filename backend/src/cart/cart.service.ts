@@ -9,6 +9,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
+import { CACHE_KEYS } from '../common/constants';
 
 @Injectable()
 export class CartService {
@@ -364,7 +365,7 @@ export class CartService {
   }
 
   private getCacheKey(userId: string): string {
-    return `cart:user:${userId}`;
+    return CACHE_KEYS.CART.BY_USER(userId);
   }
 
   private async invalidateCache(userId: string) {

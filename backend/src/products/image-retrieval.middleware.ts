@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ProductsImageService } from './products-image.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { SYSTEM } from '../common/constants';
 
 /**
  * Middleware to handle image retrieval with backward compatibility
@@ -49,10 +50,10 @@ export class ImageRetrievalMiddleware implements NestMiddleware {
       // Determine MIME type based on file extension
       const ext = path.extname(filePath).toLowerCase();
       const mimeTypes: Record<string, string> = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.webp': 'image/webp',
+        '.jpg': SYSTEM.MIME_TYPES.JPEG,
+        '.jpeg': SYSTEM.MIME_TYPES.JPEG,
+        '.png': SYSTEM.MIME_TYPES.PNG,
+        '.webp': SYSTEM.MIME_TYPES.WEBP,
         '.gif': 'image/gif',
       };
       const mimeType = mimeTypes[ext] || 'application/octet-stream';

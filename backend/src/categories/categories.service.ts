@@ -9,6 +9,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CACHE_KEYS } from '../common/constants';
 
 @Injectable()
 export class CategoriesService {
@@ -71,7 +72,7 @@ export class CategoriesService {
 
   async findAllTree() {
     // Try to get from cache
-    const cacheKey = 'categories:tree';
+    const cacheKey = CACHE_KEYS.CATEGORIES.TREE;
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
       return cached;
@@ -134,7 +135,7 @@ export class CategoriesService {
 
   async findBySlug(slug: string) {
     // Try to get from cache
-    const cacheKey = `category:slug:${slug}`;
+    const cacheKey = CACHE_KEYS.CATEGORIES.BY_SLUG(slug);
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
       return cached;
@@ -234,8 +235,8 @@ export class CategoriesService {
     });
 
     // Invalidate cache
-    await this.cacheManager.del(`category:slug:${category.slug}`);
-    await this.cacheManager.del(`category:id:${id}`);
+    await this.cacheManager.del(CACHE_KEYS.CATEGORIES.BY_SLUG(category.slug));
+    await this.cacheManager.del(CACHE_KEYS.CATEGORIES.BY_ID(id));
     await this.invalidateCategoryCache();
 
     return updated;
@@ -274,8 +275,8 @@ export class CategoriesService {
     });
 
     // Invalidate cache
-    await this.cacheManager.del(`category:slug:${category.slug}`);
-    await this.cacheManager.del(`category:id:${id}`);
+    await this.cacheManager.del(CACHE_KEYS.CATEGORIES.BY_SLUG(category.slug));
+    await this.cacheManager.del(CACHE_KEYS.CATEGORIES.BY_ID(id));
     await this.invalidateCategoryCache();
 
     return deleted;
@@ -373,7 +374,7 @@ export class CategoriesService {
   // Helper method to invalidate category cache
   private async invalidateCategoryCache() {
     // Delete the main category tree cache
-    await this.cacheManager.del('categories:tree');
+    await this.cacheManager.del(CACHE_KEYS.CATEGORIES.TREE);
     // Note: Individual category caches are deleted explicitly in update/delete methods
     // In production, consider using cache tags or Redis SCAN for pattern-based deletion
   }

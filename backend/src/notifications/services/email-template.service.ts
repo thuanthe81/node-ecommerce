@@ -10,6 +10,7 @@ import {
 } from './email-design-tokens';
 import { ModernButtonGenerator } from './email-button-generators';
 import { StatusBadgeGenerator } from './email-status-badge-generators';
+import { STATUS } from '../../common/constants';
 
 export interface OrderEmailData {
   orderNumber: string;
@@ -4467,7 +4468,7 @@ export class EmailTemplateService {
    *   shippingAddress: { ... },
    *   billingAddress: { ... },
    *   paymentMethod: 'Bank Transfer',
-   *   paymentStatus: 'PENDING',
+   *   paymentStatus: 'PENDING', // Use STATUS.PAYMENT_STATUS constants
    *   notes: 'Please gift wrap'
    * };
    *
@@ -5522,7 +5523,7 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
           text-transform: uppercase;
           letter-spacing: 0.5px;
         ">
-          SHIPPED
+          ${STATUS.ORDER_STATUS.SHIPPED}
         </div>
       </div>
 
@@ -5769,70 +5770,70 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
   ): { subject: string; html: string } {
     const statusTranslations = {
       en: {
-        pending: 'Pending',
-        processing: 'Processing',
-        shipped: 'Shipped',
-        delivered: 'Delivered',
-        cancelled: 'Cancelled',
-        refunded: 'Refunded',
+        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Pending',
+        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Processing',
+        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Shipped',
+        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Delivered',
+        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Cancelled',
+        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Refunded',
       },
       vi: {
-        pending: 'Chờ xử lý',
-        processing: 'Đang xử lý',
-        shipped: 'Đã giao vận',
-        delivered: 'Đã giao hàng',
-        cancelled: 'Đã hủy',
-        refunded: 'Đã hoàn tiền',
+        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Chờ xử lý',
+        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Đang xử lý',
+        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Đã giao vận',
+        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Đã giao hàng',
+        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Đã hủy',
+        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Đã hoàn tiền',
       },
     };
 
     const statusMessages = {
       en: {
-        pending:
+        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]:
           'Your order has been received and is awaiting processing. We will begin preparing your items soon.',
-        processing:
+        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]:
           'Great news! Your order is currently being prepared for shipment. Our team is carefully packaging your items.',
-        shipped:
+        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]:
           'Your order has been shipped and is on its way to you. You should receive it within the estimated delivery time.',
-        delivered:
+        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]:
           'Your order has been successfully delivered. We hope you enjoy your purchase! Please consider leaving a review.',
-        cancelled:
+        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]:
           'Your order has been cancelled. If you have any questions or concerns, please don\'t hesitate to contact us.',
-        refunded:
+        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]:
           'Your order has been refunded. The amount will be credited to your account within 5-7 business days.',
       },
       vi: {
-        pending:
+        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]:
           'Đơn hàng của bạn đã được nhận và đang chờ xử lý. Chúng tôi sẽ bắt đầu chuẩn bị sản phẩm của bạn sớm.',
-        processing:
+        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]:
           'Tin tốt! Đơn hàng của bạn đang được chuẩn bị để giao hàng. Đội ngũ của chúng tôi đang cẩn thận đóng gói sản phẩm của bạn.',
-        shipped:
+        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]:
           'Đơn hàng của bạn đã được giao cho đơn vị vận chuyển và đang trên đường đến bạn. Bạn sẽ nhận được trong thời gian giao hàng dự kiến.',
-        delivered:
+        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]:
           'Đơn hàng của bạn đã được giao thành công. Chúng tôi hy vọng bạn hài lòng với sản phẩm! Vui lòng xem xét để lại đánh giá.',
-        cancelled:
+        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]:
           'Đơn hàng của bạn đã bị hủy. Nếu bạn có bất kỳ câu hỏi hoặc thắc mắc nào, vui lòng liên hệ với chúng tôi.',
-        refunded:
+        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]:
           'Đơn hàng của bạn đã được hoàn tiền. Số tiền sẽ được chuyển vào tài khoản của bạn trong vòng 5-7 ngày làm việc.',
       },
     };
 
     const statusIcons = {
-      pending: '⏳',
-      processing: '📦',
-      shipped: '🚚',
-      delivered: '✅',
-      cancelled: '❌',
-      refunded: '💰',
+      [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: '⏳',
+      [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: '📦',
+      [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: '🚚',
+      [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: '✅',
+      [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: '❌',
+      [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: '💰',
     };
 
     const statusColors = {
-      pending: MODERN_EMAIL_STYLES.colors.warning,
-      processing: MODERN_EMAIL_STYLES.colors.secondary,
-      shipped: MODERN_EMAIL_STYLES.colors.primary,
-      delivered: MODERN_EMAIL_STYLES.colors.success,
-      cancelled: MODERN_EMAIL_STYLES.colors.accent,
-      refunded: MODERN_EMAIL_STYLES.colors.warning,
+      [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: MODERN_EMAIL_STYLES.colors.warning,
+      [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: MODERN_EMAIL_STYLES.colors.secondary,
+      [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: MODERN_EMAIL_STYLES.colors.primary,
+      [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: MODERN_EMAIL_STYLES.colors.success,
+      [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: MODERN_EMAIL_STYLES.colors.accent,
+      [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: MODERN_EMAIL_STYLES.colors.warning,
     };
 
     const translations = {
@@ -5882,21 +5883,21 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
     // Generate action buttons based on status
     let actionButtons = '';
 
-    if (data.status === 'shipped' || data.status === 'processing') {
+    if (data.status === STATUS.ORDER_STATUS.SHIPPED.toLowerCase() || data.status === STATUS.ORDER_STATUS.PROCESSING.toLowerCase()) {
       const trackOrderButton = ModernButtonGenerator.generatePrimaryButton(
         t.trackOrder,
         `${process.env.FRONTEND_URL || 'https://alacraft.com'}/orders/${data.orderNumber}`,
         false
       );
       actionButtons = trackOrderButton;
-    } else if (data.status === 'delivered') {
+    } else if (data.status === STATUS.ORDER_STATUS.DELIVERED.toLowerCase()) {
       const shopMoreButton = ModernButtonGenerator.generateSuccessButton(
         t.shopMore,
         `${process.env.FRONTEND_URL || 'https://alacraft.com'}/products`,
         false
       );
       actionButtons = shopMoreButton;
-    } else if (data.status === 'cancelled' || data.status === 'refunded') {
+    } else if (data.status === STATUS.ORDER_STATUS.CANCELLED.toLowerCase() || data.status === STATUS.ORDER_STATUS.REFUNDED.toLowerCase()) {
       const contactButton = ModernButtonGenerator.generateSecondaryButton(
         t.contactUs,
         `${process.env.FRONTEND_URL || 'https://alacraft.com'}/contact`,

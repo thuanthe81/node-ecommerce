@@ -19,6 +19,7 @@ import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole, ContentType } from '@prisma/client';
+import { STATUS } from '../common/constants';
 import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('content')
@@ -26,7 +27,7 @@ export class ContentController {
   constructor(private readonly contentService: ContentService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   create(@Body() createContentDto: CreateContentDto) {
     return this.contentService.create(createContentDto);
   }
@@ -38,7 +39,7 @@ export class ContentController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   findAll(@Query('type') type?: ContentType) {
     return this.contentService.findAll(type);
   }
@@ -95,25 +96,25 @@ export class ContentController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.contentService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   update(@Param('id') id: string, @Body() updateContentDto: UpdateContentDto) {
     return this.contentService.update(id, updateContentDto);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.contentService.remove(id);
   }
 
   @Post('upload-image')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @UploadedFile(

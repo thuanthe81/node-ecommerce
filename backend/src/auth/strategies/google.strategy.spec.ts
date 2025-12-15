@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from './google.strategy';
 import { AuthService } from '../auth.service';
 import { Profile } from 'passport-google-oauth20';
+import { STATUS } from '../../common/constants';
 
 describe('GoogleStrategy', () => {
   let strategy: GoogleStrategy;
@@ -69,7 +70,7 @@ describe('GoogleStrategy', () => {
           email: 'test@example.com',
           firstName: 'John',
           lastName: 'Doe',
-          role: 'CUSTOMER',
+          role: STATUS.USER_ROLES.CUSTOMER,
           isEmailVerified: true,
         },
         accessToken: 'access-token',
@@ -114,7 +115,7 @@ describe('GoogleStrategy', () => {
           email: 'jane@example.com',
           firstName: 'Jane',
           lastName: 'Smith',
-          role: 'CUSTOMER',
+          role: STATUS.USER_ROLES.CUSTOMER,
           isEmailVerified: true,
         },
         accessToken: 'access-token',

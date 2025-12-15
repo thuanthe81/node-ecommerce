@@ -11,6 +11,7 @@ import { PDFCompressionService } from './services/pdf-compression.service';
 import { PDFErrorHandlerService } from './services/pdf-error-handler.service';
 import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
+import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { OrderPDFData } from './types/pdf.types';
 
 describe('PDFGeneratorService', () => {
@@ -74,6 +75,18 @@ describe('PDFGeneratorService', () => {
           provide: PDFAuditService,
           useValue: {
             logPDFGeneration: jest.fn(),
+          },
+        },
+        {
+          provide: PDFImageConverterService,
+          useValue: {
+            convertImageToBase64: jest.fn().mockResolvedValue('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD'),
+            convertMultipleImages: jest.fn().mockResolvedValue(new Map([
+              ['test-image.jpg', 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD']
+            ])),
+            clearCache: jest.fn(),
+            getCacheStats: jest.fn().mockReturnValue({ size: 0, maxSize: 100 }),
+            preloadImages: jest.fn().mockResolvedValue(undefined),
           },
         },
         {
@@ -181,7 +194,7 @@ describe('PDFGeneratorService', () => {
     expect(result.errors).toContain('Order number is required');
   });
 
-  it('should generate HTML content from order data', () => {
+  it('should generate HTML content from order data', async () => {
     const orderData: OrderPDFData = {
       orderNumber: 'ORD-123',
       orderDate: '2023-12-15',
@@ -242,7 +255,7 @@ describe('PDFGeneratorService', () => {
       locale: 'en',
     };
 
-    const htmlContent = templateEngine.generateHTMLFromOrderData(orderData, 'en');
+    const htmlContent = await templateEngine.generateHTMLFromOrderData(orderData, 'en');
 
     expect(htmlContent).toContain('ORDER CONFIRMATION');
     expect(htmlContent).toContain('ORD-123');

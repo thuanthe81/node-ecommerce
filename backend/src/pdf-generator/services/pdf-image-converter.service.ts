@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
 import * as http from 'http';
+import { SYSTEM } from '../../common/constants';
 
 /**
  * PDF Image Converter Service
@@ -218,17 +219,17 @@ export class PDFImageConverterService {
     const ext = path.extname(filePath).toLowerCase();
 
     const mimeTypes: Record<string, string> = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
+      '.jpg': SYSTEM.MIME_TYPES.JPEG,
+      '.jpeg': SYSTEM.MIME_TYPES.JPEG,
+      '.png': SYSTEM.MIME_TYPES.PNG,
       '.gif': 'image/gif',
-      '.webp': 'image/webp',
+      '.webp': SYSTEM.MIME_TYPES.WEBP,
       '.svg': 'image/svg+xml',
       '.bmp': 'image/bmp',
       '.ico': 'image/x-icon',
     };
 
-    return mimeTypes[ext] || 'image/jpeg'; // Default to JPEG
+    return mimeTypes[ext] || SYSTEM.MIME_TYPES.JPEG; // Default to JPEG
   }
 
   /**

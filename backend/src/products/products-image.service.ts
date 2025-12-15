@@ -9,6 +9,7 @@ import { CreateProductImageDto } from './dto/create-product-image.dto';
 import sharp from 'sharp';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { SYSTEM } from '../common/constants';
 
 @Injectable()
 export class ProductsImageService {
@@ -183,8 +184,8 @@ export class ProductsImageService {
     }
 
     // Validate file type
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    const allowedMimeTypes = [SYSTEM.MIME_TYPES.JPEG, SYSTEM.MIME_TYPES.PNG, SYSTEM.MIME_TYPES.WEBP];
+    if (!allowedMimeTypes.includes(file.mimetype as any)) {
       throw new BadRequestException(
         'Invalid file type. Only JPEG, PNG, and WebP are allowed.',
       );
@@ -287,7 +288,7 @@ export class ProductsImageService {
     // Ensure product-specific directories exist
     await this.ensureProductDirectories(productId);
 
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedMimeTypes = [SYSTEM.MIME_TYPES.JPEG, SYSTEM.MIME_TYPES.PNG, SYSTEM.MIME_TYPES.WEBP];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     // Validate all files first and collect errors
@@ -295,7 +296,7 @@ export class ProductsImageService {
     const validFiles: Express.Multer.File[] = [];
 
     for (const file of files) {
-      if (!allowedMimeTypes.includes(file.mimetype)) {
+      if (!allowedMimeTypes.includes(file.mimetype as any)) {
         validationErrors.push({
           filename: file.originalname,
           error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.',

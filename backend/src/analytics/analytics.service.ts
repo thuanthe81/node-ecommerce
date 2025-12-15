@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnalyticsEventDto } from './dto/create-analytics-event.dto';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 import { AnalyticsEventType } from '@prisma/client';
+import { STATUS } from '../common/constants';
 
 @Injectable()
 export class AnalyticsService {
@@ -108,7 +109,7 @@ export class AnalyticsService {
           productId,
           order: {
             createdAt: { gte: startDate, lte: endDate },
-            paymentStatus: 'PAID',
+            paymentStatus: STATUS.PAYMENT_STATUS.PAID,
           },
         },
         _sum: { quantity: true },
@@ -144,7 +145,7 @@ export class AnalyticsService {
     const orders = await this.prisma.order.aggregate({
       where: {
         createdAt: { gte: startDate, lte: endDate },
-        paymentStatus: 'PAID',
+        paymentStatus: STATUS.PAYMENT_STATUS.PAID,
       },
       _sum: { total: true },
       _count: true,
@@ -167,7 +168,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = 'PAID'
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
       GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
@@ -190,7 +191,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = 'PAID'
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
       GROUP BY TO_CHAR("createdAt", 'IYYY-IW')
       ORDER BY week ASC
     `;
@@ -213,7 +214,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = 'PAID'
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
       GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
       ORDER BY month ASC
     `;
@@ -229,7 +230,7 @@ export class AnalyticsService {
     const result = await this.prisma.order.aggregate({
       where: {
         createdAt: { gte: startDate, lte: endDate },
-        paymentStatus: 'PAID',
+        paymentStatus: STATUS.PAYMENT_STATUS.PAID,
       },
       _sum: { total: true },
     });
@@ -260,7 +261,7 @@ export class AnalyticsService {
         AND ae."createdAt" <= ${endDate}
       LEFT JOIN order_items oi ON oi."productId" = p.id
       LEFT JOIN orders o ON o.id = oi."orderId"
-        AND o."paymentStatus" = 'PAID'
+        AND o."paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
         AND o."createdAt" >= ${startDate}
         AND o."createdAt" <= ${endDate}
       GROUP BY p.id, p."nameEn", p."nameVi"

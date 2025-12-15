@@ -13,13 +13,14 @@ import { UpdateBlogCategoryDto } from './dto/update-blog-category.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { STATUS } from '../common/constants';
 
 @Controller('blog-categories')
 export class BlogCategoryController {
   constructor(private readonly blogCategoryService: BlogCategoryService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   create(@Body() createBlogCategoryDto: CreateBlogCategoryDto) {
     return this.blogCategoryService.create(createBlogCategoryDto);
   }
@@ -37,7 +38,7 @@ export class BlogCategoryController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updateBlogCategoryDto: UpdateBlogCategoryDto,
@@ -46,7 +47,7 @@ export class BlogCategoryController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.blogCategoryService.remove(id);
   }

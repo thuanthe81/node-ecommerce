@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ContentMedia } from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { SYSTEM } from '../common/constants';
 
 @Injectable()
 export class ContentMediaService {
@@ -18,12 +19,12 @@ export class ContentMediaService {
   async uploadMedia(file: Express.Multer.File): Promise<ContentMedia> {
     // Validate file type
     const allowedMimeTypes = [
-      'image/jpeg',
-      'image/png',
+      SYSTEM.MIME_TYPES.JPEG,
+      SYSTEM.MIME_TYPES.PNG,
       'image/gif',
-      'image/webp',
+      SYSTEM.MIME_TYPES.WEBP,
     ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    if (!allowedMimeTypes.includes(file.mimetype as any)) {
       throw new BadRequestException(
         'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.',
       );

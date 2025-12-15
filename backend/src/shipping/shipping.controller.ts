@@ -5,6 +5,7 @@ import { GenerateLabelDto } from './dto/generate-label.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { STATUS } from '../common/constants';
 
 @Controller('shipping')
 export class ShippingController {
@@ -17,7 +18,7 @@ export class ShippingController {
   }
 
   @Post('generate-label')
-  @Roles(UserRole.ADMIN)
+  @Roles(STATUS.USER_ROLES.ADMIN)
   async generateLabel(@Body() generateLabelDto: GenerateLabelDto) {
     return this.shippingService.generateShippingLabel(generateLabelDto);
   }

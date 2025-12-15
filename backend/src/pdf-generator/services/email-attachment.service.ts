@@ -16,6 +16,7 @@ import {
 } from '../types/pdf.types';
 import * as fs from 'fs';
 import * as path from 'path';
+import { SYSTEM } from '../../common/constants';
 
 interface DeliveryAttempt {
   timestamp: Date;
@@ -440,7 +441,7 @@ export class EmailAttachmentService {
           {
             filename: finalPdfFileName,
             path: finalPdfPath,
-            contentType: 'application/pdf',
+            contentType: SYSTEM.MIME_TYPES.PDF,
           },
         ],
       });
@@ -1127,7 +1128,7 @@ ${translations.signature}`;
       // Fetch footer settings from database
       const footerSettings = await this.footerSettingsService.getFooterSettings();
 
-      const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
+      const companyName = 'AlaCraft';
 
       return {
         companyName,

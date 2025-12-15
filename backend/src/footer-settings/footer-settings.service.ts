@@ -7,6 +7,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateFooterSettingsDto } from './dto/update-footer-settings.dto';
+import { CACHE_KEYS } from '../common/constants';
 
 export interface FooterSettings {
   id: string;
@@ -26,7 +27,6 @@ export interface FooterSettings {
 
 @Injectable()
 export class FooterSettingsService {
-  private readonly FOOTER_SETTINGS_CACHE_KEY = 'footer:settings';
   private readonly FOOTER_SETTINGS_CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
 
   constructor(
@@ -43,7 +43,7 @@ export class FooterSettingsService {
     try {
       // Try to get from cache first
       const cached = await this.cacheManager.get<FooterSettings>(
-        this.FOOTER_SETTINGS_CACHE_KEY,
+        CACHE_KEYS.SETTINGS.FOOTER,
       );
 
       if (cached) {
@@ -80,7 +80,7 @@ export class FooterSettingsService {
 
       // Store in cache with 1-hour TTL
       await this.cacheManager.set(
-        this.FOOTER_SETTINGS_CACHE_KEY,
+        CACHE_KEYS.SETTINGS.FOOTER,
         result,
         this.FOOTER_SETTINGS_CACHE_TTL,
       );
@@ -158,6 +158,6 @@ export class FooterSettingsService {
    * Called when footer settings are updated
    */
   private async invalidateFooterSettingsCache(): Promise<void> {
-    await this.cacheManager.del(this.FOOTER_SETTINGS_CACHE_KEY);
+    await this.cacheManager.del(CACHE_KEYS.SETTINGS.FOOTER);
   }
 }

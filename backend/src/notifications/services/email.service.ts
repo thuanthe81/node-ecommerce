@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
+import { SYSTEM } from '../../common/constants';
 
 const execAsync = promisify(exec);
 
@@ -61,11 +62,11 @@ export class EmailService {
 
       // Get contact email from footer settings to use as "from" address
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || 'noreply@example.com';
+      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || 'smtp.gmail.com';
-      const smtpPort = process.env.SMTP_PORT || '587';
+      const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
+      const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
       const smtpUser = smtpFrom || process.env.SMTP_USER || '';
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
@@ -78,7 +79,7 @@ export class EmailService {
       }
 
       // Add HTML body
-      command += ` --body '${html.replace(/"/g, '\\"').replace(/'/g, "\\'")}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: text/html"`;
+      command += ` --body '${html.replace(/"/g, '\\"').replace(/'/g, "\\'")}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: ${SYSTEM.MIME_TYPES.HTML}"`;
 
       await execAsync(command);
 
@@ -113,11 +114,11 @@ export class EmailService {
 
       // Get contact email from footer settings to use as "from" address
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || 'noreply@example.com';
+      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || 'smtp.gmail.com';
-      const smtpPort = process.env.SMTP_PORT || '587';
+      const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
+      const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
       const smtpUser = smtpFrom || process.env.SMTP_USER || '';
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
@@ -161,7 +162,7 @@ export class EmailService {
 
       // When attachments are present, swaks handles MIME structure automatically
       // Just add the body content and let swaks create the multipart structure
-      command += ` --attach-type text/html --attach-body '${simplifiedHtml.replace(/'/g, "'\\''")}'`;
+      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body '${simplifiedHtml.replace(/'/g, "'\\''")}'`;
 
       // Log the command for debugging (without sensitive info)
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
@@ -193,17 +194,17 @@ export class EmailService {
     const ext = path.extname(filePath).toLowerCase();
 
     const mimeTypes: Record<string, string> = {
-      '.pdf': 'application/pdf',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
+      '.pdf': SYSTEM.MIME_TYPES.PDF,
+      '.jpg': SYSTEM.MIME_TYPES.JPEG,
+      '.jpeg': SYSTEM.MIME_TYPES.JPEG,
+      '.png': SYSTEM.MIME_TYPES.PNG,
       '.gif': 'image/gif',
-      '.txt': 'text/plain',
-      '.html': 'text/html',
+      '.txt': SYSTEM.MIME_TYPES.TEXT,
+      '.html': SYSTEM.MIME_TYPES.HTML,
       '.css': 'text/css',
       '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.xml': 'application/xml',
+      '.json': SYSTEM.MIME_TYPES.JSON,
+      '.xml': SYSTEM.MIME_TYPES.XML,
       '.zip': 'application/zip',
       '.doc': 'application/msword',
       '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

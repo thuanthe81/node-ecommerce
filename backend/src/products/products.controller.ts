@@ -28,6 +28,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { STATUS, SYSTEM } from '../common/constants';
 
 @Controller('products')
 export class ProductsController {
@@ -38,7 +39,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   @UseInterceptors(FilesInterceptor('images', 10))
   create(
     @Body() createProductDto: CreateProductDto,
@@ -47,12 +48,12 @@ export class ProductsController {
     // If files are provided, use createWithImages, otherwise use regular create
     if (files && files.length > 0) {
       // Validate files
-      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      const allowedMimeTypes = [SYSTEM.MIME_TYPES.JPEG, SYSTEM.MIME_TYPES.PNG, SYSTEM.MIME_TYPES.WEBP];
       const maxSize = 5 * 1024 * 1024; // 5MB
 
       const invalidFiles = files.filter(
         (file) =>
-          !allowedMimeTypes.includes(file.mimetype) || file.size > maxSize,
+          !allowedMimeTypes.includes(file.mimetype as any) || file.size > maxSize,
       );
 
       if (invalidFiles.length === files.length) {
@@ -77,7 +78,7 @@ export class ProductsController {
 
   @Get('count')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   getCount() {
     return this.productsService.getCount();
   }
@@ -102,14 +103,14 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }
@@ -117,7 +118,7 @@ export class ProductsController {
   // Image management endpoints
   @Post(':id/images')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('file'))
   uploadImage(
     @Param('id') productId: string,
@@ -147,7 +148,7 @@ export class ProductsController {
 
   @Patch(':id/images/:imageId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   updateImageMetadata(
     @Param('id') productId: string,
     @Param('imageId') imageId: string,
@@ -162,7 +163,7 @@ export class ProductsController {
 
   @Delete(':id/images/:imageId')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   deleteImage(
     @Param('id') productId: string,
     @Param('imageId') imageId: string,
@@ -172,7 +173,7 @@ export class ProductsController {
 
   @Patch(':id/images/reorder')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
+  @Roles(STATUS.USER_ROLES.ADMIN)
   reorderImages(
     @Param('id') productId: string,
     @Body() reorderDto: ReorderImagesDto,

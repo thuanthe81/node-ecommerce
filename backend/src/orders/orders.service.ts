@@ -16,6 +16,7 @@ import { FooterSettingsService } from '../footer-settings/footer-settings.servic
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
+import { STATUS } from '../common/constants';
 
 @Injectable()
 export class OrdersService {
@@ -1184,7 +1185,7 @@ export class OrdersService {
     // - Admins can view any order
     // - Authenticated users can only view their own orders
     // - Guest users (no userId) can view guest orders (order.userId is null)
-    if (userRole === UserRole.ADMIN) {
+    if (userRole === STATUS.USER_ROLES.ADMIN) {
       // Admin can view any order
       return order;
     }

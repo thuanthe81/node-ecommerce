@@ -12,6 +12,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
+import { STATUS } from '../common/constants';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -406,7 +407,7 @@ describe('OrdersService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(orderWithDetails);
 
-      const result = await service.findOne('order-1', 'user-1', UserRole.ADMIN);
+      const result = await service.findOne('order-1', 'user-1', STATUS.USER_ROLES.ADMIN);
 
       expect(result).toHaveProperty('orderNumber');
     });
@@ -415,7 +416,7 @@ describe('OrdersService', () => {
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.findOne('non-existent-id', 'user-1', UserRole.CUSTOMER),
+        service.findOne('non-existent-id', 'user-1', STATUS.USER_ROLES.CUSTOMER),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -438,7 +439,7 @@ describe('OrdersService', () => {
       mockPrismaService.order.findUnique.mockResolvedValue(orderWithDetails);
 
       await expect(
-        service.findOne('order-1', 'user-1', UserRole.CUSTOMER),
+        service.findOne('order-1', 'user-1', STATUS.USER_ROLES.CUSTOMER),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -498,7 +499,7 @@ describe('OrdersService', () => {
       mockPrismaService.order.findUnique.mockResolvedValue(guestOrder);
 
       await expect(
-        service.findOne('order-1', 'user-1', UserRole.CUSTOMER),
+        service.findOne('order-1', 'user-1', STATUS.USER_ROLES.CUSTOMER),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -520,7 +521,7 @@ describe('OrdersService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(userOrder);
 
-      const result = await service.findOne('order-1', 'user-1', UserRole.CUSTOMER);
+      const result = await service.findOne('order-1', 'user-1', STATUS.USER_ROLES.CUSTOMER);
 
       expect(result).toHaveProperty('orderNumber');
       expect(result.userId).toBe('user-1');

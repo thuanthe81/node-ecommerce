@@ -13,10 +13,10 @@ import { Content, ContentType } from '@prisma/client';
 import { BlogCategoryService } from '../blog-category/blog-category.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { CACHE_KEYS, SYSTEM } from '../common/constants';
 
 @Injectable()
 export class ContentService {
-  private readonly HOMEPAGE_SECTIONS_CACHE_KEY = 'homepage:sections';
   private readonly HOMEPAGE_SECTIONS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
 
   // Blog cache keys and TTLs
@@ -357,7 +357,7 @@ export class ContentService {
   async getHomepageSections(): Promise<Content[]> {
     // Try to get from cache first
     const cached = await this.cacheManager.get<Content[]>(
-      this.HOMEPAGE_SECTIONS_CACHE_KEY,
+      CACHE_KEYS.CONTENT.HOMEPAGE_SECTIONS,
     );
 
     if (cached) {
@@ -377,7 +377,7 @@ export class ContentService {
 
     // Store in cache with 5-minute TTL
     await this.cacheManager.set(
-      this.HOMEPAGE_SECTIONS_CACHE_KEY,
+      CACHE_KEYS.CONTENT.HOMEPAGE_SECTIONS,
       sections,
       this.HOMEPAGE_SECTIONS_CACHE_TTL,
     );
@@ -617,7 +617,7 @@ export class ContentService {
    * Called when homepage sections are created, updated, or deleted
    */
   private async invalidateHomepageSectionsCache(): Promise<void> {
-    await this.cacheManager.del(this.HOMEPAGE_SECTIONS_CACHE_KEY);
+    await this.cacheManager.del(CACHE_KEYS.CONTENT.HOMEPAGE_SECTIONS);
   }
 
   /**
@@ -628,21 +628,21 @@ export class ContentService {
     limit: number,
     categorySlug?: string,
   ): string {
-    return `blog:list:${page}:${limit}:${categorySlug || 'all'}`;
+    return CACHE_KEYS.CONTENT.BLOG_LIST(page, limit, categorySlug);
   }
 
   /**
    * Generate cache key for blog post detail
    */
   private getBlogPostCacheKey(slug: string): string {
-    return `blog:post:${slug}`;
+    return CACHE_KEYS.CONTENT.BLOG_POST(slug);
   }
 
   /**
    * Generate cache key for related posts
    */
   private getBlogRelatedCacheKey(postId: string): string {
-    return `blog:related:${postId}`;
+    return CACHE_KEYS.CONTENT.BLOG_RELATED(postId);
   }
 
   /**
@@ -685,12 +685,12 @@ export class ContentService {
   ): Promise<{ url: string; filename: string }> {
     // Validate file type
     const allowedMimeTypes = [
-      'image/jpeg',
-      'image/png',
+      SYSTEM.MIME_TYPES.JPEG,
+      SYSTEM.MIME_TYPES.PNG,
       'image/gif',
-      'image/webp',
+      SYSTEM.MIME_TYPES.WEBP,
     ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    if (!allowedMimeTypes.includes(file.mimetype as any)) {
       throw new BadRequestException(
         'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.',
       );

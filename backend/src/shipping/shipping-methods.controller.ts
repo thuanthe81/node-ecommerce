@@ -17,10 +17,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { STATUS } from '../common/constants';
 
 @Controller('shipping-methods')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(STATUS.USER_ROLES.ADMIN)
 export class ShippingMethodsController {
   constructor(
     private readonly shippingMethodsService: ShippingMethodsService,
