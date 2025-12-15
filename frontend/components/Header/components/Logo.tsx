@@ -32,7 +32,7 @@ export function Logo({ locale }: LogoProps) {
         width={60}
         height={60}
         priority
-        className="h-auto w-auto"
+        className="h-auto w-auto rounded-full"
       />
     </Link>
   );
