@@ -37,6 +37,7 @@ export default function OrderDetailView({
 }: OrderDetailViewProps) {
   const { isAuthenticated } = useAuth();
   const t = useTranslations("orders");
+  const tEmail = useTranslations("email.pdfAttachment")
 
   // Fetch order data using custom hook
   const {
@@ -219,7 +220,7 @@ export default function OrderDetailView({
             <div className="mt-8 pt-6 border-t border-gray-200 print:hidden">
               <div className="text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {t('resendEmailDescription')}
+                  {tEmail('resendEmailDescription')}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   {locale === 'vi'

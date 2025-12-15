@@ -26,7 +26,8 @@ export function ResendEmailButton({
   locale,
   className = '',
 }: ResendEmailButtonProps) {
-  const t = useTranslations('orders');
+  // const t = useTranslations('orders');
+  const tEmail = useTranslations('email.pdfAttachment')
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -43,14 +44,14 @@ export function ResendEmailButton({
       if (data.success) {
         setMessage({
           type: 'success',
-          text: data.message || t('resendSuccess'),
+          text: data.message || tEmail('resendSuccess'),
         });
       } else {
         // Handle different error types
-        let errorMessage = data.message || t('resendError');
+        let errorMessage = data.message || tEmail('resendError');
 
         if (data.rateLimited) {
-          errorMessage = data.message || t('resendRateLimit');
+          errorMessage = data.message || tEmail('resendRateLimit');
         }
 
         setMessage({
@@ -62,10 +63,10 @@ export function ResendEmailButton({
       console.error('Error resending email:', error);
 
       // Handle API client errors
-      let errorMessage = t('resendError');
+      let errorMessage = tEmail('resendError');
 
       if (error.response?.status === 429) {
-        errorMessage = error.response?.data?.message || t('resendRateLimit');
+        errorMessage = error.response?.data?.message || tEmail('resendRateLimit');
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
@@ -85,8 +86,8 @@ export function ResendEmailButton({
         onClick={handleResendEmail}
         disabled={isLoading}
         className={`flex items-center justify-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 focus:bg-orange-700 active:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md ${className}`}
-        aria-label={t('resendEmailDescription')}
-        title={t('resendEmailDescription')}
+        aria-label={tEmail('resendEmailDescription')}
+        title={tEmail('resendEmailDescription')}
       >
         {isLoading ? (
           <>
@@ -104,7 +105,7 @@ export function ResendEmailButton({
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            {t('resendingEmail')}
+            {tEmail('resendingEmail')}
           </>
         ) : (
           <>
@@ -122,7 +123,7 @@ export function ResendEmailButton({
                 d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
             </svg>
-            {t('resendEmail')}
+            {tEmail('resendEmail')}
           </>
         )}
       </button>
