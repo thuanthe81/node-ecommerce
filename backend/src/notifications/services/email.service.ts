@@ -70,7 +70,7 @@ export class EmailService {
       }
 
       // Add HTML body
-      command += ` --body '${html.replace(/"/g, '\\"')}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: text/html"`;
+      command += ` --body '${html.replace(/"/g, '\\"').replace(/'/g, "\\'")}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: text/html"`;
 
       await execAsync(command);
 

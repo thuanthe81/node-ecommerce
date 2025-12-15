@@ -3873,7 +3873,7 @@
       },
       "shipped": {
         "en": "Shipped",
-        "vi": "Đã gửi hàng"
+        "vi": "Đã giao vận"
       },
       "delivered": {
         "en": "Delivered",
@@ -3886,6 +3886,162 @@
       "refunded": {
         "en": "Refunded",
         "vi": "Đã hoàn tiền"
+      }
+    },
+    "statusBadges": {
+      "order": {
+        "pending": {
+          "text": {
+            "en": "Pending",
+            "vi": "Chờ xử lý"
+          },
+          "description": {
+            "en": "Order is awaiting processing",
+            "vi": "Đơn hàng đang chờ xử lý"
+          },
+          "ariaLabel": {
+            "en": "Order status: Pending",
+            "vi": "Trạng thái đơn hàng: Chờ xử lý"
+          }
+        },
+        "processing": {
+          "text": {
+            "en": "Processing",
+            "vi": "Đang xử lý"
+          },
+          "description": {
+            "en": "Order is being processed",
+            "vi": "Đơn hàng đang được xử lý"
+          },
+          "ariaLabel": {
+            "en": "Order status: Processing",
+            "vi": "Trạng thái đơn hàng: Đang xử lý"
+          }
+        },
+        "shipped": {
+          "text": {
+            "en": "Shipped",
+            "vi": "Đã giao vận"
+          },
+          "description": {
+            "en": "Order has been shipped",
+            "vi": "Đơn hàng đã được giao vận"
+          },
+          "ariaLabel": {
+            "en": "Order status: Shipped",
+            "vi": "Trạng thái đơn hàng: Đã giao vận"
+          }
+        },
+        "delivered": {
+          "text": {
+            "en": "Delivered",
+            "vi": "Đã giao hàng"
+          },
+          "description": {
+            "en": "Order has been delivered",
+            "vi": "Đơn hàng đã được giao"
+          },
+          "ariaLabel": {
+            "en": "Order status: Delivered",
+            "vi": "Trạng thái đơn hàng: Đã giao hàng"
+          }
+        },
+        "cancelled": {
+          "text": {
+            "en": "Cancelled",
+            "vi": "Đã hủy"
+          },
+          "description": {
+            "en": "Order has been cancelled",
+            "vi": "Đơn hàng đã bị hủy"
+          },
+          "ariaLabel": {
+            "en": "Order status: Cancelled",
+            "vi": "Trạng thái đơn hàng: Đã hủy"
+          }
+        },
+        "refunded": {
+          "text": {
+            "en": "Refunded",
+            "vi": "Đã hoàn tiền"
+          },
+          "description": {
+            "en": "Order has been refunded",
+            "vi": "Đơn hàng đã được hoàn tiền"
+          },
+          "ariaLabel": {
+            "en": "Order status: Refunded",
+            "vi": "Trạng thái đơn hàng: Đã hoàn tiền"
+          }
+        }
+      },
+      "payment": {
+        "pending": {
+          "text": {
+            "en": "Pending",
+            "vi": "Chờ thanh toán"
+          },
+          "description": {
+            "en": "Payment is pending",
+            "vi": "Thanh toán đang chờ xử lý"
+          },
+          "ariaLabel": {
+            "en": "Payment status: Pending",
+            "vi": "Trạng thái thanh toán: Chờ thanh toán"
+          }
+        },
+        "paid": {
+          "text": {
+            "en": "Paid",
+            "vi": "Đã thanh toán"
+          },
+          "description": {
+            "en": "Payment has been completed",
+            "vi": "Thanh toán đã hoàn tất"
+          },
+          "ariaLabel": {
+            "en": "Payment status: Paid",
+            "vi": "Trạng thái thanh toán: Đã thanh toán"
+          }
+        },
+        "failed": {
+          "text": {
+            "en": "Failed",
+            "vi": "Thất bại"
+          },
+          "description": {
+            "en": "Payment has failed",
+            "vi": "Thanh toán đã thất bại"
+          },
+          "ariaLabel": {
+            "en": "Payment status: Failed",
+            "vi": "Trạng thái thanh toán: Thất bại"
+          }
+        },
+        "refunded": {
+          "text": {
+            "en": "Refunded",
+            "vi": "Đã hoàn tiền"
+          },
+          "description": {
+            "en": "Payment has been refunded",
+            "vi": "Thanh toán đã được hoàn lại"
+          },
+          "ariaLabel": {
+            "en": "Payment status: Refunded",
+            "vi": "Trạng thái thanh toán: Đã hoàn tiền"
+          }
+        }
+      },
+      "progress": {
+        "step": {
+          "en": "Step {current}/{total}",
+          "vi": "Bước {current}/{total}"
+        },
+        "ariaLabel": {
+          "en": "Progress: Step {current} of {total}",
+          "vi": "Tiến độ: Bước {current} trong số {total}"
+        }
       }
     },
     "paymentMethod": {
@@ -3974,6 +4130,400 @@
       "address": {
         "en": "Address",
         "vi": "Địa chỉ"
+      }
+    },
+    "buttons": {
+      "viewOrder": {
+        "en": "View Order",
+        "vi": "Xem đơn hàng"
+      },
+      "trackOrder": {
+        "en": "Track Order",
+        "vi": "Theo dõi đơn hàng"
+      },
+      "contactUs": {
+        "en": "Contact Us",
+        "vi": "Liên hệ chúng tôi"
+      },
+      "viewDetails": {
+        "en": "View Details",
+        "vi": "Xem chi tiết"
+      },
+      "continueShopping": {
+        "en": "Continue Shopping",
+        "vi": "Tiếp tục mua sắm"
+      },
+      "getStarted": {
+        "en": "Get Started",
+        "vi": "Bắt đầu"
+      },
+      "learnMore": {
+        "en": "Learn More",
+        "vi": "Tìm hiểu thêm"
+      },
+      "shopNow": {
+        "en": "Shop Now",
+        "vi": "Mua ngay"
+      },
+      "visitWebsite": {
+        "en": "Visit Website",
+        "vi": "Truy cập website"
+      },
+      "manageAccount": {
+        "en": "Manage Account",
+        "vi": "Quản lý tài khoản"
+      },
+      "updateProfile": {
+        "en": "Update Profile",
+        "vi": "Cập nhật hồ sơ"
+      },
+      "resetPassword": {
+        "en": "Reset Password",
+        "vi": "Đặt lại mật khẩu"
+      },
+      "verifyEmail": {
+        "en": "Verify Email",
+        "vi": "Xác thực email"
+      },
+      "downloadInvoice": {
+        "en": "Download Invoice",
+        "vi": "Tải hóa đơn"
+      },
+      "printReceipt": {
+        "en": "Print Receipt",
+        "vi": "In biên lai"
+      }
+    },
+    "styling": {
+      "modernLayout": {
+        "en": "Modern Email Layout",
+        "vi": "Bố cục email hiện đại"
+      },
+      "premiumDesign": {
+        "en": "Premium Design",
+        "vi": "Thiết kế cao cấp"
+      },
+      "professionalBranding": {
+        "en": "Professional Branding",
+        "vi": "Thương hiệu chuyên nghiệp"
+      },
+      "responsiveDesign": {
+        "en": "Responsive Design",
+        "vi": "Thiết kế đáp ứng"
+      },
+      "accessibleContent": {
+        "en": "Accessible Content",
+        "vi": "Nội dung dễ tiếp cận"
+      },
+      "modernTypography": {
+        "en": "Modern Typography",
+        "vi": "Kiểu chữ hiện đại"
+      },
+      "visualHierarchy": {
+        "en": "Visual Hierarchy",
+        "vi": "Thứ bậc thị giác"
+      },
+      "brandConsistency": {
+        "en": "Brand Consistency",
+        "vi": "Nhất quán thương hiệu"
+      },
+      "cardLayout": {
+        "en": "Card Layout",
+        "vi": "Bố cục thẻ"
+      },
+      "modernButtons": {
+        "en": "Modern Buttons",
+        "vi": "Nút hiện đại"
+      },
+      "statusBadges": {
+        "en": "Status Badges",
+        "vi": "Huy hiệu trạng thái"
+      },
+      "visualElements": {
+        "en": "Visual Elements",
+        "vi": "Yếu tố thị giác"
+      }
+    },
+    "accessibility": {
+      "altText": {
+        "en": "Alternative text for image",
+        "vi": "Văn bản thay thế cho hình ảnh"
+      },
+      "skipToContent": {
+        "en": "Skip to main content",
+        "vi": "Bỏ qua đến nội dung chính"
+      },
+      "screenReaderOnly": {
+        "en": "Screen reader only content",
+        "vi": "Nội dung chỉ dành cho trình đọc màn hình"
+      },
+      "keyboardNavigation": {
+        "en": "Keyboard navigation available",
+        "vi": "Có thể điều hướng bằng bàn phím"
+      },
+      "highContrast": {
+        "en": "High contrast mode",
+        "vi": "Chế độ tương phản cao"
+      },
+      "focusIndicator": {
+        "en": "Focus indicator",
+        "vi": "Chỉ báo tiêu điểm"
+      },
+      "ariaLabel": {
+        "orderStatus": {
+          "en": "Order status: {status}",
+          "vi": "Trạng thái đơn hàng: {status}"
+        },
+        "paymentStatus": {
+          "en": "Payment status: {status}",
+          "vi": "Trạng thái thanh toán: {status}"
+        },
+        "button": {
+          "en": "Button: {text}",
+          "vi": "Nút: {text}"
+        },
+        "link": {
+          "en": "Link: {text}",
+          "vi": "Liên kết: {text}"
+        }
+      }
+    },
+    "shippingNotification": {
+      "subject": {
+        "en": "🚚 Order #{orderNumber} has been shipped",
+        "vi": "🚚 Đơn hàng #{orderNumber} đã được gửi đi"
+      },
+      "title": {
+        "en": "Your order is on the way!",
+        "vi": "Đơn hàng của bạn đang trên đường!"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "intro": {
+        "en": "Great news! Your order has been shipped and is on its way to you.",
+        "vi": "Tin tuyệt vời! Đơn hàng của bạn đã được gửi đi và đang trên đường đến bạn."
+      },
+      "trackingNumber": {
+        "en": "Tracking Number",
+        "vi": "Mã vận đơn"
+      },
+      "shippingAddress": {
+        "en": "Shipping Address",
+        "vi": "Địa chỉ giao hàng"
+      },
+      "estimatedDelivery": {
+        "en": "Estimated Delivery",
+        "vi": "Thời gian giao hàng dự kiến"
+      },
+      "trackingInstructions": {
+        "en": "You can track your package using the tracking number above.",
+        "vi": "Bạn có thể theo dõi gói hàng bằng mã vận đơn ở trên."
+      }
+    },
+    "welcomeEmail": {
+      "subject": {
+        "en": "Welcome to AlaCraft - Your Handmade Journey Begins!",
+        "vi": "Chào mừng đến với AlaCraft - Hành trình thủ công của bạn bắt đầu!"
+      },
+      "title": {
+        "en": "Welcome to AlaCraft!",
+        "vi": "Chào mừng đến với AlaCraft!"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "intro": {
+        "en": "Thank you for joining our community of handmade craft enthusiasts!",
+        "vi": "Cảm ơn bạn đã tham gia cộng đồng những người đam mê thủ công của chúng tôi!"
+      },
+      "getStarted": {
+        "en": "Get started by exploring our unique collection of handmade products.",
+        "vi": "Bắt đầu bằng cách khám phá bộ sưu tập sản phẩm thủ công độc đáo của chúng tôi."
+      }
+    },
+    "passwordReset": {
+      "subject": {
+        "en": "Reset Your AlaCraft Password",
+        "vi": "Đặt lại mật khẩu AlaCraft của bạn"
+      },
+      "title": {
+        "en": "Password Reset Request",
+        "vi": "Yêu cầu đặt lại mật khẩu"
+      },
+      "greeting": {
+        "en": "Hello {customerName},",
+        "vi": "Xin chào {customerName},"
+      },
+      "intro": {
+        "en": "We received a request to reset your password. Click the button below to create a new password.",
+        "vi": "Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu của bạn. Nhấp vào nút bên dưới để tạo mật khẩu mới."
+      },
+      "expiry": {
+        "en": "This link will expire in 24 hours for security reasons.",
+        "vi": "Liên kết này sẽ hết hạn sau 24 giờ vì lý do bảo mật."
+      },
+      "noRequest": {
+        "en": "If you didn't request this password reset, please ignore this email.",
+        "vi": "Nếu bạn không yêu cầu đặt lại mật khẩu này, vui lòng bỏ qua email này."
+      }
+    },
+    "layout": {
+      "header": {
+        "companyName": {
+          "en": "AlaCraft",
+          "vi": "AlaCraft"
+        },
+        "tagline": {
+          "en": "Handmade with Love",
+          "vi": "Làm thủ công với tình yêu"
+        },
+        "modernBranding": {
+          "en": "Premium Handmade Crafts",
+          "vi": "Thủ công cao cấp"
+        }
+      },
+      "footer": {
+        "copyright": {
+          "en": "© 2024 AlaCraft. All rights reserved.",
+          "vi": "© 2024 AlaCraft. Tất cả quyền được bảo lưu."
+        },
+        "followUs": {
+          "en": "Follow us on social media",
+          "vi": "Theo dõi chúng tôi trên mạng xã hội"
+        },
+        "unsubscribe": {
+          "en": "Unsubscribe from emails",
+          "vi": "Hủy đăng ký email"
+        },
+        "privacyPolicy": {
+          "en": "Privacy Policy",
+          "vi": "Chính sách bảo mật"
+        },
+        "termsOfService": {
+          "en": "Terms of Service",
+          "vi": "Điều khoản dịch vụ"
+        }
+      },
+      "cards": {
+        "orderSummary": {
+          "en": "Order Summary",
+          "vi": "Tóm tắt đơn hàng"
+        },
+        "customerInfo": {
+          "en": "Customer Information",
+          "vi": "Thông tin khách hàng"
+        },
+        "shippingInfo": {
+          "en": "Shipping Information",
+          "vi": "Thông tin giao hàng"
+        },
+        "paymentInfo": {
+          "en": "Payment Information",
+          "vi": "Thông tin thanh toán"
+        },
+        "orderItems": {
+          "en": "Order Items",
+          "vi": "Sản phẩm đặt hàng"
+        },
+        "contactCard": {
+          "en": "Contact Information",
+          "vi": "Thông tin liên hệ"
+        },
+        "addressCard": {
+          "en": "Address Details",
+          "vi": "Chi tiết địa chỉ"
+        },
+        "productCard": {
+          "en": "Product Details",
+          "vi": "Chi tiết sản phẩm"
+        }
+      },
+      "sections": {
+        "modernHeader": {
+          "en": "Modern Email Header",
+          "vi": "Tiêu đề email hiện đại"
+        },
+        "contentArea": {
+          "en": "Main Content Area",
+          "vi": "Khu vực nội dung chính"
+        },
+        "professionalFooter": {
+          "en": "Professional Footer",
+          "vi": "Chân trang chuyên nghiệp"
+        },
+        "cardSection": {
+          "en": "Card-based Section",
+          "vi": "Phần dựa trên thẻ"
+        },
+        "tableSection": {
+          "en": "Modern Table Section",
+          "vi": "Phần bảng hiện đại"
+        }
+      }
+    },
+    "modernFeatures": {
+      "responsiveDesign": {
+        "title": {
+          "en": "Responsive Design",
+          "vi": "Thiết kế đáp ứng"
+        },
+        "description": {
+          "en": "Optimized for all devices and screen sizes",
+          "vi": "Tối ưu hóa cho tất cả thiết bị và kích thước màn hình"
+        }
+      },
+      "accessibilityCompliant": {
+        "title": {
+          "en": "Accessibility Compliant",
+          "vi": "Tuân thủ khả năng tiếp cận"
+        },
+        "description": {
+          "en": "WCAG 2.1 AA compliant for all users",
+          "vi": "Tuân thủ WCAG 2.1 AA cho tất cả người dùng"
+        }
+      },
+      "crossClientCompatible": {
+        "title": {
+          "en": "Cross-Client Compatible",
+          "vi": "Tương thích đa nền tảng"
+        },
+        "description": {
+          "en": "Works perfectly across all email clients",
+          "vi": "Hoạt động hoàn hảo trên tất cả ứng dụng email"
+        }
+      },
+      "modernStyling": {
+        "title": {
+          "en": "Modern Styling",
+          "vi": "Phong cách hiện đại"
+        },
+        "description": {
+          "en": "Contemporary design with premium aesthetics",
+          "vi": "Thiết kế đương đại với thẩm mỹ cao cấp"
+        }
+      },
+      "darkModeSupport": {
+        "title": {
+          "en": "Dark Mode Support",
+          "vi": "Hỗ trợ chế độ tối"
+        },
+        "description": {
+          "en": "Optimized for both light and dark themes",
+          "vi": "Tối ưu hóa cho cả chủ đề sáng và tối"
+        }
+      },
+      "printFriendly": {
+        "title": {
+          "en": "Print Friendly",
+          "vi": "Thân thiện với in ấn"
+        },
+        "description": {
+          "en": "Optimized layout for printing",
+          "vi": "Bố cục tối ưu hóa cho in ấn"
+        }
       }
     }
   }

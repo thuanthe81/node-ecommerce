@@ -124,6 +124,7 @@ describe('FooterSettingsService', () => {
           facebookUrl: updateDto.facebookUrl,
           twitterUrl: updateDto.twitterUrl,
           tiktokUrl: updateDto.tiktokUrl,
+          whatsappUrl: null,
           zaloUrl: null,
         },
       });
@@ -178,6 +179,7 @@ describe('FooterSettingsService', () => {
           facebookUrl: updateDto.facebookUrl,
           twitterUrl: null,
           tiktokUrl: null,
+          whatsappUrl: null,
           zaloUrl: null,
         },
       });

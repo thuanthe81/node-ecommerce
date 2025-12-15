@@ -81,6 +81,7 @@ describe('GoogleStrategy', () => {
       const done = jest.fn();
 
       await strategy.validate(
+        {}, // req parameter
         'access-token',
         'refresh-token',
         mockProfile as Profile,
@@ -97,7 +98,7 @@ describe('GoogleStrategy', () => {
         isEmailVerified: true,
       });
 
-      expect(done).toHaveBeenCalledWith(null, mockAuthResponse);
+      expect(done).toHaveBeenCalledWith(null, { ...mockAuthResponse, redirect: undefined });
     });
 
     it('should handle profile without name object', async () => {
@@ -125,6 +126,7 @@ describe('GoogleStrategy', () => {
       const done = jest.fn();
 
       await strategy.validate(
+        {}, // req parameter
         'access-token',
         'refresh-token',
         mockProfile as Profile,
@@ -141,7 +143,7 @@ describe('GoogleStrategy', () => {
         isEmailVerified: true,
       });
 
-      expect(done).toHaveBeenCalledWith(null, mockAuthResponse);
+      expect(done).toHaveBeenCalledWith(null, { ...mockAuthResponse, redirect: undefined });
     });
 
     it('should return error if email is not provided', async () => {
@@ -154,6 +156,7 @@ describe('GoogleStrategy', () => {
       const done = jest.fn();
 
       await strategy.validate(
+        {}, // req parameter
         'access-token',
         'refresh-token',
         mockProfile as Profile,
@@ -182,6 +185,7 @@ describe('GoogleStrategy', () => {
       const done = jest.fn();
 
       await strategy.validate(
+        {}, // req parameter
         'access-token',
         'refresh-token',
         mockProfile as Profile,

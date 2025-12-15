@@ -3,6 +3,7 @@ import { OrdersService } from './orders.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../notifications/services/email.service';
 import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 describe('OrdersService - Zero Price Products', () => {
@@ -99,6 +100,10 @@ describe('OrdersService - Zero Price Products', () => {
     }),
   };
 
+  const mockFooterSettingsService = {
+    getFooterSettings: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -106,6 +111,7 @@ describe('OrdersService - Zero Price Products', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EmailService, useValue: mockEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: FooterSettingsService, useValue: mockFooterSettingsService },
       ],
     }).compile();
 
