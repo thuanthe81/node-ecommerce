@@ -6,6 +6,7 @@ import { PDFErrorHandlerService } from './pdf-error-handler.service';
 import { PDFMonitoringService } from './pdf-monitoring.service';
 import { PDFAuditService } from './pdf-audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import {
   OrderPDFData,
   SimplifiedEmailTemplate,
@@ -50,6 +51,7 @@ export class EmailAttachmentService {
     private monitoringService: PDFMonitoringService,
     private auditService: PDFAuditService,
     private prismaService: PrismaService,
+    private footerSettingsService: FooterSettingsService,
   ) {}
 
   /**
@@ -1053,7 +1055,7 @@ ${translations.signature}`;
           name: order.shippingMethod || 'Standard',
           description: this.getShippingMethodDescription(order.shippingMethod || 'standard', 'en'), // Will be localized in PDF
         },
-        businessInfo: await this.getBusinessInfo(),
+        businessInfo: await this.getBusinessInfo('en'), // Will be overridden by the locale parameter
         locale: 'en', // Will be overridden by the locale parameter
       };
 
@@ -1116,27 +1118,90 @@ ${translations.signature}`;
   }
 
   /**
-   * Get business information for PDF
-   * @returns Promise<BusinessInfoData> - Business information
+   * Get business information for PDF from footer settings
+   * @param locale - Language locale for localized content
+   * @returns Promise<BusinessInfoData> - Business information from database
    */
-  private async getBusinessInfo(): Promise<any> {
-    // In a real implementation, this could fetch from database or configuration
+  private async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<any> {
+    try {
+      // Fetch footer settings from database
+      const footerSettings = await this.footerSettingsService.getFooterSettings();
+
+      const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
+
+      return {
+        companyName,
+        logoUrl: '/uploads/logo.jpg', // Can be enhanced with actual logo URL from assets
+        contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
+        contactPhone: footerSettings?.contactPhone || undefined,
+        website: this.constructWebsiteUrl(footerSettings),
+        address: this.createBusinessAddress(footerSettings, companyName, locale),
+        returnPolicy: undefined,
+        termsAndConditions: undefined,
+      };
+    } catch (error) {
+      this.logger.error('Failed to fetch business info from footer settings:', error);
+
+      // Return fallback business info if database fetch fails
+      const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
+      return {
+        companyName,
+        logoUrl: '/uploads/logo.jpg',
+        contactEmail: 'contact@alacraft.com',
+        contactPhone: undefined,
+        website: 'https://www.alacraft.com',
+        address: {
+          fullName: companyName,
+          addressLine1: undefined,
+          addressLine2: undefined,
+          city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
+          state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
+          postalCode: '70000',
+          country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
+          phone: undefined,
+        },
+        returnPolicy: undefined,
+        termsAndConditions: undefined,
+      };
+    }
+  }
+
+  /**
+   * Construct website URL from available settings
+   * @param footerSettings - Footer settings from database
+   * @returns Website URL or undefined
+   */
+  private constructWebsiteUrl(footerSettings: any): string | undefined {
+    // Try to construct website URL from available social media links or contact info
+    if (footerSettings?.facebookUrl) {
+      // Extract domain from Facebook URL if it's a business page
+      const match = footerSettings.facebookUrl.match(/facebook\.com\/([^\/]+)/);
+      if (match && !match[1].includes('profile.php')) {
+        return `https://www.${match[1]}.com`; // Attempt to guess website
+      }
+    }
+
+    // Default to a placeholder that can be updated
+    return 'https://www.alacraft.com';
+  }
+
+  /**
+   * Create comprehensive business address from footer settings
+   * @param footerSettings - Footer settings from database
+   * @param companyName - Company name
+   * @param locale - Language locale
+   * @returns Complete business address
+   */
+  private createBusinessAddress(footerSettings: any, companyName: string, locale: 'en' | 'vi'): any {
     return {
-      companyName: 'AlaCraft',
-      logoUrl: '/logo.jpg',
-      contactEmail: 'info@alacraft.com',
-      contactPhone: '+84 123 456 789',
-      website: 'https://alacraft.com',
-      address: {
-        fullName: 'AlaCraft',
-        addressLine1: '123 Craft Street',
-        city: 'Ho Chi Minh City',
-        state: 'Ho Chi Minh',
-        postalCode: '700000',
-        country: 'Vietnam',
-      },
-      returnPolicy: 'Returns accepted within 30 days',
-      termsAndConditions: 'Terms and conditions apply',
+      fullName: companyName,
+      addressLine1: footerSettings?.address || undefined,
+      addressLine2: undefined,
+      city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
+      state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
+      postalCode: '70000',
+      country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
+      phone: footerSettings?.contactPhone || undefined,
     };
   }
 

@@ -576,15 +576,8 @@ export class PDFDocumentStructureService {
             src="${paymentMethod.qrCodeUrl}"
             alt="${isVietnamese ? 'Mã QR thanh toán' : 'Payment QR Code'}"
             class="qr-code"
-            onerror="this.parentElement.innerHTML='<div class=\\"qr-error\\">${isVietnamese ? 'Không thể tải mã QR' : 'QR Code unavailable'}</div>'"
           >
         </div>
-        <p class="qr-instruction">
-          ${isVietnamese
-            ? 'Quét mã QR này để thanh toán nhanh chóng'
-            : 'Scan this QR code for quick payment'
-          }
-        </p>
       </div>
     `;
   }

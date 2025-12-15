@@ -11,6 +11,7 @@ import { PDFCompressionService } from './services/pdf-compression.service';
 import { PDFErrorHandlerService } from './services/pdf-error-handler.service';
 import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
+import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { OrderPDFData } from './types/pdf.types';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -74,6 +75,16 @@ describe('PDF Generation Integration', () => {
           provide: PDFAuditService,
           useValue: {
             logPDFGeneration: jest.fn(),
+          },
+        },
+        {
+          provide: PDFImageConverterService,
+          useValue: {
+            convertImageToBase64: jest.fn().mockResolvedValue('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='),
+            convertMultipleImages: jest.fn().mockResolvedValue(new Map()),
+            getCacheStats: jest.fn().mockReturnValue({ size: 0, maxSize: 100 }),
+            clearCache: jest.fn(),
+            preloadImages: jest.fn().mockResolvedValue(undefined),
           },
         },
         {

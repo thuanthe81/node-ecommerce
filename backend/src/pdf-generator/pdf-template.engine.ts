@@ -11,6 +11,7 @@ import { PDFDocumentStructureService } from './pdf-document-structure.service';
 import { PDFLocalizationService } from './services/pdf-localization.service';
 import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
+import { PDFImageConverterService } from './services/pdf-image-converter.service';
 
 @Injectable()
 export class PDFTemplateEngine {
@@ -20,7 +21,8 @@ export class PDFTemplateEngine {
     private documentStructure: PDFDocumentStructureService,
     private localization: PDFLocalizationService,
     private accessibilityService: PDFAccessibilityService,
-    private deviceOptimization: PDFDeviceOptimizationService
+    private deviceOptimization: PDFDeviceOptimizationService,
+    private imageConverter: PDFImageConverterService
   ) {}
 
   /**
@@ -29,16 +31,19 @@ export class PDFTemplateEngine {
    * @param locale - Language locale for the template
    * @returns Complete PDF template with styling and content
    */
-  createOrderTemplate(data: OrderPDFData, locale: 'en' | 'vi' = 'en'): PDFTemplate {
+  async createOrderTemplate(data: OrderPDFData, locale: 'en' | 'vi' = 'en'): Promise<PDFTemplate> {
     this.logger.log(`Creating order template for order ${data.orderNumber} in locale ${locale}`);
 
+    // Convert images to base64 before creating template
+    const dataWithBase64Images = await this.convertImagesToBase64(data);
+
     const styling = this.getDefaultStyling();
-    const metadata = this.createMetadata(data, locale);
+    const metadata = this.createMetadata(dataWithBase64Images, locale);
 
     const template: PDFTemplate = {
-      header: this.createHeaderSection(data, locale),
-      content: this.createContentSections(data, locale),
-      footer: this.createFooterSection(data, locale),
+      header: this.createHeaderSection(dataWithBase64Images, locale),
+      content: this.createContentSections(dataWithBase64Images, locale),
+      footer: this.createFooterSection(dataWithBase64Images, locale),
       styling,
       metadata,
     };
@@ -52,10 +57,10 @@ export class PDFTemplateEngine {
    * @param locale - Language locale for the template
    * @returns Complete PDF template formatted as invoice
    */
-  createInvoiceTemplate(data: OrderPDFData, locale: 'en' | 'vi' = 'en'): PDFTemplate {
+  async createInvoiceTemplate(data: OrderPDFData, locale: 'en' | 'vi' = 'en'): Promise<PDFTemplate> {
     this.logger.log(`Creating invoice template for order ${data.orderNumber} in locale ${locale}`);
 
-    const orderTemplate = this.createOrderTemplate(data, locale);
+    const orderTemplate = await this.createOrderTemplate(data, locale);
 
     // Modify template for invoice format
     orderTemplate.metadata.title = locale === 'vi' ? `Hóa đơn ${data.orderNumber}` : `Invoice ${data.orderNumber}`;
@@ -172,9 +177,12 @@ export class PDFTemplateEngine {
    * @param locale - Language locale
    * @returns Complete HTML string ready for PDF generation
    */
-  generateHTMLFromOrderData(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
+  async generateHTMLFromOrderData(orderData: OrderPDFData, locale: 'en' | 'vi'): Promise<string> {
+    // Convert images to base64 before generating HTML
+    const dataWithBase64Images = await this.convertImagesToBase64(orderData);
+
     const styling = this.getDefaultStyling();
-    return this.documentStructure.generateDocumentStructure(orderData, locale, styling);
+    return this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
   }
 
   /**
@@ -783,5 +791,62 @@ export class PDFTemplateEngine {
     return baseCSS + accessibilityCSS + deviceCSS;
   }
 
+  /**
+   * Convert all images in order data to base64 data URLs
+   * @param data - Order data with image URLs
+   * @returns Promise<OrderPDFData> - Order data with base64 image URLs
+   */
+  private async convertImagesToBase64(data: OrderPDFData): Promise<OrderPDFData> {
+    this.logger.debug(`Converting images to base64 for order ${data.orderNumber}`);
+
+    // Collect all image URLs that are not already base64 data URLs
+    const imageUrls: string[] = [];
+
+    // Collect product images (skip if already base64)
+    data.items.forEach(item => {
+      if (item.imageUrl && typeof item.imageUrl === 'string' && !item.imageUrl.startsWith('data:')) {
+        imageUrls.push(item.imageUrl);
+      }
+    });
+
+    // Collect QR code image (skip if already base64)
+    if (data.paymentMethod.qrCodeUrl && typeof data.paymentMethod.qrCodeUrl === 'string' && !data.paymentMethod.qrCodeUrl.startsWith('data:')) {
+      imageUrls.push(data.paymentMethod.qrCodeUrl);
+    }
+
+    // Collect business logo (skip if already base64)
+    if (data.businessInfo.logoUrl && typeof data.businessInfo.logoUrl === 'string' && !data.businessInfo.logoUrl.startsWith('data:')) {
+      imageUrls.push(data.businessInfo.logoUrl);
+    }
+
+    // Convert all images to base64
+    const imageMap = await this.imageConverter.convertMultipleImages(imageUrls);
+
+    // Create a copy of the data with converted images
+    const convertedData: OrderPDFData = {
+      ...data,
+      items: data.items.map(item => ({
+        ...item,
+        imageUrl: item.imageUrl && typeof item.imageUrl === 'string'
+          ? (item.imageUrl.startsWith('data:') ? item.imageUrl : (imageMap.get(item.imageUrl) || item.imageUrl))
+          : item.imageUrl
+      })),
+      paymentMethod: {
+        ...data.paymentMethod,
+        qrCodeUrl: data.paymentMethod.qrCodeUrl && typeof data.paymentMethod.qrCodeUrl === 'string'
+          ? (data.paymentMethod.qrCodeUrl.startsWith('data:') ? data.paymentMethod.qrCodeUrl : (imageMap.get(data.paymentMethod.qrCodeUrl) || data.paymentMethod.qrCodeUrl))
+          : data.paymentMethod.qrCodeUrl
+      },
+      businessInfo: {
+        ...data.businessInfo,
+        logoUrl: data.businessInfo.logoUrl && typeof data.businessInfo.logoUrl === 'string'
+          ? (data.businessInfo.logoUrl.startsWith('data:') ? data.businessInfo.logoUrl : (imageMap.get(data.businessInfo.logoUrl) || data.businessInfo.logoUrl))
+          : data.businessInfo.logoUrl
+      }
+    };
+
+    this.logger.debug(`Converted ${imageMap.size} images to base64 for order ${data.orderNumber}`);
+    return convertedData;
+  }
 
 }

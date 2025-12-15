@@ -15,13 +15,15 @@ import { ResendEmailHandlerService } from './services/resend-email-handler.servi
 import { PDFErrorHandlerService } from './services/pdf-error-handler.service';
 import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
+import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { PDFHealthController } from './controllers/pdf-health.controller';
 import { PaymentSettingsService } from '../payment-settings/payment-settings.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, ScheduleModule.forRoot()],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ScheduleModule.forRoot()],
   controllers: [PDFHealthController],
   providers: [
     PDFGeneratorService,
@@ -39,6 +41,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     PDFErrorHandlerService,
     PDFMonitoringService,
     PDFAuditService,
+    PDFImageConverterService,
     PaymentSettingsService
   ],
   exports: [
@@ -56,7 +59,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ResendEmailHandlerService,
     PDFErrorHandlerService,
     PDFMonitoringService,
-    PDFAuditService
+    PDFAuditService,
+    PDFImageConverterService
   ],
 })
 export class PDFGeneratorModule {}

@@ -11,6 +11,7 @@ import { PDFCompressionService } from './services/pdf-compression.service';
 import { PDFErrorHandlerService } from './services/pdf-error-handler.service';
 import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
+import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { PaymentSettingsService } from '../payment-settings/payment-settings.service';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class PDFGeneratorService {
     @Inject(forwardRef(() => PDFMonitoringService))
     private monitoringService: PDFMonitoringService,
     private auditService: PDFAuditService,
+    private imageConverter: PDFImageConverterService,
     private paymentSettingsService: PaymentSettingsService
   ) {}
 
@@ -132,7 +134,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -311,7 +313,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine for invoice with document structure
-      let htmlContent = this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -521,7 +523,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -634,7 +636,7 @@ export class PDFGeneratorService {
       await page.setViewport(viewportSettings);
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);

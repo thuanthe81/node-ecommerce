@@ -640,13 +640,13 @@ export class OrdersService {
 
     return {
       companyName,
-      logoUrl: undefined, // Can be enhanced with actual logo URL from assets
+      logoUrl: '/uploads/logo.jpg', // Can be enhanced with actual logo URL from assets
       contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
       contactPhone: footerSettings?.contactPhone || undefined,
       website: this.constructWebsiteUrl(footerSettings),
       address: this.createBusinessAddress(footerSettings, companyName, locale),
-      returnPolicy: this.getReturnPolicy(locale),
-      termsAndConditions: this.getTermsAndConditions(locale),
+      returnPolicy: undefined,
+      termsAndConditions: undefined,
     };
   }
 
@@ -679,7 +679,7 @@ export class OrdersService {
   private createBusinessAddress(footerSettings: any, companyName: string, locale: 'en' | 'vi'): AddressData {
     return {
       fullName: companyName,
-      addressLine1: footerSettings?.address || this.getDefaultBusinessAddress(locale),
+      addressLine1: footerSettings?.address || undefined,
       addressLine2: undefined,
       city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
       state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
@@ -687,125 +687,6 @@ export class OrdersService {
       country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
       phone: footerSettings?.contactPhone || undefined,
     };
-  }
-
-  /**
-   * Get default business address based on locale
-   * @param locale - Language locale
-   * @returns Default business address string
-   */
-  private getDefaultBusinessAddress(locale: 'en' | 'vi'): string {
-    return locale === 'vi'
-      ? 'Địa chỉ: Quận 1, Thành phố Hồ Chí Minh'
-      : 'Address: District 1, Ho Chi Minh City';
-  }
-
-  /**
-   * Get comprehensive return policy based on locale
-   * @param locale - Language locale
-   * @returns Detailed return policy text
-   */
-  private getReturnPolicy(locale: 'en' | 'vi'): string {
-    if (locale === 'vi') {
-      return `CHÍNH SÁCH ĐỔI TRẢ HÀNG
-
-1. Thời gian đổi trả: Trong vòng 7 ngày kể từ ngày nhận hàng
-2. Điều kiện đổi trả:
-   - Sản phẩm còn nguyên vẹn, chưa qua sử dụng
-   - Còn đầy đủ bao bì, nhãn mác gốc
-   - Có hóa đơn mua hàng hoặc email xác nhận đơn hàng
-
-3. Sản phẩm không được đổi trả:
-   - Sản phẩm đã qua sử dụng hoặc bị hư hỏng do lỗi người dùng
-   - Sản phẩm làm theo yêu cầu riêng (custom)
-
-4. Liên hệ đổi trả:
-   - Email: contact@alacraft.com
-   - Điện thoại: (nếu có trong thông tin liên hệ)
-
-Lưu ý: Phí vận chuyển đổi trả sẽ do khách hàng chịu trừ trường hợp lỗi từ phía AlaCraft.`;
-    } else {
-      return `RETURN POLICY
-
-1. Return Period: Within 7 days from delivery date
-2. Return Conditions:
-   - Product must be in original condition, unused
-   - Original packaging and labels must be intact
-   - Must have purchase receipt or order confirmation email
-
-3. Non-returnable Items:
-   - Used or damaged products due to customer error
-   - Custom-made products
-
-4. Return Contact:
-   - Email: contact@alacraft.com
-   - Phone: (if available in contact information)
-
-Note: Return shipping costs are customer's responsibility unless the error is from AlaCraft's side.`;
-    }
-  }
-
-  /**
-   * Get comprehensive terms and conditions based on locale
-   * @param locale - Language locale
-   * @returns Detailed terms and conditions text
-   */
-  private getTermsAndConditions(locale: 'en' | 'vi'): string {
-    if (locale === 'vi') {
-      return `ĐIỀU KHOẢN VÀ ĐIỀU KIỆN
-
-1. CHẤP NHẬN ĐIỀU KHOẢN
-Bằng việc đặt hàng, quý khách đồng ý với các điều khoản và điều kiện sau.
-
-2. SẢN PHẨM VÀ GIA CẢ
-- Tất cả sản phẩm được mô tả chính xác nhất có thể
-- Giá cả có thể thay đổi mà không cần báo trước
-- Sản phẩm handmade có thể có sự khác biệt nhỏ về màu sắc và kích thước
-
-3. THANH TOÁN
-- Chấp nhận các hình thức thanh toán được liệt kê trên website
-- Đơn hàng chỉ được xử lý sau khi thanh toán thành công
-
-4. GIAO HÀNG
-- Thời gian giao hàng là ước tính và có thể thay đổi
-- AlaCraft không chịu trách nhiệm về sự chậm trễ do bên thứ ba
-
-5. BẢO MẬT THÔNG TIN
-- Thông tin khách hàng được bảo mật theo chính sách riêng tư
-- Không chia sẻ thông tin với bên thứ ba không liên quan
-
-6. LIÊN HỆ
-Mọi thắc mắc xin liên hệ: contact@alacraft.com
-
-Điều khoản có hiệu lực từ ngày ${new Date().toLocaleDateString('vi-VN')}`;
-    } else {
-      return `TERMS AND CONDITIONS
-
-1. ACCEPTANCE OF TERMS
-By placing an order, you agree to these terms and conditions.
-
-2. PRODUCTS AND PRICING
-- All products are described as accurately as possible
-- Prices may change without prior notice
-- Handmade products may have slight variations in color and size
-
-3. PAYMENT
-- We accept payment methods listed on our website
-- Orders are processed only after successful payment
-
-4. SHIPPING
-- Delivery times are estimates and may vary
-- AlaCraft is not responsible for delays caused by third parties
-
-5. PRIVACY
-- Customer information is protected according to our privacy policy
-- We do not share information with unrelated third parties
-
-6. CONTACT
-For any questions, please contact: contact@alacraft.com
-
-Terms effective as of ${new Date().toLocaleDateString('en-US')}`;
-    }
   }
 
   /**

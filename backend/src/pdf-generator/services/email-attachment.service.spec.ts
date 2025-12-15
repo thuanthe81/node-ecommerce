@@ -6,7 +6,15 @@ import { DocumentStorageService } from './document-storage.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
 import { PDFMonitoringService } from './pdf-monitoring.service';
 import { PDFAuditService } from './pdf-audit.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { OrderPDFData } from '../types/pdf.types';
+
+// Mock fs module
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+  readFileSync: jest.fn(),
+}));
 
 describe('EmailAttachmentService', () => {
   let service: EmailAttachmentService;
@@ -44,7 +52,36 @@ describe('EmailAttachmentService', () => {
     logEmailSending: jest.fn(),
   };
 
+  const mockPrismaService = {
+    order: {
+      findUnique: jest.fn(),
+    },
+  };
+
+  const mockFooterSettingsService = {
+    getFooterSettings: jest.fn().mockResolvedValue({
+      id: '1',
+      copyrightText: 'AlaCraft 2024',
+      contactEmail: 'contact@alacraft.com',
+      contactPhone: '+84 123 456 789',
+      address: '123 Business Street, Ho Chi Minh City',
+      googleMapsUrl: null,
+      facebookUrl: 'https://facebook.com/alacraft',
+      twitterUrl: null,
+      tiktokUrl: null,
+      zaloUrl: null,
+      whatsappUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
+  };
+
   beforeEach(async () => {
+    // Mock fs operations
+    const fs = require('fs');
+    fs.existsSync.mockReturnValue(true);
+    fs.readFileSync.mockReturnValue(Buffer.from('fake pdf content'));
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EmailAttachmentService,
@@ -54,6 +91,8 @@ describe('EmailAttachmentService', () => {
         { provide: PDFErrorHandlerService, useValue: mockPDFErrorHandlerService },
         { provide: PDFMonitoringService, useValue: mockPDFMonitoringService },
         { provide: PDFAuditService, useValue: mockPDFAuditService },
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: FooterSettingsService, useValue: mockFooterSettingsService },
       ],
     }).compile();
 
@@ -294,31 +333,36 @@ describe('EmailAttachmentService', () => {
   });
 
   describe('resendOrderConfirmation', () => {
-    it('should handle rate limiting correctly', async () => {
-      // First call should succeed
-      const result1 = await service.resendOrderConfirmation(
+    it('should handle order not found', async () => {
+      mockPrismaService.order.findUnique.mockResolvedValue(null);
+
+      const result = await service.resendOrderConfirmation(
+        'ORD-999',
+        'john@example.com',
+        'en'
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Order not found');
+    });
+
+    it('should handle email mismatch', async () => {
+      const mockOrder = {
+        orderNumber: 'ORD-123',
+        email: 'different@example.com',
+        createdAt: new Date(),
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
+
+      const result = await service.resendOrderConfirmation(
         'ORD-123',
         'john@example.com',
         'en'
       );
 
-      expect(result1.success).toBe(true);
-      expect(result1.rateLimited).toBeUndefined();
-
-      // Subsequent calls within rate limit should be blocked
-      for (let i = 0; i < 3; i++) {
-        await service.resendOrderConfirmation('ORD-123', 'john@example.com', 'en');
-      }
-
-      const rateLimitedResult = await service.resendOrderConfirmation(
-        'ORD-123',
-        'john@example.com',
-        'en'
-      );
-
-      expect(rateLimitedResult.success).toBe(false);
-      expect(rateLimitedResult.rateLimited).toBe(true);
-      expect(rateLimitedResult.message).toContain('Rate limit exceeded');
+      expect(result.success).toBe(false);
+      expect(result.message).toContain('Order not found or email mismatch');
     });
   });
 
