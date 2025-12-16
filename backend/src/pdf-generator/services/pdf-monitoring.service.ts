@@ -3,6 +3,7 @@ import { PDFGeneratorService } from '../pdf-generator.service';
 import { DocumentStorageService } from './document-storage.service';
 import { EmailAttachmentService } from './email-attachment.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
+import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-metrics.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -63,6 +64,14 @@ export interface PerformanceMetrics {
     cleanupRate: number;
     capacityUsage: number;
   };
+  imageOptimization: {
+    totalImagesProcessed: number;
+    successRate: number;
+    averageCompressionRatio: number;
+    averageProcessingTime: number;
+    totalSizeSaved: number;
+    errorRate: number;
+  };
 }
 
 export interface StorageCapacityAlert {
@@ -114,6 +123,8 @@ export class PDFMonitoringService {
     private emailAttachmentService: EmailAttachmentService,
     @Inject(forwardRef(() => PDFErrorHandlerService))
     private errorHandlerService: PDFErrorHandlerService,
+    @Inject(forwardRef(() => PDFImageOptimizationMetricsService))
+    private imageOptimizationMetricsService: PDFImageOptimizationMetricsService,
   ) {
     // Initialize performance tracking
     this.initializePerformanceTracking();
@@ -378,10 +389,14 @@ export class PDFMonitoringService {
       // Get storage metrics
       const storageMetrics = await this.calculateStorageMetrics();
 
+      // Get image optimization metrics
+      const imageOptimizationMetrics = await this.calculateImageOptimizationMetrics();
+
       const metrics: PerformanceMetrics = {
         pdfGeneration: pdfMetrics,
         emailDelivery: emailMetrics,
         storage: storageMetrics,
+        imageOptimization: imageOptimizationMetrics,
       };
 
       // Cache the metrics
@@ -415,6 +430,14 @@ export class PDFMonitoringService {
           averageFileSize: 0,
           cleanupRate: 0,
           capacityUsage: 0,
+        },
+        imageOptimization: {
+          totalImagesProcessed: 0,
+          successRate: 0,
+          averageCompressionRatio: 0,
+          averageProcessingTime: 0,
+          totalSizeSaved: 0,
+          errorRate: 0,
         },
       };
     }
@@ -660,6 +683,35 @@ export class PDFMonitoringService {
         averageFileSize: 0,
         cleanupRate: 0,
         capacityUsage: 0,
+      };
+    }
+  }
+
+  /**
+   * Calculate image optimization metrics
+   */
+  private async calculateImageOptimizationMetrics(): Promise<PerformanceMetrics['imageOptimization']> {
+    try {
+      const metricsSummary = this.imageOptimizationMetricsService.getMetricsSummaryForMonitoring();
+
+      return {
+        totalImagesProcessed: metricsSummary.totalImagesProcessed,
+        successRate: metricsSummary.successRate,
+        averageCompressionRatio: metricsSummary.averageCompressionRatio,
+        averageProcessingTime: metricsSummary.averageProcessingTime,
+        totalSizeSaved: metricsSummary.totalSizeSaved,
+        errorRate: metricsSummary.errorRate,
+      };
+
+    } catch (error) {
+      this.logger.error('Failed to calculate image optimization metrics:', error);
+      return {
+        totalImagesProcessed: 0,
+        successRate: 0,
+        averageCompressionRatio: 0,
+        averageProcessingTime: 0,
+        totalSizeSaved: 0,
+        errorRate: 0,
       };
     }
   }

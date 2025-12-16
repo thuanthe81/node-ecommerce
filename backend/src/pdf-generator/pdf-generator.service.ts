@@ -124,8 +124,12 @@ export class PDFGeneratorService {
         };
       }
 
+      // Optimize order data for smaller PDF size using enhanced image optimization
+      const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
+      this.logger.log(`Enhanced order PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+
       // Enhance payment method data with actual settings
-      const enhancedOrderData = await this.enhancePaymentMethodData(orderData);
+      const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
       const browser = await this.initializeBrowser();
       const page = await browser.newPage();
@@ -303,8 +307,12 @@ export class PDFGeneratorService {
         };
       }
 
+      // Optimize order data for smaller PDF size using enhanced image optimization
+      const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
+      this.logger.log(`Enhanced invoice optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+
       // Enhance payment method data with actual settings
-      const enhancedOrderData = await this.enhancePaymentMethodData(orderData);
+      const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
       const browser = await this.initializeBrowser();
       const page = await browser.newPage();
@@ -509,9 +517,9 @@ export class PDFGeneratorService {
         };
       }
 
-      // Optimize order data for smaller PDF size
+      // Optimize order data for smaller PDF size using enhanced image optimization
       const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
-      this.logger.log(`Order data optimized. Optimizations: ${optimizations.length}, Size savings: ${sizeSavings} bytes`);
+      this.logger.log(`Enhanced order data optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
@@ -625,8 +633,12 @@ export class PDFGeneratorService {
         };
       }
 
+      // Optimize order data for smaller PDF size using enhanced image optimization
+      const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
+      this.logger.log(`Enhanced ${deviceType} PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+
       // Enhance payment method data with actual settings
-      const enhancedOrderData = await this.enhancePaymentMethodData(orderData);
+      const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
       const browser = await this.initializeBrowser();
       const page = await browser.newPage();

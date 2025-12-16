@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import {
   PDFTemplate,
   PDFSection,
@@ -7,11 +7,13 @@ import {
   OrderPDFData,
   ValidationResult
 } from './types/pdf.types';
+import { OptimizedImageResult } from './types/image-optimization.types';
 import { PDFDocumentStructureService } from './pdf-document-structure.service';
 import { PDFLocalizationService } from './services/pdf-localization.service';
 import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
+import { PDFCompressionService } from './services/pdf-compression.service';
 
 @Injectable()
 export class PDFTemplateEngine {
@@ -22,7 +24,9 @@ export class PDFTemplateEngine {
     private localization: PDFLocalizationService,
     private accessibilityService: PDFAccessibilityService,
     private deviceOptimization: PDFDeviceOptimizationService,
-    private imageConverter: PDFImageConverterService
+    private imageConverter: PDFImageConverterService,
+    @Inject(forwardRef(() => PDFCompressionService))
+    private compressionService: PDFCompressionService
   ) {}
 
   /**
@@ -141,7 +145,7 @@ export class PDFTemplateEngine {
     // For backward compatibility, use the original template-based approach
     const { styling } = template;
 
-    return `
+    const htmlContent = `
       <!DOCTYPE html>
       <html lang="${template.metadata.keywords.includes('vietnamese') ? 'vi' : 'en'}">
         <head>
@@ -169,6 +173,9 @@ export class PDFTemplateEngine {
         </body>
       </html>
     `;
+
+    // Validate and ensure proper base64 image embedding
+    return this.validateBase64ImageEmbedding(htmlContent);
   }
 
   /**
@@ -182,7 +189,10 @@ export class PDFTemplateEngine {
     const dataWithBase64Images = await this.convertImagesToBase64(orderData);
 
     const styling = this.getDefaultStyling();
-    return this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
+    const htmlContent = this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
+
+    // Validate and ensure proper base64 image embedding
+    return this.validateBase64ImageEmbedding(htmlContent);
   }
 
   /**
@@ -792,61 +802,211 @@ export class PDFTemplateEngine {
   }
 
   /**
-   * Convert all images in order data to base64 data URLs
+   * Convert all images in order data to optimized base64 data URLs
+   * Enhanced to use aggressive image optimization for maximum size reduction
    * @param data - Order data with image URLs
-   * @returns Promise<OrderPDFData> - Order data with base64 image URLs
+   * @returns Promise<OrderPDFData> - Order data with optimized base64 image URLs
    */
   private async convertImagesToBase64(data: OrderPDFData): Promise<OrderPDFData> {
-    this.logger.debug(`Converting images to base64 for order ${data.orderNumber}`);
+    this.logger.debug(`Converting images to optimized base64 for order ${data.orderNumber}`);
 
     // Collect all image URLs that are not already base64 data URLs
     const imageUrls: string[] = [];
+    const imageContentTypes: ('text' | 'photo' | 'graphics' | 'logo')[] = [];
 
     // Collect product images (skip if already base64)
     data.items.forEach(item => {
       if (item.imageUrl && typeof item.imageUrl === 'string' && !item.imageUrl.startsWith('data:')) {
         imageUrls.push(item.imageUrl);
+        imageContentTypes.push('photo'); // Product images are typically photos
       }
     });
 
     // Collect QR code image (skip if already base64)
     if (data.paymentMethod.qrCodeUrl && typeof data.paymentMethod.qrCodeUrl === 'string' && !data.paymentMethod.qrCodeUrl.startsWith('data:')) {
       imageUrls.push(data.paymentMethod.qrCodeUrl);
+      imageContentTypes.push('graphics'); // QR codes are graphics
     }
 
     // Collect business logo (skip if already base64)
     if (data.businessInfo.logoUrl && typeof data.businessInfo.logoUrl === 'string' && !data.businessInfo.logoUrl.startsWith('data:')) {
       imageUrls.push(data.businessInfo.logoUrl);
+      imageContentTypes.push('logo'); // Business logos are logos
     }
 
-    // Convert all images to base64
-    const imageMap = await this.imageConverter.convertMultipleImages(imageUrls);
+    // If no images to process, return original data
+    if (imageUrls.length === 0) {
+      this.logger.debug(`No images to optimize for order ${data.orderNumber}`);
+      return data;
+    }
 
-    // Create a copy of the data with converted images
+    // Use enhanced image optimization with content-aware processing
+    const optimizedImageMap = new Map<string, string>();
+
+    try {
+      // Process each image with enhanced optimization using PDFCompressionService
+      for (let i = 0; i < imageUrls.length; i++) {
+        const imageUrl = imageUrls[i];
+        const contentType = imageContentTypes[i];
+
+        this.logger.debug(`Optimizing image ${i + 1}/${imageUrls.length}: ${imageUrl} (${contentType})`);
+
+        try {
+          // Use the enhanced optimization from PDFCompressionService
+          const optimizationResult = await this.compressionService.optimizeImageForPDF(imageUrl, contentType);
+
+          if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+            // Convert optimized buffer to base64 data URL
+            const base64 = optimizationResult.optimizedBuffer.toString('base64');
+            const mimeType = this.getMimeTypeFromFormat(optimizationResult.format);
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+
+            optimizedImageMap.set(imageUrl, dataUrl);
+
+            this.logger.debug(
+              `Successfully optimized image: ${imageUrl} ` +
+              `(${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes, ` +
+              `${(optimizationResult.compressionRatio * 100).toFixed(1)}% reduction)`
+            );
+          } else {
+            throw new Error(optimizationResult.error || 'Optimization failed without error message');
+          }
+        } catch (error) {
+          this.logger.warn(`Failed to optimize image ${imageUrl}, using fallback: ${error.message}`);
+
+          // Fallback to original image converter
+          const fallbackMap = await this.imageConverter.convertMultipleImages([imageUrl]);
+          const fallbackBase64 = fallbackMap.get(imageUrl);
+          if (fallbackBase64) {
+            optimizedImageMap.set(imageUrl, fallbackBase64);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Batch image optimization failed, using fallback conversion: ${error.message}`);
+
+      // Complete fallback to original method
+      const fallbackMap = await this.imageConverter.convertMultipleImages(imageUrls);
+      fallbackMap.forEach((base64, url) => {
+        optimizedImageMap.set(url, base64);
+      });
+    }
+
+    // Create a copy of the data with optimized images
     const convertedData: OrderPDFData = {
       ...data,
       items: data.items.map(item => ({
         ...item,
         imageUrl: item.imageUrl && typeof item.imageUrl === 'string'
-          ? (item.imageUrl.startsWith('data:') ? item.imageUrl : (imageMap.get(item.imageUrl) || item.imageUrl))
+          ? (item.imageUrl.startsWith('data:') ? item.imageUrl : (optimizedImageMap.get(item.imageUrl) || item.imageUrl))
           : item.imageUrl
       })),
       paymentMethod: {
         ...data.paymentMethod,
         qrCodeUrl: data.paymentMethod.qrCodeUrl && typeof data.paymentMethod.qrCodeUrl === 'string'
-          ? (data.paymentMethod.qrCodeUrl.startsWith('data:') ? data.paymentMethod.qrCodeUrl : (imageMap.get(data.paymentMethod.qrCodeUrl) || data.paymentMethod.qrCodeUrl))
+          ? (data.paymentMethod.qrCodeUrl.startsWith('data:') ? data.paymentMethod.qrCodeUrl : (optimizedImageMap.get(data.paymentMethod.qrCodeUrl) || data.paymentMethod.qrCodeUrl))
           : data.paymentMethod.qrCodeUrl
       },
       businessInfo: {
         ...data.businessInfo,
         logoUrl: data.businessInfo.logoUrl && typeof data.businessInfo.logoUrl === 'string'
-          ? (data.businessInfo.logoUrl.startsWith('data:') ? data.businessInfo.logoUrl : (imageMap.get(data.businessInfo.logoUrl) || data.businessInfo.logoUrl))
+          ? (data.businessInfo.logoUrl.startsWith('data:') ? data.businessInfo.logoUrl : (optimizedImageMap.get(data.businessInfo.logoUrl) || data.businessInfo.logoUrl))
           : data.businessInfo.logoUrl
       }
     };
 
-    this.logger.debug(`Converted ${imageMap.size} images to base64 for order ${data.orderNumber}`);
+    this.logger.debug(`Converted and optimized ${optimizedImageMap.size} images to base64 for order ${data.orderNumber}`);
     return convertedData;
+  }
+
+  /**
+   * Get MIME type from image format
+   * @param format - Image format (jpeg, png, webp, etc.)
+   * @returns MIME type string
+   */
+  private getMimeTypeFromFormat(format: string): string {
+    switch (format.toLowerCase()) {
+      case 'jpeg':
+      case 'jpg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      case 'bmp':
+        return 'image/bmp';
+      case 'tiff':
+      case 'tif':
+        return 'image/tiff';
+      case 'svg':
+        return 'image/svg+xml';
+      default:
+        // Default to JPEG for unknown formats
+        return 'image/jpeg';
+    }
+  }
+
+  /**
+   * Validate and ensure proper base64 image embedding in HTML templates
+   * @param htmlContent - HTML content with embedded images
+   * @returns Validated HTML content with proper base64 image handling
+   */
+  private validateBase64ImageEmbedding(htmlContent: string): string {
+    // Add error handling for base64 images that might fail to load
+    const imageRegex = /<img([^>]*?)src="(data:[^"]*?)"([^>]*?)>/g;
+
+    return htmlContent.replace(imageRegex, (match, beforeSrc, dataUrl, afterSrc) => {
+      // Validate base64 data URL format
+      if (!this.isValidBase64DataUrl(dataUrl)) {
+        this.logger.warn(`Invalid base64 data URL detected, adding error handling: ${dataUrl.substring(0, 50)}...`);
+        // Add error handling to hide broken images
+        return `<img${beforeSrc}src="${dataUrl}"${afterSrc} onerror="this.style.display='none';" onload="this.style.display='block';">`;
+      }
+
+      // Add loading optimization for valid base64 images
+      return `<img${beforeSrc}src="${dataUrl}"${afterSrc} onerror="this.style.display='none';" onload="this.style.display='block';">`;
+    });
+  }
+
+  /**
+   * Validate base64 data URL format
+   * @param dataUrl - Base64 data URL to validate
+   * @returns Whether the data URL is valid
+   */
+  private isValidBase64DataUrl(dataUrl: string): boolean {
+    try {
+      // Check basic data URL format
+      if (!dataUrl.startsWith('data:')) {
+        return false;
+      }
+
+      // Extract the base64 part
+      const parts = dataUrl.split(',');
+      if (parts.length !== 2) {
+        return false;
+      }
+
+      const [header, base64Data] = parts;
+
+      // Validate header format (data:image/type;base64)
+      if (!header.includes('image/') || !header.includes('base64')) {
+        return false;
+      }
+
+      // Validate base64 data (basic check)
+      if (base64Data.length === 0) {
+        return false;
+      }
+
+      // Check if base64 string contains only valid characters
+      const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+      return base64Regex.test(base64Data);
+    } catch (error) {
+      this.logger.warn(`Base64 validation error: ${error.message}`);
+      return false;
+    }
   }
 
 }

@@ -207,3 +207,6 @@ export interface RateLimitResult {
   remainingAttempts: number;
   resetTime: Date;
 }
+
+// Re-export image optimization types
+export * from './image-optimization.types';

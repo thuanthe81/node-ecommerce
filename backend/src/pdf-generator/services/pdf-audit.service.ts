@@ -531,6 +531,8 @@ export class PDFAuditService {
         lines.forEach(line => {
           try {
             const logEntry = JSON.parse(line) as AuditLogEntry;
+            // Convert timestamp back to Date object after JSON parsing
+            logEntry.timestamp = new Date(logEntry.timestamp);
             this.auditLogs.set(logEntry.id, logEntry);
           } catch (parseError) {
             // Skip invalid log entries

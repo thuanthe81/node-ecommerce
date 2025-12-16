@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigModule } from '@nestjs/config';
 import { PDFGeneratorService } from './pdf-generator.service';
 import { PDFTemplateEngine } from './pdf-template.engine';
 import { PDFDocumentStructureService } from './pdf-document-structure.service';
@@ -16,6 +17,9 @@ import { PDFErrorHandlerService } from './services/pdf-error-handler.service';
 import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
+import { PDFImageOptimizationMetricsService } from './services/pdf-image-optimization-metrics.service';
+import { PDFImageOptimizationConfigService } from './services/pdf-image-optimization-config.service';
+import { PDFImageValidationService } from './services/pdf-image-validation.service';
 import { PDFHealthController } from './controllers/pdf-health.controller';
 import { PaymentSettingsService } from '../payment-settings/payment-settings.service';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -23,7 +27,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ScheduleModule.forRoot()],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ScheduleModule.forRoot(), ConfigModule],
   controllers: [PDFHealthController],
   providers: [
     PDFGeneratorService,
@@ -42,6 +46,9 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
     PDFMonitoringService,
     PDFAuditService,
     PDFImageConverterService,
+    PDFImageOptimizationMetricsService,
+    PDFImageOptimizationConfigService,
+    PDFImageValidationService,
     PaymentSettingsService
   ],
   exports: [
@@ -60,7 +67,10 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
     PDFErrorHandlerService,
     PDFMonitoringService,
     PDFAuditService,
-    PDFImageConverterService
+    PDFImageConverterService,
+    PDFImageOptimizationMetricsService,
+    PDFImageOptimizationConfigService,
+    PDFImageValidationService
   ],
 })
 export class PDFGeneratorModule {}

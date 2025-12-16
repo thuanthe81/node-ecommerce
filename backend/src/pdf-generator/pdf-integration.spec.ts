@@ -53,6 +53,11 @@ describe('PDF Generation Integration', () => {
           provide: PDFCompressionService,
           useValue: {
             compressPDF: jest.fn().mockResolvedValue(Buffer.from('compressed pdf')),
+            optimizeOrderDataForPDF: jest.fn().mockImplementation((orderData) => Promise.resolve({
+              optimizedData: orderData, // Return the same order data for testing
+              optimizations: ['Test optimization'],
+              sizeSavings: 1024,
+            })),
           },
         },
         {
