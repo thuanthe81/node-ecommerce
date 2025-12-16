@@ -16,6 +16,7 @@ import {
 import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-metrics.service';
 import { PDFImageOptimizationConfigService } from './pdf-image-optimization-config.service';
 import { PDFImageValidationService, ComprehensiveValidationResult } from './pdf-image-validation.service';
+import { CompressedImageService } from './compressed-image.service';
 import sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -48,7 +49,8 @@ export class PDFCompressionService {
     @Inject(forwardRef(() => PDFImageOptimizationMetricsService))
     private metricsService: PDFImageOptimizationMetricsService,
     private configService: PDFImageOptimizationConfigService,
-    private validationService: PDFImageValidationService
+    private validationService: PDFImageValidationService,
+    private compressedImageService: CompressedImageService
   ) {
     this.optimizationConfig = this.configService.getConfiguration();
     const validation = validateImageOptimizationConfig(this.optimizationConfig);
@@ -514,7 +516,7 @@ export class PDFCompressionService {
 
   /**
    * Optimize image for PDF inclusion with aggressive settings
-   * Enhanced with comprehensive error handling and guaranteed PDF generation continuity
+   * Enhanced with compressed image storage integration for reuse and performance
    * @param imageUrl - URL or path to the image
    * @param contentType - Type of content for content-aware optimization
    * @returns Promise<OptimizedImageResult>
@@ -528,6 +530,30 @@ export class PDFCompressionService {
 
     try {
       this.logger.log(`Optimizing image for PDF: ${imageUrl} (content type: ${contentType}, operation: ${operationId})`);
+
+      // **INTEGRATION STEP 1: Check compressed directory before optimization with enhanced error handling**
+      try {
+        const compressedImage = await this.getCompressedImage(imageUrl);
+        if (compressedImage) {
+          this.logger.log(`Retrieved compressed image for ${imageUrl} (${this.formatFileSize(compressedImage.optimizedSize)})`);
+
+          // Update metadata to indicate storage retrieval
+          compressedImage.metadata.technique = 'storage';
+          compressedImage.metadata.contentType = contentType;
+          compressedImage.processingTime = Date.now() - startTime;
+
+          // Record reuse metrics
+          this.recordImageReuseMetrics(imageUrl, compressedImage, operationId);
+
+          return compressedImage;
+        }
+      } catch (storageError) {
+        // Enhanced error handling: Storage retrieval failed, but continue with fresh optimization
+        this.logger.warn(`Compressed image retrieval failed for ${imageUrl}: ${storageError.message}, proceeding with fresh optimization`);
+      }
+
+      // **INTEGRATION STEP 2: Perform fresh optimization if not in storage**
+      this.logger.log(`No compressed image found for ${imageUrl}, performing fresh optimization`);
 
       // Load image buffer with error handling
       const imageBuffer = await this.loadImageBufferWithRetry(imageUrl, operationId);
@@ -552,7 +578,29 @@ export class PDFCompressionService {
 
       if (!validation.isValid && this.optimizationConfig.fallback.enabled) {
         this.logger.warn(`Optimization validation failed, attempting comprehensive fallback: ${validation.errors.join(', ')}`);
-        return this.handleOptimizationFallback(imageBuffer, scalingOptions, validation);
+        const fallbackResult = await this.handleOptimizationFallback(imageBuffer, scalingOptions, validation);
+
+        // **INTEGRATION STEP 3: Save successful fallback result to compressed storage with enhanced error handling**
+        if (fallbackResult.optimizedBuffer && !fallbackResult.error) {
+          try {
+            await this.saveCompressedImage(imageUrl, fallbackResult);
+          } catch (saveError) {
+            // Enhanced error handling: Storage save failed, but don't affect the fallback result
+            this.logger.warn(`Failed to save compressed fallback image for ${imageUrl}: ${saveError.message}, but fallback succeeded`);
+          }
+        }
+
+        return fallbackResult;
+      }
+
+      // **INTEGRATION STEP 4: Save successful optimization to compressed storage with enhanced error handling**
+      if (result.optimizedBuffer && !result.error) {
+        try {
+          await this.saveCompressedImage(imageUrl, result);
+        } catch (saveError) {
+          // Enhanced error handling: Storage save failed, but don't affect the optimization result
+          this.logger.warn(`Failed to save compressed image for ${imageUrl}: ${saveError.message}, but optimization succeeded`);
+        }
       }
 
       this.logger.log(`Image optimization completed successfully for ${imageUrl} in ${Date.now() - startTime}ms`);
@@ -561,7 +609,7 @@ export class PDFCompressionService {
     } catch (error) {
       this.logger.error(`Primary optimization failed for ${imageUrl}: ${error.message}`);
 
-      // Attempt comprehensive fallback if enabled
+      // Enhanced error handling: Attempt comprehensive fallback if enabled
       if (this.optimizationConfig.fallback.enabled) {
         try {
           this.logger.log(`Attempting comprehensive fallback for ${imageUrl}`);
@@ -584,20 +632,45 @@ export class PDFCompressionService {
             },
           });
 
+          // **INTEGRATION STEP 5: Save successful fallback result to compressed storage with enhanced error handling**
+          if (fallbackResult.optimizedBuffer && !fallbackResult.error) {
+            try {
+              await this.saveCompressedImage(imageUrl, fallbackResult);
+            } catch (saveError) {
+              // Enhanced error handling: Storage save failed, but don't affect the comprehensive fallback result
+              this.logger.warn(`Failed to save compressed comprehensive fallback image for ${imageUrl}: ${saveError.message}, but comprehensive fallback succeeded`);
+            }
+          }
+
           this.logger.log(`Fallback optimization completed for ${imageUrl}`);
           return fallbackResult;
 
         } catch (fallbackError) {
           this.logger.error(`Comprehensive fallback failed for ${imageUrl}: ${fallbackError.message}`);
 
-          // Final attempt: return a safe placeholder result to ensure PDF generation continues
-          return this.createSafePlaceholderResult(imageUrl, contentType, error.message, fallbackError.message);
+          // Enhanced error handling: Attempt critical error recovery
+          try {
+            return await this.performCriticalErrorRecovery(imageUrl, contentType, `Primary: ${error.message}; Fallback: ${fallbackError.message}`);
+          } catch (recoveryError) {
+            this.logger.error(`Critical error recovery failed for ${imageUrl}: ${recoveryError.message}`);
+
+            // Final attempt: return a safe placeholder result to ensure PDF generation continues
+            return this.createSafePlaceholderResult(imageUrl, contentType, error.message, fallbackError.message);
+          }
         }
       }
 
-      // If fallback is disabled, return safe placeholder to ensure PDF generation continues
-      this.logger.warn(`Fallback disabled, returning safe placeholder for ${imageUrl}`);
-      return this.createSafePlaceholderResult(imageUrl, contentType, error.message);
+      // Enhanced error handling: If fallback is disabled, attempt critical recovery
+      try {
+        this.logger.warn(`Fallback disabled, attempting critical recovery for ${imageUrl}`);
+        return await this.performCriticalErrorRecovery(imageUrl, contentType, error.message);
+      } catch (recoveryError) {
+        this.logger.error(`Critical recovery failed for ${imageUrl}: ${recoveryError.message}`);
+
+        // Final fallback: return safe placeholder to ensure PDF generation continues
+        this.logger.warn(`All recovery attempts failed, returning safe placeholder for ${imageUrl}`);
+        return this.createSafePlaceholderResult(imageUrl, contentType, error.message);
+      }
     }
   }
 
@@ -3122,6 +3195,175 @@ export class PDFCompressionService {
   }
 
   /**
+   * Get compressed image from storage with enhanced error handling and fallback
+   * @param imageUrl - Original image URL/path
+   * @returns Promise<OptimizedImageResult | null>
+   */
+  private async getCompressedImage(imageUrl: string): Promise<OptimizedImageResult | null> {
+    try {
+      // Enhanced error handling: Check if compressed storage is available
+      if (!await this.isCompressedStorageAvailable()) {
+        this.logger.log(`Compressed storage unavailable, skipping retrieval for ${imageUrl}`);
+        return null;
+      }
+
+      const result = await this.compressedImageService.getCompressedImage(imageUrl);
+
+      if (result) {
+        this.logger.log(`Successfully retrieved compressed image for ${imageUrl}`);
+      }
+
+      return result;
+
+    } catch (error) {
+      // Enhanced error handling: Log but don't fail PDF generation
+      this.logger.warn(`Failed to retrieve compressed image for ${imageUrl}: ${error.message}`);
+
+      // Always return null to trigger fresh optimization - this ensures PDF generation continues
+      return null;
+    }
+  }
+
+  /**
+   * Save compressed image to storage with enhanced error handling and fallback
+   * @param imageUrl - Original image URL/path
+   * @param result - Optimization result to save
+   * @returns Promise<void>
+   */
+  private async saveCompressedImage(imageUrl: string, result: OptimizedImageResult): Promise<void> {
+    try {
+      // Enhanced error handling: Check if compressed storage is available
+      if (!await this.isCompressedStorageAvailable()) {
+        this.logger.log(`Compressed storage unavailable, skipping save for ${imageUrl}`);
+        return;
+      }
+
+      // Enhanced error handling: Validate result before saving
+      if (!result.optimizedBuffer || result.optimizedBuffer.length === 0) {
+        this.logger.warn(`Invalid optimization result for ${imageUrl}, skipping save`);
+        return;
+      }
+
+      const savedPath = await this.compressedImageService.saveCompressedImage(imageUrl, result);
+
+      if (savedPath) {
+        this.logger.log(`Saved compressed image for ${imageUrl} to ${savedPath}`);
+        // Record storage metrics only on successful save
+        this.recordImageStorageMetrics(imageUrl, result, savedPath);
+      } else {
+        // Empty path indicates graceful degradation was used
+        this.logger.log(`Compressed image save gracefully skipped for ${imageUrl}`);
+      }
+
+    } catch (error) {
+      // Enhanced error handling: Log but ensure PDF generation continues
+      this.logger.warn(`Failed to save compressed image for ${imageUrl}: ${error.message}`);
+
+      // Record failed storage attempt for monitoring
+      this.recordFailedStorageAttempt(imageUrl, result, error.message);
+
+      // Continue execution - storage failure should NEVER break PDF generation
+      // This is critical for maintaining system reliability
+    }
+  }
+
+  /**
+   * Record metrics for image reuse from compressed storage
+   * @param imageUrl - Original image URL/path
+   * @param result - Retrieved optimization result
+   * @param operationId - Operation identifier
+   */
+  private recordImageReuseMetrics(
+    imageUrl: string,
+    result: OptimizedImageResult,
+    operationId: string
+  ): void {
+    try {
+      if (this.metricsService && typeof this.metricsService.recordImageReuse === 'function') {
+        this.metricsService.recordImageReuse({
+          imageUrl,
+          retrievedSize: result.optimizedSize,
+          compressionRatio: result.compressionRatio,
+          operationId,
+          timestamp: new Date(),
+        });
+      }
+
+      this.logger.log(`Recorded reuse metrics for ${imageUrl}: ${this.formatFileSize(result.optimizedSize)} retrieved from storage`);
+    } catch (error) {
+      this.logger.warn(`Failed to record reuse metrics for ${imageUrl}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Record metrics for image storage operations
+   * @param imageUrl - Original image URL/path
+   * @param result - Optimization result that was stored
+   * @param savedPath - Path where image was saved
+   */
+  private recordImageStorageMetrics(
+    imageUrl: string,
+    result: OptimizedImageResult,
+    savedPath: string
+  ): void {
+    try {
+      if (this.metricsService && typeof this.metricsService.recordImageStorage === 'function') {
+        this.metricsService.recordImageStorage({
+          imageUrl,
+          savedPath,
+          originalSize: result.originalSize,
+          optimizedSize: result.optimizedSize,
+          compressionRatio: result.compressionRatio,
+          timestamp: new Date(),
+        });
+      }
+
+      this.logger.log(`Recorded storage metrics for ${imageUrl}: ${this.formatFileSize(result.optimizedSize)} saved to ${savedPath}`);
+    } catch (error) {
+      this.logger.warn(`Failed to record storage metrics for ${imageUrl}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Check if compressed image exists for given path
+   * @param imageUrl - Original image URL/path
+   * @returns Promise<boolean>
+   */
+  async hasCompressedImage(imageUrl: string): Promise<boolean> {
+    try {
+      return await this.compressedImageService.hasCompressedImage(imageUrl);
+    } catch (error) {
+      this.logger.warn(`Failed to check compressed image existence for ${imageUrl}: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Get compressed image storage metrics
+   * @returns Promise<StorageMetrics>
+   */
+  async getCompressedImageStorageMetrics(): Promise<{
+    totalStorageSize: number;
+    totalCompressedImages: number;
+    reuseRate: number;
+    averageCompressionRatio: number;
+    storageUtilization: number;
+  }> {
+    try {
+      return await this.compressedImageService.getStorageMetrics();
+    } catch (error) {
+      this.logger.error(`Failed to get compressed image storage metrics: ${error.message}`);
+      return {
+        totalStorageSize: 0,
+        totalCompressedImages: 0,
+        reuseRate: 0,
+        averageCompressionRatio: 0,
+        storageUtilization: 0,
+      };
+    }
+  }
+
+  /**
    * Format file size in human-readable format
    */
   private formatFileSize(bytes: number): string {
@@ -3132,5 +3374,158 @@ export class PDFCompressionService {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Enhanced error handling and fallback methods for compressed image storage
+
+  /**
+   * Check if compressed storage is available and functional
+   * @returns Promise<boolean>
+   */
+  private async isCompressedStorageAvailable(): Promise<boolean> {
+    try {
+      // Check if compressed image service is available
+      if (!this.compressedImageService) {
+        return false;
+      }
+
+      // Check if storage is enabled in configuration
+      if (!await this.compressedImageService.hasCompressedImage('__availability_test__')) {
+        // This call will return false for non-existent file, but will fail if storage is unavailable
+        return true;
+      }
+
+      return true;
+
+    } catch (error) {
+      this.logger.warn(`Compressed storage availability check failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Record failed storage attempt for monitoring and debugging
+   * @param imageUrl - Original image URL/path
+   * @param result - Optimization result that failed to save
+   * @param errorMessage - Error message
+   */
+  private recordFailedStorageAttempt(
+    imageUrl: string,
+    result: OptimizedImageResult,
+    errorMessage: string
+  ): void {
+    try {
+      if (this.metricsService && typeof this.metricsService.recordStorageFailure === 'function') {
+        this.metricsService.recordStorageFailure({
+          imageUrl,
+          originalSize: result.originalSize,
+          optimizedSize: result.optimizedSize,
+          errorMessage,
+          timestamp: new Date(),
+        });
+      }
+
+      this.logger.warn(`Recorded storage failure for ${imageUrl}: ${errorMessage}`);
+
+    } catch (metricsError) {
+      // Don't let metrics recording failure affect the main operation
+      this.logger.warn(`Failed to record storage failure metrics for ${imageUrl}: ${metricsError.message}`);
+    }
+  }
+
+  /**
+   * Enhanced fallback mechanism for when compressed storage completely fails
+   * This ensures PDF generation continues even with total storage system failure
+   * @param imageUrl - Original image URL/path
+   * @param contentType - Content type for optimization
+   * @returns Promise<OptimizedImageResult>
+   */
+  private async fallbackToFreshOptimizationOnly(
+    imageUrl: string,
+    contentType: 'text' | 'photo' | 'graphics' | 'logo' = 'photo'
+  ): Promise<OptimizedImageResult> {
+    this.logger.log(`Falling back to fresh optimization only for ${imageUrl} (storage unavailable)`);
+
+    try {
+      // Load image buffer
+      const imageBuffer = await this.loadImageBuffer(imageUrl);
+
+      // Get aggressive scaling options
+      const scalingOptions = getAggressiveScalingOptions(this.optimizationConfig, contentType);
+
+      // Perform optimization without any storage interaction
+      const result = await this.reduceImageToMinimumSize(imageBuffer, scalingOptions);
+
+      // Update metadata to indicate this was a fallback operation
+      if (result.metadata) {
+        result.metadata.technique = 'fallback-no-storage';
+        result.metadata.contentType = contentType;
+      }
+
+      this.logger.log(`Fresh optimization fallback completed for ${imageUrl}`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`Fresh optimization fallback failed for ${imageUrl}: ${error.message}`);
+
+      // Return a safe placeholder to ensure PDF generation continues
+      return this.createSafePlaceholderResult(imageUrl, contentType, error.message);
+    }
+  }
+
+  /**
+   * Enhanced error recovery for critical PDF generation path
+   * This method ensures that PDF generation NEVER fails due to image optimization issues
+   * @param imageUrl - Original image URL/path
+   * @param contentType - Content type for optimization
+   * @param primaryError - Primary error that occurred
+   * @returns Promise<OptimizedImageResult>
+   */
+  private async performCriticalErrorRecovery(
+    imageUrl: string,
+    contentType: 'text' | 'photo' | 'graphics' | 'logo' = 'photo',
+    primaryError: string
+  ): Promise<OptimizedImageResult> {
+    this.logger.warn(`Performing critical error recovery for ${imageUrl}: ${primaryError}`);
+
+    try {
+      // Attempt 1: Try to load original image and return it unoptimized
+      const originalBuffer = await this.loadImageBuffer(imageUrl);
+
+      this.logger.log(`Critical recovery: using original image for ${imageUrl}`);
+
+      // Get basic metadata
+      const originalMetadata = await this.getImageMetadataSafely(originalBuffer);
+
+      return {
+        optimizedBuffer: originalBuffer,
+        originalSize: originalBuffer.length,
+        optimizedSize: originalBuffer.length,
+        compressionRatio: 0,
+        dimensions: {
+          original: { width: originalMetadata.width, height: originalMetadata.height },
+          optimized: { width: originalMetadata.width, height: originalMetadata.height },
+        },
+        format: 'original',
+        processingTime: 0,
+        metadata: {
+          contentType,
+          qualityUsed: 0,
+          formatConverted: false,
+          originalFormat: originalMetadata.format,
+          technique: 'critical-recovery',
+        },
+      };
+
+    } catch (recoveryError) {
+      this.logger.error(`Critical error recovery failed for ${imageUrl}: ${recoveryError.message}`);
+
+      // Final fallback: return empty result that won't break PDF generation
+      return this.createSafePlaceholderResult(
+        imageUrl,
+        contentType,
+        `Primary: ${primaryError}; Recovery: ${recoveryError.message}`
+      );
+    }
   }
 }

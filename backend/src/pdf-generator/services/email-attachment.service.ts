@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { EmailService, EmailAttachmentOptions } from '../../notifications/services/email.service';
+import { EmailService } from '../../notifications/services/email.service';
 import { PDFGeneratorService } from '../pdf-generator.service';
 import { DocumentStorageService } from './document-storage.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
@@ -12,10 +12,9 @@ import {
   SimplifiedEmailTemplate,
   EmailSendResult,
   ResendResult,
-  RateLimitResult
+  RateLimitResult,
 } from '../types/pdf.types';
 import * as fs from 'fs';
-import * as path from 'path';
 import { SYSTEM } from '../../common/constants';
 
 interface DeliveryAttempt {
@@ -36,7 +35,10 @@ interface EmailDeliveryLog {
 @Injectable()
 export class EmailAttachmentService {
   private readonly logger = new Logger(EmailAttachmentService.name);
-  private readonly rateLimitMap = new Map<string, { count: number; resetTime: Date }>();
+  private readonly rateLimitMap = new Map<
+    string,
+    { count: number; resetTime: Date }
+  >();
   private readonly deliveryLogs = new Map<string, EmailDeliveryLog>();
   private readonly MAX_RESEND_ATTEMPTS = 3;
   private readonly RATE_LIMIT_WINDOW_HOURS = 1;
@@ -65,13 +67,15 @@ export class EmailAttachmentService {
   async sendOrderConfirmationWithPDF(
     customerEmail: string,
     orderData: OrderPDFData,
-    locale: 'en' | 'vi' = 'en'
+    locale: 'en' | 'vi' = 'en',
   ): Promise<EmailSendResult> {
     const startTime = Date.now();
     let auditId: string | undefined;
 
     try {
-      this.logger.log(`Sending order confirmation with PDF for order ${orderData.orderNumber} to ${customerEmail}`);
+      this.logger.log(
+        `Sending order confirmation with PDF for order ${orderData.orderNumber} to ${customerEmail}`,
+      );
 
       // Start audit logging
       auditId = await this.auditService.logEmailSending(
@@ -83,11 +87,14 @@ export class EmailAttachmentService {
           emailTemplate: 'simplified',
           deliveryAttempts: 1,
           finalDeliveryStatus: 'queued',
-        }
+        },
       );
 
       // Generate PDF first
-      const pdfResult = await this.pdfGeneratorService.generateOrderPDF(orderData, locale);
+      const pdfResult = await this.pdfGeneratorService.generateOrderPDF(
+        orderData,
+        locale,
+      );
 
       if (!pdfResult.success) {
         const duration = Date.now() - startTime;
@@ -106,17 +113,24 @@ export class EmailAttachmentService {
               finalDeliveryStatus: 'failed',
             },
             duration,
-            error
+            error,
           );
         }
 
         // Record performance metric
-        this.monitoringService.recordPerformanceMetric('email_delivery', duration, false, {
-          error: 'pdf_generation_failed',
-          orderNumber: orderData.orderNumber,
-        });
+        this.monitoringService.recordPerformanceMetric(
+          'email_delivery',
+          duration,
+          false,
+          {
+            error: 'pdf_generation_failed',
+            orderNumber: orderData.orderNumber,
+          },
+        );
 
-        this.logger.error(`PDF generation failed for order ${orderData.orderNumber}: ${pdfResult.error}`);
+        this.logger.error(
+          `PDF generation failed for order ${orderData.orderNumber}: ${pdfResult.error}`,
+        );
         return {
           success: false,
           error,
@@ -126,19 +140,25 @@ export class EmailAttachmentService {
       }
 
       // Generate simplified email template
-      const emailTemplate = this.generateSimplifiedEmailTemplate(orderData, locale);
+      const emailTemplate = this.generateSimplifiedEmailTemplate(
+        orderData,
+        locale,
+      );
 
       // Send email with PDF attachment
       const emailResult = await this.sendEmailWithAttachment(
         customerEmail,
         emailTemplate,
         pdfResult.filePath!,
-        pdfResult.fileName!
+        pdfResult.fileName!,
       );
 
       if (emailResult.success) {
         // Schedule PDF cleanup after successful email
-        await this.documentStorageService.schedulePDFCleanup(pdfResult.filePath!, 24); // 24 hours retention
+        await this.documentStorageService.schedulePDFCleanup(
+          pdfResult.filePath!,
+          24,
+        ); // 24 hours retention
       }
 
       return {
@@ -149,9 +169,11 @@ export class EmailAttachmentService {
         deliveryStatus: emailResult.success ? 'sent' : 'failed',
         timestamp: new Date(),
       };
-
     } catch (error) {
-      this.logger.error(`Failed to send order confirmation with PDF: ${error.message}`, error);
+      this.logger.error(
+        `Failed to send order confirmation with PDF: ${error.message}`,
+        error,
+      );
       return {
         success: false,
         error: error.message || 'Unknown error occurred',
@@ -171,22 +193,25 @@ export class EmailAttachmentService {
   async resendOrderConfirmation(
     orderNumber: string,
     customerEmail: string,
-    locale: 'en' | 'vi' = 'en'
+    locale: 'en' | 'vi' = 'en',
   ): Promise<ResendResult> {
     const startTime = Date.now();
     let auditId: string | undefined;
 
     try {
-      this.logger.log(`Processing resend request for order ${orderNumber} to ${customerEmail}`);
+      this.logger.log(
+        `Processing resend request for order ${orderNumber} to ${customerEmail}`,
+      );
 
       // Check rate limiting first
       const rateLimitResult = await this.checkRateLimit(customerEmail);
       if (!rateLimitResult.allowed) {
         return {
           success: false,
-          message: locale === 'vi'
-            ? `Bạn đã vượt quá giới hạn gửi lại. Vui lòng thử lại sau ${rateLimitResult.resetTime.toLocaleTimeString()}`
-            : `Rate limit exceeded. Please try again after ${rateLimitResult.resetTime.toLocaleTimeString()}`,
+          message:
+            locale === 'vi'
+              ? `Bạn đã vượt quá giới hạn gửi lại. Vui lòng thử lại sau ${rateLimitResult.resetTime.toLocaleTimeString()}`
+              : `Rate limit exceeded. Please try again after ${rateLimitResult.resetTime.toLocaleTimeString()}`,
           rateLimited: true,
         };
       }
@@ -204,11 +229,14 @@ export class EmailAttachmentService {
           emailTemplate: 'simplified',
           deliveryAttempts: 1,
           finalDeliveryStatus: 'queued',
-        }
+        },
       );
 
       // Fetch order data from database
-      const orderData = await this.fetchOrderDataForResend(orderNumber, customerEmail);
+      const orderData = await this.fetchOrderDataForResend(
+        orderNumber,
+        customerEmail,
+      );
       if (!orderData) {
         const error = 'Order not found or email mismatch';
         if (auditId) {
@@ -223,24 +251,30 @@ export class EmailAttachmentService {
               finalDeliveryStatus: 'failed',
             },
             Date.now() - startTime,
-            error
+            error,
           );
         }
 
         return {
           success: false,
-          message: locale === 'vi'
-            ? 'Không tìm thấy đơn hàng hoặc email không khớp'
-            : 'Order not found or email mismatch',
+          message:
+            locale === 'vi'
+              ? 'Không tìm thấy đơn hàng hoặc email không khớp'
+              : 'Order not found or email mismatch',
           error,
         };
       }
 
       // Generate PDF for the order
-      const pdfResult = await this.pdfGeneratorService.generateOrderPDF(orderData, locale);
+      const pdfResult = await this.pdfGeneratorService.generateOrderPDF(
+        orderData,
+        locale,
+      );
       if (!pdfResult.success) {
         const error = `PDF generation failed: ${pdfResult.error}`;
-        this.logger.error(`PDF generation failed for resend order ${orderNumber}: ${pdfResult.error}`);
+        this.logger.error(
+          `PDF generation failed for resend order ${orderNumber}: ${pdfResult.error}`,
+        );
 
         if (auditId) {
           await this.auditService.logEmailSending(
@@ -254,33 +288,40 @@ export class EmailAttachmentService {
               finalDeliveryStatus: 'failed',
             },
             Date.now() - startTime,
-            error
+            error,
           );
         }
 
         return {
           success: false,
-          message: locale === 'vi'
-            ? 'Không thể tạo file PDF. Vui lòng thử lại sau.'
-            : 'Failed to generate PDF. Please try again later.',
+          message:
+            locale === 'vi'
+              ? 'Không thể tạo file PDF. Vui lòng thử lại sau.'
+              : 'Failed to generate PDF. Please try again later.',
           error,
         };
       }
 
       // Generate simplified email template
-      const emailTemplate = this.generateSimplifiedEmailTemplate(orderData, locale);
+      const emailTemplate = this.generateSimplifiedEmailTemplate(
+        orderData,
+        locale,
+      );
 
       // Send email with PDF attachment
       const emailResult = await this.sendEmailWithAttachment(
         customerEmail,
         emailTemplate,
         pdfResult.filePath!,
-        pdfResult.fileName!
+        pdfResult.fileName!,
       );
 
       if (emailResult.success) {
         // Schedule PDF cleanup after successful email
-        await this.documentStorageService.schedulePDFCleanup(pdfResult.filePath!, 24); // 24 hours retention
+        await this.documentStorageService.schedulePDFCleanup(
+          pdfResult.filePath!,
+          24,
+        ); // 24 hours retention
 
         // Log successful resend
         if (auditId) {
@@ -294,21 +335,26 @@ export class EmailAttachmentService {
               deliveryAttempts: 1,
               finalDeliveryStatus: 'sent',
             },
-            Date.now() - startTime
+            Date.now() - startTime,
           );
         }
 
-        this.logger.log(`Resend email successful for order ${orderNumber} to ${customerEmail}`);
+        this.logger.log(
+          `Resend email successful for order ${orderNumber} to ${customerEmail}`,
+        );
 
         return {
           success: true,
-          message: locale === 'vi'
-            ? 'Email xác nhận đã được gửi lại thành công'
-            : 'Order confirmation email has been resent successfully',
+          message:
+            locale === 'vi'
+              ? 'Email xác nhận đã được gửi lại thành công'
+              : 'Order confirmation email has been resent successfully',
         };
       } else {
         const error = `Email sending failed: ${emailResult.error}`;
-        this.logger.error(`Email sending failed for resend order ${orderNumber}: ${emailResult.error}`);
+        this.logger.error(
+          `Email sending failed for resend order ${orderNumber}: ${emailResult.error}`,
+        );
 
         if (auditId) {
           await this.auditService.logEmailSending(
@@ -322,21 +368,24 @@ export class EmailAttachmentService {
               finalDeliveryStatus: 'failed',
             },
             Date.now() - startTime,
-            error
+            error,
           );
         }
 
         return {
           success: false,
-          message: locale === 'vi'
-            ? 'Không thể gửi email. Vui lòng thử lại sau.'
-            : 'Failed to send email. Please try again later.',
+          message:
+            locale === 'vi'
+              ? 'Không thể gửi email. Vui lòng thử lại sau.'
+              : 'Failed to send email. Please try again later.',
           error,
         };
       }
-
     } catch (error) {
-      this.logger.error(`Failed to resend order confirmation for ${orderNumber}:`, error);
+      this.logger.error(
+        `Failed to resend order confirmation for ${orderNumber}:`,
+        error,
+      );
 
       if (auditId) {
         await this.auditService.logEmailSending(
@@ -350,15 +399,16 @@ export class EmailAttachmentService {
             finalDeliveryStatus: 'failed',
           },
           Date.now() - startTime,
-          error.message
+          error.message,
         );
       }
 
       return {
         success: false,
-        message: locale === 'vi'
-          ? 'Đã xảy ra lỗi khi gửi lại email. Vui lòng thử lại sau.'
-          : 'An error occurred while resending the email. Please try again later.',
+        message:
+          locale === 'vi'
+            ? 'Đã xảy ra lỗi khi gửi lại email. Vui lòng thử lại sau.'
+            : 'An error occurred while resending the email. Please try again later.',
         error: error.message,
       };
     }
@@ -372,17 +422,28 @@ export class EmailAttachmentService {
    */
   generateSimplifiedEmailTemplate(
     orderData: OrderPDFData,
-    locale: 'en' | 'vi' = 'en'
+    locale: 'en' | 'vi' = 'en',
   ): SimplifiedEmailTemplate {
     const translations = this.getEmailTranslations(locale);
 
-    const subject = translations.subject.replace('{orderNumber}', orderData.orderNumber);
+    const subject = translations.subject.replace(
+      '{orderNumber}',
+      orderData.orderNumber,
+    );
 
     // Generate plain text content
-    const textContent = this.generatePlainTextContent(orderData, locale, translations);
+    const textContent = this.generatePlainTextContent(
+      orderData,
+      locale,
+      translations,
+    );
 
     // Generate minimal HTML content that works with swaks
-    const htmlContent = this.generateMinimalHTMLContent(orderData, locale, translations);
+    const htmlContent = this.generateMinimalHTMLContent(
+      orderData,
+      locale,
+      translations,
+    );
 
     return {
       subject,
@@ -403,7 +464,7 @@ export class EmailAttachmentService {
     to: string,
     template: SimplifiedEmailTemplate,
     pdfFilePath: string,
-    pdfFileName: string
+    pdfFileName: string,
   ): Promise<EmailSendResult> {
     try {
       // Check if PDF file exists
@@ -419,7 +480,9 @@ export class EmailAttachmentService {
       let finalPdfFileName = pdfFileName;
 
       if (pdfBuffer.length > maxSize) {
-        this.logger.warn(`PDF attachment is large (${Math.round(pdfBuffer.length / 1024 / 1024)}MB), attempting compression`);
+        this.logger.warn(
+          `PDF attachment is large (${Math.round(pdfBuffer.length / 1024 / 1024)}MB), attempting compression`,
+        );
 
         // In a real implementation, you would compress the PDF here
         // For now, we'll just log a warning and proceed
@@ -427,9 +490,14 @@ export class EmailAttachmentService {
       }
 
       // Test email client compatibility
-      const compatibilityResult = this.testEmailClientCompatibility(template.htmlContent);
+      const compatibilityResult = this.testEmailClientCompatibility(
+        template.htmlContent,
+      );
       if (compatibilityResult.warnings.length > 0) {
-        this.logger.warn('Email client compatibility warnings:', compatibilityResult.warnings);
+        this.logger.warn(
+          'Email client compatibility warnings:',
+          compatibilityResult.warnings,
+        );
       }
 
       // Use the email service with attachment support
@@ -454,9 +522,11 @@ export class EmailAttachmentService {
         deliveryStatus: emailResult ? 'sent' : 'failed',
         timestamp: new Date(),
       };
-
     } catch (error) {
-      this.logger.error(`Failed to send email with attachment: ${error.message}`, error);
+      this.logger.error(
+        `Failed to send email with attachment: ${error.message}`,
+        error,
+      );
       return {
         success: false,
         error: error.message,
@@ -483,11 +553,18 @@ export class EmailAttachmentService {
     }
 
     if (htmlContent.includes('<link')) {
-      warnings.push('External stylesheets may not be supported in all email clients');
+      warnings.push(
+        'External stylesheets may not be supported in all email clients',
+      );
     }
 
-    if (htmlContent.includes('position: absolute') || htmlContent.includes('position: fixed')) {
-      warnings.push('Absolute/fixed positioning may not work in all email clients');
+    if (
+      htmlContent.includes('position: absolute') ||
+      htmlContent.includes('position: fixed')
+    ) {
+      warnings.push(
+        'Absolute/fixed positioning may not work in all email clients',
+      );
     }
 
     if (htmlContent.includes('background-image')) {
@@ -497,14 +574,18 @@ export class EmailAttachmentService {
     // Check for overly complex CSS
     const cssComplexityScore = (htmlContent.match(/style="/g) || []).length;
     if (cssComplexityScore > 50) {
-      warnings.push('High CSS complexity may cause rendering issues in some email clients');
+      warnings.push(
+        'High CSS complexity may cause rendering issues in some email clients',
+      );
     }
 
     // Check for very long lines that might cause issues
     const lines = htmlContent.split('\n');
-    const longLines = lines.filter(line => line.length > 1000);
+    const longLines = lines.filter((line) => line.length > 1000);
     if (longLines.length > 0) {
-      warnings.push('Very long HTML lines may cause issues in some email clients');
+      warnings.push(
+        'Very long HTML lines may cause issues in some email clients',
+      );
     }
 
     return {
@@ -526,7 +607,9 @@ export class EmailAttachmentService {
       return {
         allowed: true,
         remainingAttempts: this.MAX_RESEND_ATTEMPTS - 1,
-        resetTime: new Date(now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000),
+        resetTime: new Date(
+          now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000,
+        ),
       };
     }
 
@@ -536,7 +619,9 @@ export class EmailAttachmentService {
       return {
         allowed: true,
         remainingAttempts: this.MAX_RESEND_ATTEMPTS - 1,
-        resetTime: new Date(now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000),
+        resetTime: new Date(
+          now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000,
+        ),
       };
     }
 
@@ -562,7 +647,9 @@ export class EmailAttachmentService {
    */
   private incrementRateLimitCounter(email: string): void {
     const now = new Date();
-    const resetTime = new Date(now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000);
+    const resetTime = new Date(
+      now.getTime() + this.RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000,
+    );
 
     const existing = this.rateLimitMap.get(email);
     if (existing && now <= existing.resetTime) {
@@ -579,36 +666,33 @@ export class EmailAttachmentService {
    */
   private getEmailTranslations(locale: 'en' | 'vi') {
     return {
-      subject: locale === 'vi'
-        ? 'Xác nhận đơn hàng - Đơn hàng #{orderNumber}'
-        : 'Order Confirmation - Order #{orderNumber}',
-      greeting: locale === 'vi'
-        ? 'Xin chào {customerName},'
-        : 'Hello {customerName},',
-      thankYou: locale === 'vi'
-        ? 'Cảm ơn bạn đã đặt hàng tại AlaCraft!'
-        : 'Thank you for your order at AlaCraft!',
-      orderDetails: locale === 'vi'
-        ? 'Chi tiết đơn hàng của bạn:'
-        : 'Your order details:',
-      orderNumber: locale === 'vi'
-        ? 'Mã đơn hàng'
-        : 'Order Number',
-      orderDate: locale === 'vi'
-        ? 'Ngày đặt hàng'
-        : 'Order Date',
-      total: locale === 'vi'
-        ? 'Tổng cộng'
-        : 'Total',
-      pdfAttachment: locale === 'vi'
-        ? 'Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.'
-        : 'Please see the attached PDF for detailed information about your order.',
-      contactInfo: locale === 'vi'
-        ? 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.'
-        : 'If you have any questions, please contact us.',
-      signature: locale === 'vi'
-        ? 'Trân trọng,\nĐội ngũ AlaCraft'
-        : 'Best regards,\nThe AlaCraft Team',
+      subject:
+        locale === 'vi'
+          ? 'Xác nhận đơn hàng - Đơn hàng #{orderNumber}'
+          : 'Order Confirmation - Order #{orderNumber}',
+      greeting:
+        locale === 'vi' ? 'Xin chào {customerName},' : 'Hello {customerName},',
+      thankYou:
+        locale === 'vi'
+          ? 'Cảm ơn bạn đã đặt hàng tại AlaCraft!'
+          : 'Thank you for your order at AlaCraft!',
+      orderDetails:
+        locale === 'vi' ? 'Chi tiết đơn hàng của bạn:' : 'Your order details:',
+      orderNumber: locale === 'vi' ? 'Mã đơn hàng' : 'Order Number',
+      orderDate: locale === 'vi' ? 'Ngày đặt hàng' : 'Order Date',
+      total: locale === 'vi' ? 'Tổng cộng' : 'Total',
+      pdfAttachment:
+        locale === 'vi'
+          ? 'Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.'
+          : 'Please see the attached PDF for detailed information about your order.',
+      contactInfo:
+        locale === 'vi'
+          ? 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.'
+          : 'If you have any questions, please contact us.',
+      signature:
+        locale === 'vi'
+          ? 'Trân trọng,\nĐội ngũ AlaCraft'
+          : 'Best regards,\nThe AlaCraft Team',
     };
   }
 
@@ -622,24 +706,27 @@ export class EmailAttachmentService {
   private generatePlainTextContent(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
-    translations: any
+    translations: any,
   ): string {
-    const greeting = translations.greeting.replace('{customerName}', orderData.customerInfo.name);
+    const greeting = translations.greeting.replace(
+      '{customerName}',
+      orderData.customerInfo.name,
+    );
 
     return `${greeting}
 
-${translations.thankYou}
-
-${translations.orderDetails}
-${translations.orderNumber}: ${orderData.orderNumber}
-${translations.orderDate}: ${orderData.orderDate}
-${translations.total}: ${this.formatCurrency(orderData.pricing.total, locale)}
-
-${translations.pdfAttachment}
-
-${translations.contactInfo}
-
-${translations.signature}`;
+      ${translations.thankYou}
+      
+      ${translations.orderDetails}
+      ${translations.orderNumber}: ${orderData.orderNumber}
+      ${translations.orderDate}: ${orderData.orderDate}
+      ${translations.total}: ${this.formatCurrency(orderData.pricing.total, locale)}
+      
+      ${translations.pdfAttachment}
+      
+      ${translations.contactInfo}
+      
+      ${translations.signature}`;
   }
 
   /**
@@ -652,44 +739,47 @@ ${translations.signature}`;
   private generateMinimalHTMLContent(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
-    translations: any
+    translations: any,
   ): string {
-    const greeting = translations.greeting.replace('{customerName}', orderData.customerInfo.name);
+    const greeting = translations.greeting.replace(
+      '{customerName}',
+      orderData.customerInfo.name,
+    );
 
     return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>${translations.subject.replace('{orderNumber}', orderData.orderNumber)}</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-
-<div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
-<h1 style="margin: 0;">AlaCraft</h1>
-</div>
-
-<p>${greeting}</p>
-
-<p>${translations.thankYou}</p>
-
-<div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
-<h3 style="margin-top: 0;">${translations.orderDetails}</h3>
-<p><strong>${translations.orderNumber}:</strong> ${orderData.orderNumber}</p>
-<p><strong>${translations.orderDate}:</strong> ${orderData.orderDate}</p>
-<p><strong>${translations.total}:</strong> ${this.formatCurrency(orderData.pricing.total, locale)}</p>
-</div>
-
-<p><strong>${translations.pdfAttachment}</strong></p>
-
-<p>${translations.contactInfo}</p>
-
-<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
-<p>${translations.signature.replace('\n', '<br>')}</p>
-<p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
-</div>
-
-</body>
-</html>`;
+      <html>
+        <head>
+        <meta charset="UTF-8">
+        <title>${translations.subject.replace('{orderNumber}', orderData.orderNumber)}</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        
+        <div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">AlaCraft</h1>
+        </div>
+        
+        <p>${greeting}</p>
+        
+        <p>${translations.thankYou}</p>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
+        <h3 style="margin-top: 0;">${translations.orderDetails}</h3>
+        <p><strong>${translations.orderNumber}:</strong> ${orderData.orderNumber}</p>
+        <p><strong>${translations.orderDate}:</strong> ${orderData.orderDate}</p>
+        <p><strong>${translations.total}:</strong> ${this.formatCurrency(orderData.pricing.total, locale)}</p>
+        </div>
+        
+        <p><strong>${translations.pdfAttachment}</strong></p>
+        
+        <p>${translations.contactInfo}</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+        <p>${translations.signature.replace('\n', '<br>')}</p>
+        <p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+        </div>
+        
+        </body>
+      </html>`;
   }
 
   /**
@@ -716,32 +806,45 @@ ${translations.signature}`;
     template: SimplifiedEmailTemplate,
     pdfFilePath: string,
     pdfFileName: string,
-    orderNumber: string
+    orderNumber: string,
   ): Promise<EmailSendResult & { retryCount?: number }> {
     let lastError: string | undefined;
 
     for (let attempt = 0; attempt < this.MAX_RETRY_ATTEMPTS; attempt++) {
       try {
-        this.logger.log(`Email delivery attempt ${attempt + 1}/${this.MAX_RETRY_ATTEMPTS} for order ${orderNumber}`);
+        this.logger.log(
+          `Email delivery attempt ${attempt + 1}/${this.MAX_RETRY_ATTEMPTS} for order ${orderNumber}`,
+        );
 
-        const result = await this.sendEmailWithAttachment(to, template, pdfFilePath, pdfFileName);
+        const result = await this.sendEmailWithAttachment(
+          to,
+          template,
+          pdfFilePath,
+          pdfFileName,
+        );
 
         if (result.success) {
-          this.logger.log(`Email delivered successfully on attempt ${attempt + 1} for order ${orderNumber}`);
+          this.logger.log(
+            `Email delivered successfully on attempt ${attempt + 1} for order ${orderNumber}`,
+          );
           return { ...result, retryCount: attempt };
         }
 
         lastError = result.error;
-        this.logger.warn(`Email delivery attempt ${attempt + 1} failed for order ${orderNumber}: ${result.error}`);
+        this.logger.warn(
+          `Email delivery attempt ${attempt + 1} failed for order ${orderNumber}: ${result.error}`,
+        );
 
         // Wait before retry (except on last attempt)
         if (attempt < this.MAX_RETRY_ATTEMPTS - 1) {
           await this.delay(this.RETRY_DELAY_MS * (attempt + 1)); // Exponential backoff
         }
-
       } catch (error) {
         lastError = error.message;
-        this.logger.error(`Email delivery attempt ${attempt + 1} threw error for order ${orderNumber}:`, error);
+        this.logger.error(
+          `Email delivery attempt ${attempt + 1} threw error for order ${orderNumber}:`,
+          error,
+        );
 
         // Wait before retry (except on last attempt)
         if (attempt < this.MAX_RETRY_ATTEMPTS - 1) {
@@ -750,7 +853,9 @@ ${translations.signature}`;
       }
     }
 
-    this.logger.error(`All email delivery attempts failed for order ${orderNumber}. Last error: ${lastError}`);
+    this.logger.error(
+      `All email delivery attempts failed for order ${orderNumber}. Last error: ${lastError}`,
+    );
 
     return {
       success: false,
@@ -766,7 +871,10 @@ ${translations.signature}`;
    * @param orderNumber - Order number
    * @param customerEmail - Customer email address
    */
-  private initializeDeliveryLog(orderNumber: string, customerEmail: string): void {
+  private initializeDeliveryLog(
+    orderNumber: string,
+    customerEmail: string,
+  ): void {
     const logKey = `${orderNumber}-${customerEmail}`;
 
     if (!this.deliveryLogs.has(logKey)) {
@@ -787,7 +895,12 @@ ${translations.signature}`;
    * @param error - Error message if failed
    * @param retryCount - Number of retries attempted
    */
-  private updateDeliveryLog(logKey: string, success: boolean, error?: string, retryCount: number = 0): void {
+  private updateDeliveryLog(
+    logKey: string,
+    success: boolean,
+    error?: string,
+    retryCount: number = 0,
+  ): void {
     const log = this.deliveryLogs.get(logKey);
     if (!log) return;
 
@@ -805,7 +918,9 @@ ${translations.signature}`;
     this.deliveryLogs.set(logKey, log);
 
     // Log comprehensive delivery status
-    this.logger.log(`Delivery log updated for ${logKey}: ${success ? 'SUCCESS' : 'FAILED'} (${retryCount} retries)`);
+    this.logger.log(
+      `Delivery log updated for ${logKey}: ${success ? 'SUCCESS' : 'FAILED'} (${retryCount} retries)`,
+    );
   }
 
   /**
@@ -817,12 +932,17 @@ ${translations.signature}`;
   private async sendFallbackNotification(
     customerEmail: string,
     orderData: OrderPDFData,
-    locale: 'en' | 'vi'
+    locale: 'en' | 'vi',
   ): Promise<void> {
     try {
-      this.logger.log(`Sending fallback notification without PDF for order ${orderData.orderNumber}`);
+      this.logger.log(
+        `Sending fallback notification without PDF for order ${orderData.orderNumber}`,
+      );
 
-      const fallbackTemplate = this.generateFallbackEmailTemplate(orderData, locale);
+      const fallbackTemplate = this.generateFallbackEmailTemplate(
+        orderData,
+        locale,
+      );
 
       // Send simple email without attachment
       const result = await this.emailService.sendEmail({
@@ -832,13 +952,19 @@ ${translations.signature}`;
       });
 
       if (result) {
-        this.logger.log(`Fallback notification sent successfully for order ${orderData.orderNumber}`);
+        this.logger.log(
+          `Fallback notification sent successfully for order ${orderData.orderNumber}`,
+        );
       } else {
-        this.logger.error(`Fallback notification also failed for order ${orderData.orderNumber}`);
+        this.logger.error(
+          `Fallback notification also failed for order ${orderData.orderNumber}`,
+        );
       }
-
     } catch (error) {
-      this.logger.error(`Fallback notification failed for order ${orderData.orderNumber}:`, error);
+      this.logger.error(
+        `Fallback notification failed for order ${orderData.orderNumber}:`,
+        error,
+      );
     }
   }
 
@@ -850,22 +976,34 @@ ${translations.signature}`;
    */
   private generateFallbackEmailTemplate(
     orderData: OrderPDFData,
-    locale: 'en' | 'vi'
+    locale: 'en' | 'vi',
   ): SimplifiedEmailTemplate {
     const translations = this.getEmailTranslations(locale);
-    const subject = translations.subject.replace('{orderNumber}', orderData.orderNumber);
+    const subject = translations.subject.replace(
+      '{orderNumber}',
+      orderData.orderNumber,
+    );
 
-    const fallbackMessage = locale === 'vi'
-      ? 'Chúng tôi gặp sự cố kỹ thuật khi gửi file PDF đính kèm. Vui lòng liên hệ với chúng tôi để nhận thông tin chi tiết về đơn hàng.'
-      : 'We encountered a technical issue sending the PDF attachment. Please contact us to receive detailed order information.';
+    const fallbackMessage =
+      locale === 'vi'
+        ? 'Chúng tôi gặp sự cố kỹ thuật khi gửi file PDF đính kèm. Vui lòng liên hệ với chúng tôi để nhận thông tin chi tiết về đơn hàng.'
+        : 'We encountered a technical issue sending the PDF attachment. Please contact us to receive detailed order information.';
 
-    const textContent = this.generatePlainTextContent(orderData, locale, translations) + '\n\n' + fallbackMessage;
+    const textContent =
+      this.generatePlainTextContent(orderData, locale, translations) +
+      '\n\n' +
+      fallbackMessage;
 
-    const htmlContent = this.generateMinimalHTMLContent(orderData, locale, translations)
-      .replace('<p><strong>' + translations.pdfAttachment + '</strong></p>',
-               `<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 4px;">
+    const htmlContent = this.generateMinimalHTMLContent(
+      orderData,
+      locale,
+      translations,
+    ).replace(
+      '<p><strong>' + translations.pdfAttachment + '</strong></p>',
+      `<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 4px;">
                   <p><strong>⚠️ ${fallbackMessage}</strong></p>
-                </div>`);
+                </div>`,
+    );
 
     return {
       subject,
@@ -880,7 +1018,10 @@ ${translations.signature}`;
    * @param customerEmail - Customer email address
    * @returns Delivery log or undefined if not found
    */
-  getDeliveryStatus(orderNumber: string, customerEmail: string): EmailDeliveryLog | undefined {
+  getDeliveryStatus(
+    orderNumber: string,
+    customerEmail: string,
+  ): EmailDeliveryLog | undefined {
     const logKey = `${orderNumber}-${customerEmail}`;
     return this.deliveryLogs.get(logKey);
   }
@@ -897,9 +1038,14 @@ ${translations.signature}`;
   } {
     const logs = Array.from(this.deliveryLogs.values());
     const totalAttempts = logs.length;
-    const successfulDeliveries = logs.filter(log => log.finalStatus === 'delivered').length;
-    const failedDeliveries = logs.filter(log => log.finalStatus === 'failed').length;
-    const successRate = totalAttempts > 0 ? (successfulDeliveries / totalAttempts) * 100 : 0;
+    const successfulDeliveries = logs.filter(
+      (log) => log.finalStatus === 'delivered',
+    ).length;
+    const failedDeliveries = logs.filter(
+      (log) => log.finalStatus === 'failed',
+    ).length;
+    const successRate =
+      totalAttempts > 0 ? (successfulDeliveries / totalAttempts) * 100 : 0;
 
     return {
       totalAttempts,
@@ -917,7 +1063,7 @@ ${translations.signature}`;
    */
   private async fetchOrderDataForResend(
     orderNumber: string,
-    customerEmail: string
+    customerEmail: string,
   ): Promise<OrderPDFData | null> {
     try {
       const order = await this.prismaService.order.findUnique({
@@ -964,7 +1110,9 @@ ${translations.signature}`;
 
       // Verify email matches order email (case-insensitive)
       if (order.email.toLowerCase() !== customerEmail.toLowerCase()) {
-        this.logger.warn(`Email mismatch for resend order ${orderNumber}: ${customerEmail} vs ${order.email}`);
+        this.logger.warn(
+          `Email mismatch for resend order ${orderNumber}: ${customerEmail} vs ${order.email}`,
+        );
         return null;
       }
 
@@ -973,7 +1121,9 @@ ${translations.signature}`;
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       if (order.createdAt < thirtyDaysAgo) {
-        this.logger.warn(`Order too old for resend: ${orderNumber} (${order.createdAt})`);
+        this.logger.warn(
+          `Order too old for resend: ${orderNumber} (${order.createdAt})`,
+        );
         return null;
       }
 
@@ -982,48 +1132,59 @@ ${translations.signature}`;
         orderNumber: order.orderNumber,
         orderDate: order.createdAt.toISOString().split('T')[0],
         customerInfo: {
-          name: order.shippingAddress?.fullName || order.billingAddress?.fullName || 'Customer',
+          name:
+            order.shippingAddress?.fullName ||
+            order.billingAddress?.fullName ||
+            'Customer',
           email: order.email,
           phone: order.shippingAddress?.phone || order.billingAddress?.phone,
         },
-        billingAddress: order.billingAddress ? {
-          fullName: order.billingAddress.fullName,
-          addressLine1: order.billingAddress.addressLine1,
-          addressLine2: order.billingAddress.addressLine2 || undefined,
-          city: order.billingAddress.city,
-          state: order.billingAddress.state,
-          postalCode: order.billingAddress.postalCode,
-          country: order.billingAddress.country,
-          phone: order.billingAddress.phone || undefined,
-        } : {
-          fullName: 'Not provided',
-          addressLine1: 'Not provided',
-          city: 'Not provided',
-          state: 'Not provided',
-          postalCode: 'Not provided',
-          country: 'Not provided',
-        },
-        shippingAddress: order.shippingAddress ? {
-          fullName: order.shippingAddress.fullName,
-          addressLine1: order.shippingAddress.addressLine1,
-          addressLine2: order.shippingAddress.addressLine2 || undefined,
-          city: order.shippingAddress.city,
-          state: order.shippingAddress.state,
-          postalCode: order.shippingAddress.postalCode,
-          country: order.shippingAddress.country,
-          phone: order.shippingAddress.phone || undefined,
-        } : {
-          fullName: 'Not provided',
-          addressLine1: 'Not provided',
-          city: 'Not provided',
-          state: 'Not provided',
-          postalCode: 'Not provided',
-          country: 'Not provided',
-        },
+        billingAddress: order.billingAddress
+          ? {
+              fullName: order.billingAddress.fullName,
+              addressLine1: order.billingAddress.addressLine1,
+              addressLine2: order.billingAddress.addressLine2 || undefined,
+              city: order.billingAddress.city,
+              state: order.billingAddress.state,
+              postalCode: order.billingAddress.postalCode,
+              country: order.billingAddress.country,
+              phone: order.billingAddress.phone || undefined,
+            }
+          : {
+              fullName: 'Not provided',
+              addressLine1: 'Not provided',
+              city: 'Not provided',
+              state: 'Not provided',
+              postalCode: 'Not provided',
+              country: 'Not provided',
+            },
+        shippingAddress: order.shippingAddress
+          ? {
+              fullName: order.shippingAddress.fullName,
+              addressLine1: order.shippingAddress.addressLine1,
+              addressLine2: order.shippingAddress.addressLine2 || undefined,
+              city: order.shippingAddress.city,
+              state: order.shippingAddress.state,
+              postalCode: order.shippingAddress.postalCode,
+              country: order.shippingAddress.country,
+              phone: order.shippingAddress.phone || undefined,
+            }
+          : {
+              fullName: 'Not provided',
+              addressLine1: 'Not provided',
+              city: 'Not provided',
+              state: 'Not provided',
+              postalCode: 'Not provided',
+              country: 'Not provided',
+            },
         items: order.items.map((item: any) => {
           // Extract image URL properly
           let imageUrl: string | undefined;
-          if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+          if (
+            item.product?.images &&
+            Array.isArray(item.product.images) &&
+            item.product.images.length > 0
+          ) {
             imageUrl = item.product.images[0].url || item.product.images[0];
           }
 
@@ -1047,23 +1208,37 @@ ${translations.signature}`;
           total: Number(order.total),
         },
         paymentMethod: {
-          type: order.paymentMethod as 'bank_transfer' | 'cash_on_delivery' | 'qr_code',
-          displayName: this.getPaymentMethodDisplayName(order.paymentMethod, 'en'), // Will be localized in PDF
+          type: order.paymentMethod as
+            | 'bank_transfer'
+            | 'cash_on_delivery'
+            | 'qr_code',
+          displayName: this.getPaymentMethodDisplayName(
+            order.paymentMethod,
+            'en',
+          ), // Will be localized in PDF
           status: order.paymentStatus as 'pending' | 'completed' | 'failed',
-          details: order.paymentMethod === 'bank_transfer' ? 'Bank transfer payment' : undefined,
+          details:
+            order.paymentMethod === 'bank_transfer'
+              ? 'Bank transfer payment'
+              : undefined,
         },
         shippingMethod: {
           name: order.shippingMethod || 'Standard',
-          description: this.getShippingMethodDescription(order.shippingMethod || 'standard', 'en'), // Will be localized in PDF
+          description: this.getShippingMethodDescription(
+            order.shippingMethod || 'standard',
+            'en',
+          ), // Will be localized in PDF
         },
         businessInfo: await this.getBusinessInfo('en'), // Will be overridden by the locale parameter
         locale: 'en', // Will be overridden by the locale parameter
       };
 
       return orderPDFData;
-
     } catch (error) {
-      this.logger.error(`Error fetching order data for resend ${orderNumber}:`, error);
+      this.logger.error(
+        `Error fetching order data for resend ${orderNumber}:`,
+        error,
+      );
       return null;
     }
   }
@@ -1074,7 +1249,10 @@ ${translations.signature}`;
    * @param locale - Language locale
    * @returns Localized payment method name
    */
-  private getPaymentMethodDisplayName(paymentMethod: string, locale: 'en' | 'vi'): string {
+  private getPaymentMethodDisplayName(
+    paymentMethod: string,
+    locale: 'en' | 'vi',
+  ): string {
     const translations = {
       bank_transfer: {
         en: 'Bank Transfer',
@@ -1090,7 +1268,10 @@ ${translations.signature}`;
       },
     };
 
-    return translations[paymentMethod as keyof typeof translations]?.[locale] || paymentMethod;
+    return (
+      translations[paymentMethod as keyof typeof translations]?.[locale] ||
+      paymentMethod
+    );
   }
 
   /**
@@ -1099,7 +1280,10 @@ ${translations.signature}`;
    * @param locale - Language locale
    * @returns Localized shipping method description
    */
-  private getShippingMethodDescription(shippingMethod: string, locale: 'en' | 'vi'): string {
+  private getShippingMethodDescription(
+    shippingMethod: string,
+    locale: 'en' | 'vi',
+  ): string {
     const translations = {
       standard: {
         en: 'Standard Delivery (3-5 business days)',
@@ -1115,7 +1299,10 @@ ${translations.signature}`;
       },
     };
 
-    return translations[shippingMethod as keyof typeof translations]?.[locale] || shippingMethod;
+    return (
+      translations[shippingMethod as keyof typeof translations]?.[locale] ||
+      shippingMethod
+    );
   }
 
   /**
@@ -1124,11 +1311,11 @@ ${translations.signature}`;
    * @returns Promise<BusinessInfoData> - Business information from database
    */
   private async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<any> {
+    const companyName = 'AlaCraft';
     try {
       // Fetch footer settings from database
-      const footerSettings = await this.footerSettingsService.getFooterSettings();
-
-      const companyName = 'AlaCraft';
+      const footerSettings =
+        await this.footerSettingsService.getFooterSettings();
 
       return {
         companyName,
@@ -1136,21 +1323,26 @@ ${translations.signature}`;
         contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
         contactPhone: footerSettings?.contactPhone || undefined,
         website: this.constructWebsiteUrl(footerSettings),
-        address: this.createBusinessAddress(footerSettings, companyName, locale),
+        address: this.createBusinessAddress(
+          footerSettings,
+          companyName,
+          locale,
+        ),
         returnPolicy: undefined,
         termsAndConditions: undefined,
       };
     } catch (error) {
-      this.logger.error('Failed to fetch business info from footer settings:', error);
+      this.logger.error(
+        'Failed to fetch business info from footer settings:',
+        error,
+      );
 
-      // Return fallback business info if database fetch fails
-      const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
       return {
         companyName,
         logoUrl: '/uploads/logo.jpg',
         contactEmail: 'contact@alacraft.com',
         contactPhone: undefined,
-        website: 'https://www.alacraft.com',
+        website: process.env.FRONTEND_URL,
         address: {
           fullName: companyName,
           addressLine1: undefined,
@@ -1173,17 +1365,7 @@ ${translations.signature}`;
    * @returns Website URL or undefined
    */
   private constructWebsiteUrl(footerSettings: any): string | undefined {
-    // Try to construct website URL from available social media links or contact info
-    if (footerSettings?.facebookUrl) {
-      // Extract domain from Facebook URL if it's a business page
-      const match = footerSettings.facebookUrl.match(/facebook\.com\/([^\/]+)/);
-      if (match && !match[1].includes('profile.php')) {
-        return `https://www.${match[1]}.com`; // Attempt to guess website
-      }
-    }
-
-    // Default to a placeholder that can be updated
-    return 'https://www.alacraft.com';
+    return process.env.FRONTEND_URL || footerSettings?.website || undefined;
   }
 
   /**
@@ -1193,7 +1375,11 @@ ${translations.signature}`;
    * @param locale - Language locale
    * @returns Complete business address
    */
-  private createBusinessAddress(footerSettings: any, companyName: string, locale: 'en' | 'vi'): any {
+  private createBusinessAddress(
+    footerSettings: any,
+    companyName: string,
+    locale: 'en' | 'vi',
+  ): any {
     return {
       fullName: companyName,
       addressLine1: footerSettings?.address || undefined,
@@ -1211,6 +1397,6 @@ ${translations.signature}`;
    * @param ms - Milliseconds to delay
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

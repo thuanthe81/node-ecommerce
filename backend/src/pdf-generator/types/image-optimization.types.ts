@@ -306,3 +306,93 @@ export interface PerformanceMonitoringData {
   /** Error information if failed */
   error?: string;
 }
+
+/**
+ * Compressed image path information
+ */
+export interface CompressedImagePath {
+  /** Original image path */
+  originalPath: string;
+  /** Compressed image path */
+  compressedPath: string;
+  /** Relative path within compressed directory */
+  relativePath: string;
+}
+
+/**
+ * Compressed image metadata
+ */
+export interface CompressedImageMetadata {
+  /** Original image path */
+  originalPath: string;
+  /** Compressed image path */
+  compressedPath: string;
+  /** File size in bytes */
+  fileSize: number;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Compression ratio */
+  compressionRatio: number;
+  /** Original size in bytes */
+  originalSize: number;
+  /** Optimized size in bytes */
+  optimizedSize: number;
+  /** Image dimensions */
+  dimensions: {
+    original: { width: number; height: number };
+    optimized: { width: number; height: number };
+  };
+  /** Image format */
+  format: string;
+  /** Processing time in milliseconds */
+  processingTime: number;
+  /** Additional metadata */
+  metadata: any;
+}
+
+/**
+ * Storage metrics for compressed images
+ */
+export interface StorageMetrics {
+  /** Total storage size in bytes */
+  totalStorageSize: number;
+  /** Total number of compressed images */
+  totalCompressedImages: number;
+  /** Number of metadata files */
+  totalMetadataFiles: number;
+  /** Reuse rate (percentage of cache hits) */
+  reuseRate: number;
+  /** Average compression ratio */
+  averageCompressionRatio: number;
+  /** Storage utilization percentage */
+  storageUtilization: number;
+  /** Free space available in bytes */
+  freeSpaceAvailable: number;
+  /** Oldest file age in days */
+  oldestFileAge: number;
+  /** Newest file age in days */
+  newestFileAge: number;
+  /** Files by type breakdown */
+  filesByType: {
+    jpeg: number;
+    png: number;
+    webp: number;
+    other: number;
+  };
+  /** Size by type breakdown */
+  sizeByType: {
+    jpeg: number;
+    png: number;
+    webp: number;
+    other: number;
+  };
+  /** Performance metrics */
+  performance: {
+    averageRetrievalTime: number;
+    averageStorageTime: number;
+    cacheHitRate: number;
+    errorRate: number;
+  };
+  /** Last updated timestamp */
+  lastUpdated: Date;
+}

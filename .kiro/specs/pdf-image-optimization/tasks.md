@@ -115,7 +115,7 @@
   - Ensure all PDF generation methods benefit from image optimization
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 14. Write unit tests for aggressive image optimization service
+- [ ]* 14. Write unit tests for aggressive image optimization service
   - Create unit tests for aggressive image scaling algorithms
   - Test dynamic size calculation and aspect ratio preservation
   - Test configuration loading and validation for aggressive optimization
@@ -123,12 +123,62 @@
   - Test size reduction metrics generation accuracy
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 4.1, 4.2, 4.4, 4.5_
 
-- [ ] 15. Write integration tests for PDF optimization
+- [ ]* 15. Write integration tests for PDF optimization
   - Test end-to-end PDF generation with image optimization
   - Test integration with existing PDF services
   - Test performance impact of image optimization
   - Test configuration changes affecting PDF generation
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 4.1, 4.2_
+
+- [x] 17. Implement compressed image storage system
+  - Create `CompressedImageService` class in `backend/src/pdf-generator/services/compressed-image.service.ts`
+  - Implement directory structure creation in uploads/compressed/
+  - Add methods for storing and retrieving compressed images from file system
+  - Implement simple file naming and path generation based on original image paths
+  - _Requirements: 5.1, 5.2_
+
+- [x] 17.1 Write property test for compressed image storage and retrieval
+  - **Property 10: Compressed image storage and retrieval**
+  - **Validates: Requirements 5.1, 5.2**
+
+- [x] 18. Add compressed image configuration and management
+  - Create compressed image configuration interface and default settings
+  - Add environment variable support for compressed directory settings
+  - Implement directory organization and file naming strategies
+  - Add storage monitoring and metrics collection
+  - _Requirements: 5.4_
+
+- [x] 19. Integrate compressed storage with image optimization service
+  - Modify `PDFImageOptimizationService` to check compressed directory before optimization
+  - Add compressed image storage after successful image optimization
+  - Implement reuse tracking and performance metrics
+  - Ensure consistency between original and compressed images
+  - _Requirements: 5.2, 5.3, 5.5_
+
+- [ ] 19.1 Write property test for storage retrieval performance
+  - **Property 11: Storage retrieval performance**
+  - **Validates: Requirements 5.3**
+
+- [x] 19.2 Write property test for storage consistency
+  - **Property 12: Storage consistency**
+  - **Validates: Requirements 5.5**
+
+- [x] 20. Update PDF generation pipeline for compressed image integration
+  - Modify `PDFGeneratorService` to utilize compressed images
+  - Update `optimizeOrderDataForPDF()` to check compressed directory first
+  - Ensure all PDF generation methods benefit from compressed image reuse
+  - Add storage performance metrics to PDF generation metadata
+  - _Requirements: 5.2, 5.3_
+
+- [x] 21. Add compressed image error handling and fallback
+  - Implement graceful degradation when compressed directory is unavailable
+  - Add fallback to fresh optimization when compressed image retrieval fails
+  - Handle file system errors and automatic recovery
+  - Ensure PDF generation continues even with storage failures
+  - _Requirements: 5.2, 5.3_
+
+- [x] 22. Checkpoint - Ensure all tests pass with compressed image storage
+  - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 16. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

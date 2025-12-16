@@ -20,6 +20,9 @@ import { PDFImageConverterService } from './services/pdf-image-converter.service
 import { PDFImageOptimizationMetricsService } from './services/pdf-image-optimization-metrics.service';
 import { PDFImageOptimizationConfigService } from './services/pdf-image-optimization-config.service';
 import { PDFImageValidationService } from './services/pdf-image-validation.service';
+import { CompressedImageService } from './services/compressed-image.service';
+import { CompressedImageConfigService } from './services/compressed-image-config.service';
+import { CompressedImageStorageMonitoringService } from './services/compressed-image-storage-monitoring.service';
 import { PDFHealthController } from './controllers/pdf-health.controller';
 import { PaymentSettingsService } from '../payment-settings/payment-settings.service';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -49,6 +52,9 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
     PDFImageOptimizationMetricsService,
     PDFImageOptimizationConfigService,
     PDFImageValidationService,
+    CompressedImageService,
+    CompressedImageConfigService,
+    CompressedImageStorageMonitoringService,
     PaymentSettingsService
   ],
   exports: [
@@ -70,7 +76,10 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
     PDFImageConverterService,
     PDFImageOptimizationMetricsService,
     PDFImageOptimizationConfigService,
-    PDFImageValidationService
+    PDFImageValidationService,
+    CompressedImageService,
+    CompressedImageConfigService,
+    CompressedImageStorageMonitoringService
   ],
 })
 export class PDFGeneratorModule {}

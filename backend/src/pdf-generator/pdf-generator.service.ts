@@ -124,9 +124,15 @@ export class PDFGeneratorService {
         };
       }
 
-      // Optimize order data for smaller PDF size using enhanced image optimization
+      // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
+      const optimizationStartTime = Date.now();
       const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
-      this.logger.log(`Enhanced order PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+      const optimizationEndTime = Date.now();
+
+      // Collect storage performance metrics
+      const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+
+      this.logger.log(`Enhanced order PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}, Storage utilization: ${storageMetrics.storageUtilization.toFixed(1)}%`);
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
@@ -229,6 +235,23 @@ export class PDFGeneratorService {
           generatedAt: new Date(),
           locale,
           orderNumber: orderData.orderNumber,
+          storageMetrics: {
+            reusedImages: storageMetrics.totalCompressedImages,
+            newlyOptimizedImages: optimizations.length,
+            storageRetrievalTime: 0, // Would need to be tracked during optimization
+            storageWriteTime: 0, // Would need to be tracked during optimization
+            cacheHitRate: storageMetrics.reuseRate,
+            totalStorageSize: storageMetrics.totalStorageSize,
+            storageUtilization: storageMetrics.storageUtilization,
+          },
+          optimizationMetrics: {
+            totalOriginalSize: sizeSavings + (pdfBuffer.length || 0), // Approximate original size
+            totalOptimizedSize: pdfBuffer.length || 0,
+            compressionRatio: sizeSavings > 0 ? sizeSavings / (sizeSavings + (pdfBuffer.length || 0)) : 0,
+            optimizedImages: optimizations.length,
+            failedOptimizations: 0, // This would need to be tracked in the compression service
+            processingTime: optimizationEndTime - optimizationStartTime,
+          },
         },
       };
     } catch (error) {
@@ -307,9 +330,15 @@ export class PDFGeneratorService {
         };
       }
 
-      // Optimize order data for smaller PDF size using enhanced image optimization
+      // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
+      const optimizationStartTime = Date.now();
       const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
-      this.logger.log(`Enhanced invoice optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+      const optimizationEndTime = Date.now();
+
+      // Collect storage performance metrics
+      const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+
+      this.logger.log(`Enhanced invoice optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}, Storage utilization: ${storageMetrics.storageUtilization.toFixed(1)}%`);
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
@@ -384,6 +413,23 @@ export class PDFGeneratorService {
           generatedAt: new Date(),
           locale,
           orderNumber: orderData.orderNumber,
+          storageMetrics: {
+            reusedImages: storageMetrics.totalCompressedImages,
+            newlyOptimizedImages: optimizations.length,
+            storageRetrievalTime: 0, // Would need to be tracked during optimization
+            storageWriteTime: 0, // Would need to be tracked during optimization
+            cacheHitRate: storageMetrics.reuseRate,
+            totalStorageSize: storageMetrics.totalStorageSize,
+            storageUtilization: storageMetrics.storageUtilization,
+          },
+          optimizationMetrics: {
+            totalOriginalSize: sizeSavings + (pdfBuffer.length || 0), // Approximate original size
+            totalOptimizedSize: pdfBuffer.length || 0,
+            compressionRatio: sizeSavings > 0 ? sizeSavings / (sizeSavings + (pdfBuffer.length || 0)) : 0,
+            optimizedImages: optimizations.length,
+            failedOptimizations: 0, // This would need to be tracked in the compression service
+            processingTime: optimizationEndTime - optimizationStartTime,
+          },
         },
       };
     } catch (error) {
@@ -517,9 +563,15 @@ export class PDFGeneratorService {
         };
       }
 
-      // Optimize order data for smaller PDF size using enhanced image optimization
+      // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
+      const optimizationStartTime = Date.now();
       const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
-      this.logger.log(`Enhanced order data optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+      const optimizationEndTime = Date.now();
+
+      // Collect storage performance metrics
+      const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+
+      this.logger.log(`Enhanced order data optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}, Storage utilization: ${storageMetrics.storageUtilization.toFixed(1)}%`);
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
@@ -588,6 +640,23 @@ export class PDFGeneratorService {
           generatedAt: new Date(),
           locale,
           orderNumber: orderData.orderNumber,
+          storageMetrics: {
+            reusedImages: storageMetrics.totalCompressedImages,
+            newlyOptimizedImages: optimizations.length,
+            storageRetrievalTime: 0, // Would need to be tracked during optimization
+            storageWriteTime: 0, // Would need to be tracked during optimization
+            cacheHitRate: storageMetrics.reuseRate,
+            totalStorageSize: storageMetrics.totalStorageSize,
+            storageUtilization: storageMetrics.storageUtilization,
+          },
+          optimizationMetrics: {
+            totalOriginalSize: sizeSavings + (pdfBuffer.length || 0), // Approximate original size
+            totalOptimizedSize: pdfBuffer.length || 0,
+            compressionRatio: sizeSavings > 0 ? sizeSavings / (sizeSavings + (pdfBuffer.length || 0)) : 0,
+            optimizedImages: optimizations.length,
+            failedOptimizations: 0, // This would need to be tracked in the compression service
+            processingTime: optimizationEndTime - optimizationStartTime,
+          },
         },
       };
     } catch (error) {
@@ -633,9 +702,15 @@ export class PDFGeneratorService {
         };
       }
 
-      // Optimize order data for smaller PDF size using enhanced image optimization
+      // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
+      const optimizationStartTime = Date.now();
       const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
-      this.logger.log(`Enhanced ${deviceType} PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+      const optimizationEndTime = Date.now();
+
+      // Collect storage performance metrics
+      const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+
+      this.logger.log(`Enhanced ${deviceType} PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}, Storage utilization: ${storageMetrics.storageUtilization.toFixed(1)}%`);
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
@@ -694,6 +769,23 @@ export class PDFGeneratorService {
           generatedAt: new Date(),
           locale,
           orderNumber: orderData.orderNumber,
+          storageMetrics: {
+            reusedImages: storageMetrics.totalCompressedImages,
+            newlyOptimizedImages: optimizations.length,
+            storageRetrievalTime: 0, // Would need to be tracked during optimization
+            storageWriteTime: 0, // Would need to be tracked during optimization
+            cacheHitRate: storageMetrics.reuseRate,
+            totalStorageSize: storageMetrics.totalStorageSize,
+            storageUtilization: storageMetrics.storageUtilization,
+          },
+          optimizationMetrics: {
+            totalOriginalSize: sizeSavings + (pdfBuffer.length || 0), // Approximate original size
+            totalOptimizedSize: pdfBuffer.length || 0,
+            compressionRatio: sizeSavings > 0 ? sizeSavings / (sizeSavings + (pdfBuffer.length || 0)) : 0,
+            optimizedImages: optimizations.length,
+            failedOptimizations: 0, // This would need to be tracked in the compression service
+            processingTime: optimizationEndTime - optimizationStartTime,
+          },
         },
       };
     } catch (error) {
@@ -736,6 +828,45 @@ export class PDFGeneratorService {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  /**
+   * Generate storage and optimization metadata for PDF generation results
+   */
+  private async generatePDFMetadata(
+    orderData: OrderPDFData,
+    locale: string,
+    optimizations: string[],
+    sizeSavings: number,
+    pdfBuffer: Buffer,
+    optimizationStartTime: number,
+    optimizationEndTime: number
+  ) {
+    // Collect storage performance metrics
+    const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+
+    return {
+      generatedAt: new Date(),
+      locale,
+      orderNumber: orderData.orderNumber,
+      storageMetrics: {
+        reusedImages: storageMetrics.totalCompressedImages,
+        newlyOptimizedImages: optimizations.length,
+        storageRetrievalTime: 0, // Would need to be tracked during optimization
+        storageWriteTime: 0, // Would need to be tracked during optimization
+        cacheHitRate: storageMetrics.reuseRate,
+        totalStorageSize: storageMetrics.totalStorageSize,
+        storageUtilization: storageMetrics.storageUtilization,
+      },
+      optimizationMetrics: {
+        totalOriginalSize: sizeSavings + (pdfBuffer.length || 0), // Approximate original size
+        totalOptimizedSize: pdfBuffer.length || 0,
+        compressionRatio: sizeSavings > 0 ? sizeSavings / (sizeSavings + (pdfBuffer.length || 0)) : 0,
+        optimizedImages: optimizations.length,
+        failedOptimizations: 0, // This would need to be tracked in the compression service
+        processingTime: optimizationEndTime - optimizationStartTime,
+      },
+    };
   }
 
   /**

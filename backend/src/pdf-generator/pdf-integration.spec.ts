@@ -58,6 +58,13 @@ describe('PDF Generation Integration', () => {
               optimizations: ['Test optimization'],
               sizeSavings: 1024,
             })),
+            getCompressedImageStorageMetrics: jest.fn().mockResolvedValue({
+              totalStorageSize: 1024,
+              totalCompressedImages: 5,
+              reuseRate: 0.8,
+              averageCompressionRatio: 0.3,
+              storageUtilization: 0.1,
+            }),
           },
         },
         {

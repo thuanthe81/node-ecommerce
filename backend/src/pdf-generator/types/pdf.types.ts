@@ -15,6 +15,38 @@ export interface PDFGenerationResult {
     generatedAt: Date;
     locale: string;
     orderNumber: string;
+    /** Storage performance metrics for compressed image integration */
+    storageMetrics?: {
+      /** Number of images retrieved from compressed storage */
+      reusedImages: number;
+      /** Number of images newly optimized and stored */
+      newlyOptimizedImages: number;
+      /** Total time spent retrieving from storage (ms) */
+      storageRetrievalTime: number;
+      /** Total time spent storing new optimizations (ms) */
+      storageWriteTime: number;
+      /** Cache hit rate for this generation */
+      cacheHitRate: number;
+      /** Total storage size used by compressed images (bytes) */
+      totalStorageSize: number;
+      /** Overall storage utilization percentage */
+      storageUtilization: number;
+    };
+    /** Image optimization metrics */
+    optimizationMetrics?: {
+      /** Total original size of all images */
+      totalOriginalSize: number;
+      /** Total optimized size of all images */
+      totalOptimizedSize: number;
+      /** Overall compression ratio */
+      compressionRatio: number;
+      /** Number of images optimized */
+      optimizedImages: number;
+      /** Number of optimization failures */
+      failedOptimizations: number;
+      /** Total processing time for all optimizations */
+      processingTime: number;
+    };
   };
 }
 

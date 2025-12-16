@@ -11,6 +11,7 @@ import { PDFImageOptimizationConfigService } from './pdf-image-optimization-conf
 import { PDFCompressionService } from './pdf-compression.service';
 import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-metrics.service';
 import { PDFImageValidationService } from './pdf-image-validation.service';
+import { CompressedImageService } from './compressed-image.service';
 
 describe('PDF Image Optimization Configuration Integration', () => {
   let configService: PDFImageOptimizationConfigService;
@@ -54,6 +55,22 @@ describe('PDF Image Optimization Configuration Integration', () => {
             validateDimensions: jest.fn(),
             validateFormat: jest.fn()
           }
+        },
+        {
+          provide: CompressedImageService,
+          useValue: {
+            hasCompressedImage: jest.fn().mockResolvedValue(false),
+            getCompressedImage: jest.fn().mockResolvedValue(null),
+            saveCompressedImage: jest.fn().mockResolvedValue('test-path'),
+            generateCompressedPath: jest.fn().mockReturnValue('test-path'),
+            getStorageMetrics: jest.fn().mockResolvedValue({
+              totalStorageSize: 0,
+              totalCompressedImages: 0,
+              reuseRate: 0,
+              averageCompressionRatio: 0,
+              storageUtilization: 0,
+            }),
+          },
         },
       ],
     }).compile();
