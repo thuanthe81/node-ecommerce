@@ -31,7 +31,24 @@ export class BusinessInfoService {
    * ```
    */
   async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<BusinessInfoData> {
-    const companyName = ConstantUtils.getCompanyName(locale);
+    const businessInfo: BusinessInfoData = {
+      companyName: ConstantUtils.getCompanyName(locale),
+      logoUrl: BUSINESS.ASSETS.LOGO,
+      contactEmail: '',
+      contactPhone: undefined,
+      website: '',
+      address: {
+        fullName: '',
+        addressLine1: '',
+        addressLine2: undefined,
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
+      },
+      returnPolicy: undefined,
+      termsAndConditions: undefined,
+    };
 
     try {
       // Fetch footer settings from database
@@ -39,18 +56,15 @@ export class BusinessInfoService {
         await this.footerSettingsService.getFooterSettings();
 
       return {
-        companyName,
-        logoUrl: BUSINESS.ASSETS.LOGO,
-        contactEmail: footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY,
+        ...businessInfo,
+        contactEmail: footerSettings?.contactEmail || '',
         contactPhone: footerSettings?.contactPhone || undefined,
         website: this.constructWebsiteUrl(footerSettings),
         address: this.createBusinessAddress(
           footerSettings,
-          companyName,
+          businessInfo.companyName,
           locale,
         ),
-        returnPolicy: undefined,
-        termsAndConditions: undefined,
       };
     } catch (error) {
       this.logger.error(
@@ -59,40 +73,8 @@ export class BusinessInfoService {
       );
 
       // Return fallback business info with constants only
-      return this.getFallbackBusinessInfo(companyName, locale);
+      return businessInfo;
     }
-  }
-
-  /**
-   * Get fallback business information when database is unavailable
-   *
-   * @param companyName - Company name for the locale
-   * @param locale - Language locale
-   * @returns BusinessInfoData with fallback values
-   */
-  private getFallbackBusinessInfo(
-    companyName: string,
-    locale: 'en' | 'vi',
-  ): BusinessInfoData {
-    return {
-      companyName,
-      logoUrl: BUSINESS.ASSETS.LOGO,
-      contactEmail: BUSINESS.CONTACT.EMAIL.PRIMARY,
-      contactPhone: undefined,
-      website: process.env.FRONTEND_URL || BUSINESS.WEBSITE.WWW,
-      address: {
-        fullName: companyName,
-        addressLine1: '',
-        addressLine2: undefined,
-        city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
-        state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
-        postalCode: '70000',
-        country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
-        phone: undefined,
-      },
-      returnPolicy: undefined,
-      termsAndConditions: undefined,
-    };
   }
 
   /**
