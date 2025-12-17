@@ -115,7 +115,7 @@
   - Ensure all PDF generation methods benefit from image optimization
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ]* 14. Write unit tests for aggressive image optimization service
+- [x] 14. Write unit tests for aggressive image optimization service
   - Create unit tests for aggressive image scaling algorithms
   - Test dynamic size calculation and aspect ratio preservation
   - Test configuration loading and validation for aggressive optimization
@@ -123,7 +123,7 @@
   - Test size reduction metrics generation accuracy
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 4.1, 4.2, 4.4, 4.5_
 
-- [ ]* 15. Write integration tests for PDF optimization
+- [x] 15. Write integration tests for PDF optimization
   - Test end-to-end PDF generation with image optimization
   - Test integration with existing PDF services
   - Test performance impact of image optimization

@@ -249,14 +249,16 @@ export class PDFTemplateEngine {
    */
   private generateOrderHeaderHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const formattedDate = this.localization.formatDate(data.orderDate, locale);
-    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName =
+      data.businessInfo?.companyName ||
+      BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="header-container">
         <div class="logo-section">
-          ${data.businessInfo.logoUrl ?
-            `<img src="${data.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">` :
-            `<h1 class="company-name">${companyName}</h1>`
+          ${data.businessInfo.logoUrl
+              ? `<img src="${data.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">`
+              : `<h1 class="company-name">${companyName}</h1>`
           }
         </div>
         <div class="document-title">

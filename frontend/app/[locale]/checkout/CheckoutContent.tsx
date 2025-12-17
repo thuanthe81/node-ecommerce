@@ -321,6 +321,7 @@ export default function CheckoutContent() {
         })),
         notes: notes || undefined,
         promotionId: appliedPromo?.promotionId,
+        locale: locale as 'en' | 'vi',
       };
 
       console.log('[CheckoutContent] Creating order with data:', orderData);

@@ -6,6 +6,7 @@ import { EmailTemplateService } from '../notifications/services/email-template.s
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
+import { BusinessInfoService } from '../common/services/business-info.service';
 import {
   NotFoundException,
   BadRequestException,
@@ -129,6 +130,27 @@ describe('OrdersService', () => {
     handleResendRequest: jest.fn(),
   };
 
+  const mockBusinessInfoService = {
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      companyName: 'Test Company',
+      logoUrl: 'https://example.com/logo.png',
+      contactEmail: 'test@example.com',
+      contactPhone: '+1234567890',
+      website: 'https://example.com',
+      address: {
+        fullName: 'Test Company',
+        addressLine1: '123 Test St',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'Test Country',
+        phone: '+1234567890',
+      },
+      returnPolicy: undefined,
+      termsAndConditions: undefined,
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -139,6 +161,7 @@ describe('OrdersService', () => {
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
         { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
         { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
+        { provide: BusinessInfoService, useValue: mockBusinessInfoService },
       ],
     }).compile();
 

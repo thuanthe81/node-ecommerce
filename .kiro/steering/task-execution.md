@@ -69,6 +69,7 @@ When starting a task, use this search approach:
 - **Reusability**: Extract common logic into hooks/utils
 - **Accessibility**: Follow WCAG guidelines (see ACCESSIBILITY.md)
 - **Type Safety**: Proper TypeScript types throughout
+- **Code Formatting**: Always use Prettier syntax for consistent code formatting across all files
 
 ## Common Pitfalls to Avoid
 
@@ -79,3 +80,4 @@ When starting a task, use this search approach:
 - ❌ Missing error handling and loading states
 - ❌ Inconsistent naming conventions
 - ❌ Not following TypeScript best practices
+- ❌ Writing code without proper Prettier formatting

@@ -16,6 +16,7 @@ export interface CreateOrderData {
   promotionCode?: string;
   promotionId?: string;
   notes?: string;
+  locale?: 'en' | 'vi';
 }
 
 export interface Order {

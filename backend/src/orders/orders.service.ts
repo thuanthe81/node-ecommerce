@@ -17,6 +17,7 @@ import { EmailAttachmentService } from '../pdf-generator/services/email-attachme
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
 import { STATUS, BUSINESS, ConstantUtils } from '../common/constants';
+import { BusinessInfoService } from '../common/services/business-info.service';
 
 @Injectable()
 export class OrdersService {
@@ -27,6 +28,7 @@ export class OrdersService {
     private footerSettingsService: FooterSettingsService,
     private emailAttachmentService: EmailAttachmentService,
     private resendEmailHandlerService: ResendEmailHandlerService,
+    private businessInfoService: BusinessInfoService,
   ) {}
 
   /**
@@ -66,6 +68,7 @@ export class OrdersService {
       items,
       promotionCode,
       notes,
+      locale = 'vi', // Default to English if not provided
     } = createOrderDto;
 
     // Verify addresses exist and belong to user if authenticated
@@ -282,10 +285,10 @@ export class OrdersService {
     });
 
     // Send order confirmation email
-    await this.sendOrderConfirmationEmail(order);
+    await this.sendOrderConfirmationEmail(order, locale);
 
     // Send admin notification email
-    await this.sendAdminOrderNotification(order);
+    await this.sendAdminOrderNotification(order, locale);
 
     return order;
   }
@@ -313,9 +316,8 @@ export class OrdersService {
    * - Includes comprehensive order information in PDF format
    * - Handles PDF generation failures gracefully with fallback notifications
    */
-  private async sendOrderConfirmationEmail(order: any): Promise<void> {
+  private async sendOrderConfirmationEmail(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
     try {
-      const locale = 'en' as 'en' | 'vi'; // Default to English, can be determined from user preferences
 
       // Convert order data to PDF format
       const orderPDFData = await this.convertOrderToPDFData(order, locale);
@@ -341,7 +343,7 @@ export class OrdersService {
 
       // Attempt fallback email without PDF
       try {
-        await this.sendFallbackOrderConfirmationEmail(order, 'en');
+        await this.sendFallbackOrderConfirmationEmail(order, locale);
       } catch (fallbackError) {
         console.error(`Fallback email also failed for order ${order.orderNumber}:`, fallbackError);
       }
@@ -357,9 +359,6 @@ export class OrdersService {
   private async convertOrderToPDFData(order: any, locale: 'en' | 'vi'): Promise<OrderPDFData> {
     // Validate order data before conversion
     this.validateOrderDataForPDF(order);
-
-    // Get business information from footer settings
-    const footerSettings = await this.footerSettingsService.getFooterSettings();
 
     // Convert address data with fallback handling for missing data
     const billingAddress: AddressData = this.convertAddressData(
@@ -391,8 +390,8 @@ export class OrdersService {
       locale
     );
 
-    // Create business info with fallback values
-    const businessInfo: BusinessInfoData = this.createBusinessInfo(footerSettings, locale);
+    // Get business info using the common service
+    const businessInfo: BusinessInfoData = await this.businessInfoService.getBusinessInfo(locale);
 
     // Handle special order types and statuses
     const orderDate = this.formatOrderDate(order.createdAt, locale);
@@ -630,65 +629,7 @@ export class OrdersService {
     return shippingData;
   }
 
-  /**
-   * Create comprehensive business information with legal content integration
-   * @param footerSettings - Footer settings from database
-   * @param locale - Language locale
-   * @returns BusinessInfoData with complete business and legal information
-   */
-  private createBusinessInfo(footerSettings: any, locale: 'en' | 'vi'): BusinessInfoData {
-    const companyName = ConstantUtils.getCompanyName(locale);
 
-    return {
-      companyName,
-      logoUrl: BUSINESS.ASSETS.LOGO,
-      contactEmail: footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY,
-      contactPhone: footerSettings?.contactPhone || undefined,
-      website: this.constructWebsiteUrl(footerSettings),
-      address: this.createBusinessAddress(footerSettings, companyName, locale),
-      returnPolicy: undefined,
-      termsAndConditions: undefined,
-    };
-  }
-
-  /**
-   * Construct website URL from available settings
-   * @param footerSettings - Footer settings from database
-   * @returns Website URL or undefined
-   */
-  private constructWebsiteUrl(footerSettings: any): string | undefined {
-    // Try to construct website URL from available social media links or contact info
-    if (footerSettings?.facebookUrl) {
-      // Extract domain from Facebook URL if it's a business page
-      const match = footerSettings.facebookUrl.match(/facebook\.com\/([^\/]+)/);
-      if (match && !match[1].includes('profile.php')) {
-        return `https://www.${match[1]}.com`; // Attempt to guess website
-      }
-    }
-
-    // Default to the primary website URL
-    return BUSINESS.WEBSITE.WWW;
-  }
-
-  /**
-   * Create comprehensive business address
-   * @param footerSettings - Footer settings from database
-   * @param companyName - Company name
-   * @param locale - Language locale
-   * @returns Complete business address
-   */
-  private createBusinessAddress(footerSettings: any, companyName: string, locale: 'en' | 'vi'): AddressData {
-    return {
-      fullName: companyName,
-      addressLine1: footerSettings?.address || undefined,
-      addressLine2: undefined,
-      city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
-      state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
-      postalCode: '70000',
-      country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
-      phone: footerSettings?.contactPhone || undefined,
-    };
-  }
 
   /**
    * Format order date based on locale
@@ -937,7 +878,7 @@ export class OrdersService {
    * @see FooterSettingsService.getFooterSettings
    * @see EmailTemplateService.getAdminOrderNotificationTemplate
    */
-  private async sendAdminOrderNotification(order: any): Promise<void> {
+  private async sendAdminOrderNotification(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
     try {
       // Query footer settings for admin email
       const footerSettings = await this.footerSettingsService.getFooterSettings();
@@ -948,7 +889,7 @@ export class OrdersService {
         return;
       }
 
-      const locale = 'en' as 'en' | 'vi'; // Default to English for admin emails
+      // Use the provided locale parameter
 
       // Prepare admin email data with all required fields
       const adminEmailData = {
@@ -1574,7 +1515,7 @@ export class OrdersService {
   async resendOrderConfirmationEmail(
     orderNumber: string,
     customerEmail: string,
-    locale: 'en' | 'vi' = 'en'
+    locale: 'en' | 'vi' = 'vi'
   ): Promise<ResendResult> {
     try {
       // Use the ResendEmailHandlerService to handle the request

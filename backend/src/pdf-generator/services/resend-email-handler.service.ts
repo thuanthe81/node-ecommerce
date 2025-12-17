@@ -35,7 +35,7 @@ export class ResendEmailHandlerService {
   async handleResendRequest(
     orderNumber: string,
     customerEmail: string,
-    locale: 'en' | 'vi' = 'en'
+    locale: 'en' | 'vi' = 'vi'
   ): Promise<ResendResult> {
     const startTime = Date.now();
 

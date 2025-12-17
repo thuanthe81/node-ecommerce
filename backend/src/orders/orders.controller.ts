@@ -131,7 +131,7 @@ export class OrdersController {
       const result = await this.ordersService.resendOrderConfirmationEmail(
         orderNumber,
         resendEmailDto.email,
-        resendEmailDto.locale || 'en'
+        resendEmailDto.locale || 'vi'
       );
 
       if (!result.success) {

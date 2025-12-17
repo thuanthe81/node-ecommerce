@@ -7,12 +7,13 @@ import { PDFMonitoringService } from './pdf-monitoring.service';
 import { PDFAuditService } from './pdf-audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
+import { BusinessInfoService } from '../../common/services/business-info.service';
 import {
   OrderPDFData,
   SimplifiedEmailTemplate,
   EmailSendResult,
   ResendResult,
-  RateLimitResult,
+  RateLimitResult, BusinessInfoData,
 } from '../types/pdf.types';
 import * as fs from 'fs';
 import { SYSTEM, BUSINESS } from '../../common/constants';
@@ -55,6 +56,7 @@ export class EmailAttachmentService {
     private auditService: PDFAuditService,
     private prismaService: PrismaService,
     private footerSettingsService: FooterSettingsService,
+    private businessInfoService: BusinessInfoService,
   ) {}
 
   /**
@@ -193,7 +195,7 @@ export class EmailAttachmentService {
   async resendOrderConfirmation(
     orderNumber: string,
     customerEmail: string,
-    locale: 'en' | 'vi' = 'en',
+    locale: 'en' | 'vi' = 'vi',
   ): Promise<ResendResult> {
     const startTime = Date.now();
     let auditId: string | undefined;
@@ -236,6 +238,7 @@ export class EmailAttachmentService {
       const orderData = await this.fetchOrderDataForResend(
         orderNumber,
         customerEmail,
+        locale
       );
       if (!orderData) {
         const error = 'Order not found or email mismatch';
@@ -1064,6 +1067,7 @@ export class EmailAttachmentService {
   private async fetchOrderDataForResend(
     orderNumber: string,
     customerEmail: string,
+    locale: 'en' | 'vi',
   ): Promise<OrderPDFData | null> {
     try {
       const order = await this.prismaService.order.findUnique({
@@ -1229,8 +1233,8 @@ export class EmailAttachmentService {
             'en',
           ), // Will be localized in PDF
         },
-        businessInfo: await this.getBusinessInfo('en'), // Will be overridden by the locale parameter
-        locale: 'en', // Will be overridden by the locale parameter
+        businessInfo: await this.businessInfoService.getBusinessInfo(locale), // Will be overridden by the locale parameter
+        locale, // Will be overridden by the locale parameter
       };
 
       return orderPDFData;
@@ -1305,92 +1309,7 @@ export class EmailAttachmentService {
     );
   }
 
-  /**
-   * Get business information for PDF from footer settings
-   * @param locale - Language locale for localized content
-   * @returns Promise<BusinessInfoData> - Business information from database
-   */
-  private async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<any> {
-    const companyName = BUSINESS.COMPANY.NAME.EN;
-    try {
-      // Fetch footer settings from database
-      const footerSettings =
-        await this.footerSettingsService.getFooterSettings();
 
-      return {
-        companyName,
-        logoUrl: BUSINESS.ASSETS.LOGO,
-        contactEmail: footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY,
-        contactPhone: footerSettings?.contactPhone || undefined,
-        website: this.constructWebsiteUrl(footerSettings),
-        address: this.createBusinessAddress(
-          footerSettings,
-          companyName,
-          locale,
-        ),
-        returnPolicy: undefined,
-        termsAndConditions: undefined,
-      };
-    } catch (error) {
-      this.logger.error(
-        'Failed to fetch business info from footer settings:',
-        error,
-      );
-
-      return {
-        companyName,
-        logoUrl: BUSINESS.ASSETS.LOGO,
-        contactEmail: BUSINESS.CONTACT.EMAIL.PRIMARY,
-        contactPhone: undefined,
-        website: process.env.FRONTEND_URL,
-        address: {
-          fullName: companyName,
-          addressLine1: undefined,
-          addressLine2: undefined,
-          city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
-          state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
-          postalCode: '70000',
-          country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
-          phone: undefined,
-        },
-        returnPolicy: undefined,
-        termsAndConditions: undefined,
-      };
-    }
-  }
-
-  /**
-   * Construct website URL from available settings
-   * @param footerSettings - Footer settings from database
-   * @returns Website URL or undefined
-   */
-  private constructWebsiteUrl(footerSettings: any): string | undefined {
-    return process.env.FRONTEND_URL || footerSettings?.website || undefined;
-  }
-
-  /**
-   * Create comprehensive business address from footer settings
-   * @param footerSettings - Footer settings from database
-   * @param companyName - Company name
-   * @param locale - Language locale
-   * @returns Complete business address
-   */
-  private createBusinessAddress(
-    footerSettings: any,
-    companyName: string,
-    locale: 'en' | 'vi',
-  ): any {
-    return {
-      fullName: companyName,
-      addressLine1: footerSettings?.address || undefined,
-      addressLine2: undefined,
-      city: locale === 'vi' ? 'Thành phố Hồ Chí Minh' : 'Ho Chi Minh City',
-      state: locale === 'vi' ? 'Hồ Chí Minh' : 'Ho Chi Minh',
-      postalCode: '70000',
-      country: locale === 'vi' ? 'Việt Nam' : 'Vietnam',
-      phone: footerSettings?.contactPhone || undefined,
-    };
-  }
 
   /**
    * Delay execution for specified milliseconds

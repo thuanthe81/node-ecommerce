@@ -1,5 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { EncryptionService } from './services/encryption.service';
+import { BusinessInfoService } from './services/business-info.service';
+import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 
 /**
  * Common module for shared services and utilities
@@ -7,7 +9,8 @@ import { EncryptionService } from './services/encryption.service';
  */
 @Global()
 @Module({
-  providers: [EncryptionService],
-  exports: [EncryptionService],
+  imports: [FooterSettingsModule],
+  providers: [EncryptionService, BusinessInfoService],
+  exports: [EncryptionService, BusinessInfoService],
 })
 export class CommonModule {}
