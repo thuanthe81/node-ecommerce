@@ -12,6 +12,7 @@ This feature involves centralizing common string constants used throughout the b
 - **Cache Keys**: String identifiers used for caching operations
 - **Status Values**: String literals representing various states (order status, payment status, etc.)
 - **Role Names**: String literals representing user roles (ADMIN, CUSTOMER, etc.)
+- **Business Constants**: Company-specific string values like company names, contact information, and branding elements
 
 ## Requirements
 
@@ -26,6 +27,7 @@ This feature involves centralizing common string constants used throughout the b
 3. WHEN the system uses role names THEN the system SHALL reference them from a centralized constants file
 4. WHEN the system uses MIME types THEN the system SHALL reference them from a centralized constants file
 5. WHEN the system uses email template identifiers THEN the system SHALL reference them from a centralized constants file
+6. WHEN the system uses business information THEN the system SHALL reference them from a centralized constants file
 
 ### Requirement 2
 
@@ -50,6 +52,7 @@ This feature involves centralizing common string constants used throughout the b
 3. WHEN user role strings are used THEN the system SHALL reference USER_ROLES constants
 4. WHEN cache key strings are used THEN the system SHALL reference CACHE_KEYS constants
 5. WHEN MIME type strings are used THEN the system SHALL reference MIME_TYPES constants
+6. WHEN business information strings are used THEN the system SHALL reference BUSINESS constants
 
 ### Requirement 4
 
@@ -62,3 +65,15 @@ This feature involves centralizing common string constants used throughout the b
 3. WHEN constants are typed THEN the system SHALL use string literal types where appropriate
 4. WHEN constants are organized THEN the system SHALL follow the existing project structure conventions
 5. WHEN constants are imported THEN the system SHALL support both named imports and namespace imports
+
+### Requirement 5
+
+**User Story:** As a developer, I want all business-related constants centralized, so that company information can be easily updated without searching through multiple files.
+
+#### Acceptance Criteria
+
+1. WHEN the system uses company names THEN the system SHALL reference BUSINESS.COMPANY constants
+2. WHEN the system uses contact information THEN the system SHALL reference BUSINESS.CONTACT constants
+3. WHEN the system uses social media URLs THEN the system SHALL reference BUSINESS.SOCIAL constants
+4. WHEN the system uses branding assets THEN the system SHALL reference BUSINESS.ASSETS constants
+5. WHEN the system uses website URLs THEN the system SHALL reference BUSINESS.WEBSITE constants

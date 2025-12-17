@@ -13,6 +13,7 @@ import { PDFLocalizationService } from './services/pdf-localization.service';
 import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
+import { BUSINESS } from '../common/constants';
 import { PDFCompressionService } from './services/pdf-compression.service';
 
 @Injectable()
@@ -82,7 +83,7 @@ export class PDFTemplateEngine {
    * @returns Template with branding applied
    */
   applyBranding(template: PDFTemplate): PDFTemplate {
-    // Apply AlaCraft branding colors and styling
+    // Apply company branding colors and styling
     template.styling.colors = {
       ...template.styling.colors,
       primary: '#2c3e50',      // Dark blue-gray for headers
@@ -533,8 +534,8 @@ export class PDFTemplateEngine {
       title: isVietnamese ? `Đơn hàng ${data.orderNumber}` : `Order ${data.orderNumber}`,
       author: data.businessInfo.companyName,
       subject: isVietnamese ? 'Xác nhận đơn hàng' : 'Order Confirmation',
-      creator: 'AlaCraft PDF Generator',
-      producer: 'AlaCraft E-commerce System',
+      creator: `${BUSINESS.COMPANY.NAME.EN} PDF Generator`,
+      producer: `${BUSINESS.COMPANY.NAME.EN} E-commerce System`,
       creationDate: new Date(),
       keywords: [
         'order',

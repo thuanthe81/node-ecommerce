@@ -344,7 +344,7 @@ export class CompressedImageConfigService {
    * Validate a specific configuration section
    */
   validateConfigSection(section: keyof CompressedImageConfig, value: any): { isValid: boolean; errors: string[] } {
-    const testConfig = { ...this.config };
+    const testConfig = { ...this.config } as any;
     testConfig[section] = value;
 
     const validation = validateCompressedImageConfig(testConfig);

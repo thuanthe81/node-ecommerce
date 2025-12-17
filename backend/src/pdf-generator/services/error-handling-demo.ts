@@ -38,7 +38,16 @@ async function demonstrateErrorHandling() {
 
   const configService = new PDFImageOptimizationConfigService(mockConfigService);
   const validationService = new PDFImageValidationService(metricsService);
-  const compressionService = new PDFCompressionService(metricsService, configService, validationService);
+
+  // Create mock CompressedImageService
+  const mockCompressedImageService = {
+    hasCompressedImage: async () => false,
+    getCompressedImage: async () => null,
+    saveCompressedImage: async () => ({ success: true }),
+    generateCompressedPath: () => 'mock-path',
+  } as any;
+
+  const compressionService = new PDFCompressionService(metricsService, configService, validationService, mockCompressedImageService);
 
   console.log('1. Testing single image optimization with missing file...');
   try {

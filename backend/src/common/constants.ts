@@ -124,6 +124,69 @@ export interface CacheKeyConstants {
 }
 
 /**
+ * Business Constants Interface
+ *
+ * Defines the structure for business-related constants including
+ * company information, contact details, and branding assets.
+ */
+export interface BusinessConstants {
+  /** Company information constants */
+  COMPANY: {
+    /** Company names in different languages */
+    NAME: {
+      /** English company name */
+      EN: 'AlaCraft';
+      /** Vietnamese company name */
+      VI: 'AlaCraft Việt Nam';
+    };
+    /** Legal company name for official documents */
+    LEGAL_NAME: 'AlaCraft Handmade Goods';
+  };
+  /** Contact information constants */
+  CONTACT: {
+    /** Email addresses for different purposes */
+    EMAIL: {
+      /** Primary contact email */
+      PRIMARY: 'contact@alacraft.com';
+      /** Vietnamese contact email */
+      VIETNAMESE: 'lienhe@alacraft.com';
+      /** Orders-specific email */
+      ORDERS: 'orders@alacraft.com';
+    };
+    /** Phone numbers for different regions */
+    PHONE: {
+      /** Primary Vietnamese phone number */
+      PRIMARY: '+84 123 456 789';
+      /** International phone number */
+      INTERNATIONAL: '+1-555-ALACRAFT';
+    };
+  };
+  /** Website URL constants */
+  WEBSITE: {
+    /** Primary website URL */
+    PRIMARY: 'https://alacraft.com';
+    /** WWW version of website URL */
+    WWW: 'https://www.alacraft.com';
+  };
+  /** Social media platform URLs */
+  SOCIAL: {
+    /** Facebook page URL */
+    FACEBOOK: 'https://facebook.com/alacraft';
+    /** Instagram profile URL */
+    INSTAGRAM: 'https://instagram.com/alacraft';
+    /** Zalo contact URL */
+    ZALO: 'https://zalo.me/alacraft';
+  };
+  /** Branding and asset path constants */
+  ASSETS: {
+    /** Company logo path */
+    LOGO: '/uploads/logo.jpg';
+    /** Default product image placeholder */
+    DEFAULT_PRODUCT_IMAGE: '/placeholder-product.png';
+  };
+}
+
+/**
  * System Constants Interface
  *
  * Defines the structure for system-level constants including
@@ -352,6 +415,105 @@ export const CACHE_KEYS = {
 } as const;
 
 /**
+ * Business Constants
+ *
+ * Business-related constants including company information, contact details,
+ * and branding assets used throughout the application.
+ */
+export const BUSINESS = {
+  /**
+   * Company Information Constants
+   *
+   * Company names and legal information for consistent branding.
+   */
+  COMPANY: {
+    /**
+     * Company Names
+     *
+     * Localized company names for different languages and regions.
+     */
+    NAME: {
+      /** English company name */
+      EN: 'AlaCraft',
+      /** Vietnamese company name */
+      VI: 'AlaCraft',
+    } as const,
+    /** Legal company name for official documents and contracts */
+    LEGAL_NAME: 'AlaCraft Handmade Goods',
+  } as const,
+
+  /**
+   * Contact Information Constants
+   *
+   * Email addresses and phone numbers for different business purposes.
+   */
+  CONTACT: {
+    /**
+     * Email Addresses
+     *
+     * Different email addresses for various business functions.
+     */
+    EMAIL: {
+      /** Primary contact email for general inquiries */
+      PRIMARY: 'contact@alacraft.com',
+      /** Vietnamese contact email for local customers */
+      VIETNAMESE: 'lienhe@alacraft.com',
+      /** Orders-specific email for order-related communications */
+      ORDERS: 'orders@alacraft.com',
+    } as const,
+    /**
+     * Phone Numbers
+     *
+     * Contact phone numbers for different regions and purposes.
+     */
+    PHONE: {
+      /** Primary Vietnamese phone number */
+      PRIMARY: '+84 123 456 789',
+      /** International phone number for global customers */
+      INTERNATIONAL: '+1-555-ALACRAFT',
+    } as const,
+  } as const,
+
+  /**
+   * Website URL Constants
+   *
+   * Official website URLs for the business.
+   */
+  WEBSITE: {
+    /** Primary website URL without www */
+    PRIMARY: 'https://alacraft.com',
+    /** WWW version of website URL for compatibility */
+    WWW: 'https://www.alacraft.com',
+  } as const,
+
+  /**
+   * Social Media Constants
+   *
+   * Official social media platform URLs for the business.
+   */
+  SOCIAL: {
+    /** Facebook business page URL */
+    FACEBOOK: 'https://facebook.com/alacraft',
+    /** Instagram business profile URL */
+    INSTAGRAM: 'https://instagram.com/alacraft',
+    /** Zalo business contact URL */
+    ZALO: 'https://zalo.me/alacraft',
+  } as const,
+
+  /**
+   * Asset Path Constants
+   *
+   * Paths to branding assets and default images.
+   */
+  ASSETS: {
+    /** Company logo file path */
+    LOGO: '/uploads/logo.jpg',
+    /** Default product image placeholder path */
+    DEFAULT_PRODUCT_IMAGE: '/placeholder-product.png',
+  } as const,
+} as const;
+
+/**
  * System Constants
  *
  * System-level constants including MIME types, email configuration,
@@ -449,6 +611,7 @@ export const CONSTANTS = {
   STATUS,
   CACHE_KEYS,
   SYSTEM,
+  BUSINESS,
 } as const;
 
 /**
@@ -461,6 +624,9 @@ export type PaymentStatus = typeof STATUS.PAYMENT_STATUS[keyof typeof STATUS.PAY
 export type UserRole = typeof STATUS.USER_ROLES[keyof typeof STATUS.USER_ROLES];
 export type MimeType = typeof SYSTEM.MIME_TYPES[keyof typeof SYSTEM.MIME_TYPES];
 export type EmailTemplate = typeof SYSTEM.EMAIL.TEMPLATES[keyof typeof SYSTEM.EMAIL.TEMPLATES];
+export type CompanyName = typeof BUSINESS.COMPANY.NAME[keyof typeof BUSINESS.COMPANY.NAME];
+export type ContactEmail = typeof BUSINESS.CONTACT.EMAIL[keyof typeof BUSINESS.CONTACT.EMAIL];
+export type SocialPlatform = keyof typeof BUSINESS.SOCIAL;
 
 /**
  * Utility Functions
@@ -534,5 +700,47 @@ export const ConstantUtils = {
    */
   getAllMimeTypes: (): MimeType[] => {
     return Object.values(SYSTEM.MIME_TYPES);
+  },
+
+  /**
+   * Get company name by locale
+   * @param locale - The locale ('en' or 'vi')
+   * @returns Localized company name
+   */
+  getCompanyName: (locale: 'en' | 'vi'): string => {
+    return locale === 'vi' ? BUSINESS.COMPANY.NAME.VI : BUSINESS.COMPANY.NAME.EN;
+  },
+
+  /**
+   * Get contact email by type
+   * @param type - The email type ('primary', 'vietnamese', or 'orders')
+   * @returns Contact email address
+   */
+  getContactEmail: (type: 'primary' | 'vietnamese' | 'orders'): string => {
+    switch (type) {
+      case 'vietnamese':
+        return BUSINESS.CONTACT.EMAIL.VIETNAMESE;
+      case 'orders':
+        return BUSINESS.CONTACT.EMAIL.ORDERS;
+      default:
+        return BUSINESS.CONTACT.EMAIL.PRIMARY;
+    }
+  },
+
+  /**
+   * Get all social media URLs
+   * @returns Object containing all social media platform URLs
+   */
+  getAllSocialUrls: () => {
+    return BUSINESS.SOCIAL;
+  },
+
+  /**
+   * Validate if a string is a valid contact email
+   * @param email - The email string to validate
+   * @returns True if the email is a valid business contact email
+   */
+  isValidContactEmail: (email: string): email is ContactEmail => {
+    return Object.values(BUSINESS.CONTACT.EMAIL).includes(email as ContactEmail);
   },
 } as const;

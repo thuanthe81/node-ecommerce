@@ -7,6 +7,7 @@ import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-met
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { BUSINESS } from '../../common/constants';
 
 export interface HealthCheckResult {
   service: string;
@@ -869,10 +870,10 @@ export class PDFMonitoringService {
         name: 'Standard Shipping',
       },
       businessInfo: {
-        companyName: 'AlaCraft',
-        contactEmail: 'contact@alacraft.com',
+        companyName: BUSINESS.COMPANY.NAME.EN,
+        contactEmail: BUSINESS.CONTACT.EMAIL.PRIMARY,
         address: {
-          fullName: 'AlaCraft',
+          fullName: BUSINESS.COMPANY.NAME.EN,
           addressLine1: '123 Business St',
           city: 'Business City',
           state: 'Business State',

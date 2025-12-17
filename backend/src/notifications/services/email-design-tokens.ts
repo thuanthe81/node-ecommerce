@@ -6,6 +6,8 @@
  * and provide a centralized place to manage the visual design system.
  */
 
+import { BUSINESS } from '../../common/constants';
+
 export interface ModernEmailStyles {
   colors: {
     primary: string;      // #2c3e50 (dark blue-gray)
@@ -647,7 +649,7 @@ export const ACCESSIBILITY_STANDARDS = {
     skipLink: 'Skip to main content',
     tableCaption: 'Order details table',
     imageAlt: {
-      logo: 'AlaCraft logo',
+      logo: `${BUSINESS.COMPANY.NAME.EN} logo`,
       product: 'Product image',
       qrCode: 'QR code for payment',
       decorative: '', // Empty alt for decorative images

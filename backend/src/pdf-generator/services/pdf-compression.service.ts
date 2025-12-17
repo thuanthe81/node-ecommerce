@@ -3279,14 +3279,10 @@ export class PDFCompressionService {
     operationId: string
   ): void {
     try {
-      if (this.metricsService && typeof this.metricsService.recordImageReuse === 'function') {
-        this.metricsService.recordImageReuse({
-          imageUrl,
-          retrievedSize: result.optimizedSize,
-          compressionRatio: result.compressionRatio,
-          operationId,
-          timestamp: new Date(),
-        });
+      // Record image reuse metrics if available
+      if (this.metricsService) {
+        // Using existing recordImageOptimization method instead
+        this.metricsService.recordImageOptimization(result, operationId);
       }
 
       this.logger.log(`Recorded reuse metrics for ${imageUrl}: ${this.formatFileSize(result.optimizedSize)} retrieved from storage`);
@@ -3307,15 +3303,10 @@ export class PDFCompressionService {
     savedPath: string
   ): void {
     try {
-      if (this.metricsService && typeof this.metricsService.recordImageStorage === 'function') {
-        this.metricsService.recordImageStorage({
-          imageUrl,
-          savedPath,
-          originalSize: result.originalSize,
-          optimizedSize: result.optimizedSize,
-          compressionRatio: result.compressionRatio,
-          timestamp: new Date(),
-        });
+      // Record image storage metrics if available
+      if (this.metricsService) {
+        // Using existing recordImageOptimization method instead
+        this.metricsService.recordImageOptimization(result, `storage-${imageUrl}`);
       }
 
       this.logger.log(`Recorded storage metrics for ${imageUrl}: ${this.formatFileSize(result.optimizedSize)} saved to ${savedPath}`);
@@ -3415,14 +3406,14 @@ export class PDFCompressionService {
     errorMessage: string
   ): void {
     try {
-      if (this.metricsService && typeof this.metricsService.recordStorageFailure === 'function') {
-        this.metricsService.recordStorageFailure({
-          imageUrl,
-          originalSize: result.originalSize,
-          optimizedSize: result.optimizedSize,
-          errorMessage,
-          timestamp: new Date(),
-        });
+      // Record storage failure metrics if available
+      if (this.metricsService) {
+        // Create a failed result to record the failure
+        const failedResult: OptimizedImageResult = {
+          ...result,
+          error: errorMessage
+        };
+        this.metricsService.recordImageOptimization(failedResult, `storage-failure-${imageUrl}`);
       }
 
       this.logger.warn(`Recorded storage failure for ${imageUrl}: ${errorMessage}`);

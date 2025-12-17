@@ -261,7 +261,7 @@ export class CompressedImageStorageMonitoringService {
    * Automatic cleanup cron job
    */
   @Cron(CronExpression.EVERY_HOUR)
-  async automaticCleanup(): void {
+  async automaticCleanup(): Promise<void> {
     if (!this.configService.isAutoCleanupEnabled()) {
       return;
     }
@@ -293,7 +293,7 @@ export class CompressedImageStorageMonitoringService {
    * Metrics collection cron job
    */
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async scheduledMetricsCollection(): void {
+  async scheduledMetricsCollection(): Promise<void> {
     if (this.configService.isStorageMonitoringEnabled()) {
       await this.collectMetrics();
     }

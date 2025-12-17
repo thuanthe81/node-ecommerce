@@ -76,6 +76,24 @@ The constants file will be placed in the `common` module to indicate its shared 
 - Timeout values
 - Rate limiting constants
 
+### 4. Business Constants
+
+**Company Information**
+- Company names (English and Vietnamese)
+- Contact email addresses
+- Phone numbers
+- Physical addresses
+
+**Website and Social Media**
+- Website URLs
+- Social media platform URLs
+- Branding asset paths
+
+**Default Values**
+- Logo paths
+- Default contact information
+- Fallback business details
+
 ## Data Models
 
 ### TypeScript Interfaces
@@ -139,6 +157,40 @@ interface SystemConstants {
     DEFAULT_TIMEOUT: 30000;
   };
 }
+
+interface BusinessConstants {
+  COMPANY: {
+    NAME: {
+      EN: 'AlaCraft';
+      VI: 'AlaCraft Việt Nam';
+    };
+    LEGAL_NAME: 'AlaCraft Handmade Goods';
+  };
+  CONTACT: {
+    EMAIL: {
+      PRIMARY: 'contact@alacraft.com';
+      VIETNAMESE: 'lienhe@alacraft.com';
+      ORDERS: 'orders@alacraft.com';
+    };
+    PHONE: {
+      PRIMARY: '+84 123 456 789';
+      INTERNATIONAL: '+1-555-ALACRAFT';
+    };
+  };
+  WEBSITE: {
+    PRIMARY: 'https://alacraft.com';
+    WWW: 'https://www.alacraft.com';
+  };
+  SOCIAL: {
+    FACEBOOK: 'https://facebook.com/alacraft';
+    INSTAGRAM: 'https://instagram.com/alacraft';
+    ZALO: 'https://zalo.me/alacraft';
+  };
+  ASSETS: {
+    LOGO: '/uploads/logo.jpg';
+    DEFAULT_PRODUCT_IMAGE: '/placeholder-product.png';
+  };
+}
 ```
 
 ### Const Assertions
@@ -182,6 +234,10 @@ Property 4: Consistent naming conventions
 Property 5: JSDoc documentation completeness
 *For any* constant or constant group in the constants file, there should be JSDoc comments explaining their purpose
 **Validates: Requirements 2.4**
+
+Property 6: Business information centralization
+*For any* business information usage (company names, contact details, URLs), the system should reference constants from the centralized constants file rather than using hardcoded strings
+**Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 
 ## Error Handling
 

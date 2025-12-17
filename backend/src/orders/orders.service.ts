@@ -16,7 +16,7 @@ import { FooterSettingsService } from '../footer-settings/footer-settings.servic
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
-import { STATUS } from '../common/constants';
+import { STATUS, BUSINESS, ConstantUtils } from '../common/constants';
 
 @Injectable()
 export class OrdersService {
@@ -637,12 +637,12 @@ export class OrdersService {
    * @returns BusinessInfoData with complete business and legal information
    */
   private createBusinessInfo(footerSettings: any, locale: 'en' | 'vi'): BusinessInfoData {
-    const companyName = locale === 'vi' ? 'AlaCraft Việt Nam' : 'AlaCraft';
+    const companyName = ConstantUtils.getCompanyName(locale);
 
     return {
       companyName,
-      logoUrl: '/uploads/logo.jpg', // Can be enhanced with actual logo URL from assets
-      contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
+      logoUrl: BUSINESS.ASSETS.LOGO,
+      contactEmail: footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY,
       contactPhone: footerSettings?.contactPhone || undefined,
       website: this.constructWebsiteUrl(footerSettings),
       address: this.createBusinessAddress(footerSettings, companyName, locale),
@@ -666,8 +666,8 @@ export class OrdersService {
       }
     }
 
-    // Default to a placeholder that can be updated
-    return 'https://www.alacraft.com';
+    // Default to the primary website URL
+    return BUSINESS.WEBSITE.WWW;
   }
 
   /**

@@ -10,7 +10,7 @@ import {
 } from './email-design-tokens';
 import { ModernButtonGenerator } from './email-button-generators';
 import { StatusBadgeGenerator } from './email-status-badge-generators';
-import { STATUS } from '../../common/constants';
+import { STATUS, BUSINESS } from '../../common/constants';
 
 export interface OrderEmailData {
   orderNumber: string;
@@ -130,10 +130,10 @@ export class EmailTemplateService {
   <meta name="supported-color-schemes" content="light dark">
 
   <!-- Accessibility meta tags -->
-  <meta name="description" content="${locale === 'vi' ? 'Email từ AlaCraft - Sản phẩm thủ công chất lượng cao' : 'Email from AlaCraft - Premium Handmade Products'}">
+  <meta name="description" content="${locale === 'vi' ? `Email từ ${BUSINESS.COMPANY.NAME.VI} - Sản phẩm thủ công chất lượng cao` : `Email from ${BUSINESS.COMPANY.NAME.EN} - Premium Handmade Products`}">
   <meta name="robots" content="noindex, nofollow">
 
-  <title>AlaCraft Email</title>
+  <title>${BUSINESS.COMPANY.NAME.EN} Email</title>
 
   <!-- Outlook-specific settings -->
   <!--[if mso]>
@@ -162,7 +162,7 @@ export class EmailTemplateService {
 <body class="email-body" style="${EMAIL_CLIENT_FALLBACKS.appleMail.textSizeAdjust}">
   <!-- Preheader text for email preview and screen readers -->
   <div class="preheader" style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: ${MODERN_EMAIL_STYLES.typography.fontFamily}; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;" aria-hidden="true">
-    ${locale === 'vi' ? 'Email từ AlaCraft - Sản phẩm thủ công chất lượng cao' : 'Email from AlaCraft - Premium Handmade Products'}
+    ${locale === 'vi' ? `Email từ ${BUSINESS.COMPANY.NAME.VI} - Sản phẩm thủ công chất lượng cao` : `Email from ${BUSINESS.COMPANY.NAME.EN} - Premium Handmade Products`}
   </div>
 
   <!-- Skip link for keyboard navigation -->
@@ -171,7 +171,7 @@ export class EmailTemplateService {
   </a>
 
   <!-- Main email wrapper with semantic structure and cross-client compatibility -->
-  <div role="document" aria-label="${locale === 'vi' ? 'Email từ AlaCraft' : 'AlaCraft Email'}">
+  <div role="document" aria-label="${locale === 'vi' ? `Email từ ${BUSINESS.COMPANY.NAME.VI}` : `${BUSINESS.COMPANY.NAME.EN} Email`}">
     <table class="email-wrapper gmail-fix yahoo-fix"
            cellpadding="0"
            cellspacing="0"
@@ -325,7 +325,7 @@ export class EmailTemplateService {
   <table class="email-container" cellpadding="0" cellspacing="0" border="0">
     <tr>
       <td class="email-header">
-        <h1>AlaCraft</h1>
+        <h1>${BUSINESS.COMPANY.NAME.EN}</h1>
       </td>
     </tr>
     <tr>
@@ -336,7 +336,7 @@ export class EmailTemplateService {
     <tr>
       <td class="email-footer">
         <p>${contactInfo}</p>
-        <p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+        <p>&copy; ${new Date().getFullYear()} ${BUSINESS.COMPANY.NAME.EN}. All rights reserved.</p>
       </td>
     </tr>
   </table>
@@ -2752,8 +2752,8 @@ export class EmailTemplateService {
       : 'Premium Handmade Products';
 
     const logoAlt = locale === 'vi'
-      ? 'Logo AlaCraft'
-      : 'AlaCraft Logo';
+      ? `Logo ${BUSINESS.COMPANY.NAME.VI}`
+      : `${BUSINESS.COMPANY.NAME.EN} Logo`;
 
     return `
       <header role="banner">
@@ -2765,8 +2765,8 @@ export class EmailTemplateService {
           letter-spacing: 1px;
           line-height: ${MODERN_EMAIL_STYLES.typography.lineHeight.tight};
           color: #ffffff;
-        " aria-label="${locale === 'vi' ? 'AlaCraft - Cửa hàng thủ công' : 'AlaCraft - Handmade Store'}">
-          AlaCraft
+        " aria-label="${locale === 'vi' ? `${BUSINESS.COMPANY.NAME.VI} - Cửa hàng thủ công` : `${BUSINESS.COMPANY.NAME.EN} - Handmade Store`}">
+          ${locale === 'vi' ? BUSINESS.COMPANY.NAME.VI : BUSINESS.COMPANY.NAME.EN}
         </h1>
         <p class="tagline" style="
           margin: ${MODERN_EMAIL_STYLES.spacing.sm} 0 0 0;
@@ -2809,7 +2809,7 @@ export class EmailTemplateService {
         socialAriaLabel: 'Social media links',
         contactAriaLabel: 'Contact information',
         legalAriaLabel: 'Legal information and links',
-        brandAriaLabel: 'AlaCraft brand information'
+        brandAriaLabel: `${BUSINESS.COMPANY.NAME.EN} brand information`
       },
       vi: {
         contactInfo: 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.',
@@ -2830,7 +2830,7 @@ export class EmailTemplateService {
         socialAriaLabel: 'Liên kết mạng xã hội',
         contactAriaLabel: 'Thông tin liên hệ',
         legalAriaLabel: 'Thông tin pháp lý và liên kết',
-        brandAriaLabel: 'Thông tin thương hiệu AlaCraft'
+        brandAriaLabel: `Thông tin thương hiệu ${BUSINESS.COMPANY.NAME.VI}`
       }
     };
 
@@ -2840,13 +2840,13 @@ export class EmailTemplateService {
     const socialPlatforms = [
       {
         name: 'Facebook',
-        url: 'https://facebook.com/alacraft',
+        url: BUSINESS.SOCIAL.FACEBOOK,
         icon: '📘',
         ariaLabel: locale === 'vi' ? 'Theo dõi chúng tôi trên Facebook' : 'Follow us on Facebook'
       },
       {
         name: 'Instagram',
-        url: 'https://instagram.com/alacraft',
+        url: BUSINESS.SOCIAL.INSTAGRAM,
         icon: '📷',
         ariaLabel: locale === 'vi' ? 'Theo dõi chúng tôi trên Instagram' : 'Follow us on Instagram'
       },
@@ -2858,13 +2858,13 @@ export class EmailTemplateService {
       },
       {
         name: 'Zalo',
-        url: 'https://zalo.me/alacraft',
+        url: BUSINESS.SOCIAL.ZALO,
         icon: '💬',
         ariaLabel: locale === 'vi' ? 'Liên hệ qua Zalo' : 'Contact us on Zalo'
       },
       {
         name: 'Website',
-        url: 'https://alacraft.com',
+        url: BUSINESS.WEBSITE.PRIMARY,
         icon: '🌐',
         ariaLabel: locale === 'vi' ? 'Truy cập trang web của chúng tôi' : 'Visit our website'
       }
@@ -2872,8 +2872,8 @@ export class EmailTemplateService {
 
     // Contact information
     const contactDetails = {
-      phone: '+84 123 456 789',
-      email: 'contact@alacraft.com',
+      phone: BUSINESS.CONTACT.PHONE.PRIMARY,
+      email: locale === 'vi' ? BUSINESS.CONTACT.EMAIL.VIETNAMESE : BUSINESS.CONTACT.EMAIL.PRIMARY,
       address: locale === 'vi'
         ? '123 Đường ABC, Quận 1, TP.HCM, Việt Nam'
         : '123 ABC Street, District 1, Ho Chi Minh City, Vietnam'
@@ -2901,7 +2901,7 @@ export class EmailTemplateService {
             color: ${MODERN_EMAIL_STYLES.colors.primary};
             letter-spacing: 1px;
           " role="heading" aria-level="2">
-            AlaCraft
+            ${BUSINESS.COMPANY.NAME.EN}
           </h2>
           <p style="
             margin: 0;
@@ -3164,7 +3164,7 @@ export class EmailTemplateService {
               line-height: ${MODERN_EMAIL_STYLES.typography.lineHeight.normal};
               text-align: center;
             " role="text" aria-label="${locale === 'vi' ? 'Thông tin bản quyền' : 'Copyright information'}">
-              &copy; ${new Date().getFullYear()} AlaCraft. ${t.copyrightText}
+              &copy; ${new Date().getFullYear()} ${BUSINESS.COMPANY.NAME.EN}. ${t.copyrightText}
             </p>
 
             <p style="
@@ -4547,14 +4547,14 @@ export class EmailTemplateService {
 </div>
 
 <div style="text-align: center; margin: 30px 0;">
-<a href="${process.env.FRONTEND_URL || 'https://alacraft.com'}/admin/orders/${data.orderNumber}"
+<a href="${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/admin/orders/${data.orderNumber}"
    style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
 ${t.viewOrder}
 </a>
 </div>
 
 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
-<p>&copy; ${new Date().getFullYear()} AlaCraft Admin System</p>
+<p>&copy; ${new Date().getFullYear()} ${BUSINESS.COMPANY.NAME.EN} Admin System</p>
 </div>
 
 </body>
@@ -4755,13 +4755,13 @@ ${t.viewOrder}
     // Generate admin action buttons
     const viewOrderButton = ModernButtonGenerator.generatePrimaryButton(
       t.viewOrder,
-      `${process.env.FRONTEND_URL || 'https://admin.alacraft.com'}/admin/orders/${data.orderNumber}`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/admin/orders/${data.orderNumber}`,
       false
     );
 
     const processOrderButton = ModernButtonGenerator.generateSuccessButton(
       t.processOrder,
-      `${process.env.FRONTEND_URL || 'https://admin.alacraft.com'}/admin/orders/${data.orderNumber}/process`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/admin/orders/${data.orderNumber}/process`,
       false
     );
 
@@ -4982,26 +4982,26 @@ ${t.viewOrder}
       en: {
         subject: `Order Confirmation - Order #${data.orderNumber}`,
         greeting: `Hello ${data.customerName},`,
-        thankYou: 'Thank you for your order at AlaCraft!',
+        thankYou: `Thank you for your order at ${BUSINESS.COMPANY.NAME.EN}!`,
         orderDetails: 'Your order details:',
         orderNumber: 'Order Number',
         orderDate: 'Order Date',
         total: 'Total',
         pdfAttachment: 'Please see the attached PDF for detailed information about your order.',
         contactInfo: 'If you have any questions, please contact us.',
-        signature: 'Best regards,<br>The AlaCraft Team',
+        signature: `Best regards,<br>The ${BUSINESS.COMPANY.NAME.EN} Team`,
       },
       vi: {
         subject: `Xác nhận đơn hàng - Đơn hàng #${data.orderNumber}`,
         greeting: `Xin chào ${data.customerName},`,
-        thankYou: 'Cảm ơn bạn đã đặt hàng tại AlaCraft!',
+        thankYou: `Cảm ơn bạn đã đặt hàng tại ${BUSINESS.COMPANY.NAME.VI}!`,
         orderDetails: 'Chi tiết đơn hàng của bạn:',
         orderNumber: 'Mã đơn hàng',
         orderDate: 'Ngày đặt hàng',
         total: 'Tổng cộng',
         pdfAttachment: 'Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.',
         contactInfo: 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.',
-        signature: 'Trân trọng,<br>Đội ngũ AlaCraft',
+        signature: `Trân trọng,<br>Đội ngũ ${BUSINESS.COMPANY.NAME.VI}`,
       },
     };
 
@@ -5017,7 +5017,7 @@ ${t.viewOrder}
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
 
 <div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
-<h1 style="margin: 0;">AlaCraft</h1>
+<h1 style="margin: 0;">${BUSINESS.COMPANY.NAME.EN}</h1>
 </div>
 
 <p>${t.greeting}</p>
@@ -5152,13 +5152,13 @@ ${t.viewOrder}
     // Generate call-to-action buttons
     const trackOrderButton = ModernButtonGenerator.generatePrimaryButton(
       t.trackOrder,
-      `${process.env.FRONTEND_URL || 'https://alacraft.com'}/orders/${data.orderNumber}`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/orders/${data.orderNumber}`,
       false
     );
 
     const shopMoreButton = ModernButtonGenerator.generateSecondaryButton(
       t.shopMore,
-      `${process.env.FRONTEND_URL || 'https://alacraft.com'}/products`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/products`,
       false
     );
 
@@ -5466,7 +5466,7 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
     // Generate order details button
     const orderDetailsButton = ModernButtonGenerator.generateSecondaryButton(
       t.orderDetails,
-      `${process.env.FRONTEND_URL || 'https://alacraft.com'}/orders/${data.orderNumber}`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/orders/${data.orderNumber}`,
       false
     );
 
@@ -5886,21 +5886,21 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
     if (data.status === STATUS.ORDER_STATUS.SHIPPED.toLowerCase() || data.status === STATUS.ORDER_STATUS.PROCESSING.toLowerCase()) {
       const trackOrderButton = ModernButtonGenerator.generatePrimaryButton(
         t.trackOrder,
-        `${process.env.FRONTEND_URL || 'https://alacraft.com'}/orders/${data.orderNumber}`,
+        `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/orders/${data.orderNumber}`,
         false
       );
       actionButtons = trackOrderButton;
     } else if (data.status === STATUS.ORDER_STATUS.DELIVERED.toLowerCase()) {
       const shopMoreButton = ModernButtonGenerator.generateSuccessButton(
         t.shopMore,
-        `${process.env.FRONTEND_URL || 'https://alacraft.com'}/products`,
+        `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/products`,
         false
       );
       actionButtons = shopMoreButton;
     } else if (data.status === STATUS.ORDER_STATUS.CANCELLED.toLowerCase() || data.status === STATUS.ORDER_STATUS.REFUNDED.toLowerCase()) {
       const contactButton = ModernButtonGenerator.generateSecondaryButton(
         t.contactUs,
-        `${process.env.FRONTEND_URL || 'https://alacraft.com'}/contact`,
+        `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/contact`,
         false
       );
       actionButtons = contactButton;
@@ -6111,7 +6111,7 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
     // Generate explore products button
     const exploreButton = ModernButtonGenerator.generateSecondaryButton(
       t.exploreProducts,
-      `${process.env.FRONTEND_URL || 'https://alacraft.com'}/products`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/products`,
       false
     );
 
@@ -6352,7 +6352,7 @@ ${(data as any).trackingNumber ? `<p><strong>${t.trackingNumber}:</strong> ${(da
     // Generate contact support button
     const supportButton = ModernButtonGenerator.generateSecondaryButton(
       t.contactSupport,
-      `${process.env.FRONTEND_URL || 'https://alacraft.com'}/contact`,
+      `${process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY}/contact`,
       false
     );
 

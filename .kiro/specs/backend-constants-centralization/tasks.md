@@ -104,5 +104,60 @@
   - Test email services work with constant identifiers
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-- [x] 15. Final checkpoint - Ensure all tests pass
+- [x] 16. Add business constants to constants file
+  - Add BUSINESS constants for company information (names, contact details)
+  - Add company name constants for English and Vietnamese
+  - Add contact email and phone constants
+  - Add website and social media URL constants
+  - Add branding asset path constants
+  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+- [ ]* 16.1 Write property test for business constants centralization
+  - **Property 6: Business information centralization**
+  - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
+
+- [x] 17. Replace hardcoded company names in orders service
+  - Update createBusinessInfo method to use BUSINESS.COMPANY constants
+  - Replace hardcoded "AlaCraft" and "AlaCraft Việt Nam" strings
+  - Update business address creation to use constants
+  - _Requirements: 5.1_
+
+- [x] 18. Replace hardcoded contact information in services
+  - Update email services to use BUSINESS.CONTACT constants
+  - Replace hardcoded email addresses with constant references
+  - Update phone number references to use constants
+  - _Requirements: 5.2_
+
+- [x] 19. Replace hardcoded URLs in email templates and services
+  - Update website URL references to use BUSINESS.WEBSITE constants
+  - Replace hardcoded social media URLs with BUSINESS.SOCIAL constants
+  - Update email template URL references
+  - _Requirements: 5.3, 5.5_
+
+- [x] 20. Replace hardcoded asset paths in PDF and email services
+  - Update logo path references to use BUSINESS.ASSETS constants
+  - Replace hardcoded "/uploads/logo.jpg" with constant reference
+  - Update other asset path references
+  - _Requirements: 5.4_
+
+- [x] 21. Replace hardcoded business information in PDF services
+  - Update PDF generator services to use business constants
+  - Replace hardcoded company names in PDF templates
+  - Update business information in PDF metadata
+  - _Requirements: 5.1, 5.2, 5.4_
+
+- [x] 22. Replace hardcoded business information in email templates
+  - Update email template service to use business constants
+  - Replace hardcoded company references in email headers
+  - Update contact information in email footers
+  - _Requirements: 5.1, 5.2, 5.3_
+
+- [ ]* 23. Write unit tests for business constants usage
+  - Test business constants are properly imported and used
+  - Test company name localization works correctly
+  - Test contact information constants are valid
+  - Test URL constants are properly formatted
+  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+- [x] 24. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.

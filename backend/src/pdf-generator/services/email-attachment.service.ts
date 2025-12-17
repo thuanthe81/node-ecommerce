@@ -15,7 +15,7 @@ import {
   RateLimitResult,
 } from '../types/pdf.types';
 import * as fs from 'fs';
-import { SYSTEM } from '../../common/constants';
+import { SYSTEM, BUSINESS } from '../../common/constants';
 
 interface DeliveryAttempt {
   timestamp: Date;
@@ -674,8 +674,8 @@ export class EmailAttachmentService {
         locale === 'vi' ? 'Xin chào {customerName},' : 'Hello {customerName},',
       thankYou:
         locale === 'vi'
-          ? 'Cảm ơn bạn đã đặt hàng tại AlaCraft!'
-          : 'Thank you for your order at AlaCraft!',
+          ? `Cảm ơn bạn đã đặt hàng tại ${BUSINESS.COMPANY.NAME.VI}!`
+          : `Thank you for your order at ${BUSINESS.COMPANY.NAME.EN}!`,
       orderDetails:
         locale === 'vi' ? 'Chi tiết đơn hàng của bạn:' : 'Your order details:',
       orderNumber: locale === 'vi' ? 'Mã đơn hàng' : 'Order Number',
@@ -691,8 +691,8 @@ export class EmailAttachmentService {
           : 'If you have any questions, please contact us.',
       signature:
         locale === 'vi'
-          ? 'Trân trọng,\nĐội ngũ AlaCraft'
-          : 'Best regards,\nThe AlaCraft Team',
+          ? `Trân trọng,\nĐội ngũ ${BUSINESS.COMPANY.NAME.VI}`
+          : `Best regards,\nThe ${BUSINESS.COMPANY.NAME.EN} Team`,
     };
   }
 
@@ -716,16 +716,16 @@ export class EmailAttachmentService {
     return `${greeting}
 
       ${translations.thankYou}
-      
+
       ${translations.orderDetails}
       ${translations.orderNumber}: ${orderData.orderNumber}
       ${translations.orderDate}: ${orderData.orderDate}
       ${translations.total}: ${this.formatCurrency(orderData.pricing.total, locale)}
-      
+
       ${translations.pdfAttachment}
-      
+
       ${translations.contactInfo}
-      
+
       ${translations.signature}`;
   }
 
@@ -753,31 +753,31 @@ export class EmailAttachmentService {
         <title>${translations.subject.replace('{orderNumber}', orderData.orderNumber)}</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        
+
         <div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">AlaCraft</h1>
+        <h1 style="margin: 0;">${BUSINESS.COMPANY.NAME.EN}</h1>
         </div>
-        
+
         <p>${greeting}</p>
-        
+
         <p>${translations.thankYou}</p>
-        
+
         <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
         <h3 style="margin-top: 0;">${translations.orderDetails}</h3>
         <p><strong>${translations.orderNumber}:</strong> ${orderData.orderNumber}</p>
         <p><strong>${translations.orderDate}:</strong> ${orderData.orderDate}</p>
         <p><strong>${translations.total}:</strong> ${this.formatCurrency(orderData.pricing.total, locale)}</p>
         </div>
-        
+
         <p><strong>${translations.pdfAttachment}</strong></p>
-        
+
         <p>${translations.contactInfo}</p>
-        
+
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
         <p>${translations.signature.replace('\n', '<br>')}</p>
-        <p>&copy; ${new Date().getFullYear()} AlaCraft. All rights reserved.</p>
+        <p>&copy; ${new Date().getFullYear()} ${BUSINESS.COMPANY.NAME.EN}. All rights reserved.</p>
         </div>
-        
+
         </body>
       </html>`;
   }
@@ -1311,7 +1311,7 @@ export class EmailAttachmentService {
    * @returns Promise<BusinessInfoData> - Business information from database
    */
   private async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<any> {
-    const companyName = 'AlaCraft';
+    const companyName = BUSINESS.COMPANY.NAME.EN;
     try {
       // Fetch footer settings from database
       const footerSettings =
@@ -1319,8 +1319,8 @@ export class EmailAttachmentService {
 
       return {
         companyName,
-        logoUrl: '/uploads/logo.jpg', // Can be enhanced with actual logo URL from assets
-        contactEmail: footerSettings?.contactEmail || 'contact@alacraft.com',
+        logoUrl: BUSINESS.ASSETS.LOGO,
+        contactEmail: footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY,
         contactPhone: footerSettings?.contactPhone || undefined,
         website: this.constructWebsiteUrl(footerSettings),
         address: this.createBusinessAddress(
@@ -1339,8 +1339,8 @@ export class EmailAttachmentService {
 
       return {
         companyName,
-        logoUrl: '/uploads/logo.jpg',
-        contactEmail: 'contact@alacraft.com',
+        logoUrl: BUSINESS.ASSETS.LOGO,
+        contactEmail: BUSINESS.CONTACT.EMAIL.PRIMARY,
         contactPhone: undefined,
         website: process.env.FRONTEND_URL,
         address: {

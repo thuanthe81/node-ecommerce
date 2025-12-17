@@ -37,7 +37,7 @@ export interface OptimizedImageResult {
     /** Original format */
     originalFormat: string;
     /** Optimization technique applied */
-    technique: 'aggressive' | 'standard' | 'fallback' | 'comprehensive';
+    technique: 'aggressive' | 'standard' | 'fallback' | 'comprehensive' | 'storage' | 'fallback-no-storage' | 'critical-recovery';
   };
 }
 
