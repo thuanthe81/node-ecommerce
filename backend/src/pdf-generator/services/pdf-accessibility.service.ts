@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PDFStyling, OrderPDFData } from '../types/pdf.types';
+import { BUSINESS } from '../../common/constants';
 
 /**
  * PDF Accessibility Service
@@ -109,9 +110,10 @@ export class PDFAccessibilityService {
     this.logger.log(`Enhancing image alt text for locale ${locale}`);
 
     // Enhance company logo alt text
+    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
     content = content.replace(
       /(<img[^>]*class="company-logo"[^>]*alt=")[^"]*(")/g,
-      `$1${this.getCompanyLogoAltText(orderData.businessInfo.companyName, locale)}$2`
+      `$1${this.getCompanyLogoAltText(companyName, locale)}$2`
     );
 
     // Enhance product image alt text
@@ -145,6 +147,7 @@ export class PDFAccessibilityService {
    */
   generateAccessibilityMetadata(orderData: OrderPDFData, locale: 'en' | 'vi'): Record<string, any> {
     const isVietnamese = locale === 'vi';
+    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return {
       // PDF/UA compliance metadata
@@ -153,15 +156,15 @@ export class PDFAccessibilityService {
 
       // Document structure metadata
       'dc:title': isVietnamese
-        ? `Đơn hàng ${orderData.orderNumber} - ${orderData.businessInfo.companyName}`
-        : `Order ${orderData.orderNumber} - ${orderData.businessInfo.companyName}`,
+        ? `Đơn hàng ${orderData.orderNumber} - ${companyName}`
+        : `Order ${orderData.orderNumber} - ${companyName}`,
 
       'dc:description': isVietnamese
         ? `Chi tiết đơn hàng số ${orderData.orderNumber} bao gồm thông tin khách hàng, sản phẩm, thanh toán và giao hàng`
         : `Order details for order number ${orderData.orderNumber} including customer information, products, payment and shipping details`,
 
       'dc:language': locale,
-      'dc:creator': orderData.businessInfo.companyName,
+      'dc:creator': companyName,
       'dc:subject': isVietnamese ? 'Xác nhận đơn hàng' : 'Order confirmation',
 
       // Accessibility metadata

@@ -434,12 +434,12 @@ export const BUSINESS = {
      */
     NAME: {
       /** English company name */
-      EN: 'AlaCraft',
+      EN: 'Ala Craft',
       /** Vietnamese company name */
-      VI: 'AlaCraft',
+      VI: 'Ala Craft',
     } as const,
     /** Legal company name for official documents and contracts */
-    LEGAL_NAME: 'AlaCraft Handmade Goods',
+    LEGAL_NAME: 'Ala Craft',
   } as const,
 
   /**

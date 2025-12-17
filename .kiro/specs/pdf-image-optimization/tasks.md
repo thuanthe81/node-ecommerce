@@ -188,3 +188,25 @@
   - Removed browser parameter from `createPageWithRetry()` to ensure consistent browser instance management
   - Updated all four PDF generation methods to use the improved retry mechanism
   - Enhanced browser connection recovery to handle concurrent access patterns
+
+- [x] 24. Remove business info from PDF footer
+  - Removed business information (company address, contact details, website) from PDF footer
+  - Removed terms and conditions and return policy sections from footer
+  - Kept only thank you message and document generation timestamp in footer
+  - Updated both `PDFTemplateEngine.generateFooterHTML()` and `PDFDocumentStructureService.generateFooter()` methods
+  - Cleaned up unused CSS styles for business-info, policies, and related footer sections
+
+- [x] 25. Fix companyName undefined issue with fallback to constants
+  - Added fallback handling for cases where `companyName` is not assigned from source data
+  - Updated `PDFTemplateEngine.generateFooterHTML()` to use `BUSINESS.COMPANY.NAME` constants as fallback
+  - Updated `PDFDocumentStructureService.generateFooter()` to use hardcoded company name as fallback
+  - Fixed typo in constants file (`as cost` → `as const`)
+  - Ensures PDF footer always displays company name even when source data is incomplete
+
+- [x] 26. Fix companyName undefined issue in PDF header and metadata
+  - Fixed `PDFDocumentStructureService.generateHeader()` to use constants fallback for company name
+  - Fixed `PDFTemplateEngine.generateOrderHeaderHTML()` and `generateInvoiceHeaderHTML()` methods
+  - Fixed `PDFTemplateEngine.createMetadata()` to use constants fallback for author and keywords
+  - Fixed `PDFAccessibilityService.enhanceImageAltText()` and `generateAccessibilityMetadata()` methods
+  - Added `BUSINESS` constants import to all affected services
+  - Ensures company name is never undefined in PDF headers, metadata, or accessibility features

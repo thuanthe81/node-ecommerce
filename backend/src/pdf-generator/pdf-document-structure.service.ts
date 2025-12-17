@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderPDFData, PDFStyling } from './types/pdf.types';
+import { BUSINESS } from '../common/constants';
 
 @Injectable()
 export class PDFDocumentStructureService {
@@ -49,14 +50,15 @@ export class PDFDocumentStructureService {
    */
   private generateHeader(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
+    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <header class="document-header">
         <div class="header-content">
           <div class="company-section">
             ${orderData.businessInfo.logoUrl ?
-              `<img src="${orderData.businessInfo.logoUrl}" alt="${orderData.businessInfo.companyName}" class="company-logo">` :
-              `<h1 class="company-name">${orderData.businessInfo.companyName}</h1>`
+              `<img src="${orderData.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">` :
+              `<h1 class="company-name">${companyName}</h1>`
             }
             <div class="company-details">
               <p class="company-address">${orderData.businessInfo.address.addressLine1}</p>
@@ -626,49 +628,20 @@ export class PDFDocumentStructureService {
   }
 
   /**
-   * Generate document footer with business information and policies
+   * Generate document footer with minimal content
    */
   private generateFooter(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
+    const companyName = orderData.businessInfo?.companyName || (isVietnamese ? 'Ala Craft' : 'Ala Craft');
 
     return `
       <footer class="document-footer">
         <div class="footer-content">
-          <div class="footer-section business-info">
-            <h3 class="footer-title">${orderData.businessInfo.companyName}</h3>
-            <div class="business-details">
-              <p>${orderData.businessInfo.address.addressLine1}</p>
-              ${orderData.businessInfo.address.addressLine2 ? `<p>${orderData.businessInfo.address.addressLine2}</p>` : ''}
-              <p>${orderData.businessInfo.address.city}, ${orderData.businessInfo.address.state} ${orderData.businessInfo.address.postalCode}</p>
-              <p>${orderData.businessInfo.address.country}</p>
-              <p>Email: ${orderData.businessInfo.contactEmail}</p>
-              ${orderData.businessInfo.contactPhone ? `<p>${isVietnamese ? 'Điện thoại' : 'Phone'}: ${orderData.businessInfo.contactPhone}</p>` : ''}
-              ${orderData.businessInfo.website ? `<p>Website: ${orderData.businessInfo.website}</p>` : ''}
-            </div>
-          </div>
-
-          ${orderData.businessInfo.termsAndConditions || orderData.businessInfo.returnPolicy ? `
-            <div class="footer-section policies">
-              ${orderData.businessInfo.termsAndConditions ? `
-                <div class="policy-section">
-                  <h4 class="policy-title">${isVietnamese ? 'Điều khoản và điều kiện' : 'Terms and Conditions'}</h4>
-                  <p class="policy-text">${orderData.businessInfo.termsAndConditions}</p>
-                </div>
-              ` : ''}
-              ${orderData.businessInfo.returnPolicy ? `
-                <div class="policy-section">
-                  <h4 class="policy-title">${isVietnamese ? 'Chính sách đổi trả' : 'Return Policy'}</h4>
-                  <p class="policy-text">${orderData.businessInfo.returnPolicy}</p>
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
-
           <div class="footer-section thank-you">
             <p class="thank-you-message">
               ${isVietnamese ?
-                `Cảm ơn quý khách đã tin tưởng và mua hàng tại ${orderData.businessInfo.companyName}!` :
-                `Thank you for your purchase from ${orderData.businessInfo.companyName}!`
+                `Cảm ơn quý khách đã tin tưởng và mua hàng tại ${companyName}!` :
+                `Thank you for your purchase from ${companyName}!`
               }
             </p>
             <p class="generation-info">
@@ -1285,39 +1258,6 @@ export class PDFDocumentStructureService {
 
       .footer-section {
         margin-bottom: ${styling.spacing.small}px;
-      }
-
-      .footer-title {
-        font-size: 14px;
-        color: ${styling.colors.primary};
-        margin-bottom: ${styling.spacing.small}px;
-        font-weight: bold;
-      }
-
-      .business-details {
-        font-size: 10px;
-        color: #666;
-      }
-
-      .business-details p {
-        margin-bottom: 2px;
-      }
-
-      .policy-section {
-        margin-bottom: ${styling.spacing.small}px;
-      }
-
-      .policy-title {
-        font-size: 12px;
-        color: ${styling.colors.primary};
-        margin-bottom: ${styling.spacing.small / 2}px;
-        font-weight: bold;
-      }
-
-      .policy-text {
-        font-size: 10px;
-        color: #666;
-        line-height: 1.4;
       }
 
       .thank-you {

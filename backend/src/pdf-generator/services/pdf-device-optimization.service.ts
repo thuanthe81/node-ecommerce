@@ -141,10 +141,6 @@ export class PDFDeviceOptimizationService {
         .footer-content {
           text-align: center;
         }
-
-        .business-info {
-          text-align: center;
-        }
       }
     `;
   }

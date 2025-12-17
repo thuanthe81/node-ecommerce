@@ -249,13 +249,14 @@ export class PDFTemplateEngine {
    */
   private generateOrderHeaderHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const formattedDate = this.localization.formatDate(data.orderDate, locale);
+    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="header-container">
         <div class="logo-section">
           ${data.businessInfo.logoUrl ?
-            `<img src="${data.businessInfo.logoUrl}" alt="${data.businessInfo.companyName}" class="company-logo">` :
-            `<h1 class="company-name">${data.businessInfo.companyName}</h1>`
+            `<img src="${data.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">` :
+            `<h1 class="company-name">${companyName}</h1>`
           }
         </div>
         <div class="document-title">
@@ -272,13 +273,14 @@ export class PDFTemplateEngine {
    */
   private generateInvoiceHeaderHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const formattedDate = this.localization.formatDate(data.orderDate, locale);
+    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="header-container">
         <div class="logo-section">
           ${data.businessInfo.logoUrl ?
-            `<img src="${data.businessInfo.logoUrl}" alt="${data.businessInfo.companyName}" class="company-logo">` :
-            `<h1 class="company-name">${data.businessInfo.companyName}</h1>`
+            `<img src="${data.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">` :
+            `<h1 class="company-name">${companyName}</h1>`
           }
         </div>
         <div class="document-title">
@@ -455,35 +457,12 @@ export class PDFTemplateEngine {
    */
   private generateFooterHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
+    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="footer-content">
-        <div class="business-info">
-          <h4>${data.businessInfo.companyName}</h4>
-          <p>${data.businessInfo.address.addressLine1}</p>
-          ${data.businessInfo.address.addressLine2 ? `<p>${data.businessInfo.address.addressLine2}</p>` : ''}
-          <p>${data.businessInfo.address.city}, ${data.businessInfo.address.state} ${data.businessInfo.address.postalCode}</p>
-          <p>${data.businessInfo.address.country}</p>
-          <p>Email: ${data.businessInfo.contactEmail}</p>
-          ${data.businessInfo.contactPhone ? `<p>${this.localization.translate('phone', locale)}: ${this.localization.formatPhoneNumber(data.businessInfo.contactPhone, locale)}</p>` : ''}
-          ${data.businessInfo.website ? `<p>Website: ${data.businessInfo.website}</p>` : ''}
-        </div>
-
-        ${data.businessInfo.termsAndConditions || data.businessInfo.returnPolicy ? `
-          <div class="policies">
-            ${data.businessInfo.termsAndConditions ? `
-              <p><strong>${this.localization.translate('termsAndConditions', locale)}:</strong></p>
-              <p class="small-text">${data.businessInfo.termsAndConditions}</p>
-            ` : ''}
-            ${data.businessInfo.returnPolicy ? `
-              <p><strong>${this.localization.translate('returnPolicy', locale)}:</strong></p>
-              <p class="small-text">${data.businessInfo.returnPolicy}</p>
-            ` : ''}
-          </div>
-        ` : ''}
-
         <div class="footer-note">
-          <p class="small-text">${this.localization.translate('thankYouMessage', locale, { companyName: data.businessInfo.companyName })}</p>
+          <p class="small-text">${this.localization.translate('thankYouMessage', locale, { companyName })}</p>
         </div>
       </div>
     `;
@@ -529,10 +508,11 @@ export class PDFTemplateEngine {
    */
   private createMetadata(data: OrderPDFData, locale: 'en' | 'vi'): PDFMetadata {
     const isVietnamese = locale === 'vi';
+    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return {
       title: isVietnamese ? `Đơn hàng ${data.orderNumber}` : `Order ${data.orderNumber}`,
-      author: data.businessInfo.companyName,
+      author: companyName,
       subject: isVietnamese ? 'Xác nhận đơn hàng' : 'Order Confirmation',
       creator: `${BUSINESS.COMPANY.NAME.EN} PDF Generator`,
       producer: `${BUSINESS.COMPANY.NAME.EN} E-commerce System`,
@@ -541,7 +521,7 @@ export class PDFTemplateEngine {
         'order',
         'confirmation',
         data.orderNumber,
-        data.businessInfo.companyName,
+        companyName,
         isVietnamese ? 'vietnamese' : 'english',
       ],
     };
@@ -725,15 +705,6 @@ export class PDFTemplateEngine {
         display: flex;
         flex-direction: column;
         gap: ${styling.spacing.medium}px;
-      }
-
-      .business-info h4 {
-        color: ${styling.colors.primary};
-        margin-bottom: ${styling.spacing.small}px;
-      }
-
-      .policies {
-        margin-top: ${styling.spacing.medium}px;
       }
 
       .small-text {
