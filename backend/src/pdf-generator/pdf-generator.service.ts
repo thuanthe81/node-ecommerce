@@ -37,9 +37,22 @@ export class PDFGeneratorService {
   /**
    * Initialize Puppeteer browser instance
    * Uses headless mode for server environments
+   * Includes connection recovery for closed browsers
    */
   private async initializeBrowser(): Promise<puppeteer.Browser> {
+    // Check if existing browser is still connected
+    if (this.browser) {
+      try {
+        // Test if browser is still responsive
+        await this.browser.version();
+      } catch (error) {
+        this.logger.warn(`Browser connection lost: ${error.message}. Reinitializing...`);
+        this.browser = null;
+      }
+    }
+
     if (!this.browser) {
+      this.logger.log('Launching new Puppeteer browser instance');
       this.browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -53,8 +66,41 @@ export class PDFGeneratorService {
           '--disable-gpu'
         ]
       });
+
+      // Add error handler for unexpected disconnections
+      this.browser.on('disconnected', () => {
+        this.logger.warn('Browser disconnected unexpectedly');
+        this.browser = null;
+      });
     }
     return this.browser;
+  }
+
+  /**
+   * Create a new page with retry logic for connection failures
+   * @returns Promise<puppeteer.Page>
+   */
+  private async createPageWithRetry(): Promise<puppeteer.Page> {
+    const maxRetries = 3;
+    let lastError: Error | undefined;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const browser = await this.initializeBrowser();
+        return await browser.newPage();
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.warn(`Failed to create page (attempt ${attempt}/${maxRetries}): ${error.message}`);
+
+        if (attempt < maxRetries) {
+          // Reset browser connection and try again
+          this.browser = null;
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        }
+      }
+    }
+
+    throw new Error(`Failed to create page after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
   }
 
   /**
@@ -137,8 +183,7 @@ export class PDFGeneratorService {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const browser = await this.initializeBrowser();
-      const page = await browser.newPage();
+      const page = await this.createPageWithRetry();
 
       // Set page format for A4 printing
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
@@ -343,8 +388,7 @@ export class PDFGeneratorService {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const browser = await this.initializeBrowser();
-      const page = await browser.newPage();
+      const page = await this.createPageWithRetry();
 
       // Set page format for A4 printing
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
@@ -576,8 +620,7 @@ export class PDFGeneratorService {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const browser = await this.initializeBrowser();
-      const page = await browser.newPage();
+      const page = await this.createPageWithRetry();
 
       // Set page format for A4 printing
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
@@ -715,8 +758,7 @@ export class PDFGeneratorService {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const browser = await this.initializeBrowser();
-      const page = await browser.newPage();
+      const page = await this.createPageWithRetry();
 
       // Set viewport based on device type
       const viewportSettings = this.getDeviceViewport(deviceType);

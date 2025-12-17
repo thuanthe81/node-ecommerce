@@ -47,7 +47,11 @@ async function demonstrateErrorHandling() {
     generateCompressedPath: () => 'mock-path',
   } as any;
 
-  const compressionService = new PDFCompressionService();
+  const compressionService = new PDFCompressionService(
+    mockCompressedImageService,
+    configService,
+    metricsService
+  );
 
   console.log('1. Testing single image optimization with missing file...');
   try {

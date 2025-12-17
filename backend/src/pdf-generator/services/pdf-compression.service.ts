@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CompressedImageService } from './compressed-image.service';
+import { PDFImageOptimizationConfigService } from './pdf-image-optimization-config.service';
+import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-metrics.service';
+import { OptimizedImageResult } from '../types/image-optimization.types';
 
 /**
  * PDF Compression Service
  *
- * Simplified service for basic image compression with fallback to original image on error
+ * Enhanced service for image compression with compressed image storage integration
  */
 @Injectable()
 export class PDFCompressionService {
@@ -17,8 +21,12 @@ export class PDFCompressionService {
   private readonly MAX_IMAGE_WIDTH = 800; // Max width for product images
   private readonly MAX_IMAGE_HEIGHT = 600; // Max height for product images
 
-  constructor() {
-    this.logger.log('PDF Compression Service initialized with simplified configuration');
+  constructor(
+    private readonly compressedImageService: CompressedImageService,
+    private readonly configService: PDFImageOptimizationConfigService,
+    private readonly metricsService: PDFImageOptimizationMetricsService
+  ) {
+    this.logger.log('PDF Compression Service initialized with compressed image storage integration');
   }
 
   /**
@@ -194,35 +202,143 @@ export class PDFCompressionService {
   }
 
   /**
-   * Simple image optimization for PDF (alias for optimizeImage)
+   * Enhanced image optimization for PDF with compressed image storage integration
    * @param imageUrl - URL or path to the image
-   * @param contentType - Content type (ignored in simplified version)
+   * @param contentType - Content type for optimization strategy
    * @returns Promise with optimization result
    */
   async optimizeImageForPDF(
     imageUrl: string,
     contentType: 'text' | 'photo' | 'graphics' | 'logo' = 'photo'
-  ): Promise<{
-    optimizedBuffer?: Buffer;
-    originalSize: number;
-    optimizedSize: number;
-    compressionRatio: number;
-    format: string;
-    error?: string;
-  }> {
-    const result = await this.optimizeImage(imageUrl);
-    return {
-      optimizedBuffer: result.optimizedImageData,
-      originalSize: result.originalSize,
-      optimizedSize: result.optimizedSize,
-      compressionRatio: result.compressionRatio,
-      format: result.error ? 'placeholder' : 'jpeg',
-      error: result.error,
-    };
+  ): Promise<OptimizedImageResult> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.log(`Optimizing image for PDF: ${imageUrl} (type: ${contentType})`);
+
+      // Step 1: Check if compressed image already exists
+      let existingCompressed: OptimizedImageResult | null = null;
+      try {
+        existingCompressed = await this.compressedImageService.getCompressedImage(imageUrl);
+      } catch (retrievalError) {
+        this.logger.warn(`Failed to retrieve compressed image for ${imageUrl}: ${retrievalError.message}. Proceeding with fresh optimization.`);
+        // Continue with fresh optimization
+      }
+
+      if (existingCompressed) {
+        this.logger.log(`Using existing compressed image for: ${imageUrl}`);
+        // Update technique to indicate this came from storage
+        existingCompressed.metadata.technique = 'storage';
+        existingCompressed.processingTime = 0; // No processing time for retrieval
+        this.metricsService.recordImageOptimization(existingCompressed, `reuse-${imageUrl}`);
+        return existingCompressed;
+      }
+
+      // Step 2: Perform fresh optimization
+      const imageBuffer = await this.loadImageBuffer(imageUrl);
+      const originalSize = imageBuffer.length;
+
+      // Get optimization settings based on content type
+      const contentTypeSettings = this.configService.getContentTypeSettings(contentType);
+      const config = this.configService.getConfiguration();
+
+      const optimizationSettings = {
+        maxWidth: config.aggressiveMode.maxDimensions.width,
+        maxHeight: config.aggressiveMode.maxDimensions.height,
+        quality: contentTypeSettings.quality
+      };
+
+      // Optimize the image using Sharp
+      const optimizedImageData = await sharp(imageBuffer)
+        .resize(optimizationSettings.maxWidth, optimizationSettings.maxHeight, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .jpeg({
+          quality: optimizationSettings.quality,
+          progressive: true,
+        })
+        .toBuffer();
+
+      const optimizedSize = optimizedImageData.length;
+      const compressionRatio = originalSize > 0 ? (originalSize - optimizedSize) / originalSize : 0;
+      const processingTime = Date.now() - startTime;
+
+      // Create optimization result
+      const result: OptimizedImageResult = {
+        optimizedBuffer: optimizedImageData,
+        originalSize,
+        optimizedSize,
+        compressionRatio,
+        dimensions: {
+          original: { width: 0, height: 0 }, // Would need Sharp metadata for exact dimensions
+          optimized: { width: optimizationSettings.maxWidth, height: optimizationSettings.maxHeight }
+        },
+        format: 'jpeg',
+        processingTime,
+        metadata: {
+          contentType,
+          qualityUsed: optimizationSettings.quality,
+          formatConverted: true,
+          originalFormat: 'unknown',
+          technique: 'aggressive'
+        }
+      };
+
+      // Step 3: Save to compressed storage for future reuse
+      try {
+        const savedPath = await this.compressedImageService.saveCompressedImage(imageUrl, result);
+        if (savedPath) {
+          this.logger.log(`Compressed image saved for future reuse: ${savedPath}`);
+        }
+      } catch (storageError) {
+        // Storage failure should not fail the optimization
+        this.logger.warn(`Failed to save compressed image for ${imageUrl}: ${storageError.message}`);
+      }
+
+      // Record metrics
+      this.metricsService.recordImageOptimization(result, `optimize-${imageUrl}`);
+
+      this.logger.log(`Image optimization completed for ${imageUrl}. Size: ${this.formatFileSize(optimizedSize)}, Ratio: ${(compressionRatio * 100).toFixed(1)}%`);
+      return result;
+
+    } catch (error) {
+      this.logger.error(`Image optimization failed for ${imageUrl}: ${error.message}`);
+
+      // Fallback: try to return original image
+      try {
+        const originalBuffer = await this.loadImageBuffer(imageUrl);
+        const fallbackResult: OptimizedImageResult = {
+          optimizedBuffer: originalBuffer,
+          originalSize: originalBuffer.length,
+          optimizedSize: originalBuffer.length,
+          compressionRatio: 0,
+          dimensions: {
+            original: { width: 0, height: 0 },
+            optimized: { width: 0, height: 0 }
+          },
+          format: 'original',
+          processingTime: Date.now() - startTime,
+          error: `Optimization failed, using original: ${error.message}`,
+          metadata: {
+            contentType,
+            qualityUsed: 0,
+            formatConverted: false,
+            originalFormat: 'unknown',
+            technique: 'fallback'
+          }
+        };
+
+        return fallbackResult;
+      } catch (fallbackError) {
+        this.logger.error(`Failed to load original image ${imageUrl}: ${fallbackError.message}`);
+        throw new Error(`Both optimization and fallback failed: ${error.message}; ${fallbackError.message}`);
+      }
+    }
   }
 
   /**
-   * Optimize order data for PDF (simplified - just returns original data)
+   * Optimize order data for PDF with image optimization and compressed storage
    * @param orderData - Order data to optimize
    * @returns Promise with optimization result
    */
@@ -231,16 +347,113 @@ export class PDFCompressionService {
     optimizations: any[];
     sizeSavings: number;
   }> {
-    this.logger.log('Using simplified order data optimization (no changes applied)');
-    return {
-      optimizedData: orderData,
-      optimizations: [],
-      sizeSavings: 0,
-    };
+    this.logger.log('Optimizing order data for PDF with image compression');
+
+    try {
+      const optimizations: any[] = [];
+      let totalSizeSavings = 0;
+      const optimizedData = { ...orderData };
+
+      // Optimize product images if present
+      if (orderData.items && Array.isArray(orderData.items)) {
+        for (let i = 0; i < orderData.items.length; i++) {
+          const item = orderData.items[i];
+
+          if (item.product && item.product.imageUrl) {
+            try {
+              const originalImageUrl = item.product.imageUrl;
+              const optimizationResult = await this.optimizeImageForPDF(originalImageUrl, 'photo');
+
+              if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+                // Convert optimized buffer to base64 for PDF template
+                const base64Image = `data:image/jpeg;base64,${optimizationResult.optimizedBuffer.toString('base64')}`;
+                optimizedData.items[i].product.optimizedImageUrl = base64Image;
+
+                const sizeSaving = optimizationResult.originalSize - optimizationResult.optimizedSize;
+                totalSizeSavings += sizeSaving;
+
+                optimizations.push({
+                  type: 'product_image',
+                  originalUrl: originalImageUrl,
+                  originalSize: optimizationResult.originalSize,
+                  optimizedSize: optimizationResult.optimizedSize,
+                  sizeSaving,
+                  compressionRatio: optimizationResult.compressionRatio
+                });
+
+                this.logger.log(`Optimized product image: ${originalImageUrl} (saved ${this.formatFileSize(sizeSaving)})`);
+              }
+            } catch (error) {
+              this.logger.warn(`Failed to optimize product image for item ${i}: ${error.message}`);
+              // Continue with other images even if one fails
+            }
+          }
+        }
+      }
+
+      // Optimize company logo if present
+      if (orderData.company && orderData.company.logoUrl) {
+        try {
+          const originalLogoUrl = orderData.company.logoUrl;
+          const optimizationResult = await this.optimizeImageForPDF(originalLogoUrl, 'logo');
+
+          if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+            const base64Logo = `data:image/jpeg;base64,${optimizationResult.optimizedBuffer.toString('base64')}`;
+            optimizedData.company.optimizedLogoUrl = base64Logo;
+
+            const sizeSaving = optimizationResult.originalSize - optimizationResult.optimizedSize;
+            totalSizeSavings += sizeSaving;
+
+            optimizations.push({
+              type: 'company_logo',
+              originalUrl: originalLogoUrl,
+              originalSize: optimizationResult.originalSize,
+              optimizedSize: optimizationResult.optimizedSize,
+              sizeSaving,
+              compressionRatio: optimizationResult.compressionRatio
+            });
+
+            this.logger.log(`Optimized company logo: ${originalLogoUrl} (saved ${this.formatFileSize(sizeSaving)})`);
+          }
+        } catch (error) {
+          this.logger.warn(`Failed to optimize company logo: ${error.message}`);
+        }
+      }
+
+      this.logger.log(`Order data optimization completed. Total size savings: ${this.formatFileSize(totalSizeSavings)}, Optimizations: ${optimizations.length}`);
+
+      return {
+        optimizedData,
+        optimizations,
+        sizeSavings: totalSizeSavings,
+      };
+
+    } catch (error) {
+      this.logger.error(`Failed to optimize order data: ${error.message}`);
+      return {
+        optimizedData: orderData,
+        optimizations: [],
+        sizeSavings: 0,
+      };
+    }
   }
 
   /**
-   * Get compressed image storage metrics (simplified - returns empty metrics)
+   * Check if compressed image exists for given path
+   * @param imagePath - Path to check
+   * @returns Promise<boolean>
+   */
+  async hasCompressedImage(imagePath: string): Promise<boolean> {
+    try {
+      return await this.compressedImageService.hasCompressedImage(imagePath);
+    } catch (error) {
+      this.logger.warn(`Failed to check compressed image existence for ${imagePath}: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Get compressed image storage metrics from the compressed image service
    * @returns Promise with storage metrics
    */
   async getCompressedImageStorageMetrics(): Promise<{
@@ -250,13 +463,18 @@ export class PDFCompressionService {
     averageCompressionRatio: number;
     storageUtilization: number;
   }> {
-    return {
-      totalStorageSize: 0,
-      totalCompressedImages: 0,
-      reuseRate: 0,
-      averageCompressionRatio: 0,
-      storageUtilization: 0,
-    };
+    try {
+      return await this.compressedImageService.getStorageMetrics();
+    } catch (error) {
+      this.logger.error(`Failed to get compressed image storage metrics: ${error.message}`);
+      return {
+        totalStorageSize: 0,
+        totalCompressedImages: 0,
+        reuseRate: 0,
+        averageCompressionRatio: 0,
+        storageUtilization: 0,
+      };
+    }
   }
 
   /**
