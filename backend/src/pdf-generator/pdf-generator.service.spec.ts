@@ -13,6 +13,7 @@ import { PDFMonitoringService } from './services/pdf-monitoring.service';
 import { PDFAuditService } from './services/pdf-audit.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { OrderPDFData } from './types/pdf.types';
+import { ShippingService } from '../shipping/shipping.service';
 
 describe('PDFGeneratorService', () => {
   let service: PDFGeneratorService;
@@ -31,6 +32,7 @@ describe('PDFGeneratorService', () => {
             getLocalizedText: jest.fn().mockReturnValue('Localized Text'),
             formatCurrency: jest.fn().mockReturnValue('10 ₫'),
             formatDate: jest.fn().mockReturnValue('Dec 15, 2023'),
+            translate: jest.fn().mockReturnValue('Translated Text'),
           },
         },
         {
@@ -104,6 +106,31 @@ describe('PDFGeneratorService', () => {
           provide: PrismaService,
           useValue: {
             // Mock PrismaService methods if needed
+          },
+        },
+        {
+          provide: ShippingService,
+          useValue: {
+            calculateShipping: jest.fn().mockResolvedValue([
+              {
+                method: 'standard',
+                name: 'Standard Shipping',
+                description: 'Delivery in 3-5 days',
+                cost: 5.0,
+                estimatedDays: '3-5 days',
+                carrier: 'Test Carrier',
+                isFreeShipping: false,
+              },
+            ]),
+            getShippingMethodDetails: jest.fn().mockResolvedValue({
+              method: 'standard',
+              name: 'Standard Shipping',
+              description: 'Delivery in 3-5 days',
+              cost: 5.0,
+              estimatedDays: '3-5 days',
+              carrier: 'Test Carrier',
+              isFreeShipping: false,
+            }),
           },
         },
       ],

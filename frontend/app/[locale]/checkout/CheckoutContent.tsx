@@ -561,6 +561,7 @@ export default function CheckoutContent() {
                 shippingAddress={currentShippingAddress || undefined}
                 cartItems={cart.items}
                 orderValue={subtotal}
+                locale={locale}
               />
 
               <div className="mt-6 flex justify-between">

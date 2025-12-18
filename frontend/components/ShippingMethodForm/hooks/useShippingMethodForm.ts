@@ -34,6 +34,7 @@ export function useShippingMethodForm(
 ) {
   const t = useTranslations('admin.shippingMethods');
   const [activeTab, setActiveTab] = useState<LanguageTab>('en');
+  const [showBothLanguages, setShowBothLanguages] = useState<boolean>(false);
   const [formData, setFormData] = useState<ShippingMethodFormData>({
     methodId: initialData?.methodId || '',
     nameEn: initialData?.nameEn || '',
@@ -173,6 +174,8 @@ export function useShippingMethodForm(
     formData,
     activeTab,
     setActiveTab,
+    showBothLanguages,
+    setShowBothLanguages,
     regionalPricing,
     handleInputChange,
     handleRegionalPricingAdd,

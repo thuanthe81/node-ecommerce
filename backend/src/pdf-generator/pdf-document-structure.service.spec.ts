@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PDFDocumentStructureService } from './pdf-document-structure.service';
+import { PDFLocalizationService } from './services/pdf-localization.service';
 import { OrderPDFData, PDFStyling } from './types/pdf.types';
 
 describe('PDFDocumentStructureService', () => {
   let service: PDFDocumentStructureService;
+  let localizationService: PDFLocalizationService;
 
   const mockOrderData: OrderPDFData = {
     orderNumber: 'TEST-001',
@@ -116,10 +118,11 @@ describe('PDFDocumentStructureService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PDFDocumentStructureService],
+      providers: [PDFDocumentStructureService, PDFLocalizationService],
     }).compile();
 
     service = module.get<PDFDocumentStructureService>(PDFDocumentStructureService);
+    localizationService = module.get<PDFLocalizationService>(PDFLocalizationService);
   });
 
   it('should be defined', () => {
@@ -286,6 +289,79 @@ describe('PDFDocumentStructureService', () => {
         expect(currency).toContain('₫');
         expect(currency).not.toContain('$');
       });
+    });
+  });
+
+  describe('shipping section localization', () => {
+    it('should use localization service for shipping section title in English', () => {
+      const result = service.generateDocumentStructure(mockOrderData, 'en', mockStyling);
+
+      // Verify that the shipping section uses localized text
+      expect(result).toContain('Shipping Information'); // English translation
+      expect(result).not.toContain('Thông tin vận chuyển'); // Should not contain hardcoded Vietnamese
+    });
+
+    it('should use localization service for shipping section title in Vietnamese', () => {
+      const result = service.generateDocumentStructure(mockOrderData, 'vi', mockStyling);
+
+      // Verify that the shipping section uses localized text
+      expect(result).toContain('Thông tin vận chuyển'); // Vietnamese translation
+      expect(result).not.toContain('Shipping Information'); // Should not contain hardcoded English
+    });
+
+    it('should use localization service for all shipping labels in English', () => {
+      const result = service.generateDocumentStructure(mockOrderData, 'en', mockStyling);
+
+      // Verify all shipping labels use localized text
+      expect(result).toContain('Method:');
+      expect(result).toContain('Description:');
+      expect(result).toContain('Estimated Delivery:');
+      expect(result).toContain('Tracking Number:');
+      expect(result).toContain('Carrier:');
+    });
+
+    it('should use localization service for all shipping labels in Vietnamese', () => {
+      const result = service.generateDocumentStructure(mockOrderData, 'vi', mockStyling);
+
+      // Verify all shipping labels use localized text
+      expect(result).toContain('Phương thức:');
+      expect(result).toContain('Mô tả:');
+      expect(result).toContain('Dự kiến giao hàng:');
+      expect(result).toContain('Mã vận đơn:');
+      expect(result).toContain('Đơn vị vận chuyển:');
+    });
+
+    it('should display shipping method data correctly with localized labels', () => {
+      const result = service.generateDocumentStructure(mockOrderData, 'en', mockStyling);
+
+      // Verify shipping data is displayed with proper labels
+      expect(result).toContain('Test Shipping'); // Shipping method name
+      expect(result).toContain('Test Shipping Description'); // Description
+      expect(result).toContain('2-3 days'); // Estimated delivery
+      expect(result).toContain('TEST123'); // Tracking number
+      expect(result).toContain('Test Carrier'); // Carrier
+    });
+
+    it('should handle optional shipping fields gracefully', () => {
+      const orderDataWithoutOptionalShipping = {
+        ...mockOrderData,
+        shippingMethod: {
+          name: 'Basic Shipping',
+          // No description, estimatedDelivery, trackingNumber, or carrier
+        },
+      };
+
+      const result = service.generateDocumentStructure(orderDataWithoutOptionalShipping, 'en', mockStyling);
+
+      // Should still contain the shipping section title and method name
+      expect(result).toContain('Shipping Information');
+      expect(result).toContain('Basic Shipping');
+
+      // Should not contain empty optional fields
+      expect(result).not.toContain('Description:');
+      expect(result).not.toContain('Estimated Delivery:');
+      expect(result).not.toContain('Tracking Number:');
+      expect(result).not.toContain('Carrier:');
     });
   });
 });

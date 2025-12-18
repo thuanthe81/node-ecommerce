@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateShippingMethodDto } from './dto/create-shipping-method.dto';
 import { UpdateShippingMethodDto } from './dto/update-shipping-method.dto';
 import { CACHE_KEYS } from '../common/constants';
+import { ShippingValidationService } from './services/shipping-validation.service';
 
 // Cache TTL: 30 minutes (in milliseconds)
 const CACHE_TTL = 30 * 60 * 1000;
@@ -20,11 +21,12 @@ export class ShippingMethodsService {
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private shippingValidationService: ShippingValidationService,
   ) {}
 
   /**
    * Create a new shipping method
-   * Validates that methodId is unique
+   * Validates that methodId is unique and translations are complete
    */
   async create(createShippingMethodDto: CreateShippingMethodDto) {
     // Check if methodId already exists
@@ -42,6 +44,13 @@ export class ShippingMethodsService {
     const shippingMethod = await this.prisma.shippingMethod.create({
       data: createShippingMethodDto,
     });
+
+    // Validate translations for the new method
+    const validation = this.shippingValidationService.validateMethodTranslations(shippingMethod);
+    if (!validation.isValid && shippingMethod.isActive) {
+      // Log warnings for active methods with incomplete translations
+      validation.warnings.forEach(warning => console.warn(warning));
+    }
 
     // Invalidate cache
     await this.invalidateCache();
@@ -63,6 +72,7 @@ export class ShippingMethodsService {
    * Find all active shipping methods
    * Sorted by displayOrder ascending, then createdAt ascending
    * Cached for 30 minutes
+   * Excludes methods with corrupted data
    */
   async findAllActive() {
     // Try to get from cache
@@ -78,10 +88,13 @@ export class ShippingMethodsService {
       orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
     });
 
-    // Cache for 30 minutes
-    await this.cacheManager.set(cacheKey, activeMethods, CACHE_TTL);
+    // Filter out methods with corrupted data
+    const validMethods = await this.shippingValidationService.filterValidMethods(activeMethods);
 
-    return activeMethods;
+    // Cache for 30 minutes
+    await this.cacheManager.set(cacheKey, validMethods, CACHE_TTL);
+
+    return validMethods;
   }
 
   /**
@@ -217,6 +230,22 @@ export class ShippingMethodsService {
     });
 
     return ordersUsingMethod === 0;
+  }
+
+  /**
+   * Get admin warnings for incomplete translations
+   * Returns user-friendly messages for admin interface
+   */
+  async getTranslationWarnings(): Promise<string[]> {
+    return this.shippingValidationService.getAdminTranslationWarnings();
+  }
+
+  /**
+   * Validate all active shipping method translations
+   * Returns detailed validation results
+   */
+  async validateTranslations() {
+    return this.shippingValidationService.validateActiveMethodTranslations();
   }
 
   /**

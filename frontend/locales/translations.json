@@ -1712,6 +1712,62 @@
       "displayOrderNonNegative": {
         "en": "Display order cannot be negative",
         "vi": "Thứ tự hiển thị không được âm"
+      },
+      "missingTranslation": {
+        "en": "Missing translation",
+        "vi": "Thiếu bản dịch"
+      },
+      "incompleteTranslations": {
+        "en": "Incomplete translations",
+        "vi": "Bản dịch chưa hoàn chỉnh"
+      },
+      "translationWarning": {
+        "en": "This shipping method is missing translations for some fields",
+        "vi": "Phương thức vận chuyển này thiếu bản dịch cho một số trường"
+      },
+      "missingVietnameseTranslation": {
+        "en": "Missing Vietnamese translation",
+        "vi": "Thiếu bản dịch tiếng Việt"
+      },
+      "missingEnglishTranslation": {
+        "en": "Missing English translation",
+        "vi": "Thiếu bản dịch tiếng Anh"
+      },
+      "translationCompleteness": {
+        "en": "Translation Completeness",
+        "vi": "Tính đầy đủ của bản dịch"
+      },
+      "allTranslationsComplete": {
+        "en": "All translations are complete",
+        "vi": "Tất cả bản dịch đã hoàn chỉnh"
+      },
+      "validateTranslations": {
+        "en": "Validate Translations",
+        "vi": "Xác thực bản dịch"
+      },
+      "bulkTranslationValidation": {
+        "en": "Bulk Translation Validation",
+        "vi": "Xác thực bản dịch hàng loạt"
+      },
+      "showBothLanguages": {
+        "en": "Show both languages",
+        "vi": "Hiển thị cả hai ngôn ngữ"
+      },
+      "translationValidationSummary": {
+        "en": "Translation validation summary for all shipping methods",
+        "vi": "Tóm tắt xác thực bản dịch cho tất cả phương thức vận chuyển"
+      },
+      "methodsWithIncompleteTranslations": {
+        "en": "Methods with incomplete translations",
+        "vi": "Phương thức có bản dịch chưa hoàn chỉnh"
+      },
+      "translationValidationComplete": {
+        "en": "Translation validation completed",
+        "vi": "Xác thực bản dịch hoàn tất"
+      },
+      "noIncompleteTranslations": {
+        "en": "All shipping methods have complete translations",
+        "vi": "Tất cả phương thức vận chuyển đều có bản dịch hoàn chỉnh"
       }
     }
   },
@@ -2197,6 +2253,10 @@
     "freeShipping": {
       "en": "Free",
       "vi": "Miễn phí"
+    },
+    "localeSwitchError": {
+      "en": "Failed to update shipping methods for the selected language. Showing previous results.",
+      "vi": "Không thể cập nhật phương thức vận chuyển cho ngôn ngữ đã chọn. Hiển thị kết quả trước đó."
     }
   },
   "common": {

@@ -23,6 +23,7 @@ interface ShippingMethodSelectorProps {
     quantity: number;
   }>;
   orderValue?: number;
+  locale?: string; // Current user locale
 }
 
 export default function ShippingMethodSelector({
@@ -32,25 +33,52 @@ export default function ShippingMethodSelector({
   shippingAddress,
   cartItems = [],
   orderValue = 0,
+  locale: propLocale,
 }: ShippingMethodSelectorProps) {
-  const locale = useLocale();
+  const currentLocale = useLocale();
+  const locale = propLocale || currentLocale; // Use prop locale or fallback to current locale
   const t = useTranslations('checkout');
   const tCommon = useTranslations('common');
 
   const [shippingMethods, setShippingMethods] = useState<ShippingRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [localeLoading, setLocaleLoading] = useState(false);
+  const [localeSwitchError, setLocaleSwitchError] = useState<string | null>(null);
+
+  // Helper function to get localized text with fallback
+  const getLocalizedText = (method: ShippingRate, field: 'name' | 'description'): string => {
+    if (locale === 'vi') {
+      const viText = field === 'name' ? method.nameVi : method.descriptionVi;
+      // Fallback to English if Vietnamese text is missing or empty
+      if (viText && viText.trim()) {
+        return viText;
+      }
+    }
+
+    // Default to English
+    const enText = field === 'name' ? method.nameEn : method.descriptionEn;
+    return enText || '';
+  };
 
   useEffect(() => {
     const fetchShippingRates = async () => {
       // If no shipping address provided, we can't calculate rates yet
       if (!shippingAddress) {
         setLoading(false);
+        setLocaleLoading(false);
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      // If we already have methods and this is just a locale change, use locale loading
+      const isLocaleSwitch = shippingMethods.length > 0;
+      if (isLocaleSwitch) {
+        setLocaleLoading(true);
+        setLocaleSwitchError(null); // Clear previous locale switch errors
+      } else {
+        setLoading(true);
+        setError(null); // Clear general errors for initial load
+      }
 
       try {
         // Prepare items for shipping calculation
@@ -66,6 +94,7 @@ export default function ShippingMethodSelector({
           destinationCountry: shippingAddress.country,
           items,
           orderValue,
+          locale: locale as 'en' | 'vi', // Pass locale to shipping calculation API
         };
 
         const rates = await shippingApi.calculateShipping(calculateData);
@@ -88,18 +117,32 @@ export default function ShippingMethodSelector({
         }
       } catch (err: any) {
         console.error('Failed to fetch shipping rates:', err);
-        setError(err.response?.data?.message || t('shippingCalculationError'));
-        setShippingMethods([]);
-        if (onRatesCalculated) {
-          onRatesCalculated([]);
+
+        const isLocaleSwitch = shippingMethods.length > 0;
+        if (isLocaleSwitch) {
+          // For locale switching errors, maintain current display and show warning
+          setLocaleSwitchError(t('localeSwitchError'));
+          // Auto-clear the error after 5 seconds
+          setTimeout(() => {
+            setLocaleSwitchError(null);
+          }, 5000);
+          // Don't clear existing shipping methods or call onRatesCalculated
+        } else {
+          // For initial load errors, show full error state
+          setError(err.response?.data?.message || t('shippingCalculationError'));
+          setShippingMethods([]);
+          if (onRatesCalculated) {
+            onRatesCalculated([]);
+          }
         }
       } finally {
         setLoading(false);
+        setLocaleLoading(false);
       }
     };
 
     fetchShippingRates();
-  }, [shippingAddress, cartItems, orderValue]);
+  }, [shippingAddress, cartItems, orderValue, locale]);
 
   if (loading) {
     return (
@@ -158,11 +201,40 @@ export default function ShippingMethodSelector({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold mb-4">
-        {t('shippingMethod')}
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold">
+          {t('shippingMethod')}
+        </h3>
+        {localeLoading && (
+          <div className="flex items-center text-sm text-gray-600">
+            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+            {tCommon('loading')}
+          </div>
+        )}
+      </div>
 
-      <div className="space-y-3">
+      {localeSwitchError && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start">
+            <svg
+              className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+            <p className="text-sm text-yellow-700">{localeSwitchError}</p>
+          </div>
+        </div>
+      )}
+
+      <div className={`space-y-3 ${localeLoading ? 'opacity-50 pointer-events-none' : ''}`}>
         {shippingMethods.map((method) => (
           <label
             key={method.method}
@@ -184,7 +256,7 @@ export default function ShippingMethodSelector({
                 />
                 <div>
                   <div className="font-semibold">
-                    {method.name}
+                    {getLocalizedText(method, 'name')}
                     {method.isFreeShipping && (
                       <span className="ml-2 text-green-600 text-sm">
                         ({t('freeShipping')})
@@ -192,7 +264,7 @@ export default function ShippingMethodSelector({
                     )}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {method.description}
+                    {getLocalizedText(method, 'description')}
                   </div>
                   {method.carrier && (
                     <div className="text-xs text-gray-500 mt-1">

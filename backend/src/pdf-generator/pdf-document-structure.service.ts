@@ -1,10 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderPDFData, PDFStyling } from './types/pdf.types';
 import { BUSINESS } from '../common/constants';
+import { PDFLocalizationService } from './services/pdf-localization.service';
+import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
 export class PDFDocumentStructureService {
   private readonly logger = new Logger(PDFDocumentStructureService.name);
+
+  constructor(
+    private readonly localizationService: PDFLocalizationService,
+    private readonly shippingService: ShippingService,
+  ) {}
 
   /**
    * Generate complete document structure with proper layout
@@ -13,12 +20,13 @@ export class PDFDocumentStructureService {
    * @param styling - PDF styling configuration
    * @returns Complete HTML document with proper structure
    */
-  generateDocumentStructure(
+  async generateDocumentStructure(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
     styling: PDFStyling
-  ): string {
+  ): Promise<string> {
     const isVietnamese = locale === 'vi';
+    const mainContent = await this.generateMainContent(orderData, locale);
 
     return `
       <!DOCTYPE html>
@@ -34,7 +42,7 @@ export class PDFDocumentStructureService {
         <body>
           <div class="document-container">
             ${this.generateHeader(orderData, locale)}
-            ${this.generateMainContent(orderData, locale)}
+            ${mainContent}
             ${this.generateFooter(orderData, locale)}
           </div>
 
@@ -98,7 +106,9 @@ export class PDFDocumentStructureService {
   /**
    * Generate main content with responsive layout
    */
-  private generateMainContent(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
+  private async generateMainContent(orderData: OrderPDFData, locale: 'en' | 'vi'): Promise<string> {
+    const shippingSection = await this.generateShippingSection(orderData, locale);
+
     return `
       <main class="document-main">
         ${this.generateCustomerSection(orderData, locale)}
@@ -106,7 +116,7 @@ export class PDFDocumentStructureService {
         ${this.generateOrderItemsSection(orderData, locale)}
         ${this.generateOrderSummarySection(orderData, locale)}
         ${this.generatePaymentSection(orderData, locale)}
-        ${this.generateShippingSection(orderData, locale)}
+        ${shippingSection}
       </main>
     `;
   }
@@ -568,40 +578,62 @@ export class PDFDocumentStructureService {
   }
 
   /**
-   * Generate shipping information section
+   * Generate shipping information section with localized shipping method data
+   * Fetches shipping method details from shipping service to ensure consistency with checkout
    */
-  private generateShippingSection(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
-    const isVietnamese = locale === 'vi';
+  private async generateShippingSection(orderData: OrderPDFData, locale: 'en' | 'vi'): Promise<string> {
+    // Extract shipping method ID from order data
+    // The shippingMethod.name might be a method ID or a display name
+    // We'll try to fetch localized data from the shipping service
+    let localizedName = orderData.shippingMethod.name;
+    let localizedDescription = orderData.shippingMethod.description;
+
+    try {
+      // Try to get localized shipping method details from shipping service
+      // This ensures consistency with the checkout flow
+      const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(
+        orderData.shippingMethod.name
+      );
+
+      // Use the localized data from shipping service if available
+      if (shippingMethodDetails) {
+        localizedName = shippingMethodDetails.name;
+        localizedDescription = shippingMethodDetails.description;
+      }
+    } catch (error) {
+      // If fetching fails, fall back to the data from order
+      this.logger.warn(`Failed to fetch localized shipping method data: ${error.message}. Using order data as fallback.`);
+    }
 
     return `
       <section class="shipping-section">
-        <h2 class="section-title">${isVietnamese ? 'Thông tin vận chuyển' : 'Shipping Information'}</h2>
+        <h2 class="section-title">${this.localizationService.translate('shippingInformation', locale)}</h2>
         <div class="shipping-content">
           <div class="shipping-row">
-            <span class="shipping-label">${isVietnamese ? 'Phương thức vận chuyển' : 'Shipping Method'}:</span>
-            <span class="shipping-value">${orderData.shippingMethod.name}</span>
+            <span class="shipping-label">${this.localizationService.translate('shippingMethod', locale)}:</span>
+            <span class="shipping-value">${localizedName}</span>
           </div>
-          ${orderData.shippingMethod.description ? `
+          ${localizedDescription ? `
             <div class="shipping-row">
-              <span class="shipping-label">${isVietnamese ? 'Mô tả' : 'Description'}:</span>
-              <span class="shipping-value">${orderData.shippingMethod.description}</span>
+              <span class="shipping-label">${this.localizationService.translate('description', locale)}:</span>
+              <span class="shipping-value">${localizedDescription}</span>
             </div>
           ` : ''}
           ${orderData.shippingMethod.estimatedDelivery ? `
             <div class="shipping-row">
-              <span class="shipping-label">${isVietnamese ? 'Dự kiến giao hàng' : 'Estimated Delivery'}:</span>
+              <span class="shipping-label">${this.localizationService.translate('estimatedDelivery', locale)}:</span>
               <span class="shipping-value">${orderData.shippingMethod.estimatedDelivery}</span>
             </div>
           ` : ''}
           ${orderData.shippingMethod.trackingNumber ? `
             <div class="shipping-row">
-              <span class="shipping-label">${isVietnamese ? 'Mã vận đơn' : 'Tracking Number'}:</span>
+              <span class="shipping-label">${this.localizationService.translate('trackingNumber', locale)}:</span>
               <span class="shipping-value tracking-number">${orderData.shippingMethod.trackingNumber}</span>
             </div>
           ` : ''}
           ${orderData.shippingMethod.carrier ? `
             <div class="shipping-row">
-              <span class="shipping-label">${isVietnamese ? 'Đơn vị vận chuyển' : 'Carrier'}:</span>
+              <span class="shipping-label">${this.localizationService.translate('carrier', locale)}:</span>
               <span class="shipping-value">${orderData.shippingMethod.carrier}</span>
             </div>
           ` : ''}

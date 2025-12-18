@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsArray,
   ValidateNested,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -60,4 +61,9 @@ export class CalculateShippingDto {
   @Min(0)
   @IsOptional()
   orderValue?: number;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(['en', 'vi'])
+  locale?: 'en' | 'vi';
 }

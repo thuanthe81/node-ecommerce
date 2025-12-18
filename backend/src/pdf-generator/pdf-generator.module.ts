@@ -28,9 +28,10 @@ import { PaymentSettingsService } from '../payment-settings/payment-settings.ser
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
+import { ShippingModule } from '../shipping/shipping.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ScheduleModule.forRoot(), ConfigModule],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ShippingModule, ScheduleModule.forRoot(), ConfigModule],
   controllers: [PDFHealthController],
   providers: [
     PDFGeneratorService,

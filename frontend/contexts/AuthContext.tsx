@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { authApi, LoginData, User } from '@/lib/auth-api';
+import { useLocale } from 'next-intl';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
 
   useEffect(() => {
     // Load user from localStorage on mount
@@ -84,10 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
 
       // Extract locale from current pathname
-      // Pathname format: /[locale]/... or just /...
-      const pathSegments = pathname.split('/').filter(Boolean);
-      const locale = pathSegments[0] || 'en';
-
       // Use Next.js router for client-side navigation (no page reload)
       router.push(`/${locale}/login`);
     };
@@ -96,10 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleSessionExpired = (event: CustomEvent) => {
       // Clear user state
       setUser(null);
-
-      // Extract locale from current pathname
-      const pathSegments = pathname.split('/').filter(Boolean);
-      const locale = pathSegments[0] || 'en';
 
       // Preserve current page URL for post-login redirect
       const currentPath = event.detail?.currentPath || pathname;

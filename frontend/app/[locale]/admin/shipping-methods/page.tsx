@@ -16,6 +16,8 @@ export default function AdminShippingMethodsPage() {
   const [loading, setLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<ShippingMethod | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [showValidationPanel, setShowValidationPanel] = useState(false);
+  const [validationResults, setValidationResults] = useState<{[key: string]: any}>({});
 
   const loadShippingMethods = async () => {
     try {
@@ -87,6 +89,82 @@ export default function AdminShippingMethodsPage() {
     return `${min}-${max} ${locale === 'vi' ? 'ngày' : 'days'}`;
   };
 
+  // Check if a shipping method has complete translations
+  const hasCompleteTranslations = (method: ShippingMethod): boolean => {
+    return !!(
+      method.nameEn?.trim() &&
+      method.nameVi?.trim() &&
+      method.descriptionEn?.trim() &&
+      method.descriptionVi?.trim()
+    );
+  };
+
+  // Get translation status for a shipping method
+  const getTranslationStatus = (method: ShippingMethod) => {
+    const missingFields: string[] = [];
+
+    if (!method.nameEn?.trim()) missingFields.push('nameEn');
+    if (!method.nameVi?.trim()) missingFields.push('nameVi');
+    if (!method.descriptionEn?.trim()) missingFields.push('descriptionEn');
+    if (!method.descriptionVi?.trim()) missingFields.push('descriptionVi');
+
+    return {
+      isComplete: missingFields.length === 0,
+      missingFields,
+      hasEnglish: !!(method.nameEn?.trim() && method.descriptionEn?.trim()),
+      hasVietnamese: !!(method.nameVi?.trim() && method.descriptionVi?.trim()),
+    };
+  };
+
+  // Run bulk validation
+  const runBulkValidation = () => {
+    const results: {[key: string]: any} = {};
+    let totalMethods = shippingMethods.length;
+    let completeCount = 0;
+    let incompleteCount = 0;
+
+    shippingMethods.forEach(method => {
+      const status = getTranslationStatus(method);
+      results[method.id] = status;
+
+      if (status.isComplete) {
+        completeCount++;
+      } else {
+        incompleteCount++;
+      }
+    });
+
+    setValidationResults({
+      ...results,
+      summary: {
+        total: totalMethods,
+        complete: completeCount,
+        incomplete: incompleteCount,
+        completionRate: totalMethods > 0 ? Math.round((completeCount / totalMethods) * 100) : 0,
+      }
+    });
+    setShowValidationPanel(true);
+  };
+
+  // Render translation indicator badge
+  const renderTranslationIndicator = (method: ShippingMethod) => {
+    const status = getTranslationStatus(method);
+
+    if (status.isComplete) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full" title={t('allTranslationsComplete')}>
+          ✓
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full" title={t('incompleteTranslations')}>
+        ⚠
+      </span>
+    );
+  };
+
   return (
     <AdminProtectedRoute locale={locale}>
       <AdminLayout>
@@ -101,13 +179,22 @@ export default function AdminShippingMethodsPage() {
                 {t('manageShippingMethods')}
               </p>
             </div>
-            <Link
-              href={`/${locale}/admin/shipping-methods/new`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-            >
-              <SvgPlus className="w-5 h-5" />
-              <span>{t('addShippingMethod')}</span>
-            </Link>
+            <div className="flex space-x-3">
+              <button
+                onClick={runBulkValidation}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+              >
+                <span>📋</span>
+                <span>{t('validateTranslations')}</span>
+              </button>
+              <Link
+                href={`/${locale}/admin/shipping-methods/new`}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              >
+                <SvgPlus className="w-5 h-5" />
+                <span>{t('addShippingMethod')}</span>
+              </Link>
+            </div>
           </div>
 
           {/* Shipping Methods Table */}
@@ -142,6 +229,9 @@ export default function AdminShippingMethodsPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('translationCompleteness')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {locale === 'vi' ? 'Thao tác' : 'Actions'}
@@ -189,6 +279,9 @@ export default function AdminShippingMethodsPage() {
                             }`}
                           />
                         </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {renderTranslationIndicator(method)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
@@ -246,6 +339,145 @@ export default function AdminShippingMethodsPage() {
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
                   {t('delete')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Translation Validation Panel */}
+        {showValidationPanel && validationResults.summary && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {t('bulkTranslationValidation')}
+                </h3>
+                <button
+                  onClick={() => setShowValidationPanel(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Summary */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-3">
+                  {locale === 'vi' ? 'Tổng quan' : 'Summary'}
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {validationResults.summary.total}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {locale === 'vi' ? 'Tổng số' : 'Total'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {validationResults.summary.complete}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {locale === 'vi' ? 'Hoàn chỉnh' : 'Complete'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {validationResults.summary.incomplete}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {locale === 'vi' ? 'Chưa hoàn chỉnh' : 'Incomplete'}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {validationResults.summary.completionRate}%
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {locale === 'vi' ? 'Tỷ lệ hoàn thành' : 'Completion Rate'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Results */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">
+                  {locale === 'vi' ? 'Chi tiết' : 'Details'}
+                </h4>
+
+                {shippingMethods.map((method) => {
+                  const status = validationResults[method.id];
+                  if (!status) return null;
+
+                  return (
+                    <div
+                      key={method.id}
+                      className={`p-4 rounded-lg border ${
+                        status.isComplete
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-yellow-200 bg-yellow-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-3">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                            status.isComplete
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {status.isComplete ? '✓ Complete' : '⚠ Incomplete'}
+                          </span>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {locale === 'vi' ? method.nameVi || method.nameEn : method.nameEn || method.nameVi}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {method.methodId}
+                            </div>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/${locale}/admin/shipping-methods/${method.id}/edit`}
+                          className="text-blue-600 hover:text-blue-900 text-sm"
+                        >
+                          {t('edit')}
+                        </Link>
+                      </div>
+
+                      {!status.isComplete && (
+                        <div className="mt-3">
+                          <div className="text-sm text-gray-700 mb-2">
+                            {locale === 'vi' ? 'Trường thiếu:' : 'Missing fields:'}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {status.missingFields.map((field: string) => (
+                              <span
+                                key={field}
+                                className="inline-flex items-center px-2 py-1 text-xs bg-red-100 text-red-800 rounded"
+                              >
+                                {field === 'nameEn' && (locale === 'vi' ? 'Tên (EN)' : 'Name (EN)')}
+                                {field === 'nameVi' && (locale === 'vi' ? 'Tên (VI)' : 'Name (VI)')}
+                                {field === 'descriptionEn' && (locale === 'vi' ? 'Mô tả (EN)' : 'Description (EN)')}
+                                {field === 'descriptionVi' && (locale === 'vi' ? 'Mô tả (VI)' : 'Description (VI)')}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => setShowValidationPanel(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  {locale === 'vi' ? 'Đóng' : 'Close'}
                 </button>
               </div>
             </div>

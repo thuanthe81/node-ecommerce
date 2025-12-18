@@ -48,6 +48,8 @@ export default function ShippingMethodForm({
     formData,
     activeTab,
     setActiveTab,
+    showBothLanguages,
+    setShowBothLanguages,
     regionalPricing,
     handleInputChange,
     handleRegionalPricingAdd,
@@ -65,10 +67,26 @@ export default function ShippingMethodForm({
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-gray-900">{t('content')}</h2>
-          <LanguageTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={showBothLanguages}
+                onChange={(e) => setShowBothLanguages(e.target.checked)}
+                className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              {t('showBothLanguages')}
+            </label>
+            {!showBothLanguages && <LanguageTabs activeTab={activeTab} onTabChange={setActiveTab} />}
+          </div>
         </div>
 
-        <ContentFields formData={formData} activeTab={activeTab} onChange={handleInputChange} />
+        <ContentFields
+          formData={formData}
+          activeTab={activeTab}
+          onChange={handleInputChange}
+          showBothLanguages={showBothLanguages}
+        />
       </div>
 
       {/* Pricing */}

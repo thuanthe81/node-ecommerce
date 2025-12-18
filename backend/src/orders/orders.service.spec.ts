@@ -7,6 +7,7 @@ import { FooterSettingsService } from '../footer-settings/footer-settings.servic
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { BusinessInfoService } from '../common/services/business-info.service';
+import { ShippingService } from '../shipping/shipping.service';
 import {
   NotFoundException,
   BadRequestException,
@@ -151,6 +152,29 @@ describe('OrdersService', () => {
     }),
   };
 
+  const mockShippingService = {
+    calculateShipping: jest.fn().mockResolvedValue([
+      {
+        method: 'standard',
+        name: 'Standard Shipping',
+        description: 'Delivery in 3-5 days',
+        cost: 5.0,
+        estimatedDays: '3-5 days',
+        carrier: 'Test Carrier',
+        isFreeShipping: false,
+      },
+    ]),
+    getShippingMethodDetails: jest.fn().mockResolvedValue({
+      method: 'standard',
+      name: 'Standard Shipping',
+      description: 'Delivery in 3-5 days',
+      cost: 5.0,
+      estimatedDays: '3-5 days',
+      carrier: 'Test Carrier',
+      isFreeShipping: false,
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -162,6 +186,7 @@ describe('OrdersService', () => {
         { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
         { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
         { provide: BusinessInfoService, useValue: mockBusinessInfoService },
+        { provide: ShippingService, useValue: mockShippingService },
       ],
     }).compile();
 

@@ -29,12 +29,15 @@ export interface CalculateShippingData {
   destinationCountry: string;
   items: ShippingItem[];
   orderValue?: number;
+  locale?: 'en' | 'vi';
 }
 
 export interface ShippingRate {
   method: string;  // Backend returns 'method' not 'methodId'
-  name: string;
-  description: string;
+  nameEn: string;        // Always include English for fallback
+  nameVi: string;        // Always include Vietnamese for frontend switching
+  descriptionEn: string; // Always include English for fallback
+  descriptionVi: string; // Always include Vietnamese for frontend switching
   cost: number;
   originalCost?: number;
   estimatedDays: string;

@@ -18,6 +18,7 @@ import { ResendEmailHandlerService } from '../pdf-generator/services/resend-emai
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
 import { STATUS, BUSINESS, ConstantUtils } from '../common/constants';
 import { BusinessInfoService } from '../common/services/business-info.service';
+import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
 export class OrdersService {
@@ -29,6 +30,7 @@ export class OrdersService {
     private emailAttachmentService: EmailAttachmentService,
     private resendEmailHandlerService: ResendEmailHandlerService,
     private businessInfoService: BusinessInfoService,
+    private shippingService: ShippingService,
   ) {}
 
   /**
@@ -384,7 +386,7 @@ export class OrdersService {
     );
 
     // Convert shipping method data with enhanced shipping option support
-    const shippingMethod: ShippingMethodData = this.convertShippingMethodData(
+    const shippingMethod: ShippingMethodData = await this.convertShippingMethodData(
       order.shippingMethod,
       order.status,
       locale
@@ -591,21 +593,40 @@ export class OrdersService {
 
   /**
    * Convert shipping method data with enhanced shipping option support
+   * Fetches localized shipping method details from shipping service to ensure consistency
    * @param shippingMethod - Shipping method string from order
    * @param orderStatus - Current order status
    * @param locale - Language locale
    * @returns ShippingMethodData with complete shipping information
    */
-  private convertShippingMethodData(
+  private async convertShippingMethodData(
     shippingMethod: string,
     orderStatus: string,
     locale: 'en' | 'vi'
-  ): ShippingMethodData {
+  ): Promise<ShippingMethodData> {
     const method = (shippingMethod || 'standard').toLowerCase();
 
+    // Try to get localized shipping method details from shipping service
+    // This ensures consistency with the checkout flow
+    let localizedName = this.getShippingMethodDisplayName(method, locale);
+    let localizedDescription = this.getShippingMethodDescription(method, locale);
+
+    try {
+      const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(method);
+
+      // Use the localized data from shipping service if available
+      if (shippingMethodDetails) {
+        localizedName = shippingMethodDetails.name;
+        localizedDescription = shippingMethodDetails.description;
+      }
+    } catch (error) {
+      // If fetching fails, fall back to the hardcoded data
+      console.warn(`Failed to fetch localized shipping method data for ${method}: ${error.message}. Using fallback data.`);
+    }
+
     const shippingData: ShippingMethodData = {
-      name: this.getShippingMethodDisplayName(method, locale),
-      description: this.getShippingMethodDescription(method, locale),
+      name: localizedName,
+      description: localizedDescription,
     };
 
     // Add estimated delivery based on shipping method
@@ -858,6 +879,7 @@ export class OrdersService {
    * Gracefully handles missing admin email configuration.
    *
    * @param order - The order object with complete details including items, addresses, and customer info
+   * @param locale - Language locale for the email
    * @returns Promise<void> - Resolves when email sending is complete (success or failure)
    *
    * @example
@@ -870,7 +892,7 @@ export class OrdersService {
    * - Queries FooterSettingsService for admin email address
    * - Skips sending if contactEmail is not configured (logs warning)
    * - Includes customer name, email, phone, and all order items with SKUs
-   * - Shows both shipping and billing addresses
+   * - Uses localized shipping method data for consistency with checkout and PDFsws both shipping and billing addresses
    * - Displays payment method, status, and customer notes
    * - Uses English locale by default for admin emails
    * - Email failures are logged but do not interrupt order processing
@@ -889,7 +911,16 @@ export class OrdersService {
         return;
       }
 
-      // Use the provided locale parameter
+      // Get localized shipping method data for consistency with checkout and PDFs
+      let localizedShippingMethod = order.shippingMethod;
+      try {
+        const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(order.shippingMethod);
+        if (shippingMethodDetails) {
+          localizedShippingMethod = shippingMethodDetails.name;
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch localized shipping method data for admin email: ${error.message}. Using order data as fallback.`);
+      }
 
       // Prepare admin email data with all required fields
       const adminEmailData = {
@@ -908,7 +939,7 @@ export class OrdersService {
         })),
         subtotal: Number(order.subtotal),
         shippingCost: Number(order.shippingCost),
-        shippingMethod: order.shippingMethod,
+        shippingMethod: localizedShippingMethod,
         taxAmount: Number(order.taxAmount),
         discountAmount: Number(order.discountAmount),
         total: Number(order.total),

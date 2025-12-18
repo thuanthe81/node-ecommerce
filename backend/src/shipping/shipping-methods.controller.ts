@@ -91,4 +91,28 @@ export class ShippingMethodsController {
   async remove(@Param('id') id: string) {
     return this.shippingMethodsService.remove(id);
   }
+
+  /**
+   * Get translation validation warnings
+   * GET /shipping-methods/validation/warnings
+   * Admin only
+   */
+  @Get('validation/warnings')
+  async getTranslationWarnings() {
+    const warnings = await this.shippingMethodsService.getTranslationWarnings();
+    return {
+      warnings,
+      hasWarnings: warnings.length > 0,
+    };
+  }
+
+  /**
+   * Validate all shipping method translations
+   * GET /shipping-methods/validation/translations
+   * Admin only
+   */
+  @Get('validation/translations')
+  async validateTranslations() {
+    return this.shippingMethodsService.validateTranslations();
+  }
 }

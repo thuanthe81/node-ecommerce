@@ -190,7 +190,7 @@ export class PDFTemplateEngine {
     const dataWithBase64Images = await this.convertImagesToBase64(orderData);
 
     const styling = this.getDefaultStyling();
-    const htmlContent = this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
+    const htmlContent = await this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
 
     // Validate and ensure proper base64 image embedding
     return this.validateBase64ImageEmbedding(htmlContent);

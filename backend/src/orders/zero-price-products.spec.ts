@@ -6,6 +6,8 @@ import { EmailTemplateService } from '../notifications/services/email-template.s
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
+import { BusinessInfoService } from '../common/services/business-info.service';
+import { ShippingService } from '../shipping/shipping.service';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 describe('OrdersService - Zero Price Products', () => {
@@ -114,6 +116,50 @@ describe('OrdersService - Zero Price Products', () => {
     handleResendRequest: jest.fn(),
   };
 
+  const mockBusinessInfoService = {
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      companyName: 'Test Company',
+      logoUrl: 'https://example.com/logo.png',
+      contactEmail: 'test@example.com',
+      contactPhone: '+1234567890',
+      website: 'https://example.com',
+      address: {
+        fullName: 'Test Company',
+        addressLine1: '123 Test St',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'Test Country',
+        phone: '+1234567890',
+      },
+      returnPolicy: undefined,
+      termsAndConditions: undefined,
+    }),
+  };
+
+  const mockShippingService = {
+    calculateShipping: jest.fn().mockResolvedValue([
+      {
+        method: 'standard',
+        name: 'Standard Shipping',
+        description: 'Delivery in 3-5 days',
+        cost: 5.0,
+        estimatedDays: '3-5 days',
+        carrier: 'Test Carrier',
+        isFreeShipping: false,
+      },
+    ]),
+    getShippingMethodDetails: jest.fn().mockResolvedValue({
+      method: 'standard',
+      name: 'Standard Shipping',
+      description: 'Delivery in 3-5 days',
+      cost: 5.0,
+      estimatedDays: '3-5 days',
+      carrier: 'Test Carrier',
+      isFreeShipping: false,
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -124,6 +170,8 @@ describe('OrdersService - Zero Price Products', () => {
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
         { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
         { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
+        { provide: BusinessInfoService, useValue: mockBusinessInfoService },
+        { provide: ShippingService, useValue: mockShippingService },
       ],
     }).compile();
 
