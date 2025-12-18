@@ -59,7 +59,7 @@ describe('PDFGeneratorService - File Size Reduction Property Test', () => {
 
   const mockLocalizationService = {
     getLocalizedText: jest.fn().mockReturnValue('Test text'),
-    formatCurrency: jest.fn().mockReturnValue('$100.00'),
+    formatCurrency: jest.fn().mockReturnValue('100 ₫'),
     formatDate: jest.fn().mockReturnValue('Dec 15, 2023'),
   };
 

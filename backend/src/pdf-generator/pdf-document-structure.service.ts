@@ -231,8 +231,8 @@ export class PDFDocumentStructureService {
                   </td>
                   <td class="sku-cell">${item.sku || '-'}</td>
                   <td class="qty-cell">${item.quantity}</td>
-                  <td class="price-cell">$${item.unitPrice.toFixed(2)}</td>
-                  <td class="total-cell">$${item.totalPrice.toFixed(2)}</td>
+                  <td class="price-cell">${this.formatCurrency(item.unitPrice, locale)}</td>
+                  <td class="total-cell">${this.formatCurrency(item.totalPrice, locale)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -316,27 +316,10 @@ export class PDFDocumentStructureService {
    * Format currency with proper locale support
    */
   private formatCurrency(amount: number, locale: 'en' | 'vi'): string {
-    if (amount === 0) {
-      return locale === 'vi' ? '0 ₫' : '$0.00';
-    }
-
-    // For Vietnamese locale, format as VND
-    if (locale === 'vi') {
-      return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(amount);
-    }
-
-    // For English locale, format as USD
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
+    // Use Vietnamese number formatting for all locales with consistent "amount ₫" pattern
+    // This matches the email template service formatting for cross-service consistency
+    const formattedAmount = amount.toLocaleString('vi-VN');
+    return `${formattedAmount} ₫`;
   }
 
   /**

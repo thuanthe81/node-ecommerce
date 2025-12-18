@@ -40,12 +40,22 @@ describe('PDFLocalizationService', () => {
   });
 
   describe('formatCurrency', () => {
-    it('should format currency in English (before symbol)', () => {
-      expect(service.formatCurrency(123.45, 'en')).toBe('$123.45');
+    it('should format currency in English using Vietnamese formatting', () => {
+      expect(service.formatCurrency(123.45, 'en')).toBe('123,45 ₫');
     });
 
-    it('should format currency in Vietnamese (after symbol)', () => {
-      expect(service.formatCurrency(123.45, 'vi')).toBe('123.45$');
+    it('should format currency in Vietnamese using Vietnamese formatting', () => {
+      expect(service.formatCurrency(123.45, 'vi')).toBe('123,45 ₫');
+    });
+
+    it('should format large numbers with Vietnamese comma separators', () => {
+      expect(service.formatCurrency(1234567.89, 'en')).toBe('1.234.567,89 ₫');
+      expect(service.formatCurrency(1234567.89, 'vi')).toBe('1.234.567,89 ₫');
+    });
+
+    it('should format zero amounts consistently', () => {
+      expect(service.formatCurrency(0, 'en')).toBe('0 ₫');
+      expect(service.formatCurrency(0, 'vi')).toBe('0 ₫');
     });
   });
 

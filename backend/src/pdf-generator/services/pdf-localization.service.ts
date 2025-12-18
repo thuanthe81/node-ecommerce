@@ -86,8 +86,8 @@ export class PDFLocalizationService {
       timeFormat: '12h',
 
       // Currency formatting
-      currencySymbol: '$',
-      currencyPosition: 'before',
+      currencySymbol: '₫',
+      currencyPosition: 'after',
 
       // Address formatting
       addressFormat: '{addressLine1}\n{addressLine2}\n{city}, {state} {postalCode}\n{country}',
@@ -169,7 +169,7 @@ export class PDFLocalizationService {
       timeFormat: '24h',
 
       // Currency formatting
-      currencySymbol: '$',
+      currencySymbol: '₫',
       currencyPosition: 'after',
 
       // Address formatting
@@ -206,16 +206,10 @@ export class PDFLocalizationService {
    * @returns Formatted currency string
    */
   formatCurrency(amount: number, locale: 'en' | 'vi'): string {
-    const translations = this.translations[locale] || this.translations.en;
-    const symbol = translations.currencySymbol;
-    const position = translations.currencyPosition;
-    const formattedAmount = amount.toFixed(2);
-
-    if (position === 'before') {
-      return `${symbol}${formattedAmount}`;
-    } else {
-      return `${formattedAmount}${symbol}`;
-    }
+    // Use Vietnamese number formatting for all locales with consistent "amount ₫" pattern
+    // This matches the email template service formatting for cross-service consistency
+    const formattedAmount = amount.toLocaleString('vi-VN');
+    return `${formattedAmount} ₫`;
   }
 
   /**

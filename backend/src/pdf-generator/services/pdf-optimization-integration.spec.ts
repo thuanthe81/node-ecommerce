@@ -149,7 +149,7 @@ describe('PDF Optimization Integration Tests', () => {
           provide: PDFLocalizationService,
           useValue: {
             getLocalizedText: jest.fn().mockReturnValue('Localized Text'),
-            formatCurrency: jest.fn().mockReturnValue('$152.50'),
+            formatCurrency: jest.fn().mockReturnValue('152,50 ₫'),
             formatDate: jest.fn().mockReturnValue('Jan 15, 2024'),
             generateBankTransferInstructions: jest.fn().mockReturnValue('Test bank transfer instructions'),
           },

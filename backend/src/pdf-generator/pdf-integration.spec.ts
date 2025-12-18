@@ -29,7 +29,7 @@ describe('PDF Generation Integration', () => {
           provide: PDFLocalizationService,
           useValue: {
             getLocalizedText: jest.fn().mockReturnValue('Localized Text'),
-            formatCurrency: jest.fn().mockReturnValue('$10.00'),
+            formatCurrency: jest.fn().mockReturnValue('10 ₫'),
             formatDate: jest.fn().mockReturnValue('Dec 15, 2023'),
           },
         },

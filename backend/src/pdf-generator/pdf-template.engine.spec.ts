@@ -105,7 +105,7 @@ describe('PDFTemplateEngine', () => {
             formatDate: jest.fn().mockReturnValue('Test Date'),
             formatAddress: jest.fn().mockReturnValue('Test Address'),
             formatPhoneNumber: jest.fn().mockReturnValue('Test Phone'),
-            formatCurrency: jest.fn().mockReturnValue('$100.00'),
+            formatCurrency: jest.fn().mockReturnValue('100 đ'),
             getPaymentStatusText: jest.fn().mockReturnValue('Pending'),
           },
         },

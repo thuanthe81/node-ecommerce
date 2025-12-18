@@ -29,7 +29,7 @@ describe('PDFGeneratorService', () => {
           provide: PDFLocalizationService,
           useValue: {
             getLocalizedText: jest.fn().mockReturnValue('Localized Text'),
-            formatCurrency: jest.fn().mockReturnValue('$10.00'),
+            formatCurrency: jest.fn().mockReturnValue('10 ₫'),
             formatDate: jest.fn().mockReturnValue('Dec 15, 2023'),
           },
         },
@@ -261,6 +261,6 @@ describe('PDFGeneratorService', () => {
     expect(htmlContent).toContain('ORD-123');
     expect(htmlContent).toContain('John Doe');
     expect(htmlContent).toContain('Test Product');
-    expect(htmlContent).toContain('$30.00');
+    expect(htmlContent).toContain('30 ₫');
   });
 });

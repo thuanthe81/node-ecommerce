@@ -385,27 +385,27 @@ export class PDFTemplateEngine {
         <table class="summary-table">
           <tr>
             <td>${this.localization.translate('subtotal', locale)}:</td>
-            <td class="text-right">$${data.pricing.subtotal.toFixed(2)}</td>
+            <td class="text-right">${this.localization.formatCurrency(data.pricing.subtotal, locale)}</td>
           </tr>
           <tr>
             <td>${this.localization.translate('shipping', locale)}:</td>
-            <td class="text-right">$${data.pricing.shippingCost.toFixed(2)}</td>
+            <td class="text-right">${this.localization.formatCurrency(data.pricing.shippingCost, locale)}</td>
           </tr>
           ${data.pricing.taxAmount ? `
             <tr>
               <td>${isVietnamese ? 'Thuế' : 'Tax'}:</td>
-              <td class="text-right">$${data.pricing.taxAmount.toFixed(2)}</td>
+              <td class="text-right">${this.localization.formatCurrency(data.pricing.taxAmount, locale)}</td>
             </tr>
           ` : ''}
           ${data.pricing.discountAmount ? `
             <tr>
               <td>${isVietnamese ? 'Giảm giá' : 'Discount'}:</td>
-              <td class="text-right">-$${data.pricing.discountAmount.toFixed(2)}</td>
+              <td class="text-right">-${this.localization.formatCurrency(data.pricing.discountAmount, locale)}</td>
             </tr>
           ` : ''}
           <tr class="total-row">
             <td><strong>${isVietnamese ? 'Tổng cộng' : 'Total'}:</strong></td>
-            <td class="text-right"><strong>$${data.pricing.total.toFixed(2)}</strong></td>
+            <td class="text-right"><strong>${this.localization.formatCurrency(data.pricing.total, locale)}</strong></td>
           </tr>
         </table>
       </div>
