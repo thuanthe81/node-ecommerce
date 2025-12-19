@@ -7,6 +7,8 @@
  * @param props.t - Translation function
  */
 
+import { getShippingMethodText } from '../utils/statusTranslations';
+
 interface ShippingAddress {
   fullName: string;
   addressLine1: string;
@@ -126,10 +128,10 @@ export function ShippingInfo({ shippingAddress, shippingMethod, t }: ShippingInf
             {t('shippingMethod')}
           </h3>
           <p
-            className="text-gray-900 text-base sm:text-lg font-semibold capitalize bg-white rounded px-4 py-3 border border-gray-200 print:border-gray-300"
+            className="text-gray-900 text-base sm:text-lg font-semibold bg-white rounded px-4 py-3 border border-gray-200 print:border-gray-300"
             aria-labelledby="shipping-method-heading"
           >
-            {shippingMethod}
+            {getShippingMethodText(shippingMethod, t)}
           </p>
         </div>
       </div>

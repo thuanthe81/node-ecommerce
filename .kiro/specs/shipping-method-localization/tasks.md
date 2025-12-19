@@ -6,7 +6,7 @@
     - Update DTO class with proper decorators and validation
     - _Requirements: 2.1, 2.3_
 
-  - [ ]* 1.2 Write property test for locale parameter validation
+  - [x]* 1.2 Write property test for locale parameter validation
     - **Property 4: Locale parameter acceptance**
     - **Validates: Requirements 2.1**
 
@@ -16,15 +16,15 @@
     - Ensure all locale variants are included in response
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.4, 2.5_
 
-  - [ ]* 1.4 Write property test for Vietnamese locale primary fields
+  - [x]* 1.4 Write property test for Vietnamese locale primary fields
     - **Property 1: Vietnamese locale returns Vietnamese primary fields**
     - **Validates: Requirements 1.1, 1.2**
 
-  - [ ]* 1.5 Write property test for English locale primary fields
+  - [x]* 1.5 Write property test for English locale primary fields
     - **Property 2: English locale returns English primary fields**
     - **Validates: Requirements 1.3, 1.4**
 
-  - [ ]* 1.6 Write property test for complete locale data inclusion
+  - [x]* 1.6 Write property test for complete locale data inclusion
     - **Property 3: Complete locale data inclusion**
     - **Validates: Requirements 1.5, 2.5**
 
@@ -33,7 +33,7 @@
     - Update response to use English as primary fields
     - _Requirements: 2.2_
 
-  - [ ]* 1.8 Write property test for default locale behavior
+  - [x]* 1.8 Write property test for default locale behavior
     - **Property 5: Default locale behavior**
     - **Validates: Requirements 2.2**
 
@@ -42,7 +42,7 @@
     - Log warnings for invalid locale parameters
     - _Requirements: 2.3_
 
-  - [ ]* 1.10 Write property test for invalid locale fallback
+  - [x]* 1.10 Write property test for invalid locale fallback
     - **Property 6: Invalid locale fallback**
     - **Validates: Requirements 2.3**
 
@@ -53,7 +53,7 @@
     - Update TypeScript interfaces in both backend and frontend
     - _Requirements: 1.5, 2.5_
 
-  - [ ]* 2.2 Write property test for locale-based field prioritization
+  - [x]* 2.2 Write property test for locale-based field prioritization
     - **Property 7: Locale-based field prioritization**
     - **Validates: Requirements 2.4**
 
@@ -63,7 +63,7 @@
     - Handle missing translation data with fallback logic
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-  - [ ]* 2.4 Write property test for missing translation fallback
+  - [x]* 2.4 Write property test for missing translation fallback
     - **Property 15: Missing translation fallback**
     - **Validates: Requirements 5.1**
 
@@ -73,7 +73,7 @@
     - Modify shippingApi.calculateShipping to pass locale parameter
     - _Requirements: 3.1_
 
-  - [ ]* 3.2 Write property test for frontend locale passing
+  - [x]* 3.2 Write property test for frontend locale passing
     - **Property 8: Frontend locale passing**
     - **Validates: Requirements 3.1**
 
@@ -93,11 +93,11 @@
     - Add fallback logic for missing translations
     - _Requirements: 3.2, 3.4_
 
-  - [ ]* 4.3 Write property test for frontend localized field usage
+  - [x]* 4.3 Write property test for frontend localized field usage
     - **Property 9: Frontend localized field usage**
     - **Validates: Requirements 3.2**
 
-  - [ ]* 4.4 Write property test for frontend fallback behavior
+  - [x]* 4.4 Write property test for frontend fallback behavior
     - **Property 11: Frontend fallback behavior**
     - **Validates: Requirements 3.4**
 
@@ -106,7 +106,7 @@
     - Handle loading states during locale switching
     - _Requirements: 3.3_
 
-  - [ ]* 4.6 Write property test for dynamic locale switching
+  - [x]* 4.6 Write property test for dynamic locale switching
     - **Property 10: Dynamic locale switching**
     - **Validates: Requirements 3.3**
 
@@ -115,7 +115,7 @@
     - Display appropriate error messages in current locale
     - _Requirements: 5.4_
 
-  - [ ]* 4.8 Write property test for frontend error handling
+  - [x]* 4.8 Write property test for frontend error handling
     - **Property 18: Frontend error handling**
     - **Validates: Requirements 5.4**
 
@@ -139,7 +139,7 @@
     - Ensure PDF shipping sections use same text as checkout
     - _Requirements: 4.1_
 
-  - [ ]* 7.2 Write property test for cross-component consistency
+  - [x]* 7.2 Write property test for cross-component consistency
     - **Property 12: Cross-component consistency**
     - **Validates: Requirements 4.1, 4.2, 4.3**
 
@@ -159,7 +159,7 @@
     - Create admin warnings for missing translations
     - _Requirements: 4.5_
 
-  - [ ]* 8.2 Write property test for complete translation validation
+  - [x]* 8.2 Write property test for complete translation validation
     - **Property 14: Complete translation validation**
     - **Validates: Requirements 4.5**
 
@@ -168,7 +168,7 @@
     - Add caching for shipping method translations
     - _Requirements: 5.2_
 
-  - [ ]* 8.4 Write property test for service unavailability resilience
+  - [x]* 8.4 Write property test for service unavailability resilience
     - **Property 16: Service unavailability resilience**
     - **Validates: Requirements 5.2**
 
@@ -177,7 +177,7 @@
     - Log errors for corrupted shipping method data
     - _Requirements: 5.5_
 
-  - [ ]* 8.6 Write property test for corrupted data handling
+  - [x]* 8.6 Write property test for corrupted data handling
     - **Property 19: Corrupted data handling**
     - **Validates: Requirements 5.5**
 
@@ -192,7 +192,7 @@
     - Track locale usage patterns for analytics
     - _Requirements: 2.3_
 
-  - [ ]* 9.3 Write property test for missing key fallback
+  - [x]* 9.3 Write property test for missing key fallback
     - **Property 17: Missing key fallback**
     - **Validates: Requirements 5.3**
 
@@ -213,7 +213,7 @@
     - Test all shipping method displays use consistent localized text
     - _Requirements: 3.3, 4.1, 4.2, 4.3_
 
-  - [ ]* 11.2 Write property test for translation update propagation
+  - [x]* 11.2 Write property test for translation update propagation
     - **Property 13: Translation update propagation**
     - **Validates: Requirements 4.4**
 

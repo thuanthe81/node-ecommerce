@@ -3334,6 +3334,10 @@
       "en": "Pending",
       "vi": "Chờ xử lý"
     },
+    "statusPendingQuote": {
+      "en": "Pending Quote",
+      "vi": "Chờ báo giá"
+    },
     "statusProcessing": {
       "en": "Processing",
       "vi": "Đang xử lý"
@@ -4258,6 +4262,18 @@
       "international": {
         "en": "International Shipping",
         "vi": "Vận chuyển quốc tế"
+      },
+      "free": {
+        "en": "Free Shipping",
+        "vi": "Miễn phí vận chuyển"
+      },
+      "pickup": {
+        "en": "Store Pickup",
+        "vi": "Nhận tại cửa hàng"
+      },
+      "same_day": {
+        "en": "Same Day Delivery",
+        "vi": "Giao hàng trong ngày"
       }
     },
     "common": {

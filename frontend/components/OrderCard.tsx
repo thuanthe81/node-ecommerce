@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Order } from '@/lib/order-api';
 import { formatMoney } from '@/app/utils';
+import { getOrderStatusText } from './OrderDetailView/utils/statusTranslations';
 
 interface OrderCardProps {
   order: Order;
@@ -19,6 +21,7 @@ const statusColors = {
 } as const;
 
 export default function OrderCard({ order, locale }: OrderCardProps) {
+  const t = useTranslations('orders');
   const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric',
@@ -46,9 +49,9 @@ export default function OrderCard({ order, locale }: OrderCardProps) {
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor}`}
-          aria-label={`${locale === 'vi' ? 'Trạng thái' : 'Status'}: ${order.status}`}
+          aria-label={`${t('status')}: ${getOrderStatusText(order.status, t)}`}
         >
-          {order.status}
+          {getOrderStatusText(order.status, t)}
         </span>
       </div>
 

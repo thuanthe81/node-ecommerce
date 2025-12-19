@@ -12,6 +12,7 @@ import {
   ACCESSIBILITY_STANDARDS
 } from './email-design-tokens';
 import { STATUS, OrderStatus, PaymentStatus } from '../../common/constants';
+import { TranslationService } from '../../common/services/translation.service';
 
 // Re-export types for backward compatibility
 export type { OrderStatus, PaymentStatus } from '../../common/constants';
@@ -257,6 +258,7 @@ export class StatusBadgeGenerator {
     const orderStatusTranslations = {
       en: {
         [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Pending',
+        [STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Pending Quote',
         [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Processing',
         [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Shipped',
         [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Delivered',
@@ -265,6 +267,7 @@ export class StatusBadgeGenerator {
       },
       vi: {
         [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Chờ xử lý',
+        [STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Chờ báo giá',
         [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Đang xử lý',
         [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Đã giao vận',
         [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Đã giao hàng',

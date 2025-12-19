@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { orderApi, Order, AdminOrderFilters } from '@/lib/order-api';
+import { getOrderStatusText, getPaymentStatusText } from '@/components/OrderDetailView/utils/statusTranslations';
 import translations from '@/locales/translations.json';
 
 interface OrderListContentProps {
@@ -157,12 +158,13 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">{t('orders.allStatuses')}</option>
-              <option value="PENDING">{t('orders.statusPending')}</option>
-              <option value="PROCESSING">{t('orders.statusProcessing')}</option>
-              <option value="SHIPPED">{t('orders.statusShipped')}</option>
-              <option value="DELIVERED">{t('orders.statusDelivered')}</option>
-              <option value="CANCELLED">{t('orders.statusCancelled')}</option>
-              <option value="REFUNDED">{t('orders.statusRefunded')}</option>
+              <option value="PENDING">{getOrderStatusText('PENDING', t)}</option>
+              <option value="PENDING_QUOTE">{getOrderStatusText('PENDING_QUOTE', t)}</option>
+              <option value="PROCESSING">{getOrderStatusText('PROCESSING', t)}</option>
+              <option value="SHIPPED">{getOrderStatusText('SHIPPED', t)}</option>
+              <option value="DELIVERED">{getOrderStatusText('DELIVERED', t)}</option>
+              <option value="CANCELLED">{getOrderStatusText('CANCELLED', t)}</option>
+              <option value="REFUNDED">{getOrderStatusText('REFUNDED', t)}</option>
             </select>
           </div>
 
@@ -276,7 +278,7 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
                           order.status
                         )}`}
                       >
-                        {t(`orders.status${order.status.charAt(0) + order.status.slice(1).toLowerCase()}`)}
+                        {getOrderStatusText(order.status, t)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -285,7 +287,7 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
                           order.paymentStatus
                         )}`}
                       >
-                        {t(`orders.payment${order.paymentStatus.charAt(0) + order.paymentStatus.slice(1).toLowerCase()}`)}
+                        {getPaymentStatusText(order.paymentStatus, t)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

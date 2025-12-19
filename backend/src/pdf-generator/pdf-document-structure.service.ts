@@ -592,7 +592,8 @@ export class PDFDocumentStructureService {
       // Try to get localized shipping method details from shipping service
       // This ensures consistency with the checkout flow
       const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(
-        orderData.shippingMethod.name
+        orderData.shippingMethod.name,
+        locale
       );
 
       // Use the localized data from shipping service if available

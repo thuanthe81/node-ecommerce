@@ -16,8 +16,9 @@ import { FooterSettingsService } from '../footer-settings/footer-settings.servic
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
-import { STATUS, BUSINESS, ConstantUtils } from '../common/constants';
+import { STATUS } from '../common/constants';
 import { BusinessInfoService } from '../common/services/business-info.service';
+import { TranslationService } from '../common/services/translation.service';
 import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
@@ -31,6 +32,7 @@ export class OrdersService {
     private resendEmailHandlerService: ResendEmailHandlerService,
     private businessInfoService: BusinessInfoService,
     private shippingService: ShippingService,
+    private translationService: TranslationService,
   ) {}
 
   /**
@@ -612,7 +614,7 @@ export class OrdersService {
     let localizedDescription = this.getShippingMethodDescription(method, locale);
 
     try {
-      const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(method);
+      const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(method, locale);
 
       // Use the localized data from shipping service if available
       if (shippingMethodDetails) {
@@ -714,19 +716,7 @@ export class OrdersService {
    * @returns Display name for shipping method
    */
   private getShippingMethodDisplayName(shippingMethod: string, locale: 'en' | 'vi'): string {
-    const method = shippingMethod.toLowerCase();
-
-    if (method.includes('standard')) {
-      return locale === 'vi' ? 'Giao hàng tiêu chuẩn' : 'Standard Shipping';
-    }
-    if (method.includes('express')) {
-      return locale === 'vi' ? 'Giao hàng nhanh' : 'Express Shipping';
-    }
-    if (method.includes('overnight')) {
-      return locale === 'vi' ? 'Giao hàng trong ngày' : 'Overnight Shipping';
-    }
-
-    return shippingMethod || (locale === 'vi' ? 'Giao hàng tiêu chuẩn' : 'Standard Shipping');
+    return this.translationService.translateShippingMethod(shippingMethod, locale);
   }
 
   /**
@@ -806,19 +796,7 @@ export class OrdersService {
    * @returns Display name for payment method
    */
   private getPaymentMethodDisplayName(paymentMethod: string, locale: 'en' | 'vi'): string {
-    const method = paymentMethod.toLowerCase();
-
-    if (method.includes('bank') || method.includes('transfer')) {
-      return locale === 'vi' ? 'Chuyển khoản ngân hàng' : 'Bank Transfer';
-    }
-    if (method.includes('cash') || method.includes('cod')) {
-      return locale === 'vi' ? 'Thanh toán khi nhận hàng' : 'Cash on Delivery';
-    }
-    if (method.includes('qr')) {
-      return locale === 'vi' ? 'Thanh toán QR Code' : 'QR Code Payment';
-    }
-
-    return paymentMethod;
+    return this.translationService.translatePaymentMethod(paymentMethod, locale);
   }
 
   /**
@@ -828,25 +806,7 @@ export class OrdersService {
    * @returns Payment method details
    */
   private getPaymentMethodDetails(paymentMethod: string, locale: 'en' | 'vi'): string {
-    const method = paymentMethod.toLowerCase();
-
-    if (method.includes('bank') || method.includes('transfer')) {
-      return locale === 'vi'
-        ? 'Vui lòng chuyển khoản theo thông tin trong PDF đính kèm'
-        : 'Please transfer payment according to the information in the attached PDF';
-    }
-    if (method.includes('cash') || method.includes('cod')) {
-      return locale === 'vi'
-        ? 'Thanh toán bằng tiền mặt khi nhận hàng'
-        : 'Pay with cash upon delivery';
-    }
-    if (method.includes('qr')) {
-      return locale === 'vi'
-        ? 'Quét mã QR để thanh toán'
-        : 'Scan QR code to make payment';
-    }
-
-    return '';
+    return this.translationService.getPaymentMethodInstructions(paymentMethod, locale);
   }
 
   /**
@@ -856,19 +816,7 @@ export class OrdersService {
    * @returns Shipping method description
    */
   private getShippingMethodDescription(shippingMethod: string, locale: 'en' | 'vi'): string {
-    const method = shippingMethod.toLowerCase();
-
-    if (method.includes('standard')) {
-      return locale === 'vi' ? 'Giao hàng tiêu chuẩn (3-5 ngày)' : 'Standard delivery (3-5 days)';
-    }
-    if (method.includes('express')) {
-      return locale === 'vi' ? 'Giao hàng nhanh (1-2 ngày)' : 'Express delivery (1-2 days)';
-    }
-    if (method.includes('overnight')) {
-      return locale === 'vi' ? 'Giao hàng trong ngày' : 'Overnight delivery';
-    }
-
-    return shippingMethod;
+    return this.translationService.getShippingMethodDescription(shippingMethod, locale);
   }
 
   /**
@@ -914,7 +862,7 @@ export class OrdersService {
       // Get localized shipping method data for consistency with checkout and PDFs
       let localizedShippingMethod = order.shippingMethod;
       try {
-        const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(order.shippingMethod);
+        const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(order.shippingMethod, locale);
         if (shippingMethodDetails) {
           localizedShippingMethod = shippingMethodDetails.name;
         }

@@ -9,6 +9,7 @@
 
 import { formatMoney } from '@/app/utils';
 import { Order } from '@/lib/order-api';
+import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText } from '../utils/statusTranslations';
 
 interface OrderSummaryProps {
   order: Order;
@@ -39,7 +40,7 @@ export function OrderSummary({ order, locale, t }: OrderSummaryProps) {
         {t('orderDetails')}
       </h2>
 
-      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8 sm:p-2">
+      <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8 sm:p-2">
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('orderDate')}</dt>
           <dd className="text-base font-semibold text-gray-900">
@@ -48,7 +49,15 @@ export function OrderSummary({ order, locale, t }: OrderSummaryProps) {
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('status')}</dt>
-          <dd className="text-base font-semibold text-gray-900 capitalize">{order.status}</dd>
+          <dd className="text-base font-semibold text-gray-900">{getOrderStatusText(order.status, t)}</dd>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
+          <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentMethod')}</dt>
+          <dd className="text-base font-semibold text-gray-900">{getPaymentMethodText(order.paymentMethod, t)}</dd>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
+          <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentStatus')}</dt>
+          <dd className="text-base font-semibold text-gray-900">{getPaymentStatusText(order.paymentStatus, t)}</dd>
         </div>
       </dl>
 

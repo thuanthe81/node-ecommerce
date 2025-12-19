@@ -8,6 +8,7 @@ import { paymentApi, RefundInfo } from '@/lib/payment-api';
 import { shippingApi, ShippingLabel } from '@/lib/shipping-api';
 import PaymentStatusUpdateModal from '@/components/PaymentStatusUpdateModal';
 import { isContactForPrice, getAdminOrderPricingMessage } from '@/app/utils';
+import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText, getShippingMethodText } from '@/components/OrderDetailView/utils/statusTranslations';
 import translations from '@/locales/translations.json';
 
 interface OrderDetailContentProps {
@@ -295,7 +296,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
               order.status
             )}`}
           >
-            {t(`orders.status${order.status.charAt(0) + order.status.slice(1).toLowerCase()}`)}
+            {getOrderStatusText(order.status, t)}
           </span>
         </div>
       </div>
@@ -316,12 +317,13 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="PENDING">{t('orders.statusPending')}</option>
-            <option value="PROCESSING">{t('orders.statusProcessing')}</option>
-            <option value="SHIPPED">{t('orders.statusShipped')}</option>
-            <option value="DELIVERED">{t('orders.statusDelivered')}</option>
-            <option value="CANCELLED">{t('orders.statusCancelled')}</option>
-            <option value="REFUNDED">{t('orders.statusRefunded')}</option>
+            <option value="PENDING">{getOrderStatusText('PENDING', t)}</option>
+            <option value="PENDING_QUOTE">{getOrderStatusText('PENDING_QUOTE', t)}</option>
+            <option value="PROCESSING">{getOrderStatusText('PROCESSING', t)}</option>
+            <option value="SHIPPED">{getOrderStatusText('SHIPPED', t)}</option>
+            <option value="DELIVERED">{getOrderStatusText('DELIVERED', t)}</option>
+            <option value="CANCELLED">{getOrderStatusText('CANCELLED', t)}</option>
+            <option value="REFUNDED">{getOrderStatusText('REFUNDED', t)}</option>
           </select>
           <button
             onClick={handleStatusUpdate}
@@ -344,7 +346,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                 order.paymentStatus
               )}`}
             >
-              {t(`orders.payment${order.paymentStatus.charAt(0) + order.paymentStatus.slice(1).toLowerCase()}`)}
+              {getPaymentStatusText(order.paymentStatus, t)}
             </span>
           </div>
           <button
@@ -491,7 +493,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-sm text-blue-800">
-                  {t('orders.shippingMethod')}: {order.shippingMethod}
+                  {t('orders.shippingMethod')}: {getShippingMethodText(order.shippingMethod, t)}
                 </p>
               </div>
             </div>
@@ -537,7 +539,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                     order.status
                   )}`}
                 >
-                  {t(`orders.status${order.status.charAt(0) + order.status.slice(1).toLowerCase()}`)}
+                  {getOrderStatusText(order.status, t)}
                 </span>
               </dd>
             </div>
@@ -549,17 +551,17 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                     order.paymentStatus
                   )}`}
                 >
-                  {t(`orders.payment${order.paymentStatus.charAt(0) + order.paymentStatus.slice(1).toLowerCase()}`)}
+                  {getPaymentStatusText(order.paymentStatus, t)}
                 </span>
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">{t('orders.paymentMethod')}</dt>
-              <dd className="mt-1 text-sm text-gray-900">{order.paymentMethod}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{getPaymentMethodText(order.paymentMethod, t)}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">{t('orders.shippingMethod')}</dt>
-              <dd className="mt-1 text-sm text-gray-900">{order.shippingMethod}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{getShippingMethodText(order.shippingMethod, t)}</dd>
             </div>
             {order.notes && (
               <div>
