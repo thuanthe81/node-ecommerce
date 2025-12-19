@@ -5,17 +5,18 @@
  * @param props.orderNumber - The order number
  * @param props.createdAt - The order creation date
  * @param props.locale - Current locale for date formatting
- * @param props.t - Translation function
  */
+
+import { useTranslations } from 'next-intl';
 
 interface OrderHeaderProps {
   orderNumber: string;
   createdAt: string;
   locale: string;
-  t: (key: string) => string;
 }
 
-export function OrderHeader({ orderNumber, createdAt, locale, t }: OrderHeaderProps) {
+export function OrderHeader({ orderNumber, createdAt, locale }: OrderHeaderProps) {
+  const t = useTranslations('orders');
   const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric',

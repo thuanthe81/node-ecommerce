@@ -37,7 +37,7 @@ export default function OrderDetailView({
 }: OrderDetailViewProps) {
   const { isAuthenticated } = useAuth();
   const t = useTranslations("orders");
-  const tEmail = useTranslations("email.pdfAttachment")
+  const tEmailAttachment = useTranslations("email.pdfAttachment")
 
   // Fetch order data using custom hook
   const {
@@ -45,7 +45,7 @@ export default function OrderDetailView({
     isLoading: isLoadingOrder,
     error: orderError,
     refetch: refetchOrder,
-  } = useOrderData(orderId, t);
+  } = useOrderData(orderId);
 
   // Fetch bank settings using custom hook
   const {
@@ -53,7 +53,7 @@ export default function OrderDetailView({
     isLoading: isLoadingSettings,
     error: settingsError,
     refetch: refetchSettings,
-  } = useBankSettings(order, showBankTransferForPaidOrders, t);
+  } = useBankSettings(order, showBankTransferForPaidOrders);
 
   const handlePrint = () => {
     window.print();
@@ -70,7 +70,7 @@ export default function OrderDetailView({
 
   // Loading state
   if (isLoadingOrder) {
-    return <LoadingState t={t} />;
+    return <LoadingState />;
   }
 
   // Error state
@@ -81,7 +81,6 @@ export default function OrderDetailView({
         locale={locale}
         isAuthenticated={isAuthenticated}
         onRetry={refetchOrder}
-        t={t}
       />
     );
   }
@@ -102,7 +101,7 @@ export default function OrderDetailView({
         <main id="main-content" className="max-w-5xl mx-auto">
           {/* Success Banner - Only shown if showSuccessBanner is true */}
           {showSuccessBanner && (
-            <SuccessBanner orderNumber={order.orderNumber} t={t} />
+            <SuccessBanner orderNumber={order.orderNumber} />
           )}
 
           {/* Order Header - Only shown if NOT showing success banner */}
@@ -111,21 +110,19 @@ export default function OrderDetailView({
               orderNumber={order.orderNumber}
               createdAt={order.createdAt}
               locale={locale}
-              t={t}
             />
           )}
 
           {/* Order Summary Section */}
-          <OrderSummary order={order} locale={locale} t={t} />
+          <OrderSummary order={order} locale={locale} />
 
           {/* Order Items */}
-          <OrderItems items={order.items} locale={locale} t={t} />
+          <OrderItems items={order.items} locale={locale} />
 
           {/* Shipping Information Section */}
           <ShippingInfo
             shippingAddress={order.shippingAddress}
             shippingMethod={order.shippingMethod}
-            t={t}
           />
 
           {/* Bank Transfer Instructions Section - Conditionally shown */}
@@ -137,7 +134,6 @@ export default function OrderDetailView({
               isLoading={isLoadingSettings}
               error={settingsError}
               onRetry={refetchSettings}
-              t={t}
             />
           )}
 
@@ -220,7 +216,7 @@ export default function OrderDetailView({
             <div className="mt-8 pt-6 border-t border-gray-200 print:hidden">
               <div className="text-center">
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {tEmail('resendEmailDescription')}
+                  {tEmailAttachment('resendEmailDescription')}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   {locale === 'vi'

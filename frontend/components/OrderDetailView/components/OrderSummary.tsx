@@ -4,9 +4,9 @@
  * @param props - Component props
  * @param props.order - The order object with pricing details
  * @param props.locale - Current locale for formatting
- * @param props.t - Translation function
  */
 
+import { useTranslations } from 'next-intl';
 import { formatMoney } from '@/app/utils';
 import { Order } from '@/lib/order-api';
 import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText } from '../utils/statusTranslations';
@@ -14,10 +14,11 @@ import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText } from '
 interface OrderSummaryProps {
   order: Order;
   locale: string;
-  t: (key: string) => string;
 }
 
-export function OrderSummary({ order, locale, t }: OrderSummaryProps) {
+export function OrderSummary({ order, locale }: OrderSummaryProps) {
+  const t = useTranslations('orders');
+  const tEmail = useTranslations('email');
   const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric',
@@ -53,11 +54,11 @@ export function OrderSummary({ order, locale, t }: OrderSummaryProps) {
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentMethod')}</dt>
-          <dd className="text-base font-semibold text-gray-900">{getPaymentMethodText(order.paymentMethod, t)}</dd>
+          <dd className="text-base font-semibold text-gray-900">{getPaymentMethodText(order.paymentMethod, tEmail)}</dd>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentStatus')}</dt>
-          <dd className="text-base font-semibold text-gray-900">{getPaymentStatusText(order.paymentStatus, t)}</dd>
+          <dd className="text-base font-semibold text-gray-900">{getPaymentStatusText(order.paymentStatus, tEmail)}</dd>
         </div>
       </dl>
 

@@ -8,9 +8,9 @@
  * @param props.isLoading - Whether settings are loading
  * @param props.error - Error message if loading failed
  * @param props.onRetry - Callback to retry loading settings
- * @param props.t - Translation function
  */
 
+import { useTranslations } from 'next-intl';
 import { formatMoney } from '@/app/utils';
 import { BankTransferSettings } from '@/lib/payment-settings-api';
 import { Order } from '@/lib/order-api';
@@ -22,7 +22,6 @@ interface BankTransferInfoProps {
   isLoading: boolean;
   error: string | null;
   onRetry: () => void;
-  t: (key: string) => string;
 }
 
 export function BankTransferInfo({
@@ -32,8 +31,8 @@ export function BankTransferInfo({
   isLoading,
   error,
   onRetry,
-  t,
 }: BankTransferInfoProps) {
+  const t = useTranslations('orders');
   return (
     <section
       className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 border-2 border-blue-300 rounded-xl shadow-xl p-6 sm:p-8 mb-6 print:bg-white print:border print:border-gray-800 print:shadow-none"

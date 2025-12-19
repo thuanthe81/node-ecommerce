@@ -6,10 +6,10 @@
  * @param props.locale - Current locale for navigation links
  * @param props.isAuthenticated - Whether the user is authenticated
  * @param props.onRetry - Callback function to retry loading the order
- * @param props.t - Translation function
  */
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { SvgRefresh, SvgClipboard, SvgShoppingBag } from '../../Svgs';
 
 interface ErrorStateProps {
@@ -17,10 +17,10 @@ interface ErrorStateProps {
   locale: string;
   isAuthenticated: boolean;
   onRetry: () => void;
-  t: (key: string) => string;
 }
 
-export function ErrorState({ error, locale, isAuthenticated, onRetry, t }: ErrorStateProps) {
+export function ErrorState({ error, locale, isAuthenticated, onRetry }: ErrorStateProps) {
+  const t = useTranslations('orders');
   const isNotFound = error === 'Order not found';
   const isPermissionDenied = error.includes('permission');
   const isTimeout = error.includes('timeout') || error.includes('timed out');

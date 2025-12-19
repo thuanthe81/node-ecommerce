@@ -4,9 +4,9 @@
  * @param props - Component props
  * @param props.shippingAddress - The shipping address object
  * @param props.shippingMethod - The shipping method
- * @param props.t - Translation function
  */
 
+import { useTranslations } from 'next-intl';
 import { getShippingMethodText } from '../utils/statusTranslations';
 
 interface ShippingAddress {
@@ -23,10 +23,11 @@ interface ShippingAddress {
 interface ShippingInfoProps {
   shippingAddress: ShippingAddress;
   shippingMethod: string;
-  t: (key: string) => string;
 }
 
-export function ShippingInfo({ shippingAddress, shippingMethod, t }: ShippingInfoProps) {
+export function ShippingInfo({ shippingAddress, shippingMethod }: ShippingInfoProps) {
+  const t = useTranslations('orders');
+  const tEmail = useTranslations('email');
   return (
     <section
       className="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6 print:shadow-none print:border print:border-gray-300"
@@ -131,7 +132,7 @@ export function ShippingInfo({ shippingAddress, shippingMethod, t }: ShippingInf
             className="text-gray-900 text-base sm:text-lg font-semibold bg-white rounded px-4 py-3 border border-gray-200 print:border-gray-300"
             aria-labelledby="shipping-method-heading"
           >
-            {getShippingMethodText(shippingMethod, t)}
+            {getShippingMethodText(shippingMethod, tEmail)}
           </p>
         </div>
       </div>

@@ -2,12 +2,11 @@
  * Custom hook for fetching and managing order data
  *
  * @param orderId - The ID of the order to fetch
- * @param t - Translation function for error messages
  * @returns Object containing order data, loading state, error, and refetch function
  *
  * @example
  * ```tsx
- * const { order, isLoading, error, refetch } = useOrderData(orderId, t);
+ * const { order, isLoading, error, refetch } = useOrderData(orderId);
  *
  * if (isLoading) return <LoadingState />;
  * if (error) return <ErrorState error={error} onRetry={refetch} />;
@@ -16,9 +15,11 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { orderApi, Order } from '@/lib/order-api';
 
-export function useOrderData(orderId: string, t: (key: string) => string) {
+export function useOrderData(orderId: string) {
+  const t = useTranslations('orders');
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

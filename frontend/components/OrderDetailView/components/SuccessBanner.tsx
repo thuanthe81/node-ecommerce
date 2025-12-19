@@ -3,15 +3,16 @@
  *
  * @param props - Component props
  * @param props.orderNumber - The order number to display
- * @param props.t - Translation function
  */
+
+import { useTranslations } from 'next-intl';
 
 interface SuccessBannerProps {
   orderNumber: string;
-  t: (key: string) => string;
 }
 
-export function SuccessBanner({ orderNumber, t }: SuccessBannerProps) {
+export function SuccessBanner({ orderNumber }: SuccessBannerProps) {
+  const t = useTranslations('orders');
   return (
     <div
       className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-lg p-6 sm:p-8 mb-6 sm:mb-8 text-center print:border print:border-gray-800 print:shadow-none"

@@ -4,10 +4,10 @@
  * @param props - Component props
  * @param props.items - Array of order items
  * @param props.locale - Current locale for formatting and navigation
- * @param props.t - Translation function
  */
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { formatMoney } from '@/app/utils';
 
 interface OrderItem {
@@ -27,10 +27,10 @@ interface OrderItem {
 interface OrderItemsProps {
   items: OrderItem[];
   locale: string;
-  t: (key: string) => string;
 }
 
-export function OrderItems({ items, locale, t }: OrderItemsProps) {
+export function OrderItems({ items, locale }: OrderItemsProps) {
+  const t = useTranslations('orders');
   const getProductName = (item: OrderItem) => {
     return locale === 'vi' ? item.productNameVi : item.productNameEn;
   };

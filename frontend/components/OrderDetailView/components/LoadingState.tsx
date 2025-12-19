@@ -1,15 +1,11 @@
 /**
  * Loading skeleton component displayed while order data is being fetched
- *
- * @param props - Component props
- * @param props.t - Translation function
  */
 
-interface LoadingStateProps {
-  t: (key: string) => string;
-}
+import { useTranslations } from 'next-intl';
 
-export function LoadingState({ t }: LoadingStateProps) {
+export function LoadingState() {
+  const t = useTranslations('orders');
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">

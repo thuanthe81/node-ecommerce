@@ -85,20 +85,10 @@ export function getShippingMethodText(method: string, t: (key: string) => string
 
   // Map common shipping method values to translation keys
   const methodMap: Record<string, string> = {
-    'standard': 'shippingMethod.standard',
-    'standardshipping': 'shippingMethod.standard',
-    'express': 'shippingMethod.express',
-    'expressshipping': 'shippingMethod.express',
-    'overnight': 'shippingMethod.overnight',
-    'overnightshipping': 'shippingMethod.overnight',
-    'international': 'shippingMethod.international',
-    'internationalshipping': 'shippingMethod.international',
-    'free': 'shippingMethod.free',
-    'freeshipping': 'shippingMethod.free',
-    'pickup': 'shippingMethod.pickup',
-    'storepickup': 'shippingMethod.pickup',
-    'sameday': 'shippingMethod.same_day',
-    'samedaydelivery': 'shippingMethod.same_day',
+    'standard': 'shippingMethods.standard',
+    'standardshipping': 'shippingMethods.standard',
+    'express': 'shippingMethods.express',
+    'expressshipping': 'shippingMethods.express',
   };
 
   const translationKey = methodMap[methodKey];
