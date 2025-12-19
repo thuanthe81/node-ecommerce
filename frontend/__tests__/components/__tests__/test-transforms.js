@@ -1,5 +1,5 @@
 // Manual test script for transform calculations
-// Run with: node frontend/components/__tests__/test-transforms.js
+// Run with: node frontend/__tests__/components/__tests__/test-transforms.js
 
 // Copy the utility functions here for testing
 function normalizeAngle(angle) {

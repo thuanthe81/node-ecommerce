@@ -1,0 +1,28 @@
+{
+  "id": "migration-1766133369332-jqr3bxz7a",
+  "timestamp": "2025-12-19T08:36:09.332Z",
+  "backupDirectory": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backup",
+  "originalFiles": [
+    {
+      "filePath": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/src/test.spec.ts",
+      "fileName": "test.spec.ts",
+      "directory": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/src",
+      "relativePath": "test.spec.ts",
+      "testType": "unit",
+      "sourceType": "backend"
+    }
+  ],
+  "targetPaths": {
+    "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/src/test.spec.ts": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/test/test.spec.ts"
+  },
+  "createdDirectories": [],
+  "removedDirectories": [],
+  "config": {
+    "backendSourceDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/src",
+    "backendTestDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/backend/test",
+    "frontendSourceDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/frontend/components",
+    "frontendTestDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-y0mb4w/frontend/__tests__",
+    "dryRun": true,
+    "verbose": false
+  }
+}

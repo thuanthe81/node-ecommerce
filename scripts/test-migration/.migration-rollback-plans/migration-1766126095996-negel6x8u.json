@@ -1,0 +1,134 @@
+{
+  "id": "migration-1766126095996-negel6x8u",
+  "timestamp": "2025-12-19T06:34:55.996Z",
+  "backupDirectory": "/Users/macos/ws/ala-kiro/scripts/test-migration/migration-backup/2025-12-19T06-34-55-996Z",
+  "originalFiles": [
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/lib/__tests__/content-media-api.test.ts",
+      "fileName": "content-media-api.test.ts",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/lib/__tests__",
+      "relativePath": "lib/__tests__/content-media-api.test.ts",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/lib/__tests__/api-client.auth.test.ts",
+      "fileName": "api-client.auth.test.ts",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/lib/__tests__",
+      "relativePath": "lib/__tests__/api-client.auth.test.ts",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/__tests__/utils.test.ts",
+      "fileName": "utils.test.ts",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/__tests__",
+      "relativePath": "app/__tests__/utils.test.ts",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/__tests__/checkout-zero-price.test.ts",
+      "fileName": "checkout-zero-price.test.ts",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/__tests__",
+      "relativePath": "app/__tests__/checkout-zero-price.test.ts",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/contexts/__tests__/AuthContext.auth-event.test.tsx",
+      "fileName": "AuthContext.auth-event.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/contexts/__tests__",
+      "relativePath": "contexts/__tests__/AuthContext.auth-event.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/checkout/__tests__/CheckoutCartSync.test.tsx",
+      "fileName": "CheckoutCartSync.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/checkout/__tests__",
+      "relativePath": "app/[locale]/checkout/__tests__/CheckoutCartSync.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/useVisibilityDetection.test.tsx",
+      "fileName": "useVisibilityDetection.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__",
+      "relativePath": "app/[locale]/products/[slug]/__tests__/useVisibilityDetection.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/useAutoAdvance.test.tsx",
+      "fileName": "useAutoAdvance.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__",
+      "relativePath": "app/[locale]/products/[slug]/__tests__/useAutoAdvance.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/ProductImageGallery.test.tsx",
+      "fileName": "ProductImageGallery.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__",
+      "relativePath": "app/[locale]/products/[slug]/__tests__/ProductImageGallery.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    },
+    {
+      "filePath": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/ProductImageGallery.refactor.test.tsx",
+      "fileName": "ProductImageGallery.refactor.test.tsx",
+      "directory": "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__",
+      "relativePath": "app/[locale]/products/[slug]/__tests__/ProductImageGallery.refactor.test.tsx",
+      "testType": "unit",
+      "sourceType": "frontend"
+    }
+  ],
+  "targetPaths": {
+    "/Users/macos/ws/ala-kiro/frontend/lib/__tests__/content-media-api.test.ts": "/Users/macos/ws/ala-kiro/frontend/__tests__/lib/__tests__/content-media-api.test.ts",
+    "/Users/macos/ws/ala-kiro/frontend/lib/__tests__/api-client.auth.test.ts": "/Users/macos/ws/ala-kiro/frontend/__tests__/lib/__tests__/api-client.auth.test.ts",
+    "/Users/macos/ws/ala-kiro/frontend/app/__tests__/utils.test.ts": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/__tests__/utils.test.ts",
+    "/Users/macos/ws/ala-kiro/frontend/app/__tests__/checkout-zero-price.test.ts": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/__tests__/checkout-zero-price.test.ts",
+    "/Users/macos/ws/ala-kiro/frontend/contexts/__tests__/AuthContext.auth-event.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/contexts/__tests__/AuthContext.auth-event.test.tsx",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/checkout/__tests__/CheckoutCartSync.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/[locale]/checkout/__tests__/CheckoutCartSync.test.tsx",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/useVisibilityDetection.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/[locale]/products/[slug]/__tests__/useVisibilityDetection.test.tsx",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/useAutoAdvance.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/[locale]/products/[slug]/__tests__/useAutoAdvance.test.tsx",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/ProductImageGallery.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/[locale]/products/[slug]/__tests__/ProductImageGallery.test.tsx",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/products/[slug]/__tests__/ProductImageGallery.refactor.test.tsx": "/Users/macos/ws/ala-kiro/frontend/__tests__/app/[locale]/products/[slug]/__tests__/ProductImageGallery.refactor.test.tsx"
+  },
+  "createdDirectories": [],
+  "removedDirectories": [
+    "/Users/macos/ws/ala-kiro/frontend/.swc/plugins/macos_aarch64_20.0.0",
+    "/Users/macos/ws/ala-kiro/frontend/.swc/plugins",
+    "/Users/macos/ws/ala-kiro/frontend/.swc",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]/checkout/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]/checkout",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]/products/[slug]/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]/products/[slug]",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]/products",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/[locale]",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/app",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/contexts/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/contexts",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/lib/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/__tests__/components/lib",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/admin/content/banners/new",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/admin/content/faqs/new",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/admin/content/homepage-sections/new",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/admin/content/pages/new",
+    "/Users/macos/ws/ala-kiro/frontend/app/[locale]/checkout/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/app/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/contexts/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/lib/__tests__",
+    "/Users/macos/ws/ala-kiro/frontend/node_modules/.cache/prettier"
+  ],
+  "config": {
+    "backendSourceDir": "/Users/macos/ws/ala-kiro/backend/src",
+    "backendTestDir": "/Users/macos/ws/ala-kiro/backend/test",
+    "frontendSourceDir": "/Users/macos/ws/ala-kiro/frontend",
+    "frontendTestDir": "/Users/macos/ws/ala-kiro/frontend/__tests__",
+    "dryRun": false,
+    "verbose": true
+  }
+}

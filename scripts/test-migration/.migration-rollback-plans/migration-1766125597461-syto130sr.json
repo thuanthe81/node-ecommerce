@@ -1,0 +1,28 @@
+{
+  "id": "migration-1766125597461-syto130sr",
+  "timestamp": "2025-12-19T06:26:37.461Z",
+  "backupDirectory": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backup",
+  "originalFiles": [
+    {
+      "filePath": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/src/test.spec.ts",
+      "fileName": "test.spec.ts",
+      "directory": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/src",
+      "relativePath": "test.spec.ts",
+      "testType": "unit",
+      "sourceType": "backend"
+    }
+  ],
+  "targetPaths": {
+    "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/src/test.spec.ts": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/test/test.spec.ts"
+  },
+  "createdDirectories": [],
+  "removedDirectories": [],
+  "config": {
+    "backendSourceDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/src",
+    "backendTestDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/backend/test",
+    "frontendSourceDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/frontend/components",
+    "frontendTestDir": "/var/folders/k2/_f1mgrr105j78yzh1m1w6m_40000gn/T/migration-test-irfYGH/frontend/__tests__",
+    "dryRun": true,
+    "verbose": false
+  }
+}
