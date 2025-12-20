@@ -1,14 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ContactFormDto } from './dto/contact-form.dto';
-import { EmailService } from '../notifications/services/email.service';
+import { EmailEventPublisher } from '../email-queue/services/email-event-publisher.service';
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
   constructor(
-    private emailService: EmailService,
+    private emailEventPublisher: EmailEventPublisher,
     private configService: ConfigService,
   ) {}
 
@@ -18,26 +18,31 @@ export class ContactService {
     this.logger.log(`Subject: ${contactFormDto.subject}`);
     this.logger.log(`Message: ${contactFormDto.message}`);
 
-    // Send email to admin
-    const adminEmail =
-      this.configService.get('ADMIN_EMAIL') || 'admin@example.com';
+    try {
+      const locale = 'en'; // Default to English
+      const message = `Subject: ${contactFormDto.subject}\n\n${contactFormDto.message}`;
 
-    await this.emailService.sendEmail({
-      to: adminEmail,
-      subject: `Contact Form: ${contactFormDto.subject}`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${contactFormDto.name}</p>
-        <p><strong>Email:</strong> ${contactFormDto.email}</p>
-        <p><strong>Subject:</strong> ${contactFormDto.subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${contactFormDto.message}</p>
-      `,
-    });
+      // Publish contact form event to queue
+      const jobId = await this.emailEventPublisher.sendContactForm(
+        contactFormDto.name,
+        contactFormDto.email,
+        message,
+        locale
+      );
 
-    return {
-      success: true,
-      message: 'Your message has been received. We will get back to you soon.',
-    };
+      this.logger.log(`Contact form event published for ${contactFormDto.email} (Job ID: ${jobId})`);
+
+      return {
+        success: true,
+        message: 'Your message has been received. We will get back to you soon.',
+      };
+    } catch (error) {
+      this.logger.error('Failed to publish contact form event:', error);
+
+      return {
+        success: false,
+        message: 'Failed to submit your message. Please try again later.',
+      };
+    }
   }
 }

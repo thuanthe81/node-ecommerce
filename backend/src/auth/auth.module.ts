@@ -10,13 +10,13 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
 import { SessionService } from './services/session.service';
 import { OAuthConfigValidator } from './config/oauth-config.validator';
 import { PrismaModule } from '../prisma/prisma.module';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { EmailQueueModule } from '../email-queue/email-queue.module';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
-    NotificationsModule,
+    EmailQueueModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

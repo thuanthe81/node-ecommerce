@@ -299,3 +299,243 @@ Total addresses to delete: 1
 Total order references to update: 5
 Groups with default address: 1
 ```
+
+## Email Queue Deployment and Migration Scripts
+
+### Email Queue Deployment
+
+Deploy the asynchronous email queue service with worker processes and monitoring:
+
+```bash
+# Deploy to development environment
+npm run deploy-email-queue --env development --workers 1
+
+# Deploy to staging environment
+npm run deploy-email-queue --env staging --workers 2
+
+# Deploy to production environment
+npm run deploy-email-queue --env production --workers 3
+
+# Preview deployment without making changes
+npm run deploy-email-queue --env production --dry-run
+
+# Deploy with custom options
+npm run deploy-email-queue --env production --workers 5 --skip-validation
+```
+
+**Features:**
+- Validates prerequisites and configuration
+- Sets up Redis connection and queue functionality
+- Deploys PM2-managed worker processes
+- Creates monitoring infrastructure
+- Runs health checks and verification
+- Generates deployment documentation
+
+### Email Queue Data Migration
+
+Migrate existing email data when upgrading from synchronous to asynchronous processing:
+
+```bash
+# Preview migration without making changes
+npm run migrate-email-queue-data --dry-run
+
+# Run migration with default settings
+npm run migrate-email-queue-data
+
+# Run migration with custom batch size
+npm run migrate-email-queue-data --batch-size 50
+
+# Skip backup creation and failed email reprocessing
+npm run migrate-email-queue-data --skip-backup --skip-failed-emails
+```
+
+**Features:**
+- Creates backup of relevant data
+- Migrates failed emails for retry
+- Migrates pending notifications
+- Processes data in configurable batches
+- Generates migration reports with recommendations
+
+### Email Queue Schema Migration
+
+Handle database schema changes for email queue service (currently no changes needed):
+
+```bash
+# Preview schema migration
+npm run migrate-email-queue-schema --dry-run
+
+# Run schema migration
+npm run migrate-email-queue-schema
+
+# Force migration even if validation fails
+npm run migrate-email-queue-schema --force
+```
+
+**Note:** The current email queue implementation uses Redis for storage and doesn't require database schema changes. This script is provided as a template for future migrations.
+
+### Email Queue Monitoring Setup
+
+Set up comprehensive monitoring infrastructure:
+
+```bash
+# Setup monitoring for development
+npm run setup-email-queue-monitoring --env development
+
+# Setup monitoring with Slack alerts
+npm run setup-email-queue-monitoring --env production \
+  --webhook-url https://hooks.slack.com/your-webhook
+
+# Setup monitoring with email alerts
+npm run setup-email-queue-monitoring --env production \
+  --alert-email admin@example.com
+
+# Setup with custom cron interval
+npm run setup-email-queue-monitoring --env staging \
+  --cron-interval "*/10 * * * *"
+```
+
+**Features:**
+- Creates monitoring scripts and dashboards
+- Sets up automated health checks via cron
+- Configures log rotation and retention
+- Sets up alert notifications (Slack, email)
+- Creates weekly reporting system
+- Generates monitoring documentation
+
+## Email Queue Monitoring Scripts
+
+### Health Monitoring
+
+Monitor email queue service health and performance:
+
+```bash
+# Run health check manually
+./scripts/monitor-email-queue.sh
+
+# View current configuration
+./scripts/monitor-email-queue.sh --config
+
+# Run quietly (for cron jobs)
+./scripts/monitor-email-queue.sh --quiet
+```
+
+**Monitors:**
+- PM2 worker processes
+- Redis connection and memory usage
+- Queue health via API endpoints
+- Queue metrics (depth, error rates)
+- System resources (CPU, memory, disk)
+
+### Real-time Dashboard
+
+View real-time email queue status:
+
+```bash
+# View dashboard once
+./scripts/monitoring/dashboard.sh
+
+# Continuous monitoring (updates every 30 seconds)
+./scripts/monitoring/dashboard.sh --watch
+```
+
+**Displays:**
+- PM2 process status
+- Queue metrics (waiting, active, completed, failed jobs)
+- Recent alerts
+- System resource usage
+- Log file sizes
+
+### Alert Management
+
+Send alerts via configured channels:
+
+```bash
+# Send test alert
+./scripts/monitoring/send-alert.sh "Test alert message" "INFO"
+
+# Send warning alert
+./scripts/monitoring/send-alert.sh "Queue depth high" "WARNING"
+
+# Send critical alert
+./scripts/monitoring/send-alert.sh "Workers offline" "CRITICAL"
+```
+
+### Weekly Reports
+
+Generate and send weekly performance reports:
+
+```bash
+# Generate weekly report manually
+./scripts/generate-weekly-report.sh
+
+# View latest report
+ls -la logs/weekly-report-*.txt
+```
+
+## Email Queue Workflow
+
+Complete workflow for deploying email queue service:
+
+```bash
+# 1. Validate configuration
+npm run setup-email-config validate
+
+# 2. Deploy email queue service
+npm run deploy-email-queue --env production --workers 3
+
+# 3. Setup monitoring
+npm run setup-email-queue-monitoring --env production \
+  --webhook-url https://hooks.slack.com/your-webhook \
+  --alert-email admin@example.com
+
+# 4. Install monitoring cron job
+crontab /tmp/email-queue-cron
+
+# 5. Install log rotation (requires sudo)
+sudo cp /tmp/email-queue-logrotate /etc/logrotate.d/email-queue
+
+# 6. Migrate existing data
+npm run migrate-email-queue-data --batch-size 50
+
+# 7. Verify deployment
+./scripts/monitor-email-queue.sh
+curl http://localhost:3000/email-queue/health
+```
+
+## Email Queue Troubleshooting
+
+### Common Issues
+
+**Workers not starting:**
+```bash
+pm2 logs email-queue-worker
+npm run setup-email-config validate
+redis-cli ping
+```
+
+**High queue depth:**
+```bash
+curl http://localhost:3000/email-queue/metrics
+pm2 scale email-queue-worker +2
+```
+
+**Redis connection issues:**
+```bash
+redis-cli ping
+sudo systemctl restart redis
+```
+
+### Email Queue Log Files
+
+- `logs/email-queue-monitoring.log` - Main monitoring log
+- `logs/email-queue-alerts.log` - Alert notifications
+- `logs/email-queue-metrics.log` - Performance metrics
+- `logs/weekly-report-*.txt` - Weekly performance reports
+
+### Email Queue Support
+
+For deployment and monitoring issues:
+1. Check script logs in `logs/` directory
+2. Review deployment documentation: `EMAIL_QUEUE_DEPLOYMENT_GUIDE.md`
+3. Check monitoring setup: `EMAIL_QUEUE_MONITORING_SETUP.md`
+4. Contact DevOps team with relevant logs and metrics

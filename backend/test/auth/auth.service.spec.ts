@@ -3,8 +3,7 @@ import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { EmailService } from '../../src/notifications/services/email.service';
-import { EmailTemplateService } from '../../src/notifications/services/email-template.service';
+import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
 import {
   ConflictException,
   UnauthorizedException,
@@ -19,8 +18,7 @@ describe('AuthService', () => {
   let prismaService: PrismaService;
   let jwtService: JwtService;
   let configService: ConfigService;
-  let emailService: EmailService;
-  let emailTemplateService: EmailTemplateService;
+  let emailEventPublisher: EmailEventPublisher;
 
   const mockUser = {
     id: 'user-1',
@@ -49,13 +47,9 @@ describe('AuthService', () => {
     get: jest.fn(),
   };
 
-  const mockEmailService = {
-    sendEmail: jest.fn(),
-  };
-
-  const mockEmailTemplateService = {
-    getWelcomeEmailTemplate: jest.fn(),
-    getPasswordResetTemplate: jest.fn(),
+  const mockEmailEventPublisher = {
+    sendWelcomeEmail: jest.fn(),
+    sendPasswordReset: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -65,8 +59,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
-        { provide: EmailService, useValue: mockEmailService },
-        { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: EmailEventPublisher, useValue: mockEmailEventPublisher },
       ],
     }).compile();
 
@@ -74,10 +67,7 @@ describe('AuthService', () => {
     prismaService = module.get<PrismaService>(PrismaService);
     jwtService = module.get<JwtService>(JwtService);
     configService = module.get<ConfigService>(ConfigService);
-    emailService = module.get<EmailService>(EmailService);
-    emailTemplateService = module.get<EmailTemplateService>(
-      EmailTemplateService,
-    );
+    emailEventPublisher = module.get<EmailEventPublisher>(EmailEventPublisher);
 
     // Clear all mocks before each test
     jest.clearAllMocks();
@@ -97,11 +87,7 @@ describe('AuthService', () => {
       mockPrismaService.user.create.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
       mockConfigService.get.mockReturnValue('secret');
-      mockEmailTemplateService.getWelcomeEmailTemplate.mockReturnValue({
-        subject: 'Welcome',
-        html: '<p>Welcome</p>',
-      });
-      mockEmailService.sendEmail.mockResolvedValue(true);
+      mockEmailEventPublisher.sendWelcomeEmail.mockResolvedValue('job-id');
 
       const result = await service.register(registerDto);
 
@@ -256,16 +242,12 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('reset-token');
       mockConfigService.get.mockReturnValue('secret');
-      mockEmailTemplateService.getPasswordResetTemplate.mockReturnValue({
-        subject: 'Password Reset',
-        html: '<p>Reset your password</p>',
-      });
-      mockEmailService.sendEmail.mockResolvedValue(true);
+      mockEmailEventPublisher.sendPasswordReset.mockResolvedValue('job-id');
 
       const result = await service.requestPasswordReset(mockUser.email);
 
       expect(result).toHaveProperty('message');
-      expect(mockEmailService.sendEmail).toHaveBeenCalled();
+      expect(mockEmailEventPublisher.sendPasswordReset).toHaveBeenCalled();
     });
 
     it('should return generic message if user does not exist', async () => {
@@ -274,7 +256,7 @@ describe('AuthService', () => {
       const result = await service.requestPasswordReset('nonexistent@example.com');
 
       expect(result).toHaveProperty('message');
-      expect(mockEmailService.sendEmail).not.toHaveBeenCalled();
+      expect(mockEmailEventPublisher.sendPasswordReset).not.toHaveBeenCalled();
     });
   });
 });

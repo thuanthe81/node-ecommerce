@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { EmailService } from '../../src/notifications/services/email.service';
-import { EmailTemplateService } from '../../src/notifications/services/email-template.service';
+import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
 import { FooterSettingsService } from '../../src/footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../../src/pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../../src/pdf-generator/services/resend-email-handler.service';
 import { BusinessInfoService } from '../../src/common/services/business-info.service';
 import { ShippingService } from '../../src/shipping/shipping.service';
+import { TranslationService } from '../../src/common/services/translation.service';
 import {
   NotFoundException,
   BadRequestException,
@@ -19,8 +19,7 @@ import { STATUS } from '../../src/common/constants';
 describe('OrdersService', () => {
   let service: OrdersService;
   let prismaService: PrismaService;
-  let emailService: EmailService;
-  let emailTemplateService: EmailTemplateService;
+  let emailEventPublisher: EmailEventPublisher;
   let footerSettingsService: FooterSettingsService;
   let emailAttachmentService: EmailAttachmentService;
   let resendEmailHandlerService: ResendEmailHandlerService;
@@ -108,15 +107,18 @@ describe('OrdersService', () => {
     $transaction: jest.fn(),
   };
 
-  const mockEmailService = {
-    sendEmail: jest.fn(),
+  const mockEmailEventPublisher = {
+    sendOrderConfirmation: jest.fn().mockResolvedValue('job-id-1'),
+    sendAdminOrderNotification: jest.fn().mockResolvedValue('job-id-2'),
+    sendShippingNotification: jest.fn().mockResolvedValue('job-id-3'),
+    sendOrderStatusUpdate: jest.fn().mockResolvedValue('job-id-4'),
   };
 
-  const mockEmailTemplateService = {
-    getSimplifiedOrderConfirmationTemplate: jest.fn(),
-    getSimplifiedShippingNotificationTemplate: jest.fn(),
-    getSimplifiedOrderStatusUpdateTemplate: jest.fn(),
-    getSimplifiedAdminOrderNotificationTemplate: jest.fn(),
+  const mockTranslationService = {
+    translateShippingMethod: jest.fn().mockReturnValue('Standard Shipping'),
+    translatePaymentMethod: jest.fn().mockReturnValue('Credit Card'),
+    getPaymentMethodInstructions: jest.fn().mockReturnValue('Payment instructions'),
+    getShippingMethodDescription: jest.fn().mockReturnValue('Delivery in 3-5 days'),
   };
 
   const mockFooterSettingsService = {
@@ -180,22 +182,19 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
-        { provide: EmailService, useValue: mockEmailService },
-        { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: EmailEventPublisher, useValue: mockEmailEventPublisher },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
         { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
         { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
         { provide: BusinessInfoService, useValue: mockBusinessInfoService },
         { provide: ShippingService, useValue: mockShippingService },
+        { provide: TranslationService, useValue: mockTranslationService },
       ],
     }).compile();
 
     service = module.get<OrdersService>(OrdersService);
     prismaService = module.get<PrismaService>(PrismaService);
-    emailService = module.get<EmailService>(EmailService);
-    emailTemplateService = module.get<EmailTemplateService>(
-      EmailTemplateService,
-    );
+    emailEventPublisher = module.get<EmailEventPublisher>(EmailEventPublisher);
     footerSettingsService = module.get<FooterSettingsService>(
       FooterSettingsService,
     );
@@ -253,14 +252,7 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
-        subject: 'Order Confirmation',
-        html: '<p>Order confirmed</p>',
-      });
-      mockEmailTemplateService.getSimplifiedAdminOrderNotificationTemplate.mockReturnValue({
-        subject: 'New Order Notification',
-        html: '<p>New order received</p>',
-      });
+      // Email events will be published to queue
       mockFooterSettingsService.getFooterSettings.mockResolvedValue({
         id: 'footer-1',
         contactEmail: 'admin@example.com',
@@ -276,7 +268,6 @@ describe('OrdersService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      mockEmailService.sendEmail.mockResolvedValue(true);
 
       const result = await service.create(createOrderDto, 'user-1');
 
@@ -334,12 +325,6 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
-        subject: 'Order Confirmation',
-        html: '<p>Order confirmed</p>',
-      });
-      mockEmailService.sendEmail.mockResolvedValue(true);
-
       const result = await service.create(createOrderDto, undefined);
 
       expect(result).toHaveProperty('orderNumber');
@@ -379,12 +364,6 @@ describe('OrdersService', () => {
           },
         });
       });
-      mockEmailTemplateService.getSimplifiedOrderConfirmationTemplate.mockReturnValue({
-        subject: 'Order Confirmation',
-        html: '<p>Order confirmed</p>',
-      });
-      mockEmailService.sendEmail.mockResolvedValue(true);
-
       const result = await service.create(createOrderDto, 'user-1');
 
       expect(result).toHaveProperty('orderNumber');
@@ -596,17 +575,13 @@ describe('OrdersService', () => {
         status: OrderStatus.SHIPPED,
         trackingNumber: 'TRACK-123',
       });
-      mockEmailTemplateService.getSimplifiedShippingNotificationTemplate.mockReturnValue({
-        subject: 'Order Shipped',
-        html: '<p>Your order has been shipped</p>',
-      });
-      mockEmailService.sendEmail.mockResolvedValue(true);
+      // Email events will be published to queue
 
       const result = await service.updateStatus('order-1', updateStatusDto);
 
       expect(result.status).toBe(OrderStatus.SHIPPED);
       expect(result.trackingNumber).toBe('TRACK-123');
-      expect(mockEmailService.sendEmail).toHaveBeenCalled();
+      expect(mockEmailEventPublisher.sendShippingNotification).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if order not found', async () => {

@@ -15,8 +15,7 @@ import {
   RefreshTokenStore,
 } from './entities/refresh-token.entity';
 import { User, UserRole } from '@prisma/client';
-import { EmailService } from '../notifications/services/email.service';
-import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { EmailEventPublisher } from '../email-queue/services/email-event-publisher.service';
 import { OAuthUserData, AuthResponse } from './dto/oauth-user.dto';
 
 @Injectable()
@@ -25,8 +24,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private emailService: EmailService,
-    private emailTemplateService: EmailTemplateService,
+    private emailEventPublisher: EmailEventPublisher,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -69,29 +67,24 @@ export class AuthService {
   }
 
   /**
-   * Send welcome email to new user
+   * Send welcome email to new user using event publisher
    */
   private async sendWelcomeEmail(user: User) {
     try {
       const locale = 'en'; // Default to English
-      const emailData = {
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email,
-      };
+      const userName = `${user.firstName} ${user.lastName}`;
 
-      const template = this.emailTemplateService.getWelcomeEmailTemplate(
-        emailData,
-        locale,
+      // Publish welcome email event to queue
+      const jobId = await this.emailEventPublisher.sendWelcomeEmail(
+        user.id,
+        user.email,
+        userName,
+        locale
       );
 
-      await this.emailService.sendEmail({
-        to: user.email,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
+      console.log(`Welcome email event published for user ${user.email} (Job ID: ${jobId})`);
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      console.error('Failed to publish welcome email event:', error);
     }
   }
 
@@ -340,30 +333,23 @@ export class AuthService {
   }
 
   /**
-   * Send password reset email
+   * Send password reset email using event publisher
    */
   private async sendPasswordResetEmail(user: User, resetToken: string) {
     try {
       const locale = 'en'; // Default to English
-      const emailData = {
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email,
-        resetToken,
-      };
 
-      const template = this.emailTemplateService.getPasswordResetTemplate(
-        emailData,
-        locale,
+      // Publish password reset email event to queue
+      const jobId = await this.emailEventPublisher.sendPasswordReset(
+        user.id,
+        user.email,
+        resetToken,
+        locale
       );
 
-      await this.emailService.sendEmail({
-        to: user.email,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
+      console.log(`Password reset email event published for user ${user.email} (Job ID: ${jobId})`);
     } catch (error) {
-      console.error('Failed to send password reset email:', error);
+      console.error('Failed to publish password reset email event:', error);
     }
   }
 }

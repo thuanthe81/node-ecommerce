@@ -27,6 +27,7 @@ import { PaymentSettingsModule } from './payment-settings/payment-settings.modul
 import { FooterSettingsModule } from './footer-settings/footer-settings.module';
 import { ContentMediaModule } from './content-media/content-media.module';
 import { BlogCategoryModule } from './blog-category/blog-category.module';
+import { EmailQueueModule } from './email-queue/email-queue.module';
 import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware';
 
 @Module({
@@ -62,6 +63,7 @@ import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware'
     FooterSettingsModule,
     ContentMediaModule,
     BlogCategoryModule,
+    EmailQueueModule,
   ],
   controllers: [AppController],
   providers: [

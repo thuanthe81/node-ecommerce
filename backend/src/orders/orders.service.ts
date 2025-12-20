@@ -10,8 +10,7 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
-import { EmailService } from '../notifications/services/email.service';
-import { EmailTemplateService } from '../notifications/services/email-template.service';
+import { EmailEventPublisher } from '../email-queue/services/email-event-publisher.service';
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
@@ -25,8 +24,7 @@ import { ShippingService } from '../shipping/shipping.service';
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
-    private emailService: EmailService,
-    private emailTemplateService: EmailTemplateService,
+    private emailEventPublisher: EmailEventPublisher,
     private footerSettingsService: FooterSettingsService,
     private emailAttachmentService: EmailAttachmentService,
     private resendEmailHandlerService: ResendEmailHandlerService,
@@ -288,652 +286,94 @@ export class OrdersService {
       return newOrder;
     });
 
-    // Send order confirmation email
+    // Send order confirmation email using event publisher
     await this.sendOrderConfirmationEmail(order, locale);
 
-    // Send admin notification email
+    // Send admin notification email using event publisher
     await this.sendAdminOrderNotification(order, locale);
 
     return order;
   }
 
   /**
-   * Send order confirmation email to customer with PDF attachment
+   * Send order confirmation email to customer using event publisher
    *
-   * Generates a professional PDF document containing complete order details and sends it
-   * as an attachment with a simplified HTML email. This approach eliminates swaks syntax
-   * errors while providing customers with comprehensive, printable order records.
+   * Publishes an order confirmation event to the email queue for asynchronous processing.
+   * The email worker will handle PDF generation and email delivery.
    *
    * @param order - The order object with items, addresses, and totals
-   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   * @param locale - Language locale for the email
+   * @returns Promise<void> - Resolves when event is published to queue
    *
    * @example
    * ```typescript
    * // Automatically called after order creation
-   * await this.sendOrderConfirmationEmail(order);
+   * await this.sendOrderConfirmationEmail(order, locale);
    * ```
    *
    * @remarks
-   * - Uses EmailAttachmentService to generate PDF and send simplified email
-   * - Defaults to English locale (can be enhanced to use customer preference)
-   * - Logs success/failure without throwing exceptions
-   * - Includes comprehensive order information in PDF format
-   * - Handles PDF generation failures gracefully with fallback notifications
+   * - Uses EmailEventPublisher to queue order confirmation event
+   * - Email processing happens asynchronously in background worker
+   * - Logs success/failure of event publishing
+   * - Actual email delivery is handled by EmailWorker service
    */
   private async sendOrderConfirmationEmail(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
     try {
+      const customerName = order.shippingAddress?.fullName || order.email || 'Customer';
 
-      // Convert order data to PDF format
-      const orderPDFData = await this.convertOrderToPDFData(order, locale);
-
-      // Send email with PDF attachment using the new system
-      const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
+      // Publish order confirmation event to queue
+      const jobId = await this.emailEventPublisher.sendOrderConfirmation(
+        order.id,
+        order.orderNumber,
         order.email,
-        orderPDFData,
+        customerName,
         locale
       );
 
-      if (result.success) {
-        console.log(`Order confirmation email with PDF sent to ${order.email} for order ${order.orderNumber}`);
-      } else {
-        console.warn(`Failed to send order confirmation email with PDF to ${order.email} for order ${order.orderNumber}: ${result.error}`);
-
-        // Fallback to original email system if PDF attachment fails
-        await this.sendFallbackOrderConfirmationEmail(order, locale);
-      }
+      console.log(`Order confirmation event published for order ${order.orderNumber} (Job ID: ${jobId})`);
     } catch (error) {
       // Log error but don't fail the order creation
-      console.error(`Failed to send order confirmation email for order ${order.orderNumber}:`, error);
-
-      // Attempt fallback email without PDF
-      try {
-        await this.sendFallbackOrderConfirmationEmail(order, locale);
-      } catch (fallbackError) {
-        console.error(`Fallback email also failed for order ${order.orderNumber}:`, fallbackError);
-      }
+      console.error(`Failed to publish order confirmation event for order ${order.orderNumber}:`, error);
     }
-  }
-
-  /**
-   * Convert order data to PDF data format with comprehensive validation and edge case handling
-   * @param order - The order object from database
-   * @param locale - Language locale for the PDF
-   * @returns Promise<OrderPDFData> - Formatted data for PDF generation
-   */
-  private async convertOrderToPDFData(order: any, locale: 'en' | 'vi'): Promise<OrderPDFData> {
-    // Validate order data before conversion
-    this.validateOrderDataForPDF(order);
-
-    // Convert address data with fallback handling for missing data
-    const billingAddress: AddressData = this.convertAddressData(
-      order.billingAddress,
-      'Billing Address Not Available',
-      locale
-    );
-
-    const shippingAddress: AddressData = this.convertAddressData(
-      order.shippingAddress,
-      'Shipping Address Not Available',
-      locale
-    );
-
-    // Convert order items with special handling for different order types
-    const items: OrderItemData[] = this.convertOrderItems(order.items, locale);
-
-    // Convert payment method data with comprehensive payment type support
-    const paymentMethod: PaymentMethodData = await this.convertPaymentMethodData(
-      order.paymentMethod,
-      order.paymentStatus,
-      locale
-    );
-
-    // Convert shipping method data with enhanced shipping option support
-    const shippingMethod: ShippingMethodData = await this.convertShippingMethodData(
-      order.shippingMethod,
-      order.status,
-      locale
-    );
-
-    // Get business info using the common service
-    const businessInfo: BusinessInfoData = await this.businessInfoService.getBusinessInfo(locale);
-
-    // Handle special order types and statuses
-    const orderDate = this.formatOrderDate(order.createdAt, locale);
-    const customerInfo = this.extractCustomerInfo(order, shippingAddress);
-
-    return {
-      orderNumber: order.orderNumber || 'N/A',
-      orderDate,
-      customerInfo,
-      billingAddress,
-      shippingAddress,
-      items,
-      pricing: {
-        subtotal: Number(order.subtotal) || 0,
-        shippingCost: Number(order.shippingCost) || 0,
-        taxAmount: Number(order.taxAmount) || 0,
-        discountAmount: Number(order.discountAmount) || 0,
-        total: Number(order.total) || 0,
-      },
-      paymentMethod,
-      shippingMethod,
-      businessInfo,
-      locale,
-    };
-  }
-
-  /**
-   * Validate order data before PDF generation
-   * @param order - Order object to validate
-   * @throws Error if critical data is missing
-   */
-  private validateOrderDataForPDF(order: any): void {
-    const errors: string[] = [];
-
-    if (!order) {
-      throw new Error('Order data is required for PDF generation');
-    }
-
-    if (!order.orderNumber) {
-      errors.push('Order number is missing');
-    }
-
-    if (!order.email) {
-      errors.push('Customer email is missing');
-    }
-
-    if (!order.items || !Array.isArray(order.items) || order.items.length === 0) {
-      errors.push('Order must contain at least one item');
-    }
-
-    if (!order.shippingAddress) {
-      errors.push('Shipping address is required');
-    }
-
-    if (!order.billingAddress) {
-      errors.push('Billing address is required');
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Order data validation failed: ${errors.join(', ')}`);
-    }
-  }
-
-  /**
-   * Convert address data with fallback handling
-   * @param address - Address object from order
-   * @param fallbackName - Fallback name if address is missing
-   * @param locale - Language locale
-   * @returns AddressData with fallback values
-   */
-  private convertAddressData(
-    address: any,
-    fallbackName: string,
-    locale: 'en' | 'vi'
-  ): AddressData {
-    if (!address) {
-      const notAvailable = locale === 'vi' ? 'Không có thông tin' : 'Not Available';
-      return {
-        fullName: fallbackName,
-        addressLine1: notAvailable,
-        city: notAvailable,
-        state: notAvailable,
-        postalCode: notAvailable,
-        country: notAvailable,
-      };
-    }
-
-    return {
-      fullName: address.fullName || fallbackName,
-      addressLine1: address.addressLine1 || (locale === 'vi' ? 'Không có địa chỉ' : 'No address provided'),
-      addressLine2: address.addressLine2 || undefined,
-      city: address.city || (locale === 'vi' ? 'Không xác định' : 'Unknown'),
-      state: address.state || (locale === 'vi' ? 'Không xác định' : 'Unknown'),
-      postalCode: address.postalCode || '00000',
-      country: address.country || (locale === 'vi' ? 'Việt Nam' : 'Vietnam'),
-      phone: address.phone || undefined,
-    };
-  }
-
-  /**
-   * Convert order items with special handling for different order types
-   * @param items - Array of order items
-   * @param locale - Language locale
-   * @returns Array of OrderItemData with proper handling for all item types
-   */
-  private convertOrderItems(items: any[], locale: 'en' | 'vi'): OrderItemData[] {
-    if (!items || !Array.isArray(items)) {
-      return [];
-    }
-
-    return items.map((item: any, index: number) => {
-      // Handle zero-price products
-      const unitPrice = Number(item.price) || 0;
-      const quantity = Number(item.quantity) || 1;
-      const totalPrice = Number(item.total) || (unitPrice * quantity);
-
-      // Handle missing product names
-      let itemName = '';
-      if (locale === 'vi' && item.productNameVi) {
-        itemName = item.productNameVi;
-      } else if (item.productNameEn) {
-        itemName = item.productNameEn;
-      } else if (item.productNameVi) {
-        itemName = item.productNameVi;
-      } else {
-        itemName = locale === 'vi' ? `Sản phẩm ${index + 1}` : `Product ${index + 1}`;
-      }
-
-      // Handle missing or incomplete product data
-      const description = item.product?.descriptionEn ||
-                         item.product?.descriptionVi ||
-                         (locale === 'vi' ? 'Không có mô tả' : 'No description available');
-
-      // Handle product images
-      let imageUrl: string | undefined;
-      if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
-        imageUrl = item.product.images[0].url;
-      }
-
-      return {
-        id: item.id || `item-${index}`,
-        name: itemName,
-        description: description,
-        sku: item.sku || `SKU-${index + 1}`,
-        quantity: quantity,
-        unitPrice: unitPrice,
-        totalPrice: totalPrice,
-        imageUrl: imageUrl,
-        category: item.product?.category?.nameEn ||
-                 item.product?.category?.nameVi ||
-                 (locale === 'vi' ? 'Khác' : 'Other'),
-      };
-    });
-  }
-
-  /**
-   * Convert payment method data with comprehensive payment type support
-   * @param paymentMethod - Payment method string from order
-   * @param paymentStatus - Payment status from order
-   * @param locale - Language locale
-   * @returns PaymentMethodData with complete payment information
-   */
-  private async convertPaymentMethodData(
-    paymentMethod: string,
-    paymentStatus: string,
-    locale: 'en' | 'vi'
-  ): Promise<PaymentMethodData> {
-    const method = (paymentMethod || 'bank_transfer').toLowerCase();
-    const type = this.mapPaymentMethodType(method);
-
-    const paymentData: PaymentMethodData = {
-      type,
-      displayName: this.getPaymentMethodDisplayName(method, locale),
-      details: this.getPaymentMethodDetails(method, locale),
-      status: this.mapPaymentStatus(paymentStatus),
-    };
-
-    // Add specific payment method enhancements
-    if (type === 'bank_transfer') {
-      // For bank transfers, we could enhance with actual bank details
-      // This would typically come from payment settings
-      paymentData.instructions = locale === 'vi'
-        ? 'Vui lòng chuyển khoản theo thông tin được cung cấp và gửi ảnh chụp biên lai để xác nhận.'
-        : 'Please transfer payment according to the provided information and send receipt photo for confirmation.';
-    } else if (type === 'cash_on_delivery') {
-      paymentData.instructions = locale === 'vi'
-        ? 'Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.'
-        : 'Pay with cash upon delivery. Please prepare exact amount.';
-    } else if (type === 'qr_code') {
-      paymentData.instructions = locale === 'vi'
-        ? 'Quét mã QR bằng ứng dụng ngân hàng để thanh toán.'
-        : 'Scan QR code with your banking app to make payment.';
-    }
-
-    return paymentData;
-  }
-
-  /**
-   * Convert shipping method data with enhanced shipping option support
-   * Fetches localized shipping method details from shipping service to ensure consistency
-   * @param shippingMethod - Shipping method string from order
-   * @param orderStatus - Current order status
-   * @param locale - Language locale
-   * @returns ShippingMethodData with complete shipping information
-   */
-  private async convertShippingMethodData(
-    shippingMethod: string,
-    orderStatus: string,
-    locale: 'en' | 'vi'
-  ): Promise<ShippingMethodData> {
-    const method = (shippingMethod || 'standard').toLowerCase();
-
-    // Try to get localized shipping method details from shipping service
-    // This ensures consistency with the checkout flow
-    let localizedName = this.getShippingMethodDisplayName(method, locale);
-    let localizedDescription = this.getShippingMethodDescription(method, locale);
-
-    try {
-      const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(method, locale);
-
-      // Use the localized data from shipping service if available
-      if (shippingMethodDetails) {
-        localizedName = shippingMethodDetails.name;
-        localizedDescription = shippingMethodDetails.description;
-      }
-    } catch (error) {
-      // If fetching fails, fall back to the hardcoded data
-      console.warn(`Failed to fetch localized shipping method data for ${method}: ${error.message}. Using fallback data.`);
-    }
-
-    const shippingData: ShippingMethodData = {
-      name: localizedName,
-      description: localizedDescription,
-    };
-
-    // Add estimated delivery based on shipping method
-    if (method.includes('standard')) {
-      shippingData.estimatedDelivery = locale === 'vi' ? '3-5 ngày làm việc' : '3-5 business days';
-    } else if (method.includes('express')) {
-      shippingData.estimatedDelivery = locale === 'vi' ? '1-2 ngày làm việc' : '1-2 business days';
-    } else if (method.includes('overnight')) {
-      shippingData.estimatedDelivery = locale === 'vi' ? 'Trong ngày' : 'Same day';
-    } else {
-      shippingData.estimatedDelivery = locale === 'vi' ? '3-7 ngày làm việc' : '3-7 business days';
-    }
-
-    // Add tracking information if order is shipped
-    if (orderStatus && orderStatus.toLowerCase() === 'shipped') {
-      // In a real implementation, this would come from the order tracking system
-      shippingData.trackingNumber = 'Will be provided when available';
-      shippingData.carrier = 'Local Carrier';
-    }
-
-    return shippingData;
   }
 
 
 
   /**
-   * Format order date based on locale
-   * @param createdAt - Order creation date
-   * @param locale - Language locale
-   * @returns Formatted date string
-   */
-  private formatOrderDate(createdAt: Date, locale: 'en' | 'vi'): string {
-    if (!createdAt) {
-      return locale === 'vi' ? 'Không xác định' : 'Unknown';
-    }
-
-    const date = new Date(createdAt);
-    if (locale === 'vi') {
-      return date.toLocaleDateString('vi-VN');
-    } else {
-      return date.toLocaleDateString('en-US');
-    }
-  }
-
-  /**
-   * Extract customer information with fallback handling
-   * @param order - Order object
-   * @param shippingAddress - Shipping address data
-   * @returns Customer information object
-   */
-  private extractCustomerInfo(order: any, shippingAddress: AddressData): {
-    name: string;
-    email: string;
-    phone?: string;
-  } {
-    return {
-      name: shippingAddress.fullName || order.email || 'Customer',
-      email: order.email || 'no-email@example.com',
-      phone: shippingAddress.phone || order.shippingAddress?.phone || undefined,
-    };
-  }
-
-  /**
-   * Map payment status to standardized format
-   * @param paymentStatus - Payment status from order
-   * @returns Standardized payment status
-   */
-  private mapPaymentStatus(paymentStatus: string): 'pending' | 'completed' | 'failed' {
-    if (!paymentStatus) return 'pending';
-
-    const status = paymentStatus.toLowerCase();
-    if (status.includes('completed') || status.includes('paid') || status.includes('success')) {
-      return 'completed';
-    }
-    if (status.includes('failed') || status.includes('error') || status.includes('declined')) {
-      return 'failed';
-    }
-    return 'pending';
-  }
-
-  /**
-   * Get display name for shipping method
-   * @param shippingMethod - Shipping method string
-   * @param locale - Language locale
-   * @returns Display name for shipping method
-   */
-  private getShippingMethodDisplayName(shippingMethod: string, locale: 'en' | 'vi'): string {
-    return this.translationService.translateShippingMethod(shippingMethod, locale);
-  }
-
-  /**
-   * Send fallback order confirmation email without PDF attachment
-   * @param order - The order object
-   * @param locale - Language locale
-   */
-  private async sendFallbackOrderConfirmationEmail(order: any, locale: 'en' | 'vi'): Promise<void> {
-    try {
-      console.log(`Sending fallback order confirmation email for order ${order.orderNumber}`);
-
-      const customerName = order.shippingAddress.fullName;
-
-      const emailData = {
-        orderNumber: order.orderNumber,
-        customerName,
-        orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item: any) => ({
-          name: locale === 'vi' ? item.productNameVi : item.productNameEn,
-          quantity: item.quantity,
-          price: Number(item.price),
-        })),
-        subtotal: Number(order.subtotal),
-        shippingCost: Number(order.shippingCost),
-        taxAmount: Number(order.taxAmount),
-        discountAmount: Number(order.discountAmount),
-        total: Number(order.total),
-        shippingAddress: order.shippingAddress,
-      };
-
-      const template = this.emailTemplateService.getSimplifiedOrderConfirmationTemplate(
-        emailData,
-        locale,
-      );
-
-      const emailSent = await this.emailService.sendEmail({
-        to: order.email,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
-
-      if (emailSent) {
-        console.log(`Fallback order confirmation email sent to ${order.email} for order ${order.orderNumber}`);
-      } else {
-        console.warn(`Fallback order confirmation email also failed for ${order.email} for order ${order.orderNumber}`);
-      }
-    } catch (error) {
-      console.error(`Fallback order confirmation email failed for order ${order.orderNumber}:`, error);
-    }
-  }
-
-  /**
-   * Map payment method string to PaymentMethodData type
-   * @param paymentMethod - Payment method string from order
-   * @returns Mapped payment method type
-   */
-  private mapPaymentMethodType(paymentMethod: string): 'bank_transfer' | 'cash_on_delivery' | 'qr_code' {
-    const method = paymentMethod.toLowerCase();
-    if (method.includes('bank') || method.includes('transfer')) {
-      return 'bank_transfer';
-    }
-    if (method.includes('cash') || method.includes('cod')) {
-      return 'cash_on_delivery';
-    }
-    if (method.includes('qr')) {
-      return 'qr_code';
-    }
-    // Default to bank transfer for unknown methods
-    return 'bank_transfer';
-  }
-
-  /**
-   * Get display name for payment method
-   * @param paymentMethod - Payment method string
-   * @param locale - Language locale
-   * @returns Display name for payment method
-   */
-  private getPaymentMethodDisplayName(paymentMethod: string, locale: 'en' | 'vi'): string {
-    return this.translationService.translatePaymentMethod(paymentMethod, locale);
-  }
-
-  /**
-   * Get payment method details
-   * @param paymentMethod - Payment method string
-   * @param locale - Language locale
-   * @returns Payment method details
-   */
-  private getPaymentMethodDetails(paymentMethod: string, locale: 'en' | 'vi'): string {
-    return this.translationService.getPaymentMethodInstructions(paymentMethod, locale);
-  }
-
-  /**
-   * Get shipping method description
-   * @param shippingMethod - Shipping method string
-   * @param locale - Language locale
-   * @returns Shipping method description
-   */
-  private getShippingMethodDescription(shippingMethod: string, locale: 'en' | 'vi'): string {
-    return this.translationService.getShippingMethodDescription(shippingMethod, locale);
-  }
-
-  /**
-   * Send admin order notification email to shop owner
+   * Send admin order notification email using event publisher
    *
-   * Sends a comprehensive order notification to the admin email configured in footer settings.
-   * Includes all order details, customer information, and payment status for quick order review.
-   * Gracefully handles missing admin email configuration.
+   * Publishes an admin order notification event to the email queue for asynchronous processing.
+   * The email worker will handle fetching admin email from footer settings and sending the notification.
    *
-   * @param order - The order object with complete details including items, addresses, and customer info
+   * @param order - The order object with complete details
    * @param locale - Language locale for the email
-   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   * @returns Promise<void> - Resolves when event is published to queue
    *
    * @example
    * ```typescript
    * // Automatically called after order creation and customer email
-   * await this.sendAdminOrderNotification(order);
+   * await this.sendAdminOrderNotification(order, locale);
    * ```
    *
    * @remarks
-   * - Queries FooterSettingsService for admin email address
-   * - Skips sending if contactEmail is not configured (logs warning)
-   * - Includes customer name, email, phone, and all order items with SKUs
-   * - Uses localized shipping method data for consistency with checkout and PDFsws both shipping and billing addresses
-   * - Displays payment method, status, and customer notes
-   * - Uses English locale by default for admin emails
-   * - Email failures are logged but do not interrupt order processing
-   *
-   * @see FooterSettingsService.getFooterSettings
-   * @see EmailTemplateService.getAdminOrderNotificationTemplate
+   * - Uses EmailEventPublisher to queue admin order notification event
+   * - Email processing happens asynchronously in background worker
+   * - EmailWorker will handle admin email lookup and template generation
+   * - Logs success/failure of event publishing
    */
   private async sendAdminOrderNotification(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
     try {
-      // Query footer settings for admin email
-      const footerSettings = await this.footerSettingsService.getFooterSettings();
-
-      // Handle missing admin email gracefully
-      if (!footerSettings.contactEmail) {
-        console.warn(`Admin email not configured, skipping admin notification for order ${order.orderNumber}`);
-        return;
-      }
-
-      // Get localized shipping method data for consistency with checkout and PDFs
-      let localizedShippingMethod = order.shippingMethod;
-      try {
-        const shippingMethodDetails = await this.shippingService.getShippingMethodDetails(order.shippingMethod, locale);
-        if (shippingMethodDetails) {
-          localizedShippingMethod = shippingMethodDetails.name;
-        }
-      } catch (error) {
-        console.warn(`Failed to fetch localized shipping method data for admin email: ${error.message}. Using order data as fallback.`);
-      }
-
-      // Prepare admin email data with all required fields
-      const adminEmailData = {
-        orderNumber: order.orderNumber,
-        orderDate: order.createdAt.toLocaleDateString(),
-        customerName: order.shippingAddress.fullName,
-        customerEmail: order.email,
-        customerPhone: order.shippingAddress.phone,
-        items: order.items.map((item: any) => ({
-          nameEn: item.productNameEn,
-          nameVi: item.productNameVi,
-          sku: item.sku,
-          quantity: item.quantity,
-          price: Number(item.price),
-          total: Number(item.total),
-        })),
-        subtotal: Number(order.subtotal),
-        shippingCost: Number(order.shippingCost),
-        shippingMethod: localizedShippingMethod,
-        taxAmount: Number(order.taxAmount),
-        discountAmount: Number(order.discountAmount),
-        total: Number(order.total),
-        shippingAddress: {
-          fullName: order.shippingAddress.fullName,
-          phone: order.shippingAddress.phone,
-          addressLine1: order.shippingAddress.addressLine1,
-          addressLine2: order.shippingAddress.addressLine2,
-          city: order.shippingAddress.city,
-          state: order.shippingAddress.state,
-          postalCode: order.shippingAddress.postalCode,
-          country: order.shippingAddress.country,
-        },
-        billingAddress: {
-          fullName: order.billingAddress.fullName,
-          phone: order.billingAddress.phone,
-          addressLine1: order.billingAddress.addressLine1,
-          addressLine2: order.billingAddress.addressLine2,
-          city: order.billingAddress.city,
-          state: order.billingAddress.state,
-          postalCode: order.billingAddress.postalCode,
-          country: order.billingAddress.country,
-        },
-        paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus,
-        notes: order.notes,
-      };
-
-      // Generate simplified admin email template
-      const template = this.emailTemplateService.getSimplifiedAdminOrderNotificationTemplate(
-        adminEmailData,
-        locale,
+      // Publish admin order notification event to queue
+      const jobId = await this.emailEventPublisher.sendAdminOrderNotification(
+        order.id,
+        order.orderNumber,
+        locale
       );
 
-      // Send email to admin
-      await this.emailService.sendEmail({
-        to: footerSettings.contactEmail,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
-
-      console.log(`Admin notification sent to ${footerSettings.contactEmail} for order ${order.orderNumber}`);
+      console.log(`Admin order notification event published for order ${order.orderNumber} (Job ID: ${jobId})`);
     } catch (error) {
       // Log error but don't fail the order creation
-      console.error(`Failed to send admin notification for order ${order.orderNumber}:`, error);
+      console.error(`Failed to publish admin order notification event for order ${order.orderNumber}:`, error);
     }
   }
 
@@ -1305,13 +745,13 @@ export class OrdersService {
   }
 
   /**
-   * Send shipping notification email to customer
+   * Send shipping notification email using event publisher
    *
-   * Notifies the customer that their order has been shipped.
-   * Includes tracking number if available.
+   * Publishes a shipping notification event to the email queue for asynchronous processing.
+   * The email worker will handle template generation and email delivery.
    *
    * @param order - The order object with shipping details
-   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   * @returns Promise<void> - Resolves when event is published to queue
    *
    * @example
    * ```typescript
@@ -1322,65 +762,38 @@ export class OrdersService {
    * ```
    *
    * @remarks
-   * - Uses EmailTemplateService to generate shipping notification template
-   * - Includes tracking number if available in order data
-   * - Email failures are logged but do not interrupt status update
+   * - Uses EmailEventPublisher to queue shipping notification event
+   * - Email processing happens asynchronously in background worker
+   * - Tracking number can be included if available
+   * - Logs success/failure of event publishing
    */
   private async sendShippingNotificationEmail(order: any): Promise<void> {
     try {
-      const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English
-      const isVietnamese = locale === 'vi';
+      const trackingNumber = undefined; // TODO: Add tracking number support
 
-      const emailData = {
-        orderNumber: order.orderNumber,
-        customerName,
-        orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item: any) => ({
-          name: isVietnamese ? item.productNameVi : item.productNameEn,
-          quantity: item.quantity,
-          price: Number(item.price),
-        })),
-        subtotal: Number(order.subtotal),
-        shippingCost: Number(order.shippingCost),
-        taxAmount: Number(order.taxAmount),
-        discountAmount: Number(order.discountAmount),
-        total: Number(order.total),
-        shippingAddress: order.shippingAddress,
-        trackingNumber: undefined,
-      };
+      // Publish shipping notification event to queue
+      const jobId = await this.emailEventPublisher.sendShippingNotification(
+        order.id,
+        order.orderNumber,
+        trackingNumber,
+        locale
+      );
 
-      const template =
-        this.emailTemplateService.getSimplifiedShippingNotificationTemplate(
-          emailData,
-          locale,
-        );
-
-      const emailSent = await this.emailService.sendEmail({
-        to: order.email,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
-
-      if (emailSent) {
-        console.log(`Shipping notification email sent to ${order.email} for order ${order.orderNumber}`);
-      } else {
-        console.warn(`Failed to send shipping notification email to ${order.email} for order ${order.orderNumber}`);
-      }
+      console.log(`Shipping notification event published for order ${order.orderNumber} (Job ID: ${jobId})`);
     } catch (error) {
-      console.error(`Failed to send shipping notification email for order ${order.orderNumber}:`, error);
+      console.error(`Failed to publish shipping notification event for order ${order.orderNumber}:`, error);
     }
   }
 
   /**
-   * Send order status update email to customer
+   * Send order status update email using event publisher
    *
-   * Notifies the customer when their order status changes.
-   * Includes status-specific messages explaining what the status means.
+   * Publishes an order status update event to the email queue for asynchronous processing.
+   * The email worker will handle template generation and email delivery.
    *
    * @param order - The order object with current status
-   * @returns Promise<void> - Resolves when email sending is complete (success or failure)
+   * @returns Promise<void> - Resolves when event is published to queue
    *
    * @example
    * ```typescript
@@ -1389,55 +802,26 @@ export class OrdersService {
    * ```
    *
    * @remarks
-   * - Uses EmailTemplateService to generate status update template
-   * - Includes localized status names and status-specific messages
-   * - Supports statuses: PENDING, PROCESSING, DELIVERED, CANCELLED, REFUNDED
-   * - Email failures are logged but do not interrupt status update
+   * - Uses EmailEventPublisher to queue order status update event
+   * - Email processing happens asynchronously in background worker
+   * - EmailWorker will handle status-specific template generation
+   * - Logs success/failure of event publishing
    */
   private async sendOrderStatusUpdateEmail(order: any): Promise<void> {
     try {
-      const customerName = order.shippingAddress.fullName;
       const locale = 'en' as 'en' | 'vi'; // Default to English
-      const isVietnamese = locale === 'vi';
 
-      const emailData = {
-        orderNumber: order.orderNumber,
-        customerName,
-        orderDate: order.createdAt.toLocaleDateString(),
-        items: order.items.map((item: any) => ({
-          name: isVietnamese ? item.productNameVi : item.productNameEn,
-          quantity: item.quantity,
-          price: Number(item.price),
-        })),
-        subtotal: Number(order.subtotal),
-        shippingCost: Number(order.shippingCost),
-        taxAmount: Number(order.taxAmount),
-        discountAmount: Number(order.discountAmount),
-        total: Number(order.total),
-        shippingAddress: order.shippingAddress,
-        status: order.status,
-      };
+      // Publish order status update event to queue
+      const jobId = await this.emailEventPublisher.sendOrderStatusUpdate(
+        order.id,
+        order.orderNumber,
+        order.status,
+        locale
+      );
 
-      const template =
-        this.emailTemplateService.getSimplifiedOrderStatusUpdateTemplate(
-          emailData,
-          locale,
-        );
-
-      const emailSent = await this.emailService.sendEmail({
-        to: order.email,
-        subject: template.subject,
-        html: template.html,
-        locale,
-      });
-
-      if (emailSent) {
-        console.log(`Order status update email sent to ${order.email} for order ${order.orderNumber} (status: ${order.status})`);
-      } else {
-        console.warn(`Failed to send order status update email to ${order.email} for order ${order.orderNumber}`);
-      }
+      console.log(`Order status update event published for order ${order.orderNumber} (status: ${order.status}) (Job ID: ${jobId})`);
     } catch (error) {
-      console.error(`Failed to send order status update email for order ${order.orderNumber}:`, error);
+      console.error(`Failed to publish order status update event for order ${order.orderNumber}:`, error);
     }
   }
 
