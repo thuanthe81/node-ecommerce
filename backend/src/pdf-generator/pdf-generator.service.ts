@@ -172,13 +172,41 @@ export class PDFGeneratorService {
 
       // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
       const optimizationStartTime = Date.now();
-      const { optimizedData, optimizations, sizeSavings } = await this.compressionService.optimizeOrderDataForPDF(orderData);
+      let optimizedData = orderData;
+      let optimizations: any[] = [];
+      let sizeSavings = 0;
+
+      try {
+        const optimizationResult = await this.compressionService.optimizeOrderDataForPDF(orderData);
+        optimizedData = optimizationResult.optimizedData;
+        optimizations = optimizationResult.optimizations;
+        sizeSavings = optimizationResult.sizeSavings;
+
+        this.logger.log(`Enhanced order PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}`);
+      } catch (optimizationError) {
+        this.logger.warn(`Image optimization failed, using original data: ${optimizationError.message}`);
+        // Continue with original data if optimization fails
+        optimizedData = orderData;
+        optimizations = [];
+        sizeSavings = 0;
+      }
+
       const optimizationEndTime = Date.now();
 
-      // Collect storage performance metrics
-      const storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
-
-      this.logger.log(`Enhanced order PDF optimization completed. Optimizations: ${optimizations.length}, Size savings: ${this.formatFileSize(sizeSavings)}, Storage utilization: ${storageMetrics.storageUtilization.toFixed(1)}%`);
+      // Collect storage performance metrics (with fallback)
+      let storageMetrics;
+      try {
+        storageMetrics = await this.compressionService.getCompressedImageStorageMetrics();
+      } catch (metricsError) {
+        this.logger.warn(`Failed to get storage metrics: ${metricsError.message}`);
+        storageMetrics = {
+          totalStorageSize: 0,
+          totalCompressedImages: 0,
+          reuseRate: 0,
+          averageCompressionRatio: 0,
+          storageUtilization: 0,
+        };
+      }
 
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);

@@ -211,7 +211,7 @@ export class EmailService {
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
       this.logger.debug(`Executing swaks command: ${debugCommand}`);
 
-      await execAsync(command);
+      await execAsync(command, { maxBuffer: 4 * 1024 * 1024 });
 
       this.logger.log(
         `Email with ${attachments?.length || 0} attachment(s) sent successfully to ${to} with subject: "${subject}"`,

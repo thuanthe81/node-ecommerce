@@ -349,7 +349,11 @@ export class EmailAttachmentService {
         include: {
           items: {
             include: {
-              product: true,
+              product: {
+                include: {
+                  images: true,
+                }
+              },
             },
           },
           shippingAddress: true,
@@ -1393,7 +1397,7 @@ export class EmailAttachmentService {
         // Extract image URL properly
         let imageUrl: string | undefined;
         if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
-          imageUrl = item.product.images[0].url || item.product.images[0];
+          imageUrl = item.product.images[0].url;
         }
 
         return {

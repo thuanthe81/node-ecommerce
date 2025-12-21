@@ -645,8 +645,8 @@ export class PDFTemplateEngine {
       }
 
       .product-image {
-        width: 40px;
-        height: 40px;
+        width: 80px;
+        height: 80px;
         object-fit: cover;
         border-radius: 4px;
       }
@@ -790,6 +790,7 @@ export class PDFTemplateEngine {
 
     // Collect product images (skip if already base64)
     data.items.forEach(item => {
+      this.logger.debug(`imageUrl: ${item.imageUrl}`)
       if (item.imageUrl && typeof item.imageUrl === 'string' && !item.imageUrl.startsWith('data:')) {
         imageUrls.push(item.imageUrl);
         imageContentTypes.push('photo'); // Product images are typically photos
@@ -814,59 +815,39 @@ export class PDFTemplateEngine {
       return data;
     }
 
-    // Use enhanced image optimization with content-aware processing
+    // Use simple image optimization with fallback to avoid browser detachment
     const optimizedImageMap = new Map<string, string>();
 
     try {
-      // Process each image with enhanced optimization using PDFCompressionService
+      // Process each image with simple optimization (no complex compression service)
       for (let i = 0; i < imageUrls.length; i++) {
         const imageUrl = imageUrls[i];
         const contentType = imageContentTypes[i];
 
-        this.logger.debug(`Optimizing image ${i + 1}/${imageUrls.length}: ${imageUrl} (${contentType})`);
+        this.logger.debug(`Processing image ${i + 1}/${imageUrls.length}: ${imageUrl} (${contentType})`);
 
         try {
-          // Use the enhanced optimization from PDFCompressionService
-          const optimizationResult = await this.compressionService.optimizeImageForPDF(imageUrl, contentType);
+          // Use simple image converter instead of complex optimization
+          const base64Result = await this.imageConverter.convertImageToBase64(imageUrl);
 
-          if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
-            // Convert optimized buffer to base64 data URL
-            const base64 = optimizationResult.optimizedBuffer.toString('base64');
-            const mimeType = this.getMimeTypeFromFormat(optimizationResult.format);
-            const dataUrl = `data:${mimeType};base64,${base64}`;
-
-            optimizedImageMap.set(imageUrl, dataUrl);
-
-            this.logger.debug(
-              `Successfully optimized image: ${imageUrl} ` +
-              `(${optimizationResult.originalSize} → ${optimizationResult.optimizedSize} bytes, ` +
-              `${(optimizationResult.compressionRatio * 100).toFixed(1)}% reduction)`
-            );
+          if (base64Result) {
+            optimizedImageMap.set(imageUrl, base64Result);
+            this.logger.debug(`Successfully converted image: ${imageUrl}`);
           } else {
-            throw new Error(optimizationResult.error || 'Optimization failed without error message');
+            this.logger.warn(`Failed to convert image: ${imageUrl}, skipping`);
           }
         } catch (error) {
-          this.logger.warn(`Failed to optimize image ${imageUrl}, using fallback: ${error.message}`);
-
-          // Fallback to original image converter
-          const fallbackMap = await this.imageConverter.convertMultipleImages([imageUrl]);
-          const fallbackBase64 = fallbackMap.get(imageUrl);
-          if (fallbackBase64) {
-            optimizedImageMap.set(imageUrl, fallbackBase64);
-          }
+          this.logger.warn(`Failed to convert image ${imageUrl}, skipping: ${error.message}`);
+          // Continue with other images even if one fails
         }
       }
     } catch (error) {
-      this.logger.error(`Batch image optimization failed, using fallback conversion: ${error.message}`);
-
-      // Complete fallback to original method
-      const fallbackMap = await this.imageConverter.convertMultipleImages(imageUrls);
-      fallbackMap.forEach((base64, url) => {
-        optimizedImageMap.set(url, base64);
-      });
+      this.logger.error(`Batch image conversion failed: ${error.message}`);
+      // Return original data if all image processing fails
+      return data;
     }
 
-    // Create a copy of the data with optimized images
+    // Create a copy of the data with converted images
     const convertedData: OrderPDFData = {
       ...data,
       items: data.items.map(item => ({
@@ -889,7 +870,7 @@ export class PDFTemplateEngine {
       }
     };
 
-    this.logger.debug(`Converted and optimized ${optimizedImageMap.size} images to base64 for order ${data.orderNumber}`);
+    this.logger.debug(`Converted ${optimizedImageMap.size} images to base64 for order ${data.orderNumber}`);
     return convertedData;
   }
 

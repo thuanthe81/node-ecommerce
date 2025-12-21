@@ -81,8 +81,8 @@ export class PDFDeviceOptimizationService {
         }
 
         .product-image {
-          width: 30px;
-          height: 30px;
+          width: 60px;
+          height: 60px;
           align-self: center;
         }
 
@@ -197,8 +197,8 @@ export class PDFDeviceOptimizationService {
         }
 
         .product-image {
-          width: 50px;
-          height: 50px;
+          width: 80px;
+          height: 80px;
         }
 
         /* Enhanced QR code display */
