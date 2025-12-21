@@ -188,9 +188,6 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     this.worker.on('completed', (job) => {
       const processingTime = job.finishedOn ? job.finishedOn - job.processedOn! : 'unknown';
 
-      // Remove from processing jobs set for exactly-once guarantee
-      this.processingJobs.delete(job.id!);
-
       this.logger.log(
         `[${job.id}] Email completed: ${job.data.type} | ` +
         `Processing time: ${processingTime}ms | ` +
@@ -216,11 +213,6 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     this.worker.on('failed', (job, error) => {
       const isMaxRetries = job && job.attemptsMade >= (job.opts.attempts || 5) - 1;
       const isPermanent = error?.message?.startsWith('PERMANENT_ERROR:');
-
-      // Remove from processing jobs set
-      if (job?.id) {
-        this.processingJobs.delete(job.id);
-      }
 
       this.logger.error(
         `[${job?.id}] Email failed: ${job?.data?.type} | ` +
@@ -252,8 +244,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         `[${jobId}] Job stalled - will be retried by another worker | ` +
         `This ensures exactly-once processing in multi-worker scenarios`
       );
-      // Remove from processing jobs set as it will be picked up by another worker
-      this.processingJobs.delete(jobId);
+      // Job cleanup is handled in processEmailEventWithResilience finally block
     });
 
     this.worker.on('error', (error) => {
@@ -271,8 +262,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     });
 
     this.worker.on('active', (job) => {
-      // Track active jobs for exactly-once processing guarantee
-      this.processingJobs.add(job.id!);
+      // Job tracking is handled in processEmailEventWithResilience
       this.logger.debug(`[${job.id}] Job active - processing started`);
     });
 
@@ -374,6 +364,9 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
    * Wraps the main processing logic with exactly-once guarantees
    */
   private async processEmailEventWithResilience(job: Job<EmailEvent>): Promise<void> {
+    this.logger.log(`[${job.id}] processEmailEventWithResilience started`);
+    this.logger.log(`[${job.id}] Current processing jobs: [${Array.from(this.processingJobs).join(', ')}]`);
+
     // Check if we're shutting down
     if (this.isShuttingDown) {
       this.logger.warn(
@@ -387,19 +380,26 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       this.logger.warn(
         `[${job.id}] Job already being processed - skipping duplicate (exactly-once guarantee)`
       );
+      this.logger.warn(`[${job.id}] Processing jobs set contains: [${Array.from(this.processingJobs).join(', ')}]`);
       return; // Skip duplicate processing
     }
 
     // Mark job as being processed
+    this.logger.log(`[${job.id}] Adding job to processing set`);
     this.processingJobs.add(job.id!);
+    this.logger.log(`[${job.id}] Processing jobs set now contains: [${Array.from(this.processingJobs).join(', ')}]`);
 
     try {
       // Process the email event
+      this.logger.log(`[${job.id}] Calling processEmailEvent`);
       await this.processEmailEvent(job);
+      this.logger.log(`[${job.id}] processEmailEvent completed successfully`);
     } finally {
       // Ensure job is removed from processing set even if processing fails
       // (BullMQ will handle retries)
+      this.logger.log(`[${job.id}] Removing job from processing set`);
       this.processingJobs.delete(job.id!);
+      this.logger.log(`[${job.id}] Processing jobs set now contains: [${Array.from(this.processingJobs).join(', ')}]`);
     }
   }
 
@@ -597,9 +597,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
 
   /**
-   * Send order confirmation email
+   * Send order confirmation email with PDF attachment
    */
   private async sendOrderConfirmation(event: any): Promise<void> {
+    this.logger.log(`[sendOrderConfirmation] Starting for order: ${event.orderId}`);
+
     // Fetch full order data from database
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
@@ -610,12 +612,20 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
           },
         },
         shippingAddress: true,
+        billingAddress: true,
       },
     });
 
     if (!order) {
+      this.logger.error(`[sendOrderConfirmation] Order not found: ${event.orderId}`);
       throw new Error(`Order not found: ${event.orderId}`);
     }
+
+    this.logger.log(`[sendOrderConfirmation] Order found: ${order.orderNumber}, email: ${order.email}`);
+
+    // For now, send email without PDF attachment since we're avoiding circular dependency
+    // The resend functionality handles PDF attachments directly
+    this.logger.log(`[sendOrderConfirmation] Sending email without PDF attachment (avoiding circular dependency)`);
 
     // Generate email template
     const template = this.emailTemplateService.getOrderConfirmationTemplate(
@@ -623,7 +633,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       event.locale
     );
 
-    // Send email
+    // Send email without attachment
     const success = await this.emailService.sendEmail({
       to: order.email,
       subject: template.subject,
@@ -634,6 +644,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    this.logger.log(`[sendOrderConfirmation] Completed successfully without PDF for order: ${event.orderId}`);
   }
 
   /**
@@ -863,6 +875,101 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     if (!success) {
       throw new Error('Email service returned false');
+    }
+  }
+
+  /**
+   * Convert Prisma order data to PDF data format
+   */
+  private mapOrderToPDFData(order: any): any {
+    return {
+      orderNumber: order.orderNumber,
+      orderDate: order.createdAt.toISOString(),
+      customerInfo: {
+        name: order.shippingAddress?.fullName || 'Customer',
+        email: order.email,
+        phone: order.shippingAddress?.phone,
+      },
+      billingAddress: {
+        fullName: order.billingAddress?.fullName || order.shippingAddress?.fullName || 'Customer',
+        addressLine1: order.billingAddress?.addressLine1 || order.shippingAddress?.addressLine1 || '',
+        addressLine2: order.billingAddress?.addressLine2 || order.shippingAddress?.addressLine2,
+        city: order.billingAddress?.city || order.shippingAddress?.city || '',
+        state: order.billingAddress?.state || order.shippingAddress?.state || '',
+        postalCode: order.billingAddress?.postalCode || order.shippingAddress?.postalCode || '',
+        country: order.billingAddress?.country || order.shippingAddress?.country || 'VN',
+        phone: order.billingAddress?.phone || order.shippingAddress?.phone,
+      },
+      shippingAddress: {
+        fullName: order.shippingAddress?.fullName || 'Customer',
+        addressLine1: order.shippingAddress?.addressLine1 || '',
+        addressLine2: order.shippingAddress?.addressLine2,
+        city: order.shippingAddress?.city || '',
+        state: order.shippingAddress?.state || '',
+        postalCode: order.shippingAddress?.postalCode || '',
+        country: order.shippingAddress?.country || 'VN',
+        phone: order.shippingAddress?.phone,
+      },
+      items: order.items.map((item: any) => ({
+        id: item.id,
+        name: item.product?.name || 'Product',
+        description: item.product?.description,
+        sku: item.product?.sku,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalPrice: item.price * item.quantity,
+        imageUrl: item.product?.imageUrl,
+        category: item.product?.category,
+      })),
+      pricing: {
+        subtotal: order.subtotal || 0,
+        shippingCost: order.shippingCost || 0,
+        taxAmount: order.taxAmount || 0,
+        discountAmount: order.discountAmount || 0,
+        total: order.total,
+      },
+      paymentMethod: {
+        type: order.paymentMethod || 'bank_transfer',
+        displayName: this.getPaymentMethodDisplayName(order.paymentMethod),
+        status: order.paymentStatus || 'pending',
+      },
+      shippingMethod: {
+        name: order.shippingMethod || 'Standard Shipping',
+        description: 'Standard delivery',
+        estimatedDelivery: order.estimatedDelivery,
+        trackingNumber: order.trackingNumber,
+      },
+      businessInfo: {
+        companyName: 'Ala Craft',
+        contactEmail: 'lienhe@alacraft.com',
+        contactPhone: '+84 123 456 789',
+        website: 'https://alacraft.com',
+        address: {
+          fullName: 'Ala Craft',
+          addressLine1: '123 Đường ABC',
+          city: 'TP.HCM',
+          state: 'TP.HCM',
+          postalCode: '70000',
+          country: 'VN',
+        },
+      },
+      locale: 'vi',
+    };
+  }
+
+  /**
+   * Get display name for payment method
+   */
+  private getPaymentMethodDisplayName(paymentMethod: string): string {
+    switch (paymentMethod) {
+      case 'bank_transfer':
+        return 'Chuyển khoản ngân hàng';
+      case 'cash_on_delivery':
+        return 'Thanh toán khi nhận hàng';
+      case 'qr_code':
+        return 'Thanh toán QR Code';
+      default:
+        return 'Chuyển khoản ngân hàng';
     }
   }
 

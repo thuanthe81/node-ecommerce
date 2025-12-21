@@ -51,47 +51,91 @@ export class EmailService {
    * @returns Promise<boolean> - true if email sent successfully, false otherwise
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    this.logger.log(`[EmailService] Starting email send process to: ${options.to}`);
+
     try {
       const { to, subject, html } = options;
 
       // Validate email address before sending
       if (!this.isValidEmail(to)) {
-        this.logger.warn(`Invalid email address: ${to}. Skipping email send.`);
+        this.logger.warn(`[EmailService] Invalid email address: ${to}. Skipping email send.`);
         return false;
       }
 
-      // Get contact email from footer settings to use as "from" address
+      // Get contact email from footer settings to use as "from" address and SMTP user
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
+      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
       const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
       const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
-      const smtpUser = smtpFrom || process.env.SMTP_USER || '';
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
+      this.logger.log(`[EmailService] SMTP Configuration:`);
+      this.logger.log(`  - Server: ${smtpServer}`);
+      this.logger.log(`  - Port: ${smtpPort}`);
+      this.logger.log(`  - User: ${smtpUser}`);
+      this.logger.log(`  - Password: ${smtpPassword ? '[SET]' : '[NOT SET]'}`);
+      this.logger.log(`  - Footer Contact Email: ${footerSettings.contactEmail || '[NOT SET]'}`);
+
+      // Check if SMTP configuration is valid
+      if (!smtpServer || !smtpPort) {
+        this.logger.error(`[EmailService] Missing SMTP server configuration. Server: ${smtpServer}, Port: ${smtpPort}`);
+        return false;
+      }
+
+      if (!smtpUser || !smtpPassword) {
+        this.logger.error(`[EmailService] Missing SMTP authentication. User: ${smtpUser ? '[SET]' : '[NOT SET]'}, Password: ${smtpPassword ? '[SET]' : '[NOT SET]'}`);
+        return false;
+      }
+
+      // Validate SMTP user email format
+      if (!this.isValidEmail(smtpUser)) {
+        this.logger.error(`[EmailService] Invalid SMTP user email format: ${smtpUser}`);
+        return false;
+      }
+
+      // Simplify HTML content to avoid swaks syntax errors
+      const simplifiedHtml = this.simplifyHtmlForSwaks(html);
+      this.logger.log(`[EmailService] HTML simplified for swaks compatibility`);
+
       // Build swaks command with proper escaping
-      let command = `swaks --to "${to}" --server "${smtpServer}" --port "${smtpPort}" --h-Subject "${subject.replace(/"/g, '\\"')}"`;
+      let command = `swaks --to "${to}" --server "${smtpServer}" --port "${smtpPort}" --h-Subject "${this.escapeForShell(subject)}"`;
 
       // Add authentication if credentials are provided
       if (smtpUser && smtpPassword) {
         command += ` --tls --auth-user "${smtpUser}" --auth-password "${smtpPassword}"`;
       }
 
-      // Add HTML body
-      command += ` --body '${html.replace(/"/g, '\\"').replace(/'/g, "\\'")}' --add-header "MIME-Version: 1.0" --add-header "Content-Type: ${SYSTEM.MIME_TYPES.HTML}"`;
+      // Add HTML body with proper shell escaping
+      command += ` --body ${this.escapeHtmlForSwaks(simplifiedHtml)} --add-header "MIME-Version: 1.0" --add-header "Content-Type: ${SYSTEM.MIME_TYPES.HTML}"`;
 
-      await execAsync(command);
+      // Log the command for debugging (without sensitive info)
+      const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
+      this.logger.log(`[EmailService] Executing swaks command: ${debugCommand}`);
+
+      this.logger.log(`[EmailService] About to execute swaks command...`);
+      const result = await execAsync(command);
+      this.logger.log(`[EmailService] Swaks command executed successfully. Output: ${result.stdout || 'No output'}`);
+      if (result.stderr) {
+        this.logger.warn(`[EmailService] Swaks stderr: ${result.stderr}`);
+      }
 
       this.logger.log(
-        `Email sent successfully to ${to} with subject: "${subject}"`,
+        `[EmailService] Email sent successfully to ${to} with subject: "${subject}"`,
       );
       return true;
     } catch (error) {
       this.logger.error(
-        `Failed to send email to ${options.to} with subject "${options.subject}":`,
+        `[EmailService] Failed to send email to ${options.to} with subject "${options.subject}":`,
         error.message || error,
       );
+      if (error.stdout) {
+        this.logger.error(`[EmailService] Command stdout: ${error.stdout}`);
+      }
+      if (error.stderr) {
+        this.logger.error(`[EmailService] Command stderr: ${error.stderr}`);
+      }
       // Don't throw error to prevent email failures from breaking the application
       return false;
     }
@@ -112,14 +156,13 @@ export class EmailService {
         return false;
       }
 
-      // Get contact email from footer settings to use as "from" address
+      // Get contact email from footer settings to use as "from" address and SMTP user
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpFrom = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
+      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
       const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
       const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
-      const smtpUser = smtpFrom || process.env.SMTP_USER || '';
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
       // Build swaks command with proper escaping
@@ -162,7 +205,7 @@ export class EmailService {
 
       // When attachments are present, swaks handles MIME structure automatically
       // Just add the body content and let swaks create the multipart structure
-      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body '${simplifiedHtml.replace(/'/g, "'\\''")}'`;
+      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
 
       // Log the command for debugging (without sensitive info)
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
@@ -252,6 +295,44 @@ export class EmailService {
   }
 
   /**
+   * Escape string for shell command
+   * @param str - String to escape
+   * @returns Shell-escaped string
+   */
+  private escapeForShell(str: string): string {
+    // Replace double quotes with escaped double quotes
+    return str.replace(/"/g, '\\"');
+  }
+
+  /**
+   * Escape HTML content for swaks command using temporary file approach
+   * @param html - HTML content to escape
+   * @returns Properly escaped HTML for swaks
+   */
+  private escapeHtmlForSwaks(html: string): string {
+    // For complex HTML, use a temporary file approach
+    // This completely avoids shell escaping issues
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+
+    try {
+      // Create a temporary file with the HTML content
+      const tempDir = os.tmpdir();
+      const tempFile = path.join(tempDir, `swaks-body-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.html`);
+
+      fs.writeFileSync(tempFile, html, 'utf8');
+
+      // Return the file reference for swaks
+      return `"$(cat '${tempFile}' && rm '${tempFile}')"`;
+    } catch (error) {
+      // Fallback to simple escaping if file approach fails
+      this.logger.warn(`[EmailService] Temp file approach failed, using fallback escaping: ${error.message}`);
+      return `'${html.replace(/'/g, "'\"'\"'")}'`;
+    }
+  }
+
+  /**
    * Simplify HTML content to avoid swaks syntax errors
    * Enhanced version that handles more complex HTML structures
    * @param html - Original HTML content
@@ -269,38 +350,17 @@ export class EmailService {
     // Remove link tags (external stylesheets)
     simplified = simplified.replace(/<link[^>]*>/gi, '');
 
-    // Simplify complex style attributes - keep only basic ones
-    simplified = simplified.replace(/style="([^"]*)"/gi, (match, styleContent) => {
-      // Keep only basic styles that are safe for email
-      const safeStyles = styleContent
-        .split(';')
-        .filter((style: string) => {
-          const prop = style.trim().toLowerCase();
-          return prop.startsWith('color:') ||
-                 prop.startsWith('background-color:') ||
-                 prop.startsWith('font-family:') ||
-                 prop.startsWith('font-size:') ||
-                 prop.startsWith('font-weight:') ||
-                 prop.startsWith('text-align:') ||
-                 prop.startsWith('padding:') ||
-                 prop.startsWith('margin:') ||
-                 prop.startsWith('border:') ||
-                 prop.startsWith('width:') ||
-                 prop.startsWith('height:');
-        })
-        .join(';');
-
-      return safeStyles ? `style="${safeStyles}"` : '';
-    });
+    // Remove complex style attributes entirely - they cause the most issues
+    simplified = simplified.replace(/\s+style="[^"]*"/gi, '');
 
     // Remove complex class attributes
-    simplified = simplified.replace(/class="[^"]*"/gi, '');
+    simplified = simplified.replace(/\s+class="[^"]*"/gi, '');
 
     // Remove data attributes that might cause issues
-    simplified = simplified.replace(/data-[^=]*="[^"]*"/gi, '');
+    simplified = simplified.replace(/\s+data-[^=]*="[^"]*"/gi, '');
 
     // Remove onclick and other event handlers
-    simplified = simplified.replace(/on\w+="[^"]*"/gi, '');
+    simplified = simplified.replace(/\s+on\w+="[^"]*"/gi, '');
 
     // Remove comments
     simplified = simplified.replace(/<!--[\s\S]*?-->/g, '');
@@ -308,15 +368,18 @@ export class EmailService {
     // Remove empty attributes
     simplified = simplified.replace(/\s+[a-zA-Z-]+=""\s*/g, ' ');
 
-    // Clean up multiple spaces
+    // Clean up multiple spaces and newlines
     simplified = simplified.replace(/\s+/g, ' ');
+    simplified = simplified.replace(/\n+/g, ' ');
 
-    // Ensure proper encoding of special characters for swaks
-    simplified = simplified.replace(/'/g, '&#39;');
-    simplified = simplified.replace(/"/g, '&quot;');
-
-    // Remove any remaining problematic characters that might break swaks
+    // Remove any remaining problematic characters that might break shell commands
     simplified = simplified.replace(/[`$\\]/g, '');
+
+    // Remove curly braces that can cause shell issues
+    simplified = simplified.replace(/[{}]/g, '');
+
+    // Trim whitespace
+    simplified = simplified.trim();
 
     return simplified;
   }

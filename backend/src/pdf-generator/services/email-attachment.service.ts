@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { EmailService } from '../../notifications/services/email.service';
+import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
 import { PDFGeneratorService } from '../pdf-generator.service';
 import { DocumentStorageService } from './document-storage.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
@@ -48,6 +49,7 @@ export class EmailAttachmentService {
 
   constructor(
     private emailService: EmailService,
+    private emailEventPublisher: EmailEventPublisher,
     private pdfGeneratorService: PDFGeneratorService,
     private documentStorageService: DocumentStorageService,
     @Inject(forwardRef(() => PDFErrorHandlerService))
@@ -186,7 +188,7 @@ export class EmailAttachmentService {
   }
 
   /**
-   * Resend order confirmation email with PDF
+   * Resend order confirmation email with PDF using async email queue
    * @param orderNumber - Order number to resend
    * @param customerEmail - Customer's email address
    * @param locale - Language locale
@@ -202,7 +204,7 @@ export class EmailAttachmentService {
 
     try {
       this.logger.log(
-        `Processing resend request for order ${orderNumber} to ${customerEmail}`,
+        `Processing async resend request for order ${orderNumber} to ${customerEmail}`,
       );
 
       // Check rate limiting first
@@ -228,165 +230,183 @@ export class EmailAttachmentService {
         locale,
         'started',
         {
-          emailTemplate: 'simplified',
+          emailTemplate: 'async_queue',
           deliveryAttempts: 1,
           finalDeliveryStatus: 'queued',
         },
       );
 
-      // Fetch order data from database
-      const orderData = await this.fetchOrderDataForResend(
-        orderNumber,
+      // Validate order exists and email matches
+      const order = await this.prismaService.order.findUnique({
+        where: { orderNumber },
+        select: {
+          id: true,
+          email: true,
+          orderNumber: true,
+          status: true,
+          createdAt: true,
+          shippingAddress: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        const error = 'Order not found';
+        if (auditId) {
+          await this.auditService.logEmailSending(
+            orderNumber,
+            customerEmail,
+            locale,
+            'failed',
+            {
+              emailTemplate: 'async_queue',
+              deliveryAttempts: 1,
+              finalDeliveryStatus: 'failed',
+            },
+            Date.now() - startTime,
+            error,
+          );
+        }
+
+        return {
+          success: false,
+          message:
+            locale === 'vi'
+              ? 'Không tìm thấy đơn hàng'
+              : 'Order not found',
+          error,
+        };
+      }
+
+      // Verify email matches order email (case-insensitive)
+      if (order.email.toLowerCase() !== customerEmail.toLowerCase()) {
+        const error = 'Email address does not match order email';
+        if (auditId) {
+          await this.auditService.logEmailSending(
+            orderNumber,
+            customerEmail,
+            locale,
+            'failed',
+            {
+              emailTemplate: 'async_queue',
+              deliveryAttempts: 1,
+              finalDeliveryStatus: 'failed',
+            },
+            Date.now() - startTime,
+            error,
+          );
+        }
+
+        return {
+          success: false,
+          message:
+            locale === 'vi'
+              ? 'Email không khớp với email đơn hàng'
+              : 'Email address does not match order email',
+          error,
+        };
+      }
+
+      // Check if order is recent enough to resend (within 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      if (order.createdAt < thirtyDaysAgo) {
+        const error = 'Order is too old to resend email';
+        if (auditId) {
+          await this.auditService.logEmailSending(
+            orderNumber,
+            customerEmail,
+            locale,
+            'failed',
+            {
+              emailTemplate: 'async_queue',
+              deliveryAttempts: 1,
+              finalDeliveryStatus: 'failed',
+            },
+            Date.now() - startTime,
+            error,
+          );
+        }
+
+        return {
+          success: false,
+          message:
+            locale === 'vi'
+              ? 'Đơn hàng quá cũ để gửi lại email'
+              : 'Order is too old to resend email',
+          error,
+        };
+      }
+
+      // Instead of queuing a simple email event, generate and send PDF directly
+      // Get full order data for PDF generation
+      const fullOrder = await this.prismaService.order.findUnique({
+        where: { orderNumber },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+          shippingAddress: true,
+          billingAddress: true,
+        },
+      });
+
+      if (!fullOrder) {
+        throw new Error('Order not found for PDF generation');
+      }
+
+      // Convert order to PDF data format
+      const orderPDFData = await this.mapOrderToPDFData(fullOrder, locale);
+
+      // Send order confirmation with PDF attachment directly
+      this.logger.log(`[resendOrderConfirmation] Sending email with PDF attachment for order: ${orderNumber}`);
+      const emailResult = await this.sendOrderConfirmationWithPDF(
         customerEmail,
+        orderPDFData,
         locale
       );
-      if (!orderData) {
-        const error = 'Order not found or email mismatch';
-        if (auditId) {
-          await this.auditService.logEmailSending(
-            orderNumber,
-            customerEmail,
-            locale,
-            'failed',
-            {
-              emailTemplate: 'simplified',
-              deliveryAttempts: 1,
-              finalDeliveryStatus: 'failed',
-            },
-            Date.now() - startTime,
-            error,
-          );
-        }
 
-        return {
-          success: false,
-          message:
-            locale === 'vi'
-              ? 'Không tìm thấy đơn hàng hoặc email không khớp'
-              : 'Order not found or email mismatch',
-          error,
-        };
+      if (!emailResult.success) {
+        throw new Error(`Failed to send email with PDF: ${emailResult.error}`);
       }
 
-      // Generate PDF for the order
-      const pdfResult = await this.pdfGeneratorService.generateOrderPDF(
-        orderData,
-        locale,
-      );
-      if (!pdfResult.success) {
-        const error = `PDF generation failed: ${pdfResult.error}`;
-        this.logger.error(
-          `PDF generation failed for resend order ${orderNumber}: ${pdfResult.error}`,
+      // Log successful queuing
+      if (auditId) {
+        await this.auditService.logEmailSending(
+          orderNumber,
+          customerEmail,
+          locale,
+          'completed',
+          {
+            emailTemplate: 'async_queue',
+            deliveryAttempts: 1,
+            finalDeliveryStatus: 'queued',
+          },
+          Date.now() - startTime,
         );
-
-        if (auditId) {
-          await this.auditService.logEmailSending(
-            orderNumber,
-            customerEmail,
-            locale,
-            'failed',
-            {
-              emailTemplate: 'simplified',
-              deliveryAttempts: 1,
-              finalDeliveryStatus: 'failed',
-            },
-            Date.now() - startTime,
-            error,
-          );
-        }
-
-        return {
-          success: false,
-          message:
-            locale === 'vi'
-              ? 'Không thể tạo file PDF. Vui lòng thử lại sau.'
-              : 'Failed to generate PDF. Please try again later.',
-          error,
-        };
       }
 
-      // Generate simplified email template
-      const emailTemplate = this.generateSimplifiedEmailTemplate(
-        orderData,
-        locale,
+      this.logger.log(
+        `Resend email with PDF sent successfully for order ${orderNumber} to ${customerEmail}`,
       );
 
-      // Send email with PDF attachment
-      const emailResult = await this.sendEmailWithAttachment(
-        customerEmail,
-        emailTemplate,
-        pdfResult.filePath!,
-        pdfResult.fileName!,
-      );
+      return {
+        success: true,
+        message:
+          locale === 'vi'
+            ? 'Email xác nhận với file PDF đã được gửi thành công'
+            : 'Order confirmation email with PDF has been sent successfully',
+      };
 
-      if (emailResult.success) {
-        // Schedule PDF cleanup after successful email
-        await this.documentStorageService.schedulePDFCleanup(
-          pdfResult.filePath!,
-          24,
-        ); // 24 hours retention
-
-        // Log successful resend
-        if (auditId) {
-          await this.auditService.logEmailSending(
-            orderNumber,
-            customerEmail,
-            locale,
-            'completed',
-            {
-              emailTemplate: 'simplified',
-              deliveryAttempts: 1,
-              finalDeliveryStatus: 'sent',
-            },
-            Date.now() - startTime,
-          );
-        }
-
-        this.logger.log(
-          `Resend email successful for order ${orderNumber} to ${customerEmail}`,
-        );
-
-        return {
-          success: true,
-          message:
-            locale === 'vi'
-              ? 'Email xác nhận đã được gửi lại thành công'
-              : 'Order confirmation email has been resent successfully',
-        };
-      } else {
-        const error = `Email sending failed: ${emailResult.error}`;
-        this.logger.error(
-          `Email sending failed for resend order ${orderNumber}: ${emailResult.error}`,
-        );
-
-        if (auditId) {
-          await this.auditService.logEmailSending(
-            orderNumber,
-            customerEmail,
-            locale,
-            'failed',
-            {
-              emailTemplate: 'simplified',
-              deliveryAttempts: 1,
-              finalDeliveryStatus: 'failed',
-            },
-            Date.now() - startTime,
-            error,
-          );
-        }
-
-        return {
-          success: false,
-          message:
-            locale === 'vi'
-              ? 'Không thể gửi email. Vui lòng thử lại sau.'
-              : 'Failed to send email. Please try again later.',
-          error,
-        };
-      }
     } catch (error) {
       this.logger.error(
-        `Failed to resend order confirmation for ${orderNumber}:`,
+        `Failed to queue resend order confirmation for ${orderNumber}:`,
         error,
       );
 
@@ -397,7 +417,7 @@ export class EmailAttachmentService {
           locale,
           'failed',
           {
-            emailTemplate: 'simplified',
+            emailTemplate: 'async_queue',
             deliveryAttempts: 1,
             finalDeliveryStatus: 'failed',
           },
@@ -410,8 +430,8 @@ export class EmailAttachmentService {
         success: false,
         message:
           locale === 'vi'
-            ? 'Đã xảy ra lỗi khi gửi lại email. Vui lòng thử lại sau.'
-            : 'An error occurred while resending the email. Please try again later.',
+            ? 'Đã xảy ra lỗi khi đưa email vào hàng đợi. Vui lòng thử lại sau.'
+            : 'An error occurred while queuing the email. Please try again later.',
         error: error.message,
       };
     }
@@ -1310,6 +1330,107 @@ export class EmailAttachmentService {
   }
 
 
+
+  /**
+   * Convert Prisma order data to PDF data format
+   * @param order - Prisma order object with relations
+   * @param locale - Language locale
+   * @returns Promise<OrderPDFData> - Order data formatted for PDF generation
+   */
+  private async mapOrderToPDFData(order: any, locale: 'en' | 'vi'): Promise<OrderPDFData> {
+    // Get business info for the specified locale
+    const businessInfo = await this.businessInfoService.getBusinessInfo(locale);
+
+    return {
+      orderNumber: order.orderNumber,
+      orderDate: order.createdAt.toISOString().split('T')[0],
+      customerInfo: {
+        name: order.shippingAddress?.fullName || order.billingAddress?.fullName || 'Customer',
+        email: order.email,
+        phone: order.shippingAddress?.phone || order.billingAddress?.phone,
+      },
+      billingAddress: order.billingAddress
+        ? {
+            fullName: order.billingAddress.fullName,
+            addressLine1: order.billingAddress.addressLine1,
+            addressLine2: order.billingAddress.addressLine2 || undefined,
+            city: order.billingAddress.city,
+            state: order.billingAddress.state,
+            postalCode: order.billingAddress.postalCode,
+            country: order.billingAddress.country,
+            phone: order.billingAddress.phone || undefined,
+          }
+        : {
+            fullName: order.shippingAddress?.fullName || 'Not provided',
+            addressLine1: order.shippingAddress?.addressLine1 || 'Not provided',
+            addressLine2: order.shippingAddress?.addressLine2 || undefined,
+            city: order.shippingAddress?.city || 'Not provided',
+            state: order.shippingAddress?.state || 'Not provided',
+            postalCode: order.shippingAddress?.postalCode || 'Not provided',
+            country: order.shippingAddress?.country || 'VN',
+            phone: order.shippingAddress?.phone || undefined,
+          },
+      shippingAddress: order.shippingAddress
+        ? {
+            fullName: order.shippingAddress.fullName,
+            addressLine1: order.shippingAddress.addressLine1,
+            addressLine2: order.shippingAddress.addressLine2 || undefined,
+            city: order.shippingAddress.city,
+            state: order.shippingAddress.state,
+            postalCode: order.shippingAddress.postalCode,
+            country: order.shippingAddress.country,
+            phone: order.shippingAddress.phone || undefined,
+          }
+        : {
+            fullName: 'Not provided',
+            addressLine1: 'Not provided',
+            city: 'Not provided',
+            state: 'Not provided',
+            postalCode: 'Not provided',
+            country: 'VN',
+          },
+      items: order.items.map((item: any) => {
+        // Extract image URL properly
+        let imageUrl: string | undefined;
+        if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+          imageUrl = item.product.images[0].url || item.product.images[0];
+        }
+
+        return {
+          id: item.product.id,
+          name: locale === 'vi' ? (item.product.nameVi || item.product.nameEn) : item.product.nameEn,
+          description: locale === 'vi' ? (item.product.descriptionVi || item.product.descriptionEn) : item.product.descriptionEn,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          unitPrice: Number(item.price),
+          totalPrice: Number(item.total || item.price * item.quantity),
+          imageUrl,
+          category: locale === 'vi' ? (item.product.category?.nameVi || item.product.category?.nameEn) : item.product.category?.nameEn,
+        };
+      }),
+      pricing: {
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount || 0),
+        discountAmount: Number(order.discountAmount || 0),
+        total: Number(order.total),
+      },
+      paymentMethod: {
+        type: order.paymentMethod as 'bank_transfer' | 'cash_on_delivery' | 'qr_code',
+        displayName: this.getPaymentMethodDisplayName(order.paymentMethod, locale),
+        status: order.paymentStatus as 'pending' | 'completed' | 'failed',
+        details: order.paymentMethod === 'bank_transfer' ? 'Bank transfer payment' : undefined,
+      },
+      shippingMethod: {
+        name: order.shippingMethod || 'Standard',
+        description: this.getShippingMethodDescription(order.shippingMethod || 'standard', locale),
+        estimatedDelivery: order.estimatedDelivery,
+        trackingNumber: order.trackingNumber,
+      },
+      businessInfo,
+      locale,
+    };
+  }
 
   /**
    * Delay execution for specified milliseconds

@@ -29,9 +29,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { EmailQueueModule } from '../email-queue/email-queue.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ShippingModule, ScheduleModule.forRoot(), ConfigModule],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ShippingModule, EmailQueueModule, ScheduleModule.forRoot(), ConfigModule],
   controllers: [PDFHealthController],
   providers: [
     PDFGeneratorService,

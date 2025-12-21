@@ -232,6 +232,7 @@ export interface ResendResult {
   message: string;
   rateLimited?: boolean;
   error?: string;
+  jobId?: string; // Job ID for tracking async email queue processing
 }
 
 export interface RateLimitResult {
