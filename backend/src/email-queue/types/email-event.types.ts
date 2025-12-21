@@ -10,6 +10,7 @@
  */
 export enum EmailEventType {
   ORDER_CONFIRMATION = 'ORDER_CONFIRMATION',
+  ORDER_CONFIRMATION_RESEND = 'ORDER_CONFIRMATION_RESEND',
   ADMIN_ORDER_NOTIFICATION = 'ADMIN_ORDER_NOTIFICATION',
   SHIPPING_NOTIFICATION = 'SHIPPING_NOTIFICATION',
   ORDER_STATUS_UPDATE = 'ORDER_STATUS_UPDATE',
@@ -34,6 +35,18 @@ export interface BaseEmailEvent {
  */
 export interface OrderConfirmationEvent extends BaseEmailEvent {
   type: EmailEventType.ORDER_CONFIRMATION;
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+}
+
+/**
+ * Order confirmation resend email event
+ * Sent to customers when they request a resend of their order confirmation
+ */
+export interface OrderConfirmationResendEvent extends BaseEmailEvent {
+  type: EmailEventType.ORDER_CONFIRMATION_RESEND;
   orderId: string;
   orderNumber: string;
   customerEmail: string;
@@ -111,6 +124,7 @@ export interface ContactFormEvent extends BaseEmailEvent {
  */
 export type EmailEvent =
   | OrderConfirmationEvent
+  | OrderConfirmationResendEvent
   | AdminOrderNotificationEvent
   | ShippingNotificationEvent
   | OrderStatusUpdateEvent

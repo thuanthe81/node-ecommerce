@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EmailEventPublisher } from './services/email-event-publisher.service';
 import { EmailWorker } from './services/email-worker.service';
@@ -9,6 +9,8 @@ import { EmailQueueAdminController } from './controllers/email-queue-admin.contr
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
+import { PDFGeneratorModule } from '../pdf-generator/pdf-generator.module';
+import { CommonModule } from '../common/common.module';
 
 /**
  * Email Queue Module
@@ -24,6 +26,8 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
     NotificationsModule, // Provides EmailService and EmailTemplateService
     PrismaModule,        // Database access
     FooterSettingsModule, // Footer settings for admin emails
+    forwardRef(() => PDFGeneratorModule),  // Provides EmailAttachmentService for PDF generation
+    CommonModule,        // Provides BusinessInfoService
   ],
   controllers: [
     EmailQueueHealthController, // Health check and monitoring endpoints

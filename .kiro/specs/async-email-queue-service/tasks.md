@@ -161,3 +161,86 @@
 
 - [x] 14. Final Checkpoint - Complete system integration test
   - Ensure all tests pass, ask the user if questions arise.
+
+- [x] 15. Fix resend order confirmation to use async queue
+  - [x] 15.1 Add ORDER_CONFIRMATION_RESEND event type to EmailEventType enum
+    - Update event type definitions and interfaces
+    - Add OrderConfirmationResendEvent interface
+    - Update EmailEvent union type
+    - _Requirements: 8.1_
+
+  - [x] 15.2 Update EmailEventPublisher validation and priority logic
+    - Add ORDER_CONFIRMATION_RESEND to validation switch statement
+    - Add priority assignment for resend events (same as original confirmation)
+    - _Requirements: 8.1_
+
+  - [x] 15.3 Update EmailWorker to handle resend events
+    - Add case for ORDER_CONFIRMATION_RESEND in processEmailEvent switch
+    - Implement sendOrderConfirmationResend method with PDF attachment
+    - Reuse existing EmailAttachmentService for PDF generation
+    - _Requirements: 8.3_
+
+  - [ ]* 15.4 Write property test for resend asynchronous processing
+    - **Property 17: Resend order confirmation asynchronous processing**
+    - **Validates: Requirements 8.1, 8.2**
+
+  - [ ]* 15.5 Write property test for resend PDF consistency
+    - **Property 18: Resend email PDF attachment consistency**
+    - **Validates: Requirements 8.3**
+
+  - [ ]* 15.6 Write property test for resend validation and rate limiting
+    - **Property 19: Resend rate limiting and validation**
+    - **Validates: Requirements 8.4, 8.5**
+
+  - [x] 15.7 Update EmailAttachmentService resendOrderConfirmation method
+    - Replace direct sendOrderConfirmationWithPDF call with EmailEventPublisher
+    - Keep existing validation logic (rate limiting, order verification, email matching)
+    - Return immediately after queuing event instead of waiting for email delivery
+    - _Requirements: 8.1, 8.2, 8.4, 8.5_
+
+  - [x] 15.8 Update error handling for resend functionality
+    - Ensure validation errors return immediately without queuing
+    - Update success/error messages to reflect asynchronous processing
+    - Maintain existing rate limiting and audit logging
+    - _Requirements: 8.4, 8.5_
+
+- [ ] 16. Final Checkpoint - Verify resend functionality works asynchronously
+  - Start backend server and run async verification test
+  - Ensure all tests pass, ask the user if questions arise.
+
+## REMAINING PROPERTY TESTS TO IMPLEMENT
+
+The following property-based tests are still pending and should be implemented to fully validate the system:
+
+- [ ] 17. Implement Property Test Suite
+  - [ ] 17.1 Property 1: Asynchronous processing performance (validates Requirements 1.1, 1.2, 1.5)
+  - [ ] 17.2 Property 2: System resilience under email service failure (validates Requirements 1.3)
+  - [ ] 17.3 Property 3: Event persistence durability (validates Requirements 1.4, 7.1)
+  - [ ] 17.4 Property 4: Correct event structure generation (validates Requirements 2.1, 2.2, 2.3, 2.4, 2.5)
+  - [ ] 17.5 Property 5: Exponential backoff retry behavior (validates Requirements 3.1, 3.3)
+  - [ ] 17.6 Property 6: Dead letter queue for permanent failures (validates Requirements 3.2, 3.4)
+  - [ ] 17.7 Property 7: Automatic recovery after service restoration (validates Requirements 3.5)
+  - [ ] 17.8 Property 8: Backward compatibility interface (validates Requirements 4.1)
+  - [ ] 17.9 Property 9: Content consistency with current system (validates Requirements 4.2, 4.3, 4.4, 4.5)
+  - [ ] 17.10 Property 10: Comprehensive event logging (validates Requirements 5.1, 5.2, 5.3, 5.4)
+  - [ ] 17.11 Property 11: Queue metrics availability (validates Requirements 5.5)
+  - [ ] 17.12 Property 12: Input validation before queuing (validates Requirements 6.1, 6.2, 6.5)
+  - [ ] 17.13 Property 13: Schema validation during processing (validates Requirements 6.3, 6.4)
+  - [ ] 17.14 Property 14: Crash recovery without data loss (validates Requirements 7.2, 7.3)
+  - [ ] 17.15 Property 15: Graceful shutdown completion (validates Requirements 7.4)
+  - [ ] 17.16 Property 16: Exactly-once processing guarantee (validates Requirements 7.5)
+  - [ ] 17.17 Property 17: Resend order confirmation asynchronous processing (validates Requirements 8.1, 8.2)
+  - [ ] 17.18 Property 18: Resend email PDF attachment consistency (validates Requirements 8.3)
+  - [ ] 17.19 Property 19: Resend rate limiting and validation (validates Requirements 8.4, 8.5)
+
+- [ ] 18. Unit Tests for Monitoring Endpoints
+  - Test queue metrics endpoint responses
+  - Test admin interface functionality
+  - Test health check endpoint behavior
+  - _Requirements: 5.5_
+
+- [ ] 19. Final System Integration Test
+  - Start backend server with email queue workers
+  - Run comprehensive test suite including async verification
+  - Validate all requirements are met
+  - Document any remaining issues or limitations

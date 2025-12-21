@@ -100,3 +100,15 @@ This feature transforms the current synchronous email service into an asynchrono
 3. WHEN Redis connection is lost, THE Email_Queue_System SHALL attempt reconnection with exponential backoff
 4. WHEN the system shuts down gracefully, THE Email_Worker SHALL complete processing current events before terminating
 5. WHEN multiple email workers are running, THE Message_Queue SHALL ensure each event is processed exactly once
+
+### Requirement 8
+
+**User Story:** As a customer requesting a resend of my order confirmation email, I want the system to respond immediately, so that I don't have to wait for the email to be sent before the page responds.
+
+#### Acceptance Criteria
+
+1. WHEN a customer clicks the resend order confirmation button, THE Email_Event_Publisher SHALL create an ORDER_CONFIRMATION_RESEND event and return immediately
+2. WHEN a resend request is processed, THE Main_Process SHALL respond with success within 200ms without waiting for email delivery
+3. WHEN the resend email event is queued, THE Email_Worker SHALL process it with the same PDF attachment generation as the original order confirmation
+4. WHEN a resend request fails validation (invalid order, email mismatch, rate limiting), THE Main_Process SHALL return appropriate error messages immediately without queuing
+5. WHEN multiple resend requests are made rapidly, THE Email_Queue_System SHALL apply rate limiting and queue valid requests asynchronously

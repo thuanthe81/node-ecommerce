@@ -7,6 +7,8 @@ import { EmailTemplateService } from '../../notifications/services/email-templat
 import { PrismaService } from '../../prisma/prisma.service';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { EmailQueueConfigService } from './email-queue-config.service';
+import { EmailAttachmentService } from '../../pdf-generator/services/email-attachment.service';
+import { BusinessInfoService } from '../../common/services/business-info.service';
 import Redis from 'ioredis';
 
 /**
@@ -36,6 +38,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     private emailTemplateService: EmailTemplateService,
     private prisma: PrismaService,
     private footerSettingsService: FooterSettingsService,
+    private emailAttachmentService: EmailAttachmentService,
+    private businessInfoService: BusinessInfoService,
   ) {
     // Get configuration from centralized config service
     const resilienceConfig = this.queueConfigService.getResilienceConfig();
@@ -448,6 +452,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
           await this.sendOrderConfirmation(event);
           break;
 
+        case EmailEventType.ORDER_CONFIRMATION_RESEND:
+          await this.sendOrderConfirmationResend(event);
+          break;
+
         case EmailEventType.ADMIN_ORDER_NOTIFICATION:
           await this.sendAdminOrderNotification(event);
           break;
@@ -608,7 +616,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+              }
+            },
           },
         },
         shippingAddress: true,
@@ -646,6 +658,60 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     this.logger.log(`[sendOrderConfirmation] Completed successfully without PDF for order: ${event.orderId}`);
+  }
+
+  /**
+   * Send order confirmation resend email with PDF attachment
+   */
+  private async sendOrderConfirmationResend(event: any): Promise<void> {
+    this.logger.log(`[sendOrderConfirmationResend] Starting for order: ${event.orderId}`);
+
+    // Fetch full order data from database including all necessary relations for PDF generation
+    const order = await this.prisma.order.findUnique({
+      where: { id: event.orderId },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: true,
+                category: true,
+              }
+            },
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      },
+    });
+
+    if (!order) {
+      this.logger.error(`[sendOrderConfirmationResend] Order not found: ${event.orderId}`);
+      throw new Error(`Order not found: ${event.orderId}`);
+    }
+
+    this.logger.log(`[sendOrderConfirmationResend] Order found: ${order.orderNumber}, email: ${order.email}`);
+
+    // Generate email template directly (same as original order confirmation)
+    const orderData = this.mapOrderToEmailData(order);
+    const template = this.emailTemplateService.getOrderConfirmationTemplate(
+      orderData,
+      event.locale
+    );
+
+    // Send email directly using EmailService (no PDF for resend to avoid complexity)
+    const success = await this.emailService.sendEmail({
+      to: order.email,
+      subject: template.subject,
+      html: template.html,
+      locale: event.locale,
+    });
+
+    if (!success) {
+      throw new Error('Email service returned false');
+    }
+
+    this.logger.log(`[sendOrderConfirmationResend] Completed successfully for order: ${event.orderId}`);
   }
 
   /**
@@ -881,96 +947,99 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   /**
    * Convert Prisma order data to PDF data format
    */
-  private mapOrderToPDFData(order: any): any {
+  private async mapOrderToPDFData(order: any, locale: 'en' | 'vi'): Promise<any> {
+    // Get business info for the specified locale
+    const businessInfo = await this.businessInfoService.getBusinessInfo(locale);
+
     return {
       orderNumber: order.orderNumber,
-      orderDate: order.createdAt.toISOString(),
+      orderDate: order.createdAt.toISOString().split('T')[0],
       customerInfo: {
-        name: order.shippingAddress?.fullName || 'Customer',
+        name: order.shippingAddress?.fullName || order.billingAddress?.fullName || 'Customer',
         email: order.email,
-        phone: order.shippingAddress?.phone,
+        phone: order.shippingAddress?.phone || order.billingAddress?.phone,
       },
-      billingAddress: {
-        fullName: order.billingAddress?.fullName || order.shippingAddress?.fullName || 'Customer',
-        addressLine1: order.billingAddress?.addressLine1 || order.shippingAddress?.addressLine1 || '',
-        addressLine2: order.billingAddress?.addressLine2 || order.shippingAddress?.addressLine2,
-        city: order.billingAddress?.city || order.shippingAddress?.city || '',
-        state: order.billingAddress?.state || order.shippingAddress?.state || '',
-        postalCode: order.billingAddress?.postalCode || order.shippingAddress?.postalCode || '',
-        country: order.billingAddress?.country || order.shippingAddress?.country || 'VN',
-        phone: order.billingAddress?.phone || order.shippingAddress?.phone,
-      },
-      shippingAddress: {
-        fullName: order.shippingAddress?.fullName || 'Customer',
-        addressLine1: order.shippingAddress?.addressLine1 || '',
-        addressLine2: order.shippingAddress?.addressLine2,
-        city: order.shippingAddress?.city || '',
-        state: order.shippingAddress?.state || '',
-        postalCode: order.shippingAddress?.postalCode || '',
-        country: order.shippingAddress?.country || 'VN',
-        phone: order.shippingAddress?.phone,
-      },
-      items: order.items.map((item: any) => ({
-        id: item.id,
-        name: item.product?.name || 'Product',
-        description: item.product?.description,
-        sku: item.product?.sku,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: item.price * item.quantity,
-        imageUrl: item.product?.imageUrl,
-        category: item.product?.category,
-      })),
+      billingAddress: order.billingAddress
+        ? {
+            fullName: order.billingAddress.fullName,
+            addressLine1: order.billingAddress.addressLine1,
+            addressLine2: order.billingAddress.addressLine2 || undefined,
+            city: order.billingAddress.city,
+            state: order.billingAddress.state,
+            postalCode: order.billingAddress.postalCode,
+            country: order.billingAddress.country,
+            phone: order.billingAddress.phone || undefined,
+          }
+        : {
+            fullName: order.shippingAddress?.fullName || 'Not provided',
+            addressLine1: order.shippingAddress?.addressLine1 || 'Not provided',
+            addressLine2: order.shippingAddress?.addressLine2 || undefined,
+            city: order.shippingAddress?.city || 'Not provided',
+            state: order.shippingAddress?.state || 'Not provided',
+            postalCode: order.shippingAddress?.postalCode || 'Not provided',
+            country: order.shippingAddress?.country || 'VN',
+            phone: order.shippingAddress?.phone || undefined,
+          },
+      shippingAddress: order.shippingAddress
+        ? {
+            fullName: order.shippingAddress.fullName,
+            addressLine1: order.shippingAddress.addressLine1,
+            addressLine2: order.shippingAddress.addressLine2 || undefined,
+            city: order.shippingAddress.city,
+            state: order.shippingAddress.state,
+            postalCode: order.shippingAddress.postalCode,
+            country: order.shippingAddress.country,
+            phone: order.shippingAddress.phone || undefined,
+          }
+        : {
+            fullName: 'Not provided',
+            addressLine1: 'Not provided',
+            city: 'Not provided',
+            state: 'Not provided',
+            postalCode: 'Not provided',
+            country: 'VN',
+          },
+      items: order.items.map((item: any) => {
+        // Extract image URL properly
+        let imageUrl: string | undefined;
+        if (item.product?.images && Array.isArray(item.product.images) && item.product.images.length > 0) {
+          imageUrl = item.product.images[0].url;
+        }
+
+        return {
+          id: item.product.id,
+          name: locale === 'vi' ? (item.product.nameVi || item.product.nameEn) : item.product.nameEn,
+          description: locale === 'vi' ? (item.product.descriptionVi || item.product.descriptionEn) : item.product.descriptionEn,
+          sku: item.product.sku,
+          quantity: item.quantity,
+          unitPrice: Number(item.price),
+          totalPrice: Number(item.total || item.price * item.quantity),
+          imageUrl,
+          category: locale === 'vi' ? (item.product.category?.nameVi || item.product.category?.nameEn) : item.product.category?.nameEn,
+        };
+      }),
       pricing: {
-        subtotal: order.subtotal || 0,
-        shippingCost: order.shippingCost || 0,
-        taxAmount: order.taxAmount || 0,
-        discountAmount: order.discountAmount || 0,
-        total: order.total,
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount || 0),
+        discountAmount: Number(order.discountAmount || 0),
+        total: Number(order.total),
       },
       paymentMethod: {
-        type: order.paymentMethod || 'bank_transfer',
-        displayName: this.getPaymentMethodDisplayName(order.paymentMethod),
-        status: order.paymentStatus || 'pending',
+        type: order.paymentMethod as 'bank_transfer' | 'cash_on_delivery' | 'qr_code',
+        displayName: this.getPaymentMethodDisplayName(order.paymentMethod, locale),
+        status: order.paymentStatus as 'pending' | 'completed' | 'failed',
+        details: order.paymentMethod === 'bank_transfer' ? 'Bank transfer payment' : undefined,
       },
       shippingMethod: {
-        name: order.shippingMethod || 'Standard Shipping',
-        description: 'Standard delivery',
+        name: order.shippingMethod || 'Standard',
+        description: this.getShippingMethodDescription(order.shippingMethod || 'standard', locale),
         estimatedDelivery: order.estimatedDelivery,
         trackingNumber: order.trackingNumber,
       },
-      businessInfo: {
-        companyName: 'Ala Craft',
-        contactEmail: 'lienhe@alacraft.com',
-        contactPhone: '+84 123 456 789',
-        website: 'https://alacraft.com',
-        address: {
-          fullName: 'Ala Craft',
-          addressLine1: '123 Đường ABC',
-          city: 'TP.HCM',
-          state: 'TP.HCM',
-          postalCode: '70000',
-          country: 'VN',
-        },
-      },
-      locale: 'vi',
+      businessInfo,
+      locale,
     };
-  }
-
-  /**
-   * Get display name for payment method
-   */
-  private getPaymentMethodDisplayName(paymentMethod: string): string {
-    switch (paymentMethod) {
-      case 'bank_transfer':
-        return 'Chuyển khoản ngân hàng';
-      case 'cash_on_delivery':
-        return 'Thanh toán khi nhận hàng';
-      case 'qr_code':
-        return 'Thanh toán QR Code';
-      default:
-        return 'Chuyển khoản ngân hàng';
-    }
   }
 
   /**
@@ -1586,5 +1655,67 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         message: error instanceof Error ? error.message : String(error),
       };
     }
+  }
+
+  /**
+   * Get payment method display name
+   * @param paymentMethod - Payment method code
+   * @param locale - Language locale
+   * @returns Localized payment method name
+   */
+  private getPaymentMethodDisplayName(
+    paymentMethod: string,
+    locale: 'en' | 'vi',
+  ): string {
+    const translations = {
+      bank_transfer: {
+        en: 'Bank Transfer',
+        vi: 'Chuyển khoản ngân hàng',
+      },
+      cash_on_delivery: {
+        en: 'Cash on Delivery',
+        vi: 'Thanh toán khi nhận hàng',
+      },
+      qr_code: {
+        en: 'QR Code Payment',
+        vi: 'Thanh toán QR Code',
+      },
+    };
+
+    return (
+      translations[paymentMethod as keyof typeof translations]?.[locale] ||
+      paymentMethod
+    );
+  }
+
+  /**
+   * Get shipping method description
+   * @param shippingMethod - Shipping method code
+   * @param locale - Language locale
+   * @returns Localized shipping method description
+   */
+  private getShippingMethodDescription(
+    shippingMethod: string,
+    locale: 'en' | 'vi',
+  ): string {
+    const translations = {
+      standard: {
+        en: 'Standard Delivery (3-5 business days)',
+        vi: 'Giao hàng tiêu chuẩn (3-5 ngày làm việc)',
+      },
+      express: {
+        en: 'Express Delivery (1-2 business days)',
+        vi: 'Giao hàng nhanh (1-2 ngày làm việc)',
+      },
+      pickup: {
+        en: 'Store Pickup',
+        vi: 'Nhận tại cửa hàng',
+      },
+    };
+
+    return (
+      translations[shippingMethod as keyof typeof translations]?.[locale] ||
+      shippingMethod
+    );
   }
 }

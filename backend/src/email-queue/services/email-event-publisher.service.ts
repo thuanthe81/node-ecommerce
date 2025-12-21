@@ -365,9 +365,16 @@ export class EmailEventPublisher implements OnModuleDestroy {
     const contentHash = this.hashEventContent(event);
     const timestamp = event.timestamp.getTime();
 
-    // Include timestamp to allow the same content to be sent at different times
-    // but prevent duplicates within a short time window (1 minute)
-    const timeWindow = Math.floor(timestamp / (60 * 1000)); // 1-minute windows
+    // For resend events, use a longer deduplication window (10 minutes)
+    // to prevent multiple resends of the same order
+    let timeWindow: number;
+    if (event.type === EmailEventType.ORDER_CONFIRMATION_RESEND) {
+      timeWindow = Math.floor(timestamp / (10 * 60 * 1000)); // 10-minute windows
+    } else {
+      // Include timestamp to allow the same content to be sent at different times
+      // but prevent duplicates within a short time window (1 minute)
+      timeWindow = Math.floor(timestamp / (60 * 1000)); // 1-minute windows
+    }
 
     return `${event.type}-${contentHash}-${timeWindow}`;
   }
@@ -381,7 +388,9 @@ export class EmailEventPublisher implements OnModuleDestroy {
     // Create a simple hash based on key event properties
     const keyContent = {
       type: event.type,
-      locale: event.locale,
+      // For ORDER_CONFIRMATION_RESEND, exclude locale to prevent duplicates
+      // The same order should only be resent once regardless of locale preference
+      ...(event.type !== EmailEventType.ORDER_CONFIRMATION_RESEND && { locale: event.locale }),
       // Include type-specific identifiers
       ...(event.type.includes('ORDER') && { orderId: (event as any).orderId }),
       ...(event.type.includes('USER') && { userId: (event as any).userId }),
@@ -450,6 +459,10 @@ export class EmailEventPublisher implements OnModuleDestroy {
         this.validateOrderConfirmationEvent(event);
         break;
 
+      case EmailEventType.ORDER_CONFIRMATION_RESEND:
+        this.validateOrderConfirmationResendEvent(event);
+        break;
+
       case EmailEventType.ADMIN_ORDER_NOTIFICATION:
         this.validateAdminOrderNotificationEvent(event);
         break;
@@ -494,6 +507,24 @@ export class EmailEventPublisher implements OnModuleDestroy {
     }
     if (!event.customerName || typeof event.customerName !== 'string') {
       throw new Error('Order confirmation events require valid customerName');
+    }
+  }
+
+  /**
+   * Validate order confirmation resend event fields
+   */
+  private validateOrderConfirmationResendEvent(event: any): void {
+    if (!event.orderId || typeof event.orderId !== 'string') {
+      throw new Error('Order confirmation resend events require valid orderId');
+    }
+    if (!event.orderNumber || typeof event.orderNumber !== 'string') {
+      throw new Error('Order confirmation resend events require valid orderNumber');
+    }
+    if (!event.customerEmail || !this.isValidEmail(event.customerEmail)) {
+      throw new Error('Order confirmation resend events require valid customerEmail');
+    }
+    if (!event.customerName || typeof event.customerName !== 'string') {
+      throw new Error('Order confirmation resend events require valid customerName');
     }
   }
 
@@ -609,6 +640,7 @@ export class EmailEventPublisher implements OnModuleDestroy {
     const priorities = {
       [EmailEventType.PASSWORD_RESET]: 1, // Highest priority
       [EmailEventType.ORDER_CONFIRMATION]: 2,
+      [EmailEventType.ORDER_CONFIRMATION_RESEND]: 2, // Same priority as original confirmation
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 2,
       [EmailEventType.SHIPPING_NOTIFICATION]: 3,
       [EmailEventType.ORDER_STATUS_UPDATE]: 4,

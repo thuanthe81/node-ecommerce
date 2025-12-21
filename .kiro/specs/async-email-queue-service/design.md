@@ -77,6 +77,7 @@ This design maintains backward compatibility with existing email functionality w
 // Email event type enum
 export enum EmailEventType {
   ORDER_CONFIRMATION = 'ORDER_CONFIRMATION',
+  ORDER_CONFIRMATION_RESEND = 'ORDER_CONFIRMATION_RESEND',
   ADMIN_ORDER_NOTIFICATION = 'ADMIN_ORDER_NOTIFICATION',
   SHIPPING_NOTIFICATION = 'SHIPPING_NOTIFICATION',
   ORDER_STATUS_UPDATE = 'ORDER_STATUS_UPDATE',
@@ -95,6 +96,15 @@ export interface BaseEmailEvent {
 // Order confirmation event
 export interface OrderConfirmationEvent extends BaseEmailEvent {
   type: EmailEventType.ORDER_CONFIRMATION;
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+}
+
+// Order confirmation resend event
+export interface OrderConfirmationResendEvent extends BaseEmailEvent {
+  type: EmailEventType.ORDER_CONFIRMATION_RESEND;
   orderId: string;
   orderNumber: string;
   customerEmail: string;
@@ -151,6 +161,7 @@ export interface ContactFormEvent extends BaseEmailEvent {
 // Union type for all email events
 export type EmailEvent =
   | OrderConfirmationEvent
+  | OrderConfirmationResendEvent
   | AdminOrderNotificationEvent
   | ShippingNotificationEvent
   | OrderStatusUpdateEvent
@@ -241,6 +252,7 @@ export class EmailEventPublisher {
     // Type-specific validation
     switch (event.type) {
       case EmailEventType.ORDER_CONFIRMATION:
+      case EmailEventType.ORDER_CONFIRMATION_RESEND:
       case EmailEventType.ADMIN_ORDER_NOTIFICATION:
       case EmailEventType.SHIPPING_NOTIFICATION:
       case EmailEventType.ORDER_STATUS_UPDATE:
@@ -272,6 +284,7 @@ export class EmailEventPublisher {
     const priorities = {
       [EmailEventType.PASSWORD_RESET]: 1, // Highest priority
       [EmailEventType.ORDER_CONFIRMATION]: 2,
+      [EmailEventType.ORDER_CONFIRMATION_RESEND]: 2, // Same priority as original confirmation
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 2,
       [EmailEventType.SHIPPING_NOTIFICATION]: 3,
       [EmailEventType.ORDER_STATUS_UPDATE]: 4,
@@ -393,6 +406,10 @@ export class EmailWorker implements OnModuleInit {
           await this.sendOrderConfirmation(event);
           break;
 
+        case EmailEventType.ORDER_CONFIRMATION_RESEND:
+          await this.sendOrderConfirmationResend(event);
+          break;
+
         case EmailEventType.ADMIN_ORDER_NOTIFICATION:
           await this.sendAdminOrderNotification(event);
           break;
@@ -473,6 +490,52 @@ export class EmailWorker implements OnModuleInit {
 
     if (!success) {
       throw new Error('Email service returned false');
+    }
+  }
+
+  /**
+   * Send order confirmation resend email with PDF attachment
+   */
+  private async sendOrderConfirmationResend(event: OrderConfirmationResendEvent): Promise<void> {
+    // Fetch full order data from database including all necessary relations for PDF generation
+    const order = await this.prisma.order.findUnique({
+      where: { id: event.orderId },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: true,
+              }
+            },
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+      },
+    });
+
+    if (!order) {
+      throw new Error(`Order not found: ${event.orderId}`);
+    }
+
+    // Use the EmailAttachmentService to send order confirmation with PDF
+    // This reuses the existing PDF generation logic
+    const emailAttachmentService = new EmailAttachmentService(
+      this.prisma,
+      this.emailService,
+      this.emailTemplateService,
+      // ... other dependencies
+    );
+
+    const result = await emailAttachmentService.sendOrderConfirmationWithPDF(
+      order.email,
+      this.mapOrderToPDFData(order, event.locale),
+      event.locale
+    );
+
+    if (!result.success) {
+      throw new Error(`Failed to send order confirmation with PDF: ${result.error}`);
     }
   }
 
@@ -908,6 +971,18 @@ After analyzing all acceptance criteria, several properties can be consolidated 
 **Property 16: Exactly-once processing guarantee**
 *For any* email event in a multi-worker environment, the event should be processed exactly once with no duplicates
 **Validates: Requirements 7.5**
+
+**Property 17: Resend order confirmation asynchronous processing**
+*For any* resend order confirmation request, the Email_Event_Publisher should create an ORDER_CONFIRMATION_RESEND event and return within 200ms without waiting for email delivery
+**Validates: Requirements 8.1, 8.2**
+
+**Property 18: Resend email PDF attachment consistency**
+*For any* resend order confirmation event, the Email_Worker should generate and send an email with PDF attachment identical to the original order confirmation
+**Validates: Requirements 8.3**
+
+**Property 19: Resend rate limiting and validation**
+*For any* resend request that fails validation or exceeds rate limits, the system should return appropriate error messages immediately without queuing the event
+**Validates: Requirements 8.4, 8.5**
 
 ## Error Handling
 

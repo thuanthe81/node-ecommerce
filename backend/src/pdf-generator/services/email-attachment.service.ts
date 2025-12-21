@@ -1,6 +1,7 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { EmailService } from '../../notifications/services/email.service';
 import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
+import { EmailEventType } from '../../email-queue/types/email-event.types';
 import { PDFGeneratorService } from '../pdf-generator.service';
 import { DocumentStorageService } from './document-storage.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
@@ -342,43 +343,21 @@ export class EmailAttachmentService {
         };
       }
 
-      // Instead of queuing a simple email event, generate and send PDF directly
-      // Get full order data for PDF generation
-      const fullOrder = await this.prismaService.order.findUnique({
-        where: { orderNumber },
-        include: {
-          items: {
-            include: {
-              product: {
-                include: {
-                  images: true,
-                }
-              },
-            },
-          },
-          shippingAddress: true,
-          billingAddress: true,
-        },
+      // Instead of sending PDF directly, queue an ORDER_CONFIRMATION_RESEND event
+      // This will be processed asynchronously by the EmailWorker with PDF attachment
+      this.logger.log(`[resendOrderConfirmation] Queuing ORDER_CONFIRMATION_RESEND event for order: ${orderNumber}`);
+
+      const customerName = order.shippingAddress?.fullName || 'Customer';
+
+      const jobId = await this.emailEventPublisher.publishEvent({
+        type: EmailEventType.ORDER_CONFIRMATION_RESEND,
+        locale,
+        timestamp: new Date(),
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        customerEmail: order.email,
+        customerName,
       });
-
-      if (!fullOrder) {
-        throw new Error('Order not found for PDF generation');
-      }
-
-      // Convert order to PDF data format
-      const orderPDFData = await this.mapOrderToPDFData(fullOrder, locale);
-
-      // Send order confirmation with PDF attachment directly
-      this.logger.log(`[resendOrderConfirmation] Sending email with PDF attachment for order: ${orderNumber}`);
-      const emailResult = await this.sendOrderConfirmationWithPDF(
-        customerEmail,
-        orderPDFData,
-        locale
-      );
-
-      if (!emailResult.success) {
-        throw new Error(`Failed to send email with PDF: ${emailResult.error}`);
-      }
 
       // Log successful queuing
       if (auditId) {
@@ -397,15 +376,15 @@ export class EmailAttachmentService {
       }
 
       this.logger.log(
-        `Resend email with PDF sent successfully for order ${orderNumber} to ${customerEmail}`,
+        `Resend email event queued successfully for order ${orderNumber} to ${customerEmail} (Job ID: ${jobId})`,
       );
 
       return {
         success: true,
         message:
           locale === 'vi'
-            ? 'Email xác nhận với file PDF đã được gửi thành công'
-            : 'Order confirmation email with PDF has been sent successfully',
+            ? 'Email xác nhận đã được đưa vào hàng đợi và sẽ được gửi sớm'
+            : 'Order confirmation email has been queued and will be sent shortly',
       };
 
     } catch (error) {

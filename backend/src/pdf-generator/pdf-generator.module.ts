@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
+import { forwardRef } from '@nestjs/common';
 import { PDFGeneratorService } from './pdf-generator.service';
 import { PDFTemplateEngine } from './pdf-template.engine';
 import { PDFDocumentStructureService } from './pdf-document-structure.service';
@@ -32,7 +33,7 @@ import { ShippingModule } from '../shipping/shipping.module';
 import { EmailQueueModule } from '../email-queue/email-queue.module';
 
 @Module({
-  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ShippingModule, EmailQueueModule, ScheduleModule.forRoot(), ConfigModule],
+  imports: [PrismaModule, NotificationsModule, FooterSettingsModule, ShippingModule, forwardRef(() => EmailQueueModule), ScheduleModule.forRoot(), ConfigModule],
   controllers: [PDFHealthController],
   providers: [
     PDFGeneratorService,
