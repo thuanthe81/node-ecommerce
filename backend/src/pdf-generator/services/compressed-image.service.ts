@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OptimizedImageResult } from '../types/image-optimization.types';
 import { CompressedImageConfigService } from './compressed-image-config.service';
-import { CompressedImageStorageMonitoringService } from './compressed-image-storage-monitoring.service';
+// import { CompressedImageStorageMonitoringService } from './compressed-image-storage-monitoring.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -19,7 +19,6 @@ export class CompressedImageService {
 
   constructor(
     private readonly configService: CompressedImageConfigService,
-    private readonly monitoringService: CompressedImageStorageMonitoringService
   ) {
     this.ensureBaseDirectoryExists();
   }
@@ -31,10 +30,6 @@ export class CompressedImageService {
    * @returns Promise<string> - Path to stored compressed image
    */
   async saveCompressedImage(originalPath: string, result: OptimizedImageResult): Promise<string> {
-    const startTime = Date.now();
-    const retryConfig = this.configService.getRetryConfig();
-    let lastError: Error | undefined;
-
     // Enhanced error handling: Check if storage is available before attempting
     if (!this.configService.isEnabled()) {
       if (this.configService.isGracefulDegradationEnabled()) {
@@ -62,76 +57,33 @@ export class CompressedImageService {
       throw new Error(`Compressed directory unavailable: ${baseDir}`);
     }
 
-    // Retry logic with enhanced error handling
-    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
+    // logic with enhanced error handling
+    this.logger.log(`Saving compressed image for: ${originalPath}`);
+
+    const compressedPath = this.generateCompressedPath(originalPath);
+    const fullCompressedPath = this.getFullPath(compressedPath);
+
+    // Enhanced error handling: Ensure directory exists with proper error handling
+    const compressedDir = path.dirname(fullCompressedPath);
+    await this.ensureDirectoryExistsWithRecovery(compressedDir);
+
+    // Enhanced error handling: Write file with atomic operation
+    await this.writeFileAtomically(fullCompressedPath, result.optimizedBuffer);
+
+    // Save metadata alongside the image if enabled
+    if (this.configService.isMetadataEnabled()) {
       try {
-        this.logger.log(`Saving compressed image for: ${originalPath} (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`);
-
-        const compressedPath = this.generateCompressedPath(originalPath);
-        const fullCompressedPath = this.getFullPath(compressedPath);
-
-        // Enhanced error handling: Ensure directory exists with proper error handling
-        const compressedDir = path.dirname(fullCompressedPath);
-        await this.ensureDirectoryExistsWithRecovery(compressedDir);
-
-        // Enhanced error handling: Write file with atomic operation
-        await this.writeFileAtomically(fullCompressedPath, result.optimizedBuffer);
-
-        // Save metadata alongside the image if enabled
-        if (this.configService.isMetadataEnabled()) {
-          try {
-            await this.saveMetadataWithFallback(fullCompressedPath, originalPath, compressedPath, result);
-          } catch (metadataError) {
-            // Metadata save failure should not fail the entire operation
-            if (this.configService.isErrorLoggingEnabled()) {
-              this.logger.warn(`Failed to save metadata for ${originalPath}: ${metadataError.message}`);
-            }
-          }
-        }
-
-        // Record performance metrics
-        const duration = Date.now() - startTime;
-        this.monitoringService.recordStorageOperation(duration, true);
-
-        this.logger.log(`Compressed image saved: ${compressedPath} (${this.formatFileSize(result.optimizedSize)})`);
-        return compressedPath;
-
-      } catch (error) {
-        lastError = error;
-        const duration = Date.now() - startTime;
-        this.monitoringService.recordStorageOperation(duration, false);
-
+        await this.saveMetadataWithFallback(fullCompressedPath, originalPath, compressedPath, result);
+      } catch (metadataError) {
+        // Metadata save failure should not fail the entire operation
         if (this.configService.isErrorLoggingEnabled()) {
-          this.logger.warn(`Failed to save compressed image for ${originalPath} (attempt ${attempt + 1}): ${error.message}`);
+          this.logger.warn(`Failed to save metadata for ${originalPath}: ${metadataError.message}`);
         }
-
-        // Enhanced error handling: Check if this is a recoverable error
-        if (this.isRecoverableError(error) && attempt < retryConfig.maxRetries) {
-          this.logger.log(`Retrying save operation in ${retryConfig.retryDelay}ms...`);
-          await this.delay(retryConfig.retryDelay);
-          continue;
-        }
-
-        // Enhanced error handling: If this is the last attempt or non-recoverable error
-        if (this.configService.isGracefulDegradationEnabled()) {
-          this.logger.warn(`Graceful degradation: continuing without saving compressed image for ${originalPath} after ${attempt + 1} attempts`);
-          return ''; // Return empty path to indicate storage failed but continue
-        }
-
-        // If graceful degradation is disabled, throw the error
-        break;
       }
     }
 
-    // If we reach here, all attempts failed
-    const errorMessage = `Failed to save compressed image for ${originalPath} after ${retryConfig.maxRetries + 1} attempts. Last error: ${lastError?.message}`;
-
-    if (this.configService.isGracefulDegradationEnabled()) {
-      this.logger.error(`${errorMessage} - gracefully continuing`);
-      return '';
-    }
-
-    throw new Error(errorMessage);
+    this.logger.log(`Compressed image saved: ${compressedPath} (${this.formatFileSize(result.optimizedSize)})`);
+    return compressedPath;
   }
 
   /**
@@ -140,10 +92,6 @@ export class CompressedImageService {
    * @returns Promise<OptimizedImageResult | null> - Compressed image result or null if not found
    */
   async getCompressedImage(originalPath: string): Promise<OptimizedImageResult | null> {
-    const startTime = Date.now();
-    const retryConfig = this.configService.getRetryConfig();
-    let lastError: Error | undefined;
-
     // Enhanced error handling: Check if storage is available
     if (!this.configService.isEnabled()) {
       this.logger.log(`Compressed image storage is disabled, returning null for: ${originalPath}`);
@@ -159,86 +107,40 @@ export class CompressedImageService {
       return null;
     }
 
-    // Retry logic with enhanced error handling
-    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
-      try {
-        this.logger.log(`Looking up compressed image for: ${originalPath} (attempt ${attempt + 1}/${retryConfig.maxRetries + 1})`);
+    const compressedPath = this.generateCompressedPath(originalPath);
+    const fullCompressedPath = this.getFullPath(compressedPath);
 
-        const compressedPath = this.generateCompressedPath(originalPath);
-        const fullCompressedPath = this.getFullPath(compressedPath);
+    // Enhanced error handling: Read file with recovery mechanisms
+    const optimizedBuffer = await this.readFileWithRecovery(fullCompressedPath);
 
-        // Enhanced error handling: Check if file exists with proper error handling
-        if (!await this.fileExistsWithRecovery(fullCompressedPath)) {
-          this.logger.log(`Compressed image not found: ${compressedPath}`);
-          const duration = Date.now() - startTime;
-          this.monitoringService.recordRetrievalOperation(duration, false);
-          return null;
-        }
-
-        // Enhanced error handling: Read file with recovery mechanisms
-        const optimizedBuffer = await this.readFileWithRecovery(fullCompressedPath);
-
-        // Enhanced error handling: Read metadata with fallback
-        let metadata: any = {};
-        if (this.configService.isMetadataEnabled()) {
-          metadata = await this.readMetadataWithFallback(fullCompressedPath);
-        }
-
-        const result: OptimizedImageResult = {
-          optimizedBuffer,
-          originalSize: metadata.originalSize || 0,
-          optimizedSize: optimizedBuffer.length,
-          compressionRatio: metadata.compressionRatio || 0,
-          dimensions: metadata.dimensions || {
-            original: { width: 0, height: 0 },
-            optimized: { width: 0, height: 0 },
-          },
-          format: metadata.format || 'unknown',
-          processingTime: 0, // Retrieved from storage, no processing time
-          metadata: metadata.metadata || {
-            contentType: 'photo',
-            qualityUsed: 0,
-            formatConverted: false,
-            originalFormat: 'unknown',
-            technique: 'storage',
-          },
-        };
-
-        // Record successful retrieval
-        const duration = Date.now() - startTime;
-        this.monitoringService.recordRetrievalOperation(duration, true);
-
-        this.logger.log(`Compressed image retrieved: ${compressedPath} (${this.formatFileSize(result.optimizedSize)})`);
-        return result;
-
-      } catch (error) {
-        lastError = error;
-        const duration = Date.now() - startTime;
-        this.monitoringService.recordRetrievalOperation(duration, false);
-
-        if (this.configService.isErrorLoggingEnabled()) {
-          this.logger.warn(`Failed to retrieve compressed image for ${originalPath} (attempt ${attempt + 1}): ${error.message}`);
-        }
-
-        // Enhanced error handling: Check if this is a recoverable error
-        if (this.isRecoverableError(error) && attempt < retryConfig.maxRetries) {
-          this.logger.log(`Retrying retrieval operation in ${retryConfig.retryDelay}ms...`);
-          await this.delay(retryConfig.retryDelay);
-          continue;
-        }
-
-        // Enhanced error handling: If this is the last attempt or non-recoverable error
-        break;
-      }
+    // Enhanced error handling: Read metadata with fallback
+    let metadata: any = {};
+    if (this.configService.isMetadataEnabled()) {
+      metadata = await this.readMetadataWithFallback(fullCompressedPath);
     }
 
-    // If we reach here, all attempts failed
-    if (this.configService.isErrorLoggingEnabled()) {
-      this.logger.error(`Failed to retrieve compressed image for ${originalPath} after ${retryConfig.maxRetries + 1} attempts. Last error: ${lastError?.message}`);
-    }
+    const result: OptimizedImageResult = {
+      optimizedBuffer,
+      originalSize: metadata.originalSize || 0,
+      optimizedSize: optimizedBuffer.length,
+      compressionRatio: metadata.compressionRatio || 0,
+      dimensions: metadata.dimensions || {
+        original: { width: 0, height: 0 },
+        optimized: { width: 0, height: 0 },
+      },
+      format: metadata.format || 'unknown',
+      processingTime: 0, // Retrieved from storage, no processing time
+      metadata: metadata.metadata || {
+        contentType: 'photo',
+        qualityUsed: 0,
+        formatConverted: false,
+        originalFormat: 'unknown',
+        technique: 'storage',
+      },
+    };
 
-    // Always return null on retrieval failure to trigger fresh optimization
-    return null;
+    this.logger.log(`Compressed image retrieved: ${compressedPath} (${this.formatFileSize(result.optimizedSize)})`);
+    return result;
   }
 
   /**
@@ -324,108 +226,6 @@ export class CompressedImageService {
     } catch (error) {
       this.logger.warn(`Error checking compressed image existence for ${originalPath}: ${error.message}`);
       return false;
-    }
-  }
-
-  /**
-   * Get storage metrics and statistics
-   * @returns Storage metrics
-   */
-  async getStorageMetrics(): Promise<{
-    totalStorageSize: number;
-    totalCompressedImages: number;
-    reuseRate: number;
-    averageCompressionRatio: number;
-    storageUtilization: number;
-  }> {
-    try {
-      const baseDir = this.getFullPath(this.configService.getBaseDirectory());
-
-      if (!await this.directoryExists(baseDir)) {
-        return {
-          totalStorageSize: 0,
-          totalCompressedImages: 0,
-          reuseRate: 0,
-          averageCompressionRatio: 0,
-          storageUtilization: 0,
-        };
-      }
-
-      const stats = await this.calculateDirectoryStats(baseDir);
-
-      return {
-        totalStorageSize: stats.totalSize,
-        totalCompressedImages: stats.fileCount,
-        reuseRate: 0, // Would need tracking to calculate
-        averageCompressionRatio: stats.averageCompressionRatio,
-        storageUtilization: stats.totalSize / (1024 * 1024 * 100), // Utilization as percentage of 100MB
-      };
-
-    } catch (error) {
-      this.logger.error(`Failed to get storage metrics: ${error.message}`);
-      return {
-        totalStorageSize: 0,
-        totalCompressedImages: 0,
-        reuseRate: 0,
-        averageCompressionRatio: 0,
-        storageUtilization: 0,
-      };
-    }
-  }
-
-  /**
-   * Clean up old compressed images based on age or size limits
-   * @param maxAge - Maximum age in days (optional)
-   * @param maxSize - Maximum total size in bytes (optional)
-   * @returns Promise<number> - Number of files cleaned up
-   */
-  async cleanupOldImages(maxAge?: number, maxSize?: number): Promise<number> {
-    try {
-      const baseDir = this.getFullPath(this.configService.getBaseDirectory());
-
-      if (!await this.directoryExists(baseDir)) {
-        return 0;
-      }
-
-      let cleanedCount = 0;
-      const files = await this.getAllCompressedFiles(baseDir);
-
-      // Sort by modification time (oldest first)
-      files.sort((a, b) => a.mtime.getTime() - b.mtime.getTime());
-
-      // Clean by age if specified
-      if (maxAge !== undefined) {
-        const cutoffDate = new Date(Date.now() - (maxAge * 24 * 60 * 60 * 1000));
-
-        for (const file of files) {
-          if (file.mtime < cutoffDate) {
-            await this.deleteCompressedFile(file.path);
-            cleanedCount++;
-          }
-        }
-      }
-
-      // Clean by size if specified
-      if (maxSize !== undefined) {
-        let totalSize = files.reduce((sum, file) => sum + file.size, 0);
-
-        for (const file of files) {
-          if (totalSize <= maxSize) {
-            break;
-          }
-
-          await this.deleteCompressedFile(file.path);
-          totalSize -= file.size;
-          cleanedCount++;
-        }
-      }
-
-      this.logger.log(`Cleaned up ${cleanedCount} compressed images`);
-      return cleanedCount;
-
-    } catch (error) {
-      this.logger.error(`Failed to cleanup compressed images: ${error.message}`);
-      return 0;
     }
   }
 
@@ -550,108 +350,6 @@ export class CompressedImageService {
   }
 
   /**
-   * Calculate directory statistics
-   * @param dirPath - Directory to analyze
-   * @returns Directory statistics
-   */
-  private async calculateDirectoryStats(dirPath: string): Promise<{
-    totalSize: number;
-    fileCount: number;
-    averageCompressionRatio: number;
-  }> {
-    let totalSize = 0;
-    let fileCount = 0;
-    let totalCompressionRatio = 0;
-    let compressionRatioCount = 0;
-
-    const files = await this.getAllCompressedFiles(dirPath);
-
-    for (const file of files) {
-      totalSize += file.size;
-      fileCount++;
-
-      // Try to read compression ratio from metadata
-      const metadataPath = this.getMetadataPath(file.path);
-      if (await this.fileExists(metadataPath)) {
-        try {
-          const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
-          const metadata = JSON.parse(metadataContent);
-          if (metadata.compressionRatio !== undefined) {
-            totalCompressionRatio += metadata.compressionRatio;
-            compressionRatioCount++;
-          }
-        } catch {
-          // Ignore metadata read errors
-        }
-      }
-    }
-
-    return {
-      totalSize,
-      fileCount,
-      averageCompressionRatio: compressionRatioCount > 0 ? totalCompressionRatio / compressionRatioCount : 0,
-    };
-  }
-
-  /**
-   * Get all compressed files in directory recursively
-   * @param dirPath - Directory to scan
-   * @returns Array of file information
-   */
-  private async getAllCompressedFiles(dirPath: string): Promise<Array<{
-    path: string;
-    size: number;
-    mtime: Date;
-  }>> {
-    const files: Array<{ path: string; size: number; mtime: Date; }> = [];
-
-    try {
-      const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dirPath, entry.name);
-
-        if (entry.isDirectory()) {
-          // Recursively scan subdirectories
-          const subFiles = await this.getAllCompressedFiles(fullPath);
-          files.push(...subFiles);
-        } else if (entry.isFile() && !entry.name.endsWith('.meta.json')) {
-          // Include image files but exclude metadata files
-          const stat = await fs.promises.stat(fullPath);
-          files.push({
-            path: fullPath,
-            size: stat.size,
-            mtime: stat.mtime,
-          });
-        }
-      }
-    } catch (error) {
-      this.logger.warn(`Error scanning directory ${dirPath}: ${error.message}`);
-    }
-
-    return files;
-  }
-
-  /**
-   * Delete compressed file and its metadata
-   * @param filePath - Path to compressed file
-   */
-  private async deleteCompressedFile(filePath: string): Promise<void> {
-    try {
-      // Delete the image file
-      await fs.promises.unlink(filePath);
-
-      // Delete the metadata file if it exists
-      const metadataPath = this.getMetadataPath(filePath);
-      if (await this.fileExists(metadataPath)) {
-        await fs.promises.unlink(metadataPath);
-      }
-    } catch (error) {
-      this.logger.warn(`Error deleting compressed file ${filePath}: ${error.message}`);
-    }
-  }
-
-  /**
    * Format file size for logging
    * @param bytes - Size in bytes
    * @returns Formatted size string
@@ -707,47 +405,11 @@ export class CompressedImageService {
    * @param dirPath - Directory path to create
    */
   private async ensureDirectoryExistsWithRecovery(dirPath: string): Promise<void> {
-    const retryConfig = this.configService.getRetryConfig();
-    let lastError: Error | undefined;
+    await fs.promises.mkdir(dirPath, { recursive: true });
 
-    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
-      try {
-        await fs.promises.mkdir(dirPath, { recursive: true });
-
-        // Verify the directory was created and is accessible
-        await fs.promises.access(dirPath, fs.constants.W_OK | fs.constants.R_OK);
-        return;
-
-      } catch (error) {
-        lastError = error;
-
-        if (error.code === 'EEXIST') {
-          // Directory already exists, verify it's accessible
-          try {
-            await fs.promises.access(dirPath, fs.constants.W_OK | fs.constants.R_OK);
-            return;
-          } catch (accessError) {
-            // Directory exists but not accessible
-            if (attempt < retryConfig.maxRetries) {
-              this.logger.warn(`Directory ${dirPath} exists but not accessible, retrying...`);
-              await this.delay(retryConfig.retryDelay);
-              continue;
-            }
-            throw accessError;
-          }
-        }
-
-        if (this.isRecoverableError(error) && attempt < retryConfig.maxRetries) {
-          this.logger.warn(`Failed to create directory ${dirPath} (attempt ${attempt + 1}): ${error.message}`);
-          await this.delay(retryConfig.retryDelay);
-          continue;
-        }
-
-        throw error;
-      }
-    }
-
-    throw new Error(`Failed to create directory ${dirPath} after ${retryConfig.maxRetries + 1} attempts. Last error: ${lastError?.message}`);
+    // Verify the directory was created and is accessible
+    await fs.promises.access(dirPath, fs.constants.W_OK | fs.constants.R_OK);
+    return;
   }
 
   /**
@@ -791,10 +453,6 @@ export class CompressedImageService {
    * @returns Promise<Buffer>
    */
   private async readFileWithRecovery(filePath: string): Promise<Buffer> {
-    const retryConfig = this.configService.getRetryConfig();
-    let lastError: Error | undefined;
-
-    for (let attempt = 0; attempt <= retryConfig.maxRetries; attempt++) {
       try {
         const data = await fs.promises.readFile(filePath);
 
@@ -804,21 +462,9 @@ export class CompressedImageService {
         }
 
         return data;
-
       } catch (error) {
-        lastError = error;
-
-        if (this.isRecoverableError(error) && attempt < retryConfig.maxRetries) {
-          this.logger.warn(`Failed to read file ${filePath} (attempt ${attempt + 1}): ${error.message}`);
-          await this.delay(retryConfig.retryDelay);
-          continue;
-        }
-
         throw error;
       }
-    }
-
-    throw new Error(`Failed to read file ${filePath} after ${retryConfig.maxRetries + 1} attempts. Last error: ${lastError?.message}`);
   }
 
   /**
@@ -829,29 +475,12 @@ export class CompressedImageService {
   private async fileExistsWithRecovery(filePath: string): Promise<boolean> {
     const retryConfig = this.configService.getRetryConfig();
 
-    for (let attempt = 0; attempt <= Math.min(retryConfig.maxRetries, 2); attempt++) {
-      try {
-        await fs.promises.access(filePath, fs.constants.F_OK);
-        return true;
-      } catch (error) {
-        if (error.code === 'ENOENT') {
-          // File doesn't exist - this is not an error condition
-          return false;
-        }
-
-        if (this.isRecoverableError(error) && attempt < Math.min(retryConfig.maxRetries, 2)) {
-          this.logger.warn(`Error checking file existence ${filePath} (attempt ${attempt + 1}): ${error.message}`);
-          await this.delay(retryConfig.retryDelay);
-          continue;
-        }
-
-        // For other errors, assume file doesn't exist to be safe
-        this.logger.warn(`Error checking file existence ${filePath}: ${error.message}, assuming file doesn't exist`);
-        return false;
-      }
+    try {
+      await fs.promises.access(filePath, fs.constants.F_OK);
+      return true;
+    } catch (error) {
+      return false;
     }
-
-    return false;
   }
 
   /**

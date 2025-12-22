@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document outlines the requirements for fixing critical bugs in the order confirmation email system. The system currently has two major issues: (1) email templates display ugly CSS formatting with special characters appearing at the end of the CSS, and (2) customers receive 4 duplicate confirmation emails for a single order.
+This document outlines the requirements for fixing critical bugs in the order confirmation email system. The system currently has two major issues: (1) email templates display complex CSS code as visible text in the email body, causing poor user experience, and (2) customers receive 4 duplicate confirmation emails for a single order. The solution is to completely simplify the email template to contain only essential information without complex styling.
 
 ## Glossary
 
@@ -10,22 +10,35 @@ This document outlines the requirements for fixing critical bugs in the order co
 - **Email_Worker**: The background worker that processes email events from the queue
 - **Email_Event_Publisher**: The service that publishes email events to the queue
 - **Order_Service**: The service that handles order creation and triggers email notifications
-- **HTML_Escaping**: The process of converting special characters to HTML entities to prevent rendering issues
-- **Email_Deduplication**: The mechanism to prevent duplicate emails from being sent for the same event
+- **Simple_Email_Template**: A minimal email template containing only essential order information without complex CSS or styling
+- **Order_Link**: A direct link to view the order details on the website
+- **Essential_Information**: Core order data including order ID, creation date, and customer information
 
 ## Requirements
 
 ### Requirement 1
 
-**User Story:** As a customer, I want to receive properly formatted order confirmation emails, so that I can read the email content without seeing ugly CSS code or special characters.
+**User Story:** As a customer, I want to receive a simple, clean order confirmation email with essential information, so that I can quickly understand my order details without seeing any technical code or styling issues.
 
 #### Acceptance Criteria
 
-1. WHEN an order confirmation email is generated THEN the Email_Template_Service SHALL properly escape all special characters in HTML content
-2. WHEN an order confirmation email is generated THEN the Email_Template_Service SHALL ensure CSS styles are properly closed and formatted
-3. WHEN an order confirmation email is displayed THEN the email SHALL NOT show raw CSS code or special characters at the end of the content
-4. WHEN HTML content contains special characters (quotes, ampersands, less-than, greater-than) THEN the Email_Template_Service SHALL convert them to HTML entities
-5. WHEN the email template is generated THEN the Email_Template_Service SHALL validate that all HTML tags are properly closed
+1. WHEN an order confirmation email is generated THEN the Email_Template_Service SHALL create a simple template with only essential information
+2. WHEN an order confirmation email is displayed THEN the email SHALL contain only: order ID, creation date, order link, and customer information
+3. WHEN the email template is generated THEN it SHALL use minimal inline styles only (no CSS blocks, no complex styling)
+4. WHEN HTML content contains special characters THEN the Email_Template_Service SHALL convert them to HTML entities
+5. WHEN the email is sent THEN it SHALL be readable and professional without any visible CSS code or technical artifacts
+
+### Requirement 1.5
+
+**User Story:** As a customer, I want to easily access my order details, so that I can view my complete order information when needed.
+
+#### Acceptance Criteria
+
+1. WHEN an order confirmation email is sent THEN it SHALL include a direct link to view the order on the website
+2. WHEN the order link is clicked THEN it SHALL take the customer directly to their order details page
+3. WHEN the email contains customer information THEN it SHALL display the customer's name and email address
+4. WHEN the email is generated THEN it SHALL be compatible with all major email clients without complex CSS
+5. WHEN the email is viewed THEN it SHALL maintain a clean, professional appearance with basic formatting only
 
 ### Requirement 2
 

@@ -11,6 +11,7 @@ import {
 import { ModernButtonGenerator } from './email-button-generators';
 import { StatusBadgeGenerator } from './email-status-badge-generators';
 import { STATUS, BUSINESS } from '../../common/constants';
+import { HTMLEscapingService } from '../../common/services/html-escaping.service';
 
 export interface OrderEmailData {
   orderNumber: string;
@@ -93,6 +94,8 @@ export interface UserEmailData {
 
 @Injectable()
 export class EmailTemplateService {
+  constructor(private readonly htmlEscapingService: HTMLEscapingService) {}
+
   /**
    * Enhanced modern email layout wrapper with sophisticated styling and comprehensive accessibility
    * Implements semantic HTML structure, ARIA labels, and WCAG 2.1 AA compliance
@@ -110,13 +113,14 @@ export class EmailTemplateService {
       ? 'Chuyển đến nội dung chính'
       : 'Skip to main content';
 
-    const modernStyles = this.getModernStyles();
-    const responsiveStyles = this.getResponsiveStyles();
-    const accessibilityStyles = this.getAccessibilityStyles();
-    const darkModeStyles = this.getDarkModeStyles();
-    const advancedBackgroundStyles = this.getAdvancedBackgroundStyles();
-    const printStyles = this.getPrintStyles();
-    const compatibilityStyles = this.getEmailClientCompatibilityStyles();
+    // Generate CSS styles and remove comments to prevent HTML structure breaking
+    const modernStyles = this.htmlEscapingService.removeCSSComments(this.getModernStyles());
+    const responsiveStyles = this.htmlEscapingService.removeCSSComments(this.getResponsiveStyles());
+    const accessibilityStyles = this.htmlEscapingService.removeCSSComments(this.getAccessibilityStyles());
+    const darkModeStyles = this.htmlEscapingService.removeCSSComments(this.getDarkModeStyles());
+    const advancedBackgroundStyles = this.htmlEscapingService.removeCSSComments(this.getAdvancedBackgroundStyles());
+    const printStyles = this.htmlEscapingService.removeCSSComments(this.getPrintStyles());
+    const compatibilityStyles = this.htmlEscapingService.removeCSSComments(this.getEmailClientCompatibilityStyles());
 
     return `
 <!DOCTYPE html>

@@ -4,10 +4,10 @@
 
 This design addresses two critical bugs in the order confirmation email system:
 
-1. **CSS Formatting Bug**: Email templates display raw CSS code and special characters at the end of the email content due to improper HTML escaping and malformed CSS
+1. **Complex CSS Display Bug**: Email templates display complex CSS code as visible text in the email body, creating a poor user experience
 2. **Duplicate Email Bug**: Customers receive 4 duplicate order confirmation emails due to multiple event publications and insufficient deduplication
 
-The solution involves enhancing HTML escaping mechanisms, fixing CSS generation, and strengthening email event deduplication.
+The solution involves completely simplifying the email template to contain only essential information (order ID, creation date, order link, and customer information) without any complex CSS or styling that could cause display issues.
 
 ## Architecture
 
@@ -28,12 +28,17 @@ interface HTMLEscapingService {
   escapeHtmlAttributes(attributes: string): string;
   validateHtmlStructure(html: string): ValidationResult;
   sanitizeCSS(css: string): string;
+  containCSSInHead(html: string, css: string): string;
+  simplifyEmailCSS(css: string): string;
+  removeCSSComments(css: string): string; // New method to handle CSS comments
 }
 
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
+  cssContained: boolean;
+  hasVisibleCSS: boolean;
 }
 ```
 
@@ -64,15 +69,25 @@ interface EmailTemplateService {
     locale: 'en' | 'vi'
   ): Promise<EmailTemplate>;
 
-  // Enhanced with proper escaping
-  generateMinimalHTMLContent(
+  // Simplified with minimal styling and essential information only
+  generateSimpleHTMLContent(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
     translations: any
   ): string;
 
-  // New validation method
-  validateEmailTemplate(template: EmailTemplate): ValidationResult;
+  // New methods for simple template generation
+  validateSimpleTemplate(template: EmailTemplate): ValidationResult;
+  generateOrderLink(orderId: string, orderNumber: string): string;
+}
+
+interface EmailTemplate {
+  html: string;
+  subject: string;
+  attachments?: any[];
+  // New fields for simple template validation
+  isSimple: boolean;
+  containsEssentialInfo: boolean;
 }
 ```
 
@@ -104,16 +119,23 @@ interface EmailDeduplicationRecord {
 }
 ```
 
-### HTML Validation Result
+### Simple Email Template Data
 
 ```typescript
-interface HTMLValidationResult {
-  isValid: boolean;
-  hasUnclosedTags: boolean;
-  hasUnescapedCharacters: boolean;
-  cssIssues: string[];
-  htmlIssues: string[];
-  recommendations: string[];
+interface SimpleEmailData {
+  orderId: string;
+  orderNumber: string;
+  createdDate: string;
+  orderLink: string;
+  customerName: string;
+  customerEmail: string;
+}
+
+interface SimpleEmailTemplate {
+  subject: string;
+  html: string;
+  text: string;
+  essentialInfo: SimpleEmailData;
 }
 ```
 
@@ -129,70 +151,80 @@ interface HTMLValidationResult {
 ### Property 1: HTML Special Character Escaping
 *For any* HTML content containing special characters (&, <, >, ", '), the Email_Template_Service should convert them to their corresponding HTML entities (&amp;, &lt;, &gt;, &quot;, &#39;)
 
-**Validates: Requirements 1.1, 1.4**
+**Validates: Requirements 1.4**
 
-### Property 2: CSS Structure Validation
-*For any* generated email template, all CSS style blocks should be properly closed with matching opening and closing tags
+### Property 2: Simple Template Essential Information
+*For any* generated order confirmation email, the template should contain exactly these essential elements: order ID, creation date, order link, and customer information
 
 **Validates: Requirements 1.2**
 
-### Property 3: No Raw CSS in Output
-*For any* generated email HTML, the final output should not contain unescaped CSS code or special characters visible in the rendered content
+### Property 3: No Complex CSS in Simple Template
+*For any* generated simple email template, the HTML should contain only basic inline styles and no CSS blocks, media queries, or complex styling
 
 **Validates: Requirements 1.3**
 
-### Property 4: HTML Tag Closure
-*For any* generated email template, all HTML tags should have matching closing tags and proper nesting structure
+### Property 4: Order Link Generation
+*For any* order confirmation email, the order link should be a valid URL that directs to the specific order details page
 
-**Validates: Requirements 1.5**
+**Validates: Requirements 1.5.1, 1.5.2**
 
-### Property 5: Single Event Publication
+### Property 5: Email Client Compatibility
+*For any* simple email template, the HTML should be compatible with all major email clients without requiring complex CSS support
+
+**Validates: Requirements 1.5.4, 1.5.5**
+
+### Property 6: Customer Information Display
+*For any* order confirmation email, the customer's name and email address should be clearly displayed and properly escaped
+
+**Validates: Requirements 1.5.3**
+
+### Property 7: Single Event Publication
 *For any* order creation, the Order_Service should publish exactly one order confirmation event to the email queue
 
 **Validates: Requirements 2.1**
 
-### Property 6: Event Deduplication
+### Property 8: Event Deduplication
 *For any* set of identical order confirmation events published within a 1-minute window, the Email_Event_Publisher should process only one event
 
 **Validates: Requirements 2.2, 2.4**
 
-### Property 7: Single Email Delivery
+### Property 9: Single Email Delivery
 *For any* processed order confirmation event, the Email_Worker should send exactly one email to the customer
 
 **Validates: Requirements 2.3**
 
-### Property 8: End-to-End Single Email
+### Property 10: End-to-End Single Email
 *For any* completed order creation, the customer should receive exactly one order confirmation email
 
 **Validates: Requirements 2.5**
 
-### Property 9: Event Publication Logging
+### Property 11: Event Publication Logging
 *For any* email event publication, the system should log the event type, order ID, timestamp, and job ID
 
 **Validates: Requirements 3.1, 3.2, 3.3**
 
-### Property 10: Email Delivery Logging
+### Property 12: Email Delivery Logging
 *For any* email sent, the system should log the delivery status, recipient email, and timestamp
 
 **Validates: Requirements 3.4**
 
-### Property 11: Duplicate Detection Logging
+### Property 13: Duplicate Detection Logging
 *For any* duplicate event detected, the system should log a warning with the event hash, order ID, and deduplication status
 
 **Validates: Requirements 3.5**
 
-### Property 12: Test Mode Comprehensive Logging
+### Property 14: Test Mode Comprehensive Logging
 *For any* order placed in test mode, the system should log all email events, publications, and deliveries with full details
 
 **Validates: Requirements 4.3**
 
-### Property 13: Deduplication Evidence in Logs
+### Property 15: Deduplication Evidence in Logs
 *For any* review of email logs, there should be clear evidence showing which events were deduplicated and which were processed
 
 **Validates: Requirements 4.4**
 
-### Property 14: HTML Formatting Verification
-*For any* generated email content, the HTML should be properly formatted without CSS artifacts or unescaped characters
+### Property 16: Simple Template Validation
+*For any* generated email content, the HTML should be a simple template without complex CSS, containing only essential order information
 
 **Validates: Requirements 4.5**
 
@@ -244,10 +276,17 @@ interface HTMLValidationResult {
 
 ### Root Cause Analysis
 
-**CSS Formatting Bug**:
-- The `generateMinimalHTMLContent` method in `EmailAttachmentService` generates HTML with inline styles
-- Special characters in customer names, addresses, or product descriptions are not being escaped
-- CSS strings may contain unescaped quotes or other characters that break the HTML structure
+**Complex CSS Display Bug**:
+- The current email templates include complex CSS with media queries, print styles, and advanced styling
+- This complex CSS is appearing as visible text in the email body instead of being properly rendered
+- Email clients have varying levels of CSS support, causing inconsistent rendering and display issues
+- The solution is to eliminate complex CSS entirely and use only basic inline styles
+
+**Email Template Complexity Issues**:
+- Current templates try to provide rich styling and responsive design features
+- These features are not well-supported across email clients and cause more problems than benefits
+- Customers primarily need essential order information, not elaborate styling
+- A simple, clean template will be more reliable and universally compatible
 
 **Duplicate Email Bug**:
 - Investigation needed to determine if:
@@ -258,11 +297,14 @@ interface HTMLValidationResult {
 
 ### Fix Strategy
 
-1. **HTML Escaping**: Add proper HTML entity encoding for all dynamic content
-2. **CSS Sanitization**: Validate and sanitize all CSS before including in templates
-3. **Deduplication**: Strengthen the existing deduplication mechanism in Email Event Publisher
-4. **Logging**: Add comprehensive logging to trace email flow and identify duplicate sources
-5. **Validation**: Add HTML structure validation before sending emails
+1. **Template Simplification**: Replace complex email templates with simple templates containing only essential information
+2. **Minimal Styling**: Use only basic inline styles (font, color, spacing) and eliminate all CSS blocks, media queries, and complex styling
+3. **Essential Information Focus**: Include only: order ID, creation date, direct order link, and customer information
+4. **Universal Compatibility**: Ensure the simple template works across all email clients without requiring advanced CSS support
+5. **Order Link Integration**: Add a direct link to the order details page for customers who need complete information
+6. **HTML Escaping**: Maintain proper HTML entity encoding for all dynamic content
+7. **Deduplication**: Strengthen the existing deduplication mechanism in Email Event Publisher
+8. **Logging**: Add comprehensive logging to trace email flow and identify duplicate sources
 
 ### Dependencies
 - Existing `EmailAttachmentService` for email generation

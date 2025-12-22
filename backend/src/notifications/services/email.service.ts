@@ -316,7 +316,8 @@ export class EmailService {
       fs.writeFileSync(tempFile, html, 'utf8');
 
       // Return the file reference for swaks
-      return `"$(cat '${tempFile}' && rm '${tempFile}')"`;
+      // return `"$(cat '${tempFile}' && rm '${tempFile}')"`;
+      return `"$(cat '${tempFile}')"`;
     } catch (error) {
       // Fallback to simple escaping if file approach fails
       this.logger.warn(`[EmailService] Temp file approach failed, using fallback escaping: ${error.message}`);
@@ -334,7 +335,7 @@ export class EmailService {
     let simplified = html;
 
     // Remove complex CSS that might cause issues
-    simplified = simplified.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+    // simplified = simplified.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
 
     // Remove script tags
     simplified = simplified.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
@@ -343,7 +344,7 @@ export class EmailService {
     simplified = simplified.replace(/<link[^>]*>/gi, '');
 
     // Remove complex style attributes entirely - they cause the most issues
-    simplified = simplified.replace(/\s+style="[^"]*"/gi, '');
+    // simplified = simplified.replace(/\s+style="[^"]*"/gi, '');
 
     // Remove complex class attributes
     simplified = simplified.replace(/\s+class="[^"]*"/gi, '');

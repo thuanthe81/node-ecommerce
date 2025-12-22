@@ -277,6 +277,7 @@ function createTestOrderData(config: {
   const total = subtotal + config.shippingCost - config.discountAmount;
 
   return {
+    orderId: 'test-order-id-' + Date.now(),
     orderNumber: config.orderNumber,
     orderDate: new Date().toISOString(),
     customerInfo: {

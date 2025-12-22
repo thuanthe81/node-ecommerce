@@ -132,6 +132,9 @@ export class HTMLEscapingService {
 
     let sanitized = css;
 
+    // First, remove CSS comments to prevent HTML structure breaking
+    sanitized = this.removeCSSComments(sanitized);
+
     // Escape quotes in CSS values
     sanitized = sanitized.replace(/"/g, '\\"');
     sanitized = sanitized.replace(/'/g, "\\'");
@@ -146,6 +149,38 @@ export class HTMLEscapingService {
     sanitized = sanitized.replace(/{\s*;/g, '{');
 
     return sanitized.trim();
+  }
+
+  /**
+   * Remove CSS comments to prevent HTML structure breaking
+   * @param css - CSS content that may contain comments
+   * @returns CSS content with all comments removed
+   */
+  removeCSSComments(css: string): string {
+    if (!css || typeof css !== 'string') {
+      return '';
+    }
+
+    try {
+      // Remove CSS comments (/* comment */) while preserving the rest of the CSS
+      // This regex handles multi-line comments and nested structures
+      let cleaned = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+      // Clean up any extra whitespace left by comment removal
+      cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+      // Log the comment removal for debugging
+      const commentCount = (css.match(/\/\*[\s\S]*?\*\//g) || []).length;
+      if (commentCount > 0) {
+        this.logger.debug(`Removed ${commentCount} CSS comments from CSS content`);
+      }
+
+      return cleaned;
+    } catch (error) {
+      this.logger.error('Error removing CSS comments:', error);
+      // Return original CSS if comment removal fails
+      return css;
+    }
   }
 
   /**

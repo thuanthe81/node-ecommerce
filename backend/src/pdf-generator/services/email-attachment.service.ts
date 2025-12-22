@@ -475,8 +475,8 @@ export class EmailAttachmentService {
       translations,
     );
 
-    // Generate minimal HTML content that works with swaks
-    const htmlContent = this.generateMinimalHTMLContent(
+    // Generate simple HTML content that works with email clients
+    const htmlContent = this.generateSimpleHTMLContent(
       orderData,
       locale,
       translations,
@@ -767,14 +767,15 @@ export class EmailAttachmentService {
   }
 
   /**
-   * Generate minimal HTML email content that works with swaks
-   * Enhanced with proper HTML escaping and CSS formatting
+   * Generate simple HTML email content with essential information only
+   * Includes order ID, creation date, order link, and customer information
+   * Uses basic inline styles only (no CSS blocks or complex styling)
    * @param orderData - Order data
    * @param locale - Language locale
    * @param translations - Translation object
-   * @returns Minimal HTML email content with proper escaping
+   * @returns Simple HTML email content with essential information
    */
-  private generateMinimalHTMLContent(
+  private generateSimpleHTMLContent(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
     translations: any,
@@ -794,7 +795,11 @@ export class EmailAttachmentService {
         BUSINESS.COMPANY.NAME.EN || 'Company'
       );
 
-      // Build greeting with already-escaped customer name (don't escape again)
+      // Generate order link
+      const orderLink = this.generateOrderLink(orderData.orderId);
+      const escapedOrderLink = this.htmlEscapingService.escapeHtmlContent(orderLink);
+
+      // Build greeting with already-escaped customer name
       const greeting = translations.greeting.replace('{customerName}', escapedCustomerName);
 
       // Translation strings don't need escaping as they don't contain user input
@@ -802,16 +807,11 @@ export class EmailAttachmentService {
       const orderDetails = translations.orderDetails || '';
       const orderNumberLabel = translations.orderNumber || '';
       const orderDateLabel = translations.orderDate || '';
-      const totalLabel = translations.total || '';
-      const pdfAttachment = translations.pdfAttachment || '';
+      const viewOrderLabel = locale === 'vi' ? 'Xem chi tiết đơn hàng' : 'View Order Details';
       const contactInfo = translations.contactInfo || '';
       const signature = translations.signature || '';
 
-      // Format currency safely
-      const formattedTotal = this.formatCurrency(orderData.pricing.total, locale);
-      const escapedTotal = this.htmlEscapingService.escapeHtmlContent(formattedTotal);
-
-      // Generate the HTML template with proper escaping
+      // Generate the simple HTML template with essential information only
       const htmlTemplate = `<!DOCTYPE html>
 <html lang="${locale}">
   <head>
@@ -823,26 +823,27 @@ export class EmailAttachmentService {
   </head>
   <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
 
-    <div style="background-color: #2c3e50; color: #ffffff; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 4px;">
-      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${escapedCompanyName}</h1>
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #2c3e50; font-size: 24px; margin: 0;">${escapedCompanyName}</h1>
     </div>
 
-    <p style="margin-bottom: 15px; font-size: 16px;">${greeting}</p>
+    <p style="font-size: 16px; margin-bottom: 15px;">${greeting}</p>
 
-    <p style="margin-bottom: 20px; font-size: 16px;">${thankYou}</p>
+    <p style="font-size: 16px; margin-bottom: 20px;">${thankYou}</p>
 
-    <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db; border-radius: 4px;">
+    <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 4px;">
       <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">${orderDetails}</h3>
       <p style="margin: 8px 0; font-size: 14px;"><strong>${orderNumberLabel}:</strong> ${escapedOrderNumber}</p>
       <p style="margin: 8px 0; font-size: 14px;"><strong>${orderDateLabel}:</strong> ${escapedOrderDate}</p>
-      <p style="margin: 8px 0; font-size: 14px;"><strong>${totalLabel}:</strong> ${escapedTotal}</p>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <a href="${escapedOrderLink}" style="display: inline-block; background-color: #3498db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">${viewOrderLabel}</a>
+      </div>
     </div>
 
-    <p style="margin: 20px 0; font-size: 16px; font-weight: bold; color: #2c3e50;">${pdfAttachment}</p>
+    <p style="font-size: 16px; margin: 20px 0;">${contactInfo}</p>
 
-    <p style="margin: 20px 0; font-size: 16px;">${contactInfo}</p>
-
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #666666; font-size: 12px;">
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #666666; font-size: 14px;">
       <p style="margin: 10px 0;">${signature.replace('\\n', '<br>')}</p>
       <p style="margin: 10px 0; text-align: center;">&copy; ${new Date().getFullYear()} ${escapedCompanyName}. All rights reserved.</p>
     </div>
@@ -850,7 +851,7 @@ export class EmailAttachmentService {
   </body>
 </html>`;
 
-      // Validate the generated HTML structure
+      // Validate HTML structure
       const validationResult = this.htmlEscapingService.validateHtmlStructure(htmlTemplate);
 
       if (!validationResult.isValid) {
@@ -858,7 +859,6 @@ export class EmailAttachmentService {
           `HTML validation issues found for order ${orderData.orderNumber}:`,
           {
             errors: validationResult.htmlIssues,
-            cssIssues: validationResult.cssIssues,
             warnings: validationResult.recommendations,
           }
         );
@@ -866,19 +866,47 @@ export class EmailAttachmentService {
 
       // Log successful HTML generation
       this.logger.debug(
-        `Generated HTML email template for order ${orderData.orderNumber} (${htmlTemplate.length} characters)`
+        `Generated simple HTML email template for order ${orderData.orderNumber} (${htmlTemplate.length} characters)`
       );
 
       return htmlTemplate;
 
     } catch (error) {
       this.logger.error(
-        `Error generating HTML email content for order ${orderData.orderNumber}:`,
+        `Error generating simple HTML email content for order ${orderData.orderNumber}:`,
         error
       );
 
       // Return a safe fallback template
       return this.generateFallbackHTMLTemplate(orderData, locale, translations);
+    }
+  }
+
+  /**
+   * Generate order link for customer to view order details
+   * @param orderId - Order ID to generate link for
+   * @returns Direct link to order details page
+   */
+  private generateOrderLink(orderId: string): string {
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+      // Remove trailing slash if present
+      const baseUrl = frontendUrl.replace(/\/$/, '');
+
+      // Generate direct link to order details page using order ID
+      // Using English locale as default for order links
+      const orderLink = `${baseUrl}/en/orders/${encodeURIComponent(orderId)}`;
+
+      this.logger.debug(`Generated order link for order ID ${orderId}: ${orderLink}`);
+
+      return orderLink;
+    } catch (error) {
+      this.logger.error(`Error generating order link for order ID ${orderId}:`, error);
+
+      // Return fallback link
+      const fallbackUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return `${fallbackUrl}/en/account/orders`;
     }
   }
 
@@ -900,6 +928,9 @@ export class EmailAttachmentService {
     const safeCustomerName = this.htmlEscapingService.escapeHtmlContent(
       orderData.customerInfo.name || 'Customer'
     );
+    const orderLink = this.generateOrderLink(orderData.orderId);
+    const safeOrderLink = this.htmlEscapingService.escapeHtmlContent(orderLink);
+    const viewOrderLabel = locale === 'vi' ? 'Xem đơn hàng' : 'View Order';
 
     return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -911,7 +942,7 @@ export class EmailAttachmentService {
     <h1>Order Confirmation</h1>
     <p>Dear ${safeCustomerName},</p>
     <p>Thank you for your order ${safeOrderNumber}.</p>
-    <p>Please see the attached PDF for detailed information.</p>
+    <p><a href="${safeOrderLink}" style="color: #3498db; text-decoration: none;">${viewOrderLabel}</a></p>
     <p>Best regards,<br>Customer Service Team</p>
   </body>
 </html>`;
@@ -1129,7 +1160,7 @@ export class EmailAttachmentService {
       '\n\n' +
       fallbackMessage;
 
-    const htmlContent = this.generateMinimalHTMLContent(
+    const htmlContent = this.generateSimpleHTMLContent(
       orderData,
       locale,
       translations,
@@ -1265,6 +1296,7 @@ export class EmailAttachmentService {
 
       // Convert order to PDF data format
       const orderPDFData: OrderPDFData = {
+        orderId: order.id,
         orderNumber: order.orderNumber,
         orderDate: order.createdAt.toISOString().split('T')[0],
         customerInfo: {
@@ -1454,6 +1486,7 @@ export class EmailAttachmentService {
     const businessInfo = await this.businessInfoService.getBusinessInfo(locale);
 
     return {
+      orderId: order.id,
       orderNumber: order.orderNumber,
       orderDate: order.createdAt.toISOString().split('T')[0],
       customerInfo: {

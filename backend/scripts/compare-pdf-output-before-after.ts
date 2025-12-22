@@ -102,6 +102,7 @@ const testCases: ComparisonTestCase[] = [
 
 // Base order data template
 const createOrderData = (shippingMethod: ShippingMethodData, locale: 'en' | 'vi' = 'en'): OrderPDFData => ({
+  orderId: 'test-order-id-' + Date.now(),
   orderNumber: 'COMP-' + Date.now(),
   orderDate: new Date().toISOString().split('T')[0],
   customerInfo: {

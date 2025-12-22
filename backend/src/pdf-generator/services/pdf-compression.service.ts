@@ -470,31 +470,6 @@ export class PDFCompressionService {
   }
 
   /**
-   * Get compressed image storage metrics from the compressed image service
-   * @returns Promise with storage metrics
-   */
-  async getCompressedImageStorageMetrics(): Promise<{
-    totalStorageSize: number;
-    totalCompressedImages: number;
-    reuseRate: number;
-    averageCompressionRatio: number;
-    storageUtilization: number;
-  }> {
-    try {
-      return await this.compressedImageService.getStorageMetrics();
-    } catch (error) {
-      this.logger.error(`Failed to get compressed image storage metrics: ${error.message}`);
-      return {
-        totalStorageSize: 0,
-        totalCompressedImages: 0,
-        reuseRate: 0,
-        averageCompressionRatio: 0,
-        storageUtilization: 0,
-      };
-    }
-  }
-
-  /**
    * Get compression optimized PDF options (simplified)
    * @param compressionLevel - Compression level
    * @returns PDF options

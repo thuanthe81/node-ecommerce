@@ -280,6 +280,7 @@ class EmailTestingUtilitiesDemo {
 
       // Convert to PDF data format (simplified)
       const orderPDFData: OrderPDFData = {
+        orderId: recentOrder.id,
         orderNumber: recentOrder.orderNumber,
         orderDate: recentOrder.createdAt.toISOString().split('T')[0],
         customerInfo: {

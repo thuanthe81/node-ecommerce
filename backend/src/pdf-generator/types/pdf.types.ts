@@ -51,6 +51,7 @@ export interface PDFGenerationResult {
 }
 
 export interface OrderPDFData {
+  orderId: string;
   orderNumber: string;
   orderDate: string;
   customerInfo: {

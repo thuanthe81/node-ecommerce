@@ -20,6 +20,7 @@ async function main() {
 
   // Create test order data with special characters
   const testOrderData: OrderPDFData = {
+    orderId: 'test-order-id-' + Date.now(),
     orderNumber: 'TEST-EMAIL-001',
     orderDate: '2024-12-22',
     customerInfo: {

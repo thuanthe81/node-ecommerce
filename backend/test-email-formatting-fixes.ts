@@ -202,6 +202,7 @@ class EmailFormattingTester {
     console.log('\n📧 Testing Email Template Generation...');
 
     const testOrderData: OrderPDFData = {
+      orderId: 'test-order-id-' + Date.now(),
       orderNumber: 'TEST-001',
       orderDate: '2024-01-01',
       customerInfo: {
@@ -455,6 +456,7 @@ class EmailFormattingTester {
 
       // Convert to PDF data format (simplified)
       const orderPDFData: OrderPDFData = {
+        orderId: recentOrder.id,
         orderNumber: recentOrder.orderNumber,
         orderDate: recentOrder.createdAt.toISOString().split('T')[0],
         customerInfo: {

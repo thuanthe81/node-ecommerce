@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implementation plan addresses two critical bugs in the order confirmation email system: CSS formatting issues with unescaped special characters, and customers receiving 4 duplicate confirmation emails. The approach focuses on enhancing HTML escaping, fixing CSS generation, and strengthening email event deduplication.
+This implementation plan addresses two critical bugs in the order confirmation email system: complex CSS appearing as visible text in emails, and customers receiving 4 duplicate confirmation emails. The approach focuses on completely simplifying the email template to contain only essential information (order ID, creation date, order link, customer information) without complex CSS, and strengthening email event deduplication.
 
 ## Tasks
 
@@ -17,34 +17,34 @@ This implementation plan addresses two critical bugs in the order confirmation e
   - **Property 5: Single Event Publication**
   - **Validates: Requirements 2.1**
 
-- [x] 2. Fix HTML escaping and CSS formatting issues
-  - [x] 2.1 Create HTML escaping utility service
-    - Implement escapeHtmlContent method for special characters
-    - Implement escapeHtmlAttributes method for attribute values
-    - Add HTML entity conversion for &, <, >, ", '
-    - _Requirements: 1.1, 1.4_
+- [x] 2. Create simple email template with essential information only
+  - [x] 2.1 Create simple HTML template generation method
+    - Replace generateMinimalHTMLContent with generateSimpleHTMLContent
+    - Include only: order ID, creation date, order link, customer information
+    - Use basic inline styles only (no CSS blocks or complex styling)
+    - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ]* 2.2 Write property test for HTML special character escaping
-    - **Property 1: HTML Special Character Escaping**
-    - **Validates: Requirements 1.1, 1.4**
-
-  - [x] 2.3 Enhance generateMinimalHTMLContent method
-    - Apply HTML escaping to all dynamic content (customer names, addresses, product descriptions)
-    - Fix CSS string formatting and ensure proper quote escaping
-    - Validate HTML structure before returning template
-    - _Requirements: 1.2, 1.3, 1.5_
-
-  - [ ]* 2.4 Write property test for CSS structure validation
-    - **Property 2: CSS Structure Validation**
+  - [ ]* 2.2 Write property test for simple template essential information
+    - **Property 2: Simple Template Essential Information**
     - **Validates: Requirements 1.2**
 
-  - [ ]* 2.5 Write property test for no raw CSS in output
-    - **Property 3: No Raw CSS in Output**
+  - [x] 2.3 Add order link generation functionality
+    - Create generateOrderLink method to create direct links to order details
+    - Ensure links are properly formatted and functional
+    - Include order link in the simple email template
+    - _Requirements: 1.5.1, 1.5.2_
+
+  - [ ]* 2.4 Write property test for order link generation
+    - **Property 4: Order Link Generation**
+    - **Validates: Requirements 1.5.1, 1.5.2**
+
+  - [ ]* 2.5 Write property test for no complex CSS
+    - **Property 3: No Complex CSS in Simple Template**
     - **Validates: Requirements 1.3**
 
-  - [ ]* 2.6 Write property test for HTML tag closure
-    - **Property 4: HTML Tag Closure**
-    - **Validates: Requirements 1.5**
+  - [ ]* 2.6 Write property test for customer information display
+    - **Property 6: Customer Information Display**
+    - **Validates: Requirements 1.5.3**
 
 - [x] 3. Strengthen email event deduplication
   - [x] 3.1 Enhance Email Event Publisher deduplication logic
@@ -75,9 +75,9 @@ This implementation plan addresses two critical bugs in the order confirmation e
     - **Property 11: Duplicate Detection Logging**
     - **Validates: Requirements 3.5**
 
-- [x] 4. Checkpoint - Test email formatting fixes
-  - Ensure HTML escaping works correctly with special characters
-  - Verify CSS formatting is clean without artifacts
+- [x] 4. Checkpoint - Test simple email template
+  - Ensure simple template contains only essential information
+  - Verify no complex CSS or styling issues
   - Test email templates in multiple email clients
   - Ensure all tests pass, ask the user if questions arise.
 
@@ -117,15 +117,15 @@ This implementation plan addresses two critical bugs in the order confirmation e
     - **Property 13: Deduplication Evidence in Logs**
     - **Validates: Requirements 4.4**
 
-  - [ ]* 6.5 Write property test for HTML formatting verification
-    - **Property 14: HTML Formatting Verification**
+  - [ ]* 6.5 Write property test for simple template validation
+    - **Property 16: Simple Template Validation**
     - **Validates: Requirements 4.5**
 
 - [x] 7. Integration testing and validation
-  - [x] 7.1 Test complete order flow with email delivery
+  - [x] 7.1 Test complete order flow with simple email delivery
     - Create test orders and verify single email delivery
-    - Test with various special characters in customer data
-    - Verify email formatting in multiple email clients
+    - Test simple template with essential information only
+    - Verify email compatibility across multiple email clients
     - _Requirements: 2.5, 4.5_
 
   - [x] 7.2 Test deduplication under concurrent load
@@ -135,7 +135,7 @@ This implementation plan addresses two critical bugs in the order confirmation e
     - _Requirements: 2.4, 4.4_
 
 - [x] 8. Final checkpoint - Comprehensive testing
-  - Ensure all email formatting issues are resolved
+  - Ensure simple email template works without CSS issues
   - Verify customers receive exactly one email per order
   - Confirm comprehensive logging is working
   - Review all test results and logs
@@ -147,5 +147,6 @@ This implementation plan addresses two critical bugs in the order confirmation e
 - Each task references specific requirements for traceability
 - Property tests validate universal correctness properties
 - Unit tests validate specific examples and edge cases
-- Focus on root cause analysis before implementing fixes
+- Focus on template simplification to eliminate CSS display issues
+- Simple template should contain only essential order information
 - Comprehensive logging is essential for debugging and monitoring

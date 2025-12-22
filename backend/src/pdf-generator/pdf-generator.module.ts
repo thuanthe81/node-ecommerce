@@ -57,7 +57,7 @@ import { EmailQueueModule } from '../email-queue/email-queue.module';
     PDFImageValidationService,
     CompressedImageService,
     CompressedImageConfigService,
-    CompressedImageStorageMonitoringService,
+    // CompressedImageStorageMonitoringService,
     PaymentSettingsService
   ],
   exports: [
@@ -82,7 +82,7 @@ import { EmailQueueModule } from '../email-queue/email-queue.module';
     PDFImageValidationService,
     CompressedImageService,
     CompressedImageConfigService,
-    CompressedImageStorageMonitoringService
+    // CompressedImageStorageMonitoringService
   ],
 })
 export class PDFGeneratorModule {}
