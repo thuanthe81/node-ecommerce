@@ -50,6 +50,7 @@ export class EmailAttachmentService {
 
   constructor(
     private emailService: EmailService,
+    @Inject(forwardRef(() => EmailEventPublisher))
     private emailEventPublisher: EmailEventPublisher,
     private pdfGeneratorService: PDFGeneratorService,
     private documentStorageService: DocumentStorageService,

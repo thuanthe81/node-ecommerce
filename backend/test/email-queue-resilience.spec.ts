@@ -8,6 +8,8 @@ import { EmailService } from '../src/notifications/services/email.service';
 import { EmailTemplateService } from '../src/notifications/services/email-template.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { FooterSettingsService } from '../src/footer-settings/footer-settings.service';
+import { EmailAttachmentService } from '../src/pdf-generator/services/email-attachment.service';
+import { BusinessInfoService } from '../src/common/services/business-info.service';
 
 describe('EmailQueue Resilience Features', () => {
   let emailEventPublisher: EmailEventPublisher;
@@ -101,6 +103,18 @@ describe('EmailQueue Resilience Features', () => {
             getFooterSettings: jest.fn().mockResolvedValue({
               contactEmail: 'admin@example.com',
             }),
+          },
+        },
+        {
+          provide: EmailAttachmentService,
+          useValue: {
+            sendOrderConfirmationWithPDF: jest.fn(),
+          },
+        },
+        {
+          provide: BusinessInfoService,
+          useValue: {
+            getBusinessInfo: jest.fn(),
           },
         },
       ],

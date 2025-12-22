@@ -1,8 +1,8 @@
 # Async Email Queue Service - Implementation Status
 
-## Current State: CORE IMPLEMENTATION COMPLETE ✅
+## Current State: CORE IMPLEMENTATION COMPLETE ✅ - PDF ATTACHMENTS NEED FIXING ⚠️
 
-The async email queue service has been successfully implemented with all core functionality working. The system is ready for production use with the following features:
+The async email queue service has been successfully implemented with all core functionality working. However, there's an important issue that needs to be addressed: **PDF attachments are not being generated for order confirmation emails in the async flow**.
 
 ### ✅ Completed Features
 
@@ -18,7 +18,16 @@ The async email queue service has been successfully implemented with all core fu
 10. **Configuration** - Environment variables and Redis configuration
 11. **Admin Endpoints** - Queue management, job retry, metrics endpoints
 12. **Deployment Scripts** - Migration and deployment procedures
-13. **Resend Functionality** - Async order confirmation resend with PDF attachments
+
+### ⚠️ Critical Issue Identified
+
+**PDF Attachments Missing**: The async email worker is not generating PDF attachments for order confirmation emails. Currently:
+
+- **Order Confirmation Emails**: Sent without PDF attachments (comment says "avoiding circular dependency")
+- **Resend Emails**: Also sent without PDF attachments
+- **Synchronous Flow**: Still works correctly with PDF attachments
+
+This means customers are receiving plain text emails instead of the formatted emails with PDF invoices they expect.
 
 ### 🔧 System Architecture
 
@@ -30,7 +39,7 @@ The async email queue service has been successfully implemented with all core fu
          │                       │                       │
          ▼                       ▼                       ▼
    Returns immediately    Persists events         Sends emails
-   (< 200ms response)     with retry logic        with attachments
+   (< 200ms response)     with retry logic        ❌ WITHOUT PDFs
 ```
 
 ### 📊 Queue Status
@@ -48,6 +57,12 @@ The queue system is operational with:
 - Resend functionality implemented and integrated
 - Error handling and retry logic validated
 - Queue persistence and recovery tested
+
+#### ❌ PDF Generation Issue
+- Order confirmation emails missing PDF attachments
+- Resend emails missing PDF attachments
+- Need to integrate EmailAttachmentService with EmailWorker
+- Need to resolve circular dependency issues
 
 #### ⏳ Property Testing Pending
 19 property-based tests remain to be implemented to validate system behavior under various conditions:

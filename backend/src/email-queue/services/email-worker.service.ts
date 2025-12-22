@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Worker, Job, ConnectionOptions } from 'bullmq';
 import { EmailEvent, EmailEventType } from '../types/email-event.types';
@@ -38,6 +38,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     private emailTemplateService: EmailTemplateService,
     private prisma: PrismaService,
     private footerSettingsService: FooterSettingsService,
+    @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
     private businessInfoService: BusinessInfoService,
   ) {
@@ -619,6 +620,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
             product: {
               include: {
                 images: true,
+                category: true,
               }
             },
           },
@@ -635,29 +637,24 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`[sendOrderConfirmation] Order found: ${order.orderNumber}, email: ${order.email}`);
 
-    // For now, send email without PDF attachment since we're avoiding circular dependency
-    // The resend functionality handles PDF attachments directly
-    this.logger.log(`[sendOrderConfirmation] Sending email without PDF attachment (avoiding circular dependency)`);
+    // Convert order to PDF data format
+    const orderPDFData = await this.mapOrderToPDFData(order, event.locale);
 
-    // Generate email template
-    const template = this.emailTemplateService.getOrderConfirmationTemplate(
-      this.mapOrderToEmailData(order),
+    // Use EmailAttachmentService to send order confirmation with PDF attachment
+    this.logger.log(`[sendOrderConfirmation] Using EmailAttachmentService to send email with PDF attachment`);
+
+    const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
+      order.email,
+      orderPDFData,
       event.locale
     );
 
-    // Send email without attachment
-    const success = await this.emailService.sendEmail({
-      to: order.email,
-      subject: template.subject,
-      html: template.html,
-      locale: event.locale,
-    });
-
-    if (!success) {
-      throw new Error('Email service returned false');
+    if (!result.success) {
+      this.logger.error(`[sendOrderConfirmation] EmailAttachmentService failed: ${result.error}`);
+      throw new Error(`Failed to send order confirmation with PDF: ${result.error}`);
     }
 
-    this.logger.log(`[sendOrderConfirmation] Completed successfully without PDF for order: ${event.orderId}`);
+    this.logger.log(`[sendOrderConfirmation] Completed successfully with PDF for order: ${event.orderId}`);
   }
 
   /**
@@ -692,26 +689,25 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     this.logger.log(`[sendOrderConfirmationResend] Order found: ${order.orderNumber}, email: ${order.email}`);
 
-    // Generate email template directly (same as original order confirmation)
-    const orderData = this.mapOrderToEmailData(order);
-    const template = this.emailTemplateService.getOrderConfirmationTemplate(
-      orderData,
+    // Convert order to PDF data format
+    const orderPDFData = await this.mapOrderToPDFData(order, event.locale);
+
+    // Use EmailAttachmentService to send order confirmation with PDF attachment
+    // This ensures consistent PDF generation and email formatting with the original order confirmation
+    this.logger.log(`[sendOrderConfirmationResend] Using EmailAttachmentService to send email with PDF attachment`);
+
+    const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
+      order.email,
+      orderPDFData,
       event.locale
     );
 
-    // Send email directly using EmailService (no PDF for resend to avoid complexity)
-    const success = await this.emailService.sendEmail({
-      to: order.email,
-      subject: template.subject,
-      html: template.html,
-      locale: event.locale,
-    });
-
-    if (!success) {
-      throw new Error('Email service returned false');
+    if (!result.success) {
+      this.logger.error(`[sendOrderConfirmationResend] EmailAttachmentService failed: ${result.error}`);
+      throw new Error(`Failed to send order confirmation resend with PDF: ${result.error}`);
     }
 
-    this.logger.log(`[sendOrderConfirmationResend] Completed successfully for order: ${event.orderId}`);
+    this.logger.log(`[sendOrderConfirmationResend] Completed successfully with PDF for order: ${event.orderId}`);
   }
 
   /**

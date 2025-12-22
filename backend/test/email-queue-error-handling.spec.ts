@@ -7,6 +7,8 @@ import { EmailService } from '../src/notifications/services/email.service';
 import { EmailTemplateService } from '../src/notifications/services/email-template.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { FooterSettingsService } from '../src/footer-settings/footer-settings.service';
+import { EmailAttachmentService } from '../src/pdf-generator/services/email-attachment.service';
+import { BusinessInfoService } from '../src/common/services/business-info.service';
 import { EmailEventType } from '../src/email-queue/types/email-event.types';
 
 describe('EmailQueue Error Handling', () => {
@@ -106,6 +108,18 @@ describe('EmailQueue Error Handling', () => {
           provide: FooterSettingsService,
           useValue: {
             getFooterSettings: jest.fn(),
+          },
+        },
+        {
+          provide: EmailAttachmentService,
+          useValue: {
+            sendOrderConfirmationWithPDF: jest.fn(),
+          },
+        },
+        {
+          provide: BusinessInfoService,
+          useValue: {
+            getBusinessInfo: jest.fn(),
           },
         },
       ],
