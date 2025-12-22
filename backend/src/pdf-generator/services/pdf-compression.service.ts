@@ -219,6 +219,7 @@ export class PDFCompressionService {
       // Step 1: Check if compressed image already exists
       let existingCompressed: OptimizedImageResult | null = null;
       try {
+        this.logger.log(`Checking compressed storage for: ${imageUrl}`);
         existingCompressed = await this.compressedImageService.getCompressedImage(imageUrl);
       } catch (retrievalError) {
         this.logger.warn(`Failed to retrieve compressed image for ${imageUrl}: ${retrievalError.message}. Proceeding with fresh optimization.`);
@@ -226,13 +227,23 @@ export class PDFCompressionService {
       }
 
       if (existingCompressed) {
-        this.logger.log(`Using existing compressed image for: ${imageUrl}`);
+        this.logger.log(`✓ STORAGE HIT: Using existing compressed image for: ${imageUrl}`);
+        this.logger.log(`  - Reused Size: ${this.formatFileSize(existingCompressed.optimizedSize)}`);
+        this.logger.log(`  - Original Compression Ratio: ${(existingCompressed.compressionRatio * 100).toFixed(1)}%`);
+        this.logger.log(`  - Storage retrieval avoided fresh optimization`);
+
+        // Verify that reused image maintains expected quality
+        await this.verifyReusedImageQuality(existingCompressed, imageUrl, contentType);
+
         // Update technique to indicate this came from storage
         existingCompressed.metadata.technique = 'storage';
         existingCompressed.processingTime = 0; // No processing time for retrieval
         this.metricsService.recordImageOptimization(existingCompressed, `reuse-${imageUrl}`);
         return existingCompressed;
       }
+
+      // Log storage miss
+      this.logger.log(`✗ STORAGE MISS: No compressed image found for: ${imageUrl}, performing fresh optimization`);
 
       // Step 2: Perform fresh optimization
       const imageBuffer = await this.loadImageBuffer(imageUrl);
@@ -287,13 +298,19 @@ export class PDFCompressionService {
 
       // Step 3: Save to compressed storage for future reuse
       try {
+        this.logger.log(`Saving compressed image to storage for future reuse: ${imageUrl}`);
         const savedPath = await this.compressedImageService.saveCompressedImage(imageUrl, result);
         if (savedPath) {
-          this.logger.log(`Compressed image saved for future reuse: ${savedPath}`);
+          this.logger.log(`✓ STORAGE SAVE: Compressed image saved for future reuse: ${savedPath}`);
+          this.logger.log(`  - Saved Size: ${this.formatFileSize(result.optimizedSize)}`);
+          this.logger.log(`  - Future requests for this image will be served from storage`);
+        } else {
+          this.logger.warn(`⚠ STORAGE SAVE: Empty path returned, storage may be disabled or failed gracefully`);
         }
       } catch (storageError) {
         // Storage failure should not fail the optimization
-        this.logger.warn(`Failed to save compressed image for ${imageUrl}: ${storageError.message}`);
+        this.logger.warn(`✗ STORAGE SAVE FAILED: Failed to save compressed image for ${imageUrl}: ${storageError.message}`);
+        this.logger.warn(`  - Future requests will require fresh optimization`);
       }
 
       // Record metrics
@@ -642,6 +659,65 @@ export class PDFCompressionService {
         maxSize: 25 * 1024 * 1024,
         recommendation: `Error checking file size: ${error.message}`,
       };
+    }
+  }
+
+  /**
+   * Verify that reused images maintain the same quality as fresh optimizations
+   * @param reusedImage - The reused image result from storage
+   * @param imageUrl - Original image URL
+   * @param contentType - Content type for optimization strategy
+   */
+  private async verifyReusedImageQuality(
+    reusedImage: OptimizedImageResult,
+    imageUrl: string,
+    contentType: 'text' | 'photo' | 'graphics' | 'logo'
+  ): Promise<void> {
+    try {
+      // Get current optimization settings for this content type
+      const contentTypeSettings = this.configService.getContentTypeSettings(contentType);
+      const config = this.configService.getConfiguration();
+
+      // Verify quality settings match expectations
+      if (reusedImage.metadata?.qualityUsed && contentTypeSettings?.quality) {
+        if (reusedImage.metadata.qualityUsed !== contentTypeSettings.quality) {
+          this.logger.warn(`Quality mismatch for reused image ${imageUrl}: stored=${reusedImage.metadata.qualityUsed}, expected=${contentTypeSettings.quality}`);
+          this.logger.warn(`  - This may indicate configuration changes since the image was stored`);
+        } else {
+          this.logger.log(`✓ Quality verification passed: reused image quality (${reusedImage.metadata.qualityUsed}) matches current settings`);
+        }
+      }
+
+      // Verify dimensions are within current limits
+      if (config?.aggressiveMode?.maxDimensions && reusedImage.dimensions?.optimized) {
+        const maxWidth = config.aggressiveMode.maxDimensions.width;
+        const maxHeight = config.aggressiveMode.maxDimensions.height;
+        const actualWidth = reusedImage.dimensions.optimized.width;
+        const actualHeight = reusedImage.dimensions.optimized.height;
+
+        if (actualWidth > maxWidth || actualHeight > maxHeight) {
+          this.logger.warn(`Dimension mismatch for reused image ${imageUrl}: stored=${actualWidth}x${actualHeight}, max allowed=${maxWidth}x${maxHeight}`);
+          this.logger.warn(`  - This may indicate configuration changes since the image was stored`);
+        } else {
+          this.logger.log(`✓ Dimension verification passed: reused image dimensions (${actualWidth}x${actualHeight}) within current limits (${maxWidth}x${maxHeight})`);
+        }
+      }
+
+      // Verify compression effectiveness
+      if (reusedImage.compressionRatio < 0.1) { // Less than 10% compression
+        this.logger.warn(`Low compression ratio for reused image ${imageUrl}: ${(reusedImage.compressionRatio * 100).toFixed(1)}%`);
+        this.logger.warn(`  - This may indicate the original image was already highly compressed or configuration issues`);
+      } else {
+        this.logger.log(`✓ Compression verification passed: reused image has good compression ratio (${(reusedImage.compressionRatio * 100).toFixed(1)}%)`);
+      }
+
+      // Log overall quality verification result
+      this.logger.log(`Quality verification completed for reused image: ${imageUrl}`);
+
+    } catch (error) {
+      // Quality verification failure should not fail the image reuse
+      this.logger.warn(`Quality verification failed for reused image ${imageUrl}: ${error.message}`);
+      this.logger.warn(`  - Continuing with reused image despite verification failure`);
     }
   }
 }

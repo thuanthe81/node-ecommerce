@@ -6,6 +6,7 @@ import { PDFAccessibilityService } from '../../src/pdf-generator/services/pdf-ac
 import { PDFDeviceOptimizationService } from '../../src/pdf-generator/services/pdf-device-optimization.service';
 import { PDFImageConverterService } from '../../src/pdf-generator/services/pdf-image-converter.service';
 import { PDFCompressionService } from '../../src/pdf-generator/services/pdf-compression.service';
+import { PDFImageOptimizationMetricsService } from '../../src/pdf-generator/services/pdf-image-optimization-metrics.service';
 import { OrderPDFData } from '../../src/pdf-generator/types/pdf.types';
 
 describe('PDFTemplateEngine', () => {
@@ -124,6 +125,7 @@ describe('PDFTemplateEngine', () => {
         {
           provide: PDFImageConverterService,
           useValue: {
+            convertImageToBase64: jest.fn().mockResolvedValue('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA=='),
             convertMultipleImages: jest.fn().mockResolvedValue(new Map([
               ['test-product.jpg', 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA=='],
               ['test-logo.jpg', 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA=='],
@@ -152,6 +154,65 @@ describe('PDFTemplateEngine', () => {
                 originalFormat: 'jpeg',
                 technique: 'comprehensive',
               },
+            }),
+            configService: {
+              getConfiguration: jest.fn().mockReturnValue({
+                aggressiveMode: {
+                  enabled: true,
+                  maxDimensions: { width: 300, height: 300 },
+                  minDimensions: { width: 50, height: 50 },
+                  forceOptimization: true,
+                },
+                compression: {
+                  enabled: true,
+                  level: 'maximum',
+                  enableFormatConversion: true,
+                  preferredFormat: 'jpeg',
+                },
+                contentAware: {
+                  enabled: true,
+                  contentTypes: {
+                    text: { quality: 70, preserveSharpness: true },
+                    photo: { quality: 55, allowAggressive: true },
+                    graphics: { quality: 65, preserveColors: true },
+                    logo: { quality: 75, maintainCrisp: true },
+                  },
+                },
+                fallback: {
+                  enabled: true,
+                  maxRetries: 3,
+                  timeoutMs: 10000,
+                },
+                monitoring: {
+                  enabled: true,
+                  trackProcessingTime: true,
+                  trackCompressionRatio: true,
+                  trackSizeReduction: true,
+                },
+              }),
+              getContentTypeSettings: jest.fn().mockImplementation((contentType) => {
+                const settings = {
+                  text: { quality: 70, preserveSharpness: true },
+                  photo: { quality: 55, allowAggressive: true },
+                  graphics: { quality: 65, preserveColors: true },
+                  logo: { quality: 75, maintainCrisp: true },
+                };
+                return settings[contentType] || settings.photo;
+              }),
+            },
+          },
+        },
+        {
+          provide: PDFImageOptimizationMetricsService,
+          useValue: {
+            recordPerformanceData: jest.fn(),
+            getOptimizationMetrics: jest.fn().mockReturnValue({
+              totalOptimizations: 0,
+              successfulOptimizations: 0,
+              failedOptimizations: 0,
+              averageProcessingTime: 0,
+              averageCompressionRatio: 0,
+              totalSizeSaved: 0,
             }),
           },
         },
@@ -203,6 +264,193 @@ describe('PDFTemplateEngine', () => {
         expect.any(String)
       );
     });
+
+    it('should log file size comparison and validation metrics', async () => {
+      // Mock console.log to capture log messages
+      const logSpy = jest.spyOn(service['logger'], 'log');
+
+      // Create order data with multiple images for better size comparison
+      const orderDataWithMultipleImages = {
+        ...mockOrderData,
+        items: [
+          {
+            ...mockOrderData.items[0],
+            imageUrl: 'test-product-1.jpg',
+          },
+          {
+            id: '2',
+            name: 'Test Product 2',
+            description: 'Test Description 2',
+            sku: 'TEST-SKU-2',
+            quantity: 2,
+            unitPrice: 200,
+            totalPrice: 400,
+            imageUrl: 'test-product-2.jpg',
+          },
+        ],
+      };
+
+      // Mock compression service to return different sizes for each image
+      compressionService.optimizeImageForPDF = jest.fn()
+        .mockResolvedValueOnce({
+          optimizedBuffer: Buffer.from('optimized-image-1'),
+          originalSize: 2000,
+          optimizedSize: 800,
+          compressionRatio: 0.6,
+          dimensions: {
+            original: { width: 800, height: 600 },
+            optimized: { width: 300, height: 225 },
+          },
+          format: 'jpeg',
+          processingTime: 100,
+          metadata: {
+            contentType: 'photo',
+            qualityUsed: 55,
+            technique: 'comprehensive',
+          },
+        })
+        .mockResolvedValueOnce({
+          optimizedBuffer: Buffer.from('optimized-image-2'),
+          originalSize: 1500,
+          optimizedSize: 600,
+          compressionRatio: 0.6,
+          dimensions: {
+            original: { width: 600, height: 400 },
+            optimized: { width: 300, height: 200 },
+          },
+          format: 'jpeg',
+          processingTime: 120,
+          metadata: {
+            contentType: 'photo',
+            qualityUsed: 55,
+            technique: 'comprehensive',
+          },
+        })
+        .mockResolvedValueOnce({
+          optimizedBuffer: Buffer.from('optimized-logo'),
+          originalSize: 800,
+          optimizedSize: 300,
+          compressionRatio: 0.625,
+          dimensions: {
+            original: { width: 400, height: 300 },
+            optimized: { width: 200, height: 150 },
+          },
+          format: 'jpeg',
+          processingTime: 80,
+          metadata: {
+            contentType: 'logo',
+            qualityUsed: 75,
+            technique: 'comprehensive',
+          },
+        })
+        .mockResolvedValueOnce({
+          optimizedBuffer: Buffer.from('optimized-qr'),
+          originalSize: 500,
+          optimizedSize: 200,
+          compressionRatio: 0.6,
+          dimensions: {
+            original: { width: 300, height: 300 },
+            optimized: { width: 150, height: 150 },
+          },
+          format: 'jpeg',
+          processingTime: 60,
+          metadata: {
+            contentType: 'graphics',
+            qualityUsed: 65,
+            technique: 'comprehensive',
+          },
+        });
+
+      await service.createOrderTemplate(orderDataWithMultipleImages, 'en');
+
+      // Verify file size comparison logging exists
+      const logCalls = logSpy.mock.calls.map(call => call[0]);
+      const hasFileSizeComparison = logCalls.some(call =>
+        typeof call === 'string' && call.includes('File size comparison results')
+      );
+      const hasCompressionEffectiveness = logCalls.some(call =>
+        typeof call === 'string' && call.includes('Compression Effectiveness')
+      );
+      const hasFileSizeReduction = logCalls.some(call =>
+        typeof call === 'string' && call.includes('Total Size Reduction')
+      );
+
+      expect(hasFileSizeComparison).toBe(true);
+      expect(hasCompressionEffectiveness).toBe(true);
+      expect(hasFileSizeReduction).toBe(true);
+
+      // Verify file size reduction validation
+      const hasValidationPassed = logCalls.some(call =>
+        typeof call === 'string' && call.includes('File size reduction validation PASSED')
+      );
+      expect(hasValidationPassed).toBe(true);
+
+      logSpy.mockRestore();
+    });
+
+    it('should warn when compression effectiveness is low', async () => {
+      const logSpy = jest.spyOn(service['logger'], 'warn');
+
+      // Mock compression service to return minimal compression
+      compressionService.optimizeImageForPDF = jest.fn()
+        .mockResolvedValue({
+          optimizedBuffer: Buffer.from('barely-optimized-image'),
+          originalSize: 1000,
+          optimizedSize: 950, // Only 5% compression
+          compressionRatio: 0.05,
+          dimensions: {
+            original: { width: 800, height: 600 },
+            optimized: { width: 780, height: 585 },
+          },
+          format: 'jpeg',
+          processingTime: 100,
+          metadata: {
+            contentType: 'photo',
+            qualityUsed: 90, // High quality = low compression
+            technique: 'minimal',
+          },
+        });
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Verify low compression effectiveness warning exists
+      const warnCalls = logSpy.mock.calls.map(call => call[0]);
+      const hasLowCompressionWarning = warnCalls.some(call =>
+        typeof call === 'string' && call.includes('File size reduction below optimal threshold')
+      );
+      expect(hasLowCompressionWarning).toBe(true);
+
+      logSpy.mockRestore();
+    });
+
+    it('should handle file size comparison when optimization fails', async () => {
+      const logSpy = jest.spyOn(service['logger'], 'warn');
+
+      // Mock compression service to fail
+      compressionService.optimizeImageForPDF = jest.fn()
+        .mockResolvedValue({
+          optimizedBuffer: null,
+          originalSize: 0,
+          optimizedSize: 0,
+          compressionRatio: 0,
+          error: 'Optimization failed',
+          dimensions: {
+            original: { width: 0, height: 0 },
+            optimized: { width: 0, height: 0 },
+          },
+          format: 'jpeg',
+          processingTime: 0,
+        });
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Verify warning about missing size data
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unable to calculate file size comparison - missing size data')
+      );
+
+      logSpy.mockRestore();
+    });
   });
 
   describe('generateHTML', () => {
@@ -232,6 +480,177 @@ describe('PDFTemplateEngine', () => {
       expect(compressionService.optimizeImageForPDF).toHaveBeenCalledWith('test-product.jpg', 'photo');
       expect(compressionService.optimizeImageForPDF).toHaveBeenCalledWith('test-logo.jpg', 'logo');
       expect(compressionService.optimizeImageForPDF).toHaveBeenCalledWith('test-qr.jpg', 'graphics');
+    });
+  });
+
+  describe('configuration validation', () => {
+    it('should load and validate image optimization configuration', async () => {
+      const template = await service.createOrderTemplate(mockOrderData, 'en');
+
+      expect(template).toBeDefined();
+
+      // Verify that configuration was loaded from compression service
+      expect(compressionService['configService'].getConfiguration).toHaveBeenCalled();
+
+      // Verify that content type settings were retrieved for each image type
+      expect(compressionService['configService'].getContentTypeSettings).toHaveBeenCalledWith('photo');
+      expect(compressionService['configService'].getContentTypeSettings).toHaveBeenCalledWith('logo');
+      expect(compressionService['configService'].getContentTypeSettings).toHaveBeenCalledWith('graphics');
+    });
+
+    it('should warn when aggressive mode is disabled', async () => {
+      // Mock configuration with aggressive mode disabled
+      compressionService['configService'].getConfiguration.mockReturnValueOnce({
+        aggressiveMode: {
+          enabled: false,
+          maxDimensions: { width: 300, height: 300 },
+          minDimensions: { width: 50, height: 50 },
+          forceOptimization: false,
+        },
+        compression: {
+          enabled: true,
+          level: 'medium',
+          enableFormatConversion: true,
+          preferredFormat: 'jpeg',
+        },
+        contentAware: {
+          enabled: true,
+          contentTypes: {
+            text: { quality: 70, preserveSharpness: true },
+            photo: { quality: 55, allowAggressive: true },
+            graphics: { quality: 65, preserveColors: true },
+            logo: { quality: 75, maintainCrisp: true },
+          },
+        },
+        fallback: {
+          enabled: true,
+          maxRetries: 3,
+          timeoutMs: 10000,
+        },
+        monitoring: {
+          enabled: true,
+          trackProcessingTime: true,
+          trackCompressionRatio: true,
+          trackSizeReduction: true,
+        },
+      });
+
+      const loggerSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Should warn about aggressive mode being disabled
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('WARNING: Aggressive mode is DISABLED')
+      );
+    });
+
+    it('should warn when max dimensions are larger than recommended', async () => {
+      // Mock configuration with large max dimensions
+      compressionService['configService'].getConfiguration.mockReturnValueOnce({
+        aggressiveMode: {
+          enabled: true,
+          maxDimensions: { width: 1000, height: 1000 }, // Larger than recommended 300x300
+          minDimensions: { width: 50, height: 50 },
+          forceOptimization: true,
+        },
+        compression: {
+          enabled: true,
+          level: 'maximum',
+          enableFormatConversion: true,
+          preferredFormat: 'jpeg',
+        },
+        contentAware: {
+          enabled: true,
+          contentTypes: {
+            text: { quality: 70, preserveSharpness: true },
+            photo: { quality: 55, allowAggressive: true },
+            graphics: { quality: 65, preserveColors: true },
+            logo: { quality: 75, maintainCrisp: true },
+          },
+        },
+        fallback: {
+          enabled: true,
+          maxRetries: 3,
+          timeoutMs: 10000,
+        },
+        monitoring: {
+          enabled: true,
+          trackProcessingTime: true,
+          trackCompressionRatio: true,
+          trackSizeReduction: true,
+        },
+      });
+
+      const loggerSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Should warn about large max dimensions
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('WARNING: Max dimensions (1000x1000) are larger than recommended')
+      );
+    });
+
+    it('should warn when compression level is not maximum', async () => {
+      // Mock configuration with non-maximum compression level
+      compressionService['configService'].getConfiguration.mockReturnValueOnce({
+        aggressiveMode: {
+          enabled: true,
+          maxDimensions: { width: 300, height: 300 },
+          minDimensions: { width: 50, height: 50 },
+          forceOptimization: true,
+        },
+        compression: {
+          enabled: true,
+          level: 'medium', // Not maximum
+          enableFormatConversion: true,
+          preferredFormat: 'jpeg',
+        },
+        contentAware: {
+          enabled: true,
+          contentTypes: {
+            text: { quality: 70, preserveSharpness: true },
+            photo: { quality: 55, allowAggressive: true },
+            graphics: { quality: 65, preserveColors: true },
+            logo: { quality: 75, maintainCrisp: true },
+          },
+        },
+        fallback: {
+          enabled: true,
+          maxRetries: 3,
+          timeoutMs: 10000,
+        },
+        monitoring: {
+          enabled: true,
+          trackProcessingTime: true,
+          trackCompressionRatio: true,
+          trackSizeReduction: true,
+        },
+      });
+
+      const loggerSpy = jest.spyOn(service['logger'], 'warn');
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Should warn about compression level not being maximum
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining("WARNING: Compression level is 'medium' instead of 'maximum'")
+      );
+    });
+
+    it('should validate configuration compliance after processing', async () => {
+      const loggerSpy = jest.spyOn(service['logger'], 'log');
+
+      await service.createOrderTemplate(mockOrderData, 'en');
+
+      // Should log configuration validation success
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('✓ Configuration validation PASSED: All images processed with aggressive optimization')
+      );
+
+      // Should log configuration compliance check completion
+      expect(loggerSpy).toHaveBeenCalledWith('Configuration compliance check completed');
     });
   });
 

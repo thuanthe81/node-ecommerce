@@ -7,12 +7,13 @@ import {
   OrderPDFData,
   ValidationResult
 } from './types/pdf.types';
-import { OptimizedImageResult } from './types/image-optimization.types';
+import { OptimizedImageResult, FallbackResult, PerformanceMonitoringData } from './types/image-optimization.types';
 import { PDFDocumentStructureService } from './pdf-document-structure.service';
 import { PDFLocalizationService } from './services/pdf-localization.service';
 import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
+import { PDFImageOptimizationMetricsService } from './services/pdf-image-optimization-metrics.service';
 import { BUSINESS } from '../common/constants';
 import { PDFCompressionService } from './services/pdf-compression.service';
 
@@ -27,7 +28,8 @@ export class PDFTemplateEngine {
     private deviceOptimization: PDFDeviceOptimizationService,
     private imageConverter: PDFImageConverterService,
     @Inject(forwardRef(() => PDFCompressionService))
-    private compressionService: PDFCompressionService
+    private compressionService: PDFCompressionService,
+    private metricsService: PDFImageOptimizationMetricsService
   ) {}
 
   /**
@@ -784,6 +786,75 @@ export class PDFTemplateEngine {
   private async convertImagesToBase64(data: OrderPDFData): Promise<OrderPDFData> {
     this.logger.debug(`Converting images to optimized base64 for order ${data.orderNumber}`);
 
+    // Initialize metrics collection for this batch operation
+    const batchStartTime = Date.now();
+    const operationId = `batch-${data.orderNumber}-${Date.now()}`;
+
+    this.logger.log(`Starting image optimization batch operation: ${operationId}`);
+
+    // Track total original and optimized sizes for file size comparison
+    let totalOriginalSize = 0;
+    let totalOptimizedSize = 0;
+
+    // Step 1: Load and validate image optimization configuration
+    this.logger.log('Loading image optimization configuration for PDF generation');
+    let config: any;
+
+    try {
+      // Try to access configuration through compression service
+      config = this.compressionService['configService']?.getConfiguration();
+
+      if (!config) {
+        this.logger.warn('Configuration service not available, using default optimization behavior');
+        // Continue with image processing without detailed configuration logging
+      } else {
+        // Log configuration values being applied
+        this.logger.log('Image Optimization Configuration:');
+        this.logger.log(`  - Aggressive Mode: ${config.aggressiveMode?.enabled ? 'ENABLED' : 'DISABLED'}`);
+        this.logger.log(`  - Max Dimensions: ${config.aggressiveMode?.maxDimensions?.width || 'unknown'}x${config.aggressiveMode?.maxDimensions?.height || 'unknown'}px`);
+        this.logger.log(`  - Min Dimensions: ${config.aggressiveMode?.minDimensions?.width || 'unknown'}x${config.aggressiveMode?.minDimensions?.height || 'unknown'}px`);
+        this.logger.log(`  - Force Optimization: ${config.aggressiveMode?.forceOptimization}`);
+        this.logger.log(`  - Compression Level: ${config.compression?.level || 'unknown'}`);
+        this.logger.log(`  - Preferred Format: ${config.compression?.preferredFormat || 'unknown'}`);
+        this.logger.log(`  - Format Conversion: ${config.compression?.enableFormatConversion ? 'ENABLED' : 'DISABLED'}`);
+        this.logger.log(`  - Content-Aware Optimization: ${config.contentAware?.enabled ? 'ENABLED' : 'DISABLED'}`);
+
+        // Log content-type specific quality settings
+        if (config.contentAware?.enabled && config.contentAware?.contentTypes) {
+          this.logger.log('  - Content Type Quality Settings:');
+          this.logger.log(`    * Text: ${config.contentAware.contentTypes.text?.quality || 'unknown'}`);
+          this.logger.log(`    * Photo: ${config.contentAware.contentTypes.photo?.quality || 'unknown'}`);
+          this.logger.log(`    * Graphics: ${config.contentAware.contentTypes.graphics?.quality || 'unknown'}`);
+          this.logger.log(`    * Logo: ${config.contentAware.contentTypes.logo?.quality || 'unknown'}`);
+        }
+
+        // Log fallback configuration
+        this.logger.log(`  - Fallback: ${config.fallback?.enabled ? 'ENABLED' : 'DISABLED'}`);
+        this.logger.log(`  - Max Retries: ${config.fallback?.maxRetries || 'unknown'}`);
+        this.logger.log(`  - Timeout: ${config.fallback?.timeoutMs || 'unknown'}ms`);
+
+        // Log monitoring configuration
+        this.logger.log(`  - Monitoring: ${config.monitoring?.enabled ? 'ENABLED' : 'DISABLED'}`);
+
+        // Validate configuration is properly loaded
+        if (config.aggressiveMode && !config.aggressiveMode.enabled) {
+          this.logger.warn('WARNING: Aggressive mode is DISABLED - images may not be optimized');
+        }
+
+        if (config.aggressiveMode?.maxDimensions &&
+            (config.aggressiveMode.maxDimensions.width > 800 || config.aggressiveMode.maxDimensions.height > 800)) {
+          this.logger.warn(`WARNING: Max dimensions (${config.aggressiveMode.maxDimensions.width}x${config.aggressiveMode.maxDimensions.height}) are larger than recommended (300x300) - may result in larger PDF files`);
+        }
+
+        if (config.compression && config.compression.level !== 'maximum') {
+          this.logger.warn(`WARNING: Compression level is '${config.compression.level}' instead of 'maximum' - may result in larger PDF files`);
+        }
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to load image optimization configuration: ${error.message}. Continuing with default behavior.`);
+      config = null;
+    }
+
     // Collect all image URLs that are not already base64 data URLs
     const imageUrls: string[] = [];
     const imageContentTypes: ('text' | 'photo' | 'graphics' | 'logo')[] = [];
@@ -815,34 +886,226 @@ export class PDFTemplateEngine {
       return data;
     }
 
-    // Use simple image optimization with fallback to avoid browser detachment
+    // Use compression service for image optimization with fallback
     const optimizedImageMap = new Map<string, string>();
+    let successfulOptimizations = 0;
+    let fallbackConversions = 0;
+    let totalFailures = 0;
 
     try {
-      // Process each image with simple optimization (no complex compression service)
-      for (let i = 0; i < imageUrls.length; i++) {
-        const imageUrl = imageUrls[i];
-        const contentType = imageContentTypes[i];
+      // Process all images in parallel with proper error handling for each image
+      // This ensures consistent optimization settings are applied to all images simultaneously
+      this.logger.debug(`Starting parallel processing of ${imageUrls.length} images`);
 
-        this.logger.debug(`Processing image ${i + 1}/${imageUrls.length}: ${imageUrl} (${contentType})`);
+      const imageProcessingPromises = imageUrls.map(async (imageUrl, index) => {
+        const contentType = imageContentTypes[index];
+
+        this.logger.debug(`Processing image ${index + 1}/${imageUrls.length}: ${imageUrl} (${contentType})`);
+
+        // Validate that configuration settings are correctly passed to compression service
+        let contentTypeSettings: any = null;
+        try {
+          contentTypeSettings = this.compressionService['configService']?.getContentTypeSettings?.(contentType);
+        } catch (error) {
+          this.logger.debug(`Could not retrieve content type settings for '${contentType}': ${error.message}`);
+        }
+
+        if (contentTypeSettings) {
+          this.logger.debug(`Using content-type settings for '${contentType}': quality=${contentTypeSettings.quality}`);
+        }
+
+        // Verify that the compression service has access to the same configuration
+        if (config) {
+          let compressionServiceConfig: any = null;
+          try {
+            compressionServiceConfig = this.compressionService['configService']?.getConfiguration?.();
+          } catch (error) {
+            this.logger.debug(`Could not verify compression service configuration: ${error.message}`);
+          }
+
+          if (compressionServiceConfig && !compressionServiceConfig.aggressiveMode?.enabled) {
+            this.logger.warn(`Configuration mismatch: Compression service has aggressive mode DISABLED for image ${imageUrl}`);
+          }
+
+          // Log the specific settings that will be applied to this image
+          this.logger.debug(`Applying optimization settings to ${imageUrl}:`);
+          this.logger.debug(`  - Content Type: ${contentType}`);
+          this.logger.debug(`  - Target Quality: ${contentTypeSettings?.quality || 'unknown'}`);
+          this.logger.debug(`  - Max Dimensions: ${compressionServiceConfig?.aggressiveMode?.maxDimensions?.width || 'unknown'}x${compressionServiceConfig?.aggressiveMode?.maxDimensions?.height || 'unknown'}`);
+          this.logger.debug(`  - Compression Level: ${compressionServiceConfig?.compression?.level || 'unknown'}`);
+          this.logger.debug(`  - Preferred Format: ${compressionServiceConfig?.compression?.preferredFormat || 'unknown'}`);
+        }
 
         try {
-          // Use simple image converter instead of complex optimization
-          const base64Result = await this.imageConverter.convertImageToBase64(imageUrl);
+          // Use compression service for optimization
+          const optimizationResult = await this.compressionService.optimizeImageForPDF(imageUrl, contentType);
 
-          if (base64Result) {
-            optimizedImageMap.set(imageUrl, base64Result);
-            this.logger.debug(`Successfully converted image: ${imageUrl}`);
+          if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+            // Convert optimized buffer to base64 data URL
+            const mimeType = `image/${optimizationResult.format}`;
+            const base64Data = optimizationResult.optimizedBuffer.toString('base64');
+            const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+            // Track file sizes for comparison and validation
+            totalOriginalSize += optimizationResult.originalSize;
+            totalOptimizedSize += optimizationResult.optimizedSize;
+
+            // Log detailed optimization results with configuration validation
+            this.logger.debug(`Successfully optimized image: ${imageUrl}`);
+            this.logger.debug(`  - Original Size: ${optimizationResult.originalSize} bytes`);
+            this.logger.debug(`  - Optimized Size: ${optimizationResult.optimizedSize} bytes`);
+            this.logger.debug(`  - Compression Ratio: ${(optimizationResult.compressionRatio * 100).toFixed(1)}%`);
+            this.logger.debug(`  - Processing Time: ${optimizationResult.processingTime}ms`);
+            this.logger.debug(`  - Applied Quality: ${optimizationResult.metadata?.qualityUsed || 'unknown'}`);
+            this.logger.debug(`  - Technique Used: ${optimizationResult.metadata?.technique || 'unknown'}`);
+
+            // Validate that the optimization actually applied the expected settings
+            if (optimizationResult.metadata?.qualityUsed && contentTypeSettings?.quality &&
+                optimizationResult.metadata.qualityUsed !== contentTypeSettings.quality) {
+              this.logger.warn(`Quality setting mismatch for ${imageUrl}: expected ${contentTypeSettings.quality}, applied ${optimizationResult.metadata.qualityUsed}`);
+            }
+
+            // Validate that compression was actually achieved
+            if (optimizationResult.compressionRatio < 0.1) { // Less than 10% compression
+              this.logger.warn(`Low compression ratio (${(optimizationResult.compressionRatio * 100).toFixed(1)}%) for ${imageUrl} - configuration may not be optimal`);
+            }
+
+            return { imageUrl, dataUrl, status: 'optimized' as const };
           } else {
-            this.logger.warn(`Failed to convert image: ${imageUrl}, skipping`);
+            const errorMessage = optimizationResult.error || 'Unknown optimization error';
+            this.logger.warn(`Optimization failed for image: ${imageUrl}, error: ${errorMessage}`);
+
+            // Fallback to simple conversion with error context
+            const fallbackResult = await this.fallbackToSimpleConversionWithResult(imageUrl, errorMessage);
+
+            if (fallbackResult) {
+              return { imageUrl, dataUrl: fallbackResult, status: 'fallback' as const };
+            } else {
+              return { imageUrl, dataUrl: null, status: 'failed' as const };
+            }
           }
         } catch (error) {
-          this.logger.warn(`Failed to convert image ${imageUrl}, skipping: ${error.message}`);
-          // Continue with other images even if one fails
+          const errorMessage = `Optimization service error: ${error.message}`;
+          this.logger.warn(`Failed to optimize image ${imageUrl}: ${errorMessage}`);
+
+          // Fallback to simple conversion with error context
+          const fallbackResult = await this.fallbackToSimpleConversionWithResult(imageUrl, errorMessage);
+
+          if (fallbackResult) {
+            return { imageUrl, dataUrl: fallbackResult, status: 'fallback' as const };
+          } else {
+            return { imageUrl, dataUrl: null, status: 'failed' as const };
+          }
         }
-      }
+      });
+
+      // Wait for all image processing to complete in parallel
+      // This maintains order consistency through the original array indices
+      const results = await Promise.all(imageProcessingPromises);
+
+      // Process results and populate the optimized image map
+      // Order is maintained because Promise.all preserves array order
+      results.forEach(result => {
+        if (result.dataUrl) {
+          optimizedImageMap.set(result.imageUrl, result.dataUrl);
+
+          if (result.status === 'optimized') {
+            successfulOptimizations++;
+          } else if (result.status === 'fallback') {
+            fallbackConversions++;
+          }
+        } else {
+          totalFailures++;
+        }
+      });
+
+      this.logger.debug(`Parallel processing completed: ${successfulOptimizations} optimized, ${fallbackConversions} fallback, ${totalFailures} failed`);
     } catch (error) {
-      this.logger.error(`Batch image conversion failed: ${error.message}`);
+      // This catch block handles catastrophic failures in Promise.all
+      // Individual image failures are already handled within each promise
+      this.logger.error(`Unexpected error during parallel image processing: ${error.message}`, {
+        error: error.message,
+        stack: error.stack,
+      });
+
+      // Re-throw to be caught by outer try-catch
+      throw error;
+    }
+
+    try {
+
+    // Log comprehensive processing summary with configuration validation and file size comparison
+    this.logger.log(`Image processing summary for order ${data.orderNumber}: ${successfulOptimizations} optimized, ${fallbackConversions} fallback conversions, ${totalFailures} failures out of ${imageUrls.length} total images`);
+
+    // Perform file size comparison and validation
+    if (totalOriginalSize > 0 && totalOptimizedSize > 0) {
+      const totalSizeReduction = totalOriginalSize - totalOptimizedSize;
+      const compressionEffectiveness = (totalSizeReduction / totalOriginalSize) * 100;
+
+      this.logger.log(`File size comparison results for order ${data.orderNumber}:`);
+      this.logger.log(`  - Total Original Size: ${this.formatFileSize(totalOriginalSize)}`);
+      this.logger.log(`  - Total Optimized Size: ${this.formatFileSize(totalOptimizedSize)}`);
+      this.logger.log(`  - Total Size Reduction: ${this.formatFileSize(totalSizeReduction)}`);
+      this.logger.log(`  - Compression Effectiveness: ${compressionEffectiveness.toFixed(1)}%`);
+
+      // Validate significant file size reduction is achieved
+      if (compressionEffectiveness >= 50) {
+        this.logger.log(`✓ Excellent compression effectiveness: ${compressionEffectiveness.toFixed(1)}% reduction achieved`);
+      } else if (compressionEffectiveness >= 25) {
+        this.logger.log(`✓ Good compression effectiveness: ${compressionEffectiveness.toFixed(1)}% reduction achieved`);
+      } else if (compressionEffectiveness >= 10) {
+        this.logger.warn(`⚠ Moderate compression effectiveness: ${compressionEffectiveness.toFixed(1)}% reduction - consider reviewing optimization settings`);
+      } else if (compressionEffectiveness > 0) {
+        this.logger.warn(`⚠ Low compression effectiveness: ${compressionEffectiveness.toFixed(1)}% reduction - optimization may not be working optimally`);
+      } else {
+        this.logger.error(`✗ No compression achieved: Images may not be optimized properly`);
+      }
+
+      // Log compression effectiveness metrics for monitoring
+      this.logger.log(`Compression metrics - Original: ${totalOriginalSize}B, Optimized: ${totalOptimizedSize}B, Reduction: ${totalSizeReduction}B (${compressionEffectiveness.toFixed(1)}%)`);
+    } else if (imageUrls.length > 0) {
+      this.logger.warn(`Unable to calculate file size comparison - missing size data for ${imageUrls.length} images`);
+    }
+
+    // Validate that configuration was applied effectively
+    if (successfulOptimizations > 0) {
+      this.logger.log(`Configuration validation: Successfully applied optimization settings to ${successfulOptimizations} images`);
+
+      // Check if aggressive mode was effective
+      if (config && config.aggressiveMode && config.aggressiveMode.enabled && successfulOptimizations === imageUrls.length) {
+        this.logger.log('✓ Configuration validation PASSED: All images processed with aggressive optimization');
+      } else if (config && config.aggressiveMode && config.aggressiveMode.enabled && successfulOptimizations < imageUrls.length) {
+        this.logger.warn(`⚠ Configuration validation WARNING: Aggressive mode enabled but only ${successfulOptimizations}/${imageUrls.length} images optimized`);
+      }
+    } else if (imageUrls.length > 0) {
+      this.logger.error(`✗ Configuration validation FAILED: No images were optimized despite having ${imageUrls.length} images to process`);
+      this.logger.error('This indicates a configuration or service integration issue');
+    }
+
+      // Log final configuration compliance status
+      this.logger.log('Configuration compliance check completed');
+
+      // Warn if significant failures occurred but continue processing
+      if (totalFailures > 0) {
+        this.logger.warn(`${totalFailures} images failed to process for order ${data.orderNumber}, but PDF generation will continue with available images`);
+      }
+
+      // Warn if no optimizations succeeded (all fallbacks or failures)
+      if (successfulOptimizations === 0 && imageUrls.length > 0) {
+        this.logger.warn(`No images were successfully optimized for order ${data.orderNumber}, all processed images used fallback conversion or failed`);
+      }
+
+    } catch (error) {
+      this.logger.error(`Critical error during batch image processing for order ${data.orderNumber}: ${error.message}`, {
+        error: error.message,
+        stack: error.stack,
+        imageCount: imageUrls.length,
+        orderNumber: data.orderNumber
+      });
+
+      // Even if batch processing fails completely, continue with PDF generation
+      this.logger.warn(`Continuing PDF generation for order ${data.orderNumber} without image optimization due to critical processing error`);
+
       // Return original data if all image processing fails
       return data;
     }
@@ -870,8 +1133,239 @@ export class PDFTemplateEngine {
       }
     };
 
-    this.logger.debug(`Converted ${optimizedImageMap.size} images to base64 for order ${data.orderNumber}`);
+    this.logger.log(`Image conversion completed for order ${data.orderNumber}: ${optimizedImageMap.size} images processed successfully (${successfulOptimizations} optimized, ${fallbackConversions} fallback, ${totalFailures} failed)`);
+
+    // Collect and log comprehensive optimization metrics for monitoring
+    const batchEndTime = Date.now();
+    const batchProcessingTime = batchEndTime - batchStartTime;
+
+    // Calculate success/failure rates for monitoring
+    const totalImages = imageUrls.length;
+    const successRate = totalImages > 0 ? (successfulOptimizations / totalImages) * 100 : 0;
+    const fallbackRate = totalImages > 0 ? (fallbackConversions / totalImages) * 100 : 0;
+    const failureRate = totalImages > 0 ? (totalFailures / totalImages) * 100 : 0;
+
+    // Calculate compression effectiveness metrics
+    const compressionEffectiveness = totalOriginalSize > 0 ? ((totalOriginalSize - totalOptimizedSize) / totalOriginalSize) * 100 : 0;
+    const averageCompressionRatio = successfulOptimizations > 0 ? compressionEffectiveness / 100 : 0;
+
+    // Log optimization effectiveness metrics
+    this.logger.log(`Batch optimization metrics for operation ${operationId}:`);
+    this.logger.log(`  - Total Images: ${totalImages}`);
+    this.logger.log(`  - Successful Optimizations: ${successfulOptimizations} (${successRate.toFixed(1)}%)`);
+    this.logger.log(`  - Fallback Conversions: ${fallbackConversions} (${fallbackRate.toFixed(1)}%)`);
+    this.logger.log(`  - Failed Conversions: ${totalFailures} (${failureRate.toFixed(1)}%)`);
+    this.logger.log(`  - Total Processing Time: ${batchProcessingTime}ms`);
+    this.logger.log(`  - Average Time per Image: ${totalImages > 0 ? (batchProcessingTime / totalImages).toFixed(1) : 0}ms`);
+    this.logger.log(`  - Total Original Size: ${this.formatFileSize(totalOriginalSize)}`);
+    this.logger.log(`  - Total Optimized Size: ${this.formatFileSize(totalOptimizedSize)}`);
+    this.logger.log(`  - Total Size Reduction: ${this.formatFileSize(totalOriginalSize - totalOptimizedSize)}`);
+    this.logger.log(`  - Compression Effectiveness: ${compressionEffectiveness.toFixed(1)}%`);
+
+    // Validate file size reduction effectiveness
+    if (totalOriginalSize > 0 && totalOptimizedSize > 0) {
+      const sizeReductionBytes = totalOriginalSize - totalOptimizedSize;
+
+      if (sizeReductionBytes > 0) {
+        this.logger.log(`✓ File size reduction validation PASSED: ${this.formatFileSize(sizeReductionBytes)} saved (${compressionEffectiveness.toFixed(1)}% reduction)`);
+
+        // Ensure significant file size reduction is achieved (Requirements 3.1, 3.2)
+        if (compressionEffectiveness < 10) {
+          this.logger.warn(`⚠ File size reduction below optimal threshold: ${compressionEffectiveness.toFixed(1)}% < 10% - consider reviewing optimization settings`);
+        }
+      } else {
+        this.logger.error(`✗ File size reduction validation FAILED: No size reduction achieved`);
+      }
+    } else if (totalImages > 0) {
+      this.logger.warn(`⚠ File size reduction validation SKIPPED: Missing size data for comparison`);
+    }
+
+    // Record performance monitoring data for this batch operation
+    try {
+      const performanceData: PerformanceMonitoringData = {
+        operationId,
+        operationType: 'batch_images',
+        startTime: new Date(batchStartTime),
+        endTime: new Date(batchEndTime),
+        duration: batchProcessingTime,
+        success: totalFailures === 0, // Success if no complete failures
+        memoryUsage: {
+          peak: process.memoryUsage().heapUsed,
+          average: process.memoryUsage().heapUsed, // Simplified for this implementation
+          start: process.memoryUsage().heapUsed,
+          end: process.memoryUsage().heapUsed,
+        },
+        cpuUsage: {
+          cpuTime: 0, // Would need more complex CPU monitoring in production
+          utilization: 0, // Would need more complex CPU monitoring in production
+        },
+        ioStats: {
+          bytesRead: totalOriginalSize,
+          bytesWritten: totalOptimizedSize,
+          readOperations: totalImages,
+          writeOperations: successfulOptimizations,
+        },
+        // Add file size comparison metrics
+        fileSizeMetrics: {
+          originalSize: totalOriginalSize,
+          optimizedSize: totalOptimizedSize,
+          sizeReduction: totalOriginalSize - totalOptimizedSize,
+          compressionRatio: averageCompressionRatio,
+          compressionEffectiveness: compressionEffectiveness,
+        }
+      };
+
+      this.metricsService.recordPerformanceData(performanceData);
+      this.logger.debug(`Performance data recorded for batch operation ${operationId}`);
+    } catch (metricsError) {
+      this.logger.warn(`Failed to record performance metrics for batch operation ${operationId}: ${metricsError.message}`);
+    }
+
+    // Log success/failure rate tracking for monitoring integration
+    if (totalImages > 0) {
+      if (successRate >= 90) {
+        this.logger.log(`✓ High optimization success rate: ${successRate.toFixed(1)}% - System performing well`);
+      } else if (successRate >= 70) {
+        this.logger.warn(`⚠ Moderate optimization success rate: ${successRate.toFixed(1)}% - Monitor for potential issues`);
+      } else {
+        this.logger.error(`✗ Low optimization success rate: ${successRate.toFixed(1)}% - Investigation required`);
+      }
+
+      // Alert on high failure rates
+      if (failureRate > 30) {
+        this.logger.error(`🚨 High failure rate detected: ${failureRate.toFixed(1)}% - Immediate attention required`);
+      }
+
+      // Log monitoring summary for integration with PDF monitoring service
+      this.logger.log(`Monitoring summary - Order: ${data.orderNumber}, Success: ${successRate.toFixed(1)}%, Fallback: ${fallbackRate.toFixed(1)}%, Failed: ${failureRate.toFixed(1)}%, Duration: ${batchProcessingTime}ms, Size Reduction: ${this.formatFileSize(totalOriginalSize - totalOptimizedSize)} (${compressionEffectiveness.toFixed(1)}%)`);
+    }
+
     return convertedData;
+  }
+
+  /**
+   * Fallback to simple image conversion when optimization fails
+   * Enhanced with detailed error logging and graceful degradation
+   * @param imageUrl - URL of the image to convert
+   * @param optimizedImageMap - Map to store the converted image
+   * @param originalError - The original optimization error for context
+   */
+  private async fallbackToSimpleConversion(
+    imageUrl: string,
+    optimizedImageMap: Map<string, string>,
+    originalError?: string
+  ): Promise<void> {
+    try {
+      this.logger.warn(`Image optimization failed for ${imageUrl}${originalError ? `: ${originalError}` : ''}, attempting fallback to simple conversion`);
+
+      const fallbackStartTime = Date.now();
+      const base64Result = await this.imageConverter.convertImageToBase64(imageUrl);
+      const fallbackDuration = Date.now() - fallbackStartTime;
+
+      if (base64Result) {
+        optimizedImageMap.set(imageUrl, base64Result);
+        this.logger.log(`Successfully converted image using fallback: ${imageUrl} (${fallbackDuration}ms, unoptimized)`);
+
+        // Log metrics for monitoring
+        this.logger.debug(`Fallback conversion metrics - URL: ${imageUrl}, Duration: ${fallbackDuration}ms, Size: ${base64Result.length} chars`);
+
+        // Log fallback success for monitoring integration
+        this.logger.log(`Fallback operation successful for ${imageUrl} - Strategy: basic_compression, Duration: ${fallbackDuration}ms`);
+      } else {
+        this.logger.error(`Fallback conversion returned empty result for image: ${imageUrl}, image will be skipped in PDF`);
+
+        // Log detailed failure information for debugging
+        this.logger.debug(`Fallback failure details - URL: ${imageUrl}, Original error: ${originalError || 'Unknown'}, Fallback duration: ${fallbackDuration}ms`);
+
+        // Log fallback failure for monitoring integration
+        this.logger.error(`Fallback operation failed for ${imageUrl} - Strategy: basic_compression, Error: Empty result`);
+      }
+    } catch (fallbackError) {
+      this.logger.error(`Fallback conversion failed for image ${imageUrl}: ${fallbackError.message}`, {
+        originalError: originalError || 'Unknown optimization error',
+        fallbackError: fallbackError.message,
+        imageUrl,
+        stack: fallbackError.stack
+      });
+
+      // Continue with other images even if fallback fails - this ensures PDF generation continues
+      this.logger.warn(`Skipping image ${imageUrl} due to both optimization and fallback failures, PDF generation will continue without this image`);
+
+      // Log fallback error for monitoring integration
+      this.logger.error(`Fallback operation error for ${imageUrl} - Strategy: basic_compression, Error: ${fallbackError.message}`);
+    }
+  }
+
+  /**
+   * Fallback to simple image conversion when optimization fails (returns result instead of modifying map)
+   * Used for parallel processing where each promise needs to return its own result
+   * @param imageUrl - URL of the image to convert
+   * @param originalError - The original optimization error for context
+   * @returns Promise<string | null> - Base64 data URL or null if conversion fails
+   */
+  private async fallbackToSimpleConversionWithResult(
+    imageUrl: string,
+    originalError?: string
+  ): Promise<string | null> {
+    try {
+      this.logger.warn(`Image optimization failed for ${imageUrl}${originalError ? `: ${originalError}` : ''}, attempting fallback to simple conversion`);
+
+      const fallbackStartTime = Date.now();
+      const base64Result = await this.imageConverter.convertImageToBase64(imageUrl);
+      const fallbackDuration = Date.now() - fallbackStartTime;
+
+      if (base64Result) {
+        this.logger.log(`Successfully converted image using fallback: ${imageUrl} (${fallbackDuration}ms, unoptimized)`);
+
+        // Log metrics for monitoring
+        this.logger.debug(`Fallback conversion metrics - URL: ${imageUrl}, Duration: ${fallbackDuration}ms, Size: ${base64Result.length} chars`);
+
+        // Log fallback success for monitoring integration
+        this.logger.log(`Fallback operation successful for ${imageUrl} - Strategy: basic_compression, Duration: ${fallbackDuration}ms`);
+
+        return base64Result;
+      } else {
+        this.logger.error(`Fallback conversion returned empty result for image: ${imageUrl}, image will be skipped in PDF`);
+
+        // Log detailed failure information for debugging
+        this.logger.debug(`Fallback failure details - URL: ${imageUrl}, Original error: ${originalError || 'Unknown'}, Fallback duration: ${fallbackDuration}ms`);
+
+        // Log fallback failure for monitoring integration
+        this.logger.error(`Fallback operation failed for ${imageUrl} - Strategy: basic_compression, Error: Empty result`);
+
+        return null;
+      }
+    } catch (fallbackError) {
+      this.logger.error(`Fallback conversion failed for image ${imageUrl}: ${fallbackError.message}`, {
+        originalError: originalError || 'Unknown optimization error',
+        fallbackError: fallbackError.message,
+        imageUrl,
+        stack: fallbackError.stack
+      });
+
+      // Continue with other images even if fallback fails - this ensures PDF generation continues
+      this.logger.warn(`Skipping image ${imageUrl} due to both optimization and fallback failures, PDF generation will continue without this image`);
+
+      // Log fallback error for monitoring integration
+      this.logger.error(`Fallback operation error for ${imageUrl} - Strategy: basic_compression, Error: ${fallbackError.message}`);
+
+      return null;
+    }
+  }
+
+  /**
+   * Format file size in bytes to human-readable format
+   * @param bytes - File size in bytes
+   * @returns Formatted file size string
+   */
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
   /**

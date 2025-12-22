@@ -305,6 +305,19 @@ export interface PerformanceMonitoringData {
   success: boolean;
   /** Error information if failed */
   error?: string;
+  /** File size comparison metrics (optional) */
+  fileSizeMetrics?: {
+    /** Original total file size in bytes */
+    originalSize: number;
+    /** Optimized total file size in bytes */
+    optimizedSize: number;
+    /** Total size reduction in bytes */
+    sizeReduction: number;
+    /** Compression ratio (0-1) */
+    compressionRatio: number;
+    /** Compression effectiveness percentage */
+    compressionEffectiveness: number;
+  };
 }
 
 /**
