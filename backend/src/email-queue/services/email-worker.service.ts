@@ -30,6 +30,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private reconnectMaxDelay: number;
   private gracefulShutdownTimeout: number;
   private processingJobs = new Set<string>(); // Track jobs being processed for exactly-once guarantee
+  private deliveredEmails = new Map<string, { timestamp: Date; messageId?: string }>(); // Track delivered emails to prevent duplicates
+  private readonly deliveryTrackingTTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
   constructor(
     private queueConfigService: EmailQueueConfigService,
@@ -366,7 +368,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
   /**
    * Process email event with resilience features
-   * Wraps the main processing logic with exactly-once guarantees
+   * Wraps the main processing logic with exactly-once guarantees and delivery tracking
    */
   private async processEmailEventWithResilience(job: Job<EmailEvent>): Promise<void> {
     this.logger.log(`[${job.id}] processEmailEventWithResilience started`);
@@ -387,6 +389,16 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       );
       this.logger.warn(`[${job.id}] Processing jobs set contains: [${Array.from(this.processingJobs).join(', ')}]`);
       return; // Skip duplicate processing
+    }
+
+    // Check if email has already been delivered recently
+    if (this.hasEmailBeenDelivered(job.data)) {
+      this.logger.warn(
+        `[${job.id}] Email already delivered recently - skipping duplicate delivery | ` +
+        `Event: ${job.data.type} | ` +
+        `Key: ${this.generateDeliveryTrackingKey(job.data)}`
+      );
+      return; // Skip duplicate delivery
     }
 
     // Mark job as being processed
@@ -654,7 +666,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Failed to send order confirmation with PDF: ${result.error}`);
     }
 
-    this.logger.log(`[sendOrderConfirmation] Completed successfully with PDF for order: ${event.orderId}`);
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event, result.messageId);
+
+    this.logger.log(`[sendOrderConfirmation] Completed successfully with PDF for order: ${event.orderId} | MessageId: ${result.messageId || 'none'}`);
   }
 
   /**
@@ -707,7 +722,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Failed to send order confirmation resend with PDF: ${result.error}`);
     }
 
-    this.logger.log(`[sendOrderConfirmationResend] Completed successfully with PDF for order: ${event.orderId}`);
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event, result.messageId);
+
+    this.logger.log(`[sendOrderConfirmationResend] Completed successfully with PDF for order: ${event.orderId} | MessageId: ${result.messageId || 'none'}`);
   }
 
   /**
@@ -757,6 +775,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendAdminOrderNotification] Completed successfully for order: ${event.orderId}`);
   }
 
   /**
@@ -797,6 +820,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendShippingNotification] Completed successfully for order: ${event.orderId}`);
   }
 
   /**
@@ -834,6 +862,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendOrderStatusUpdate] Completed successfully for order: ${event.orderId}`);
   }
 
   /**
@@ -866,6 +899,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendWelcomeEmail] Completed successfully for user: ${event.userId}`);
   }
 
   /**
@@ -900,6 +938,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendPasswordReset] Completed successfully for user: ${event.userId}`);
   }
 
   /**
@@ -938,6 +981,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!success) {
       throw new Error('Email service returned false');
     }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendContactForm] Completed successfully from: ${event.senderEmail}`);
   }
 
   /**
@@ -1436,6 +1484,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     // Final cleanup
     this.processingJobs.clear();
+    this.deliveredEmails.clear();
     this.logger.log('Email worker shutdown sequence completed');
   }
 
@@ -1713,5 +1762,195 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       translations[shippingMethod as keyof typeof translations]?.[locale] ||
       shippingMethod
     );
+  }
+
+  /**
+   * Generate a unique delivery tracking key for an email event
+   * This key is used to prevent duplicate email deliveries
+   */
+  private generateDeliveryTrackingKey(event: EmailEvent): string {
+    // Create a unique key based on event type, recipient, and relevant identifiers
+    const keyParts: string[] = [event.type, event.locale];
+
+    // Add event-specific identifiers
+    switch (event.type) {
+      case EmailEventType.ORDER_CONFIRMATION:
+      case EmailEventType.ORDER_CONFIRMATION_RESEND:
+        keyParts.push(event.orderId, event.customerEmail);
+        break;
+      case EmailEventType.ADMIN_ORDER_NOTIFICATION:
+        keyParts.push(event.orderId, 'admin');
+        break;
+      case EmailEventType.SHIPPING_NOTIFICATION:
+        keyParts.push(event.orderId, event.trackingNumber || 'no-tracking');
+        break;
+      case EmailEventType.ORDER_STATUS_UPDATE:
+        keyParts.push(event.orderId, event.newStatus || 'status-update');
+        break;
+      case EmailEventType.WELCOME_EMAIL:
+        keyParts.push(event.userId, event.userEmail);
+        break;
+      case EmailEventType.PASSWORD_RESET:
+        keyParts.push(event.userId, event.userEmail, event.resetToken);
+        break;
+      case EmailEventType.CONTACT_FORM:
+        keyParts.push(event.senderEmail, event.senderName, event.timestamp.toISOString());
+        break;
+      default:
+        // This should never happen with proper typing, but adding for safety
+        keyParts.push('unknown');
+    }
+
+    return keyParts.join('|');
+  }
+
+  /**
+   * Check if an email has already been delivered recently
+   * This prevents duplicate email deliveries within the TTL window
+   */
+  private hasEmailBeenDelivered(event: EmailEvent): boolean {
+    const deliveryKey = this.generateDeliveryTrackingKey(event);
+    const deliveryRecord = this.deliveredEmails.get(deliveryKey);
+
+    if (!deliveryRecord) {
+      return false;
+    }
+
+    // Check if the delivery record is still within TTL
+    const now = new Date();
+    const timeSinceDelivery = now.getTime() - deliveryRecord.timestamp.getTime();
+
+    if (timeSinceDelivery > this.deliveryTrackingTTL) {
+      // Record is expired, remove it and allow delivery
+      this.deliveredEmails.delete(deliveryKey);
+      return false;
+    }
+
+    // Email was delivered recently, prevent duplicate
+    this.logger.warn(
+      `Email delivery prevented - already delivered within TTL | ` +
+      `Key: ${deliveryKey} | ` +
+      `Delivered: ${deliveryRecord.timestamp.toISOString()} | ` +
+      `TTL: ${this.deliveryTrackingTTL}ms`
+    );
+
+    return true;
+  }
+
+  /**
+   * Mark an email as delivered to prevent future duplicates
+   */
+  private markEmailAsDelivered(event: EmailEvent, messageId?: string): void {
+    const deliveryKey = this.generateDeliveryTrackingKey(event);
+    const deliveryRecord = {
+      timestamp: new Date(),
+      messageId
+    };
+
+    this.deliveredEmails.set(deliveryKey, deliveryRecord);
+
+    this.logger.log(
+      `Email marked as delivered | ` +
+      `Key: ${deliveryKey} | ` +
+      `MessageId: ${messageId || 'none'} | ` +
+      `Timestamp: ${deliveryRecord.timestamp.toISOString()}`
+    );
+
+    // Clean up expired records periodically
+    this.cleanupExpiredDeliveryRecords();
+  }
+
+  /**
+   * Clean up expired delivery tracking records to prevent memory leaks
+   */
+  private cleanupExpiredDeliveryRecords(): void {
+    const now = new Date();
+    let cleanedCount = 0;
+
+    for (const [key, record] of this.deliveredEmails.entries()) {
+      const timeSinceDelivery = now.getTime() - record.timestamp.getTime();
+      if (timeSinceDelivery > this.deliveryTrackingTTL) {
+        this.deliveredEmails.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      this.logger.debug(`Cleaned up ${cleanedCount} expired delivery records`);
+    }
+  }
+
+  /**
+   * Get delivery tracking information for monitoring and debugging
+   * @returns Comprehensive delivery tracking status
+   */
+  getDeliveryTrackingStatus(): {
+    totalTrackedDeliveries: number;
+    recentDeliveries: Array<{
+      key: string;
+      timestamp: Date;
+      messageId?: string;
+      age: number;
+    }>;
+    oldestDelivery?: Date;
+    newestDelivery?: Date;
+    ttlHours: number;
+  } {
+    const now = new Date();
+    const recentDeliveries = Array.from(this.deliveredEmails.entries()).map(([key, record]) => ({
+      key,
+      timestamp: record.timestamp,
+      messageId: record.messageId,
+      age: now.getTime() - record.timestamp.getTime(),
+    }));
+
+    // Sort by timestamp (newest first)
+    recentDeliveries.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+    const timestamps = recentDeliveries.map(d => d.timestamp);
+    const oldestDelivery = timestamps.length > 0 ? new Date(Math.min(...timestamps.map(t => t.getTime()))) : undefined;
+    const newestDelivery = timestamps.length > 0 ? new Date(Math.max(...timestamps.map(t => t.getTime()))) : undefined;
+
+    return {
+      totalTrackedDeliveries: this.deliveredEmails.size,
+      recentDeliveries: recentDeliveries.slice(0, 10), // Return last 10 deliveries
+      oldestDelivery,
+      newestDelivery,
+      ttlHours: this.deliveryTrackingTTL / (60 * 60 * 1000),
+    };
+  }
+
+  /**
+   * Verify if a specific email delivery was successful
+   * @param event - Email event to verify
+   * @returns Delivery verification result
+   */
+  verifyEmailDelivery(event: EmailEvent): {
+    wasDelivered: boolean;
+    deliveryTimestamp?: Date;
+    messageId?: string;
+    deliveryKey: string;
+    timeSinceDelivery?: number;
+  } {
+    const deliveryKey = this.generateDeliveryTrackingKey(event);
+    const deliveryRecord = this.deliveredEmails.get(deliveryKey);
+
+    if (!deliveryRecord) {
+      return {
+        wasDelivered: false,
+        deliveryKey,
+      };
+    }
+
+    const now = new Date();
+    const timeSinceDelivery = now.getTime() - deliveryRecord.timestamp.getTime();
+
+    return {
+      wasDelivered: true,
+      deliveryTimestamp: deliveryRecord.timestamp,
+      messageId: deliveryRecord.messageId,
+      deliveryKey,
+      timeSinceDelivery,
+    };
   }
 }

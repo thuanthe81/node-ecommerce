@@ -3,6 +3,7 @@ import { Queue, ConnectionOptions } from 'bullmq';
 import { EmailEvent, EmailEventType } from '../types/email-event.types';
 import { EmailOptions, EmailAttachmentOptions } from '../../notifications/services/email.service';
 import { EmailQueueConfigService } from './email-queue-config.service';
+import { EmailFlowLogger } from '../utils/email-flow-logger';
 import Redis from 'ioredis';
 
 /**
@@ -280,6 +281,17 @@ export class EmailEventPublisher implements OnModuleDestroy {
       // Generate deterministic job ID for exactly-once processing
       // This prevents duplicate events if the same event is published multiple times
       const jobId = this.generateJobId(event);
+      const contentHash = this.hashEventContent(event);
+
+      // Log deduplication attempt before publishing
+      EmailFlowLogger.logDeduplicationStatus(
+        event.type,
+        (event as any).orderId || 'N/A',
+        jobId,
+        contentHash,
+        false, // Will be determined after job creation
+        Math.floor(event.timestamp.getTime() / this.getDeduplicationWindowSize(event.type))
+      );
 
       // Add job to queue with priority and deduplication
       const job = await this.emailQueue.add(
@@ -301,27 +313,67 @@ export class EmailEventPublisher implements OnModuleDestroy {
         }
       );
 
+      // Check if job was deduplicated (BullMQ returns existing job if jobId exists)
+      const wasDeduped = job.id !== jobId;
+      const actualJobId = job.id!;
+
+      // Enhanced logging with deduplication status
       this.logger.log(
-        `Email event published: ${event.type} (Job ID: ${job.id}) | ` +
+        `Email event published: ${event.type} (Job ID: ${actualJobId}) | ` +
         `Priority: ${this.getEventPriority(event.type)} | ` +
-        `Locale: ${event.locale}`
+        `Locale: ${event.locale} | ` +
+        `Deduped: ${wasDeduped} | ` +
+        `Hash: ${contentHash} | ` +
+        `Window: ${this.getDeduplicationWindowSize(event.type)}ms`
       );
 
       // Log structured event creation for monitoring
       if (this.monitoringService) {
         this.monitoringService.logEventLifecycle('created', {
-          jobId: job.id,
+          jobId: actualJobId,
           eventType: event.type,
           locale: event.locale,
           metadata: {
             priority: this.getEventPriority(event.type),
             timestamp: event.timestamp,
-            isDuplicate: job.id !== jobId, // Check if job was deduplicated
+            isDuplicate: wasDeduped,
+            contentHash,
+            deduplicationWindow: this.getDeduplicationWindowSize(event.type),
+            originalJobId: jobId,
           },
         });
       }
 
-      return job.id!;
+      // Log duplicate detection if event was deduplicated
+      if (wasDeduped) {
+        EmailFlowLogger.logDuplicateEventDetection(
+          event.type,
+          (event as any).orderId || 'N/A',
+          (event as any).orderNumber || 'N/A',
+          actualJobId,
+          jobId,
+          contentHash
+        );
+
+        this.logger.warn(
+          `Duplicate event detected and deduplicated: ${event.type} | ` +
+          `Original Job: ${actualJobId} | ` +
+          `Duplicate Job: ${jobId} | ` +
+          `Hash: ${contentHash}`
+        );
+      }
+
+      // Update deduplication status log with final result
+      EmailFlowLogger.logDeduplicationStatus(
+        event.type,
+        (event as any).orderId || 'N/A',
+        actualJobId,
+        contentHash,
+        wasDeduped,
+        Math.floor(event.timestamp.getTime() / this.getDeduplicationWindowSize(event.type))
+      );
+
+      return actualJobId;
     } catch (error) {
       this.logger.error(
         `Failed to publish email event: ${event.type}`,
@@ -356,6 +408,7 @@ export class EmailEventPublisher implements OnModuleDestroy {
 
   /**
    * Generate deterministic job ID for exactly-once processing
+   * Enhanced with improved deduplication logic and extended time windows
    * @param event - Email event
    * @returns Unique job ID based on event content
    */
@@ -365,50 +418,125 @@ export class EmailEventPublisher implements OnModuleDestroy {
     const contentHash = this.hashEventContent(event);
     const timestamp = event.timestamp.getTime();
 
-    // For resend events, use a longer deduplication window (10 minutes)
-    // to prevent multiple resends of the same order
+    // Enhanced deduplication time windows based on event type
     let timeWindow: number;
     if (event.type === EmailEventType.ORDER_CONFIRMATION_RESEND) {
-      timeWindow = Math.floor(timestamp / (10 * 60 * 1000)); // 10-minute windows
+      // Extended window for resend events to prevent multiple resends
+      timeWindow = Math.floor(timestamp / (15 * 60 * 1000)); // 15-minute windows
+    } else if (event.type === EmailEventType.ORDER_CONFIRMATION) {
+      // Extended window for order confirmations to handle duplicate order creation calls
+      timeWindow = Math.floor(timestamp / (5 * 60 * 1000)); // 5-minute windows
+    } else if (event.type === EmailEventType.ADMIN_ORDER_NOTIFICATION) {
+      // Extended window for admin notifications
+      timeWindow = Math.floor(timestamp / (3 * 60 * 1000)); // 3-minute windows
     } else {
-      // Include timestamp to allow the same content to be sent at different times
-      // but prevent duplicates within a short time window (1 minute)
-      timeWindow = Math.floor(timestamp / (60 * 1000)); // 1-minute windows
+      // Standard window for other event types
+      timeWindow = Math.floor(timestamp / (2 * 60 * 1000)); // 2-minute windows
     }
 
-    return `${event.type}-${contentHash}-${timeWindow}`;
+    const jobId = `${event.type}-${contentHash}-${timeWindow}`;
+
+    // Log deduplication parameters for debugging
+    this.logger.debug(
+      `Generated job ID: ${jobId} | ` +
+      `Event: ${event.type} | ` +
+      `Hash: ${contentHash} | ` +
+      `Time window: ${timeWindow} | ` +
+      `Window size: ${this.getDeduplicationWindowSize(event.type)}ms`
+    );
+
+    return jobId;
   }
 
   /**
    * Create a simple hash of event content for deduplication
+   * Enhanced with more unique fields for better deduplication accuracy
    * @param event - Email event
    * @returns Content hash
    */
   private hashEventContent(event: EmailEvent): string {
-    // Create a simple hash based on key event properties
+    // Create a comprehensive hash based on key event properties
     const keyContent = {
       type: event.type,
-      // For ORDER_CONFIRMATION_RESEND, exclude locale to prevent duplicates
-      // The same order should only be resent once regardless of locale preference
-      ...(event.type !== EmailEventType.ORDER_CONFIRMATION_RESEND && { locale: event.locale }),
-      // Include type-specific identifiers
-      ...(event.type.includes('ORDER') && { orderId: (event as any).orderId }),
-      ...(event.type.includes('USER') && { userId: (event as any).userId }),
+      locale: event.locale,
+      // Include timestamp minute for additional uniqueness while allowing deduplication
+      timestampMinute: Math.floor(event.timestamp.getTime() / (60 * 1000)),
+      // Include type-specific identifiers with more fields
+      ...(event.type.includes('ORDER') && {
+        orderId: (event as any).orderId,
+        orderNumber: (event as any).orderNumber,
+        customerEmail: (event as any).customerEmail
+      }),
+      ...(event.type.includes('USER') && {
+        userId: (event as any).userId,
+        userEmail: (event as any).userEmail
+      }),
       ...(event.type === EmailEventType.CONTACT_FORM && {
         senderEmail: (event as any).senderEmail,
-        message: (event as any).message?.substring(0, 100) // First 100 chars
+        senderName: (event as any).senderName,
+        // Include first 200 chars of message for better uniqueness
+        messageHash: this.simpleStringHash((event as any).message?.substring(0, 200) || '')
       }),
+      ...(event.type === EmailEventType.PASSWORD_RESET && {
+        userId: (event as any).userId,
+        userEmail: (event as any).userEmail,
+        // Include partial reset token for uniqueness (first 8 chars)
+        resetTokenPrefix: (event as any).resetToken?.substring(0, 8)
+      }),
+      ...(event.type === EmailEventType.SHIPPING_NOTIFICATION && {
+        orderId: (event as any).orderId,
+        orderNumber: (event as any).orderNumber,
+        trackingNumber: (event as any).trackingNumber
+      }),
+      ...(event.type === EmailEventType.ORDER_STATUS_UPDATE && {
+        orderId: (event as any).orderId,
+        orderNumber: (event as any).orderNumber,
+        newStatus: (event as any).newStatus
+      })
     };
 
-    // Simple hash function (for production, consider using crypto.createHash)
-    const str = JSON.stringify(keyContent);
+    // Enhanced hash function with better distribution
+    const str = JSON.stringify(keyContent, Object.keys(keyContent).sort());
+    return this.simpleStringHash(str);
+  }
+
+  /**
+   * Simple but effective string hash function
+   * @param str - String to hash
+   * @returns Hash string
+   */
+  private simpleStringHash(str: string): string {
     let hash = 0;
+    if (str.length === 0) return '0';
+
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
+
+    // Convert to positive base36 string for readability
     return Math.abs(hash).toString(36);
+  }
+
+  /**
+   * Get deduplication window size for an event type
+   * @param eventType - Email event type
+   * @returns Window size in milliseconds
+   */
+  private getDeduplicationWindowSize(eventType: EmailEventType): number {
+    const windowSizes = {
+      [EmailEventType.ORDER_CONFIRMATION_RESEND]: 15 * 60 * 1000, // 15 minutes
+      [EmailEventType.ORDER_CONFIRMATION]: 5 * 60 * 1000, // 5 minutes
+      [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 3 * 60 * 1000, // 3 minutes
+      [EmailEventType.SHIPPING_NOTIFICATION]: 2 * 60 * 1000, // 2 minutes
+      [EmailEventType.ORDER_STATUS_UPDATE]: 2 * 60 * 1000, // 2 minutes
+      [EmailEventType.WELCOME_EMAIL]: 2 * 60 * 1000, // 2 minutes
+      [EmailEventType.PASSWORD_RESET]: 2 * 60 * 1000, // 2 minutes
+      [EmailEventType.CONTACT_FORM]: 2 * 60 * 1000, // 2 minutes
+    };
+
+    return windowSizes[eventType] || 2 * 60 * 1000; // Default 2 minutes
   }
 
   /**
@@ -1261,7 +1389,29 @@ export class EmailEventPublisher implements OnModuleDestroy {
       customerName,
     };
 
-    return this.publishEvent(event);
+    // Log email event publication for flow tracking
+    EmailFlowLogger.logEmailEventPublication(
+      event.type,
+      orderId,
+      orderNumber,
+      customerEmail,
+      'pending', // Will be updated after publishing
+      locale
+    );
+
+    const publishedJobId = await this.publishEvent(event);
+
+    // Update the log with actual job ID
+    EmailFlowLogger.logEmailEventPublication(
+      event.type,
+      orderId,
+      orderNumber,
+      customerEmail,
+      publishedJobId,
+      locale
+    );
+
+    return publishedJobId;
   }
 
   /**

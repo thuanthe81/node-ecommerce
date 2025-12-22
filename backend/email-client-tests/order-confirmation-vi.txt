@@ -1,0 +1,15 @@
+Xin chào John & Jane "Smith" <test@example.com>,
+
+      Cảm ơn bạn đã đặt hàng tại Ala Craft!
+
+      Chi tiết đơn hàng của bạn:
+      Mã đơn hàng: TEST-EMAIL-001
+      Ngày đặt hàng: 2024-12-22
+      Tổng cộng: 87,32 ₫
+
+      Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.
+
+      Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.
+
+      Trân trọng,
+Đội ngũ Ala Craft

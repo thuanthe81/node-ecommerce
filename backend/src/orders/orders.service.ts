@@ -13,6 +13,7 @@ import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { EmailEventPublisher } from '../email-queue/services/email-event-publisher.service';
 import { FooterSettingsService } from '../footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
+import { EmailFlowLogger } from '../email-queue/utils/email-flow-logger';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
 import { STATUS } from '../common/constants';
@@ -318,8 +319,19 @@ export class OrdersService {
    * - Actual email delivery is handled by EmailWorker service
    */
   private async sendOrderConfirmationEmail(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
+    const startTime = Date.now();
+
     try {
       const customerName = order.shippingAddress?.fullName || order.email || 'Customer';
+
+      // Log the email trigger with comprehensive details
+      EmailFlowLogger.logOrderCreationEmailTrigger(
+        order.id,
+        order.orderNumber,
+        order.email,
+        locale,
+        'OrdersService.sendOrderConfirmationEmail'
+      );
 
       // Publish order confirmation event to queue
       const jobId = await this.emailEventPublisher.sendOrderConfirmation(
@@ -330,10 +342,35 @@ export class OrdersService {
         locale
       );
 
-      console.log(`Order confirmation event published for order ${order.orderNumber} (Job ID: ${jobId})`);
+      const processingTime = Date.now() - startTime;
+
+      // Log successful event publication
+      EmailFlowLogger.logEmailEventPublication(
+        'ORDER_CONFIRMATION',
+        order.id,
+        order.orderNumber,
+        order.email,
+        jobId,
+        locale,
+        false // Not a duplicate at this point
+      );
+
+      console.log(`Order confirmation event published for order ${order.orderNumber} (Job ID: ${jobId}) in ${processingTime}ms`);
     } catch (error) {
+      const processingTime = Date.now() - startTime;
+
+      // Log error with comprehensive details
+      EmailFlowLogger.logEmailDeliveryFailure(
+        'unknown',
+        order.id,
+        order.orderNumber,
+        order.email,
+        error instanceof Error ? error.message : String(error),
+        1
+      );
+
       // Log error but don't fail the order creation
-      console.error(`Failed to publish order confirmation event for order ${order.orderNumber}:`, error);
+      console.error(`Failed to publish order confirmation event for order ${order.orderNumber} (${processingTime}ms):`, error);
     }
   }
 

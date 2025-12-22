@@ -10,6 +10,8 @@ import { PDFAuditService } from './pdf-audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
+import { HTMLEscapingService } from '../../common/services/html-escaping.service';
+import { EmailTestingUtils } from '../../common/utils/email-testing.utils';
 import {
   OrderPDFData,
   SimplifiedEmailTemplate,
@@ -61,6 +63,7 @@ export class EmailAttachmentService {
     private prismaService: PrismaService,
     private footerSettingsService: FooterSettingsService,
     private businessInfoService: BusinessInfoService,
+    private htmlEscapingService: HTMLEscapingService,
   ) {}
 
   /**
@@ -151,6 +154,28 @@ export class EmailAttachmentService {
         locale,
       );
 
+      // Verify email content formatting if testing utilities are enabled
+      if (EmailTestingUtils.isTestModeEnabled()) {
+        const verificationResult = EmailTestingUtils.verifyEmailContentFormatting(
+          emailTemplate.htmlContent,
+          emailTemplate.textContent,
+          emailTemplate.subject,
+          orderData.orderNumber,
+        );
+
+        if (!verificationResult.isValid) {
+          this.logger.warn(
+            `Email content verification failed for order ${orderData.orderNumber}: ${verificationResult.errors.join(', ')}`,
+          );
+        }
+
+        if (verificationResult.warnings.length > 0) {
+          this.logger.warn(
+            `Email content verification warnings for order ${orderData.orderNumber}: ${verificationResult.warnings.join(', ')}`,
+          );
+        }
+      }
+
       // Send email with PDF attachment
       const emailResult = await this.sendEmailWithAttachment(
         customerEmail,
@@ -158,6 +183,11 @@ export class EmailAttachmentService {
         pdfResult.filePath!,
         pdfResult.fileName!,
       );
+
+      // Track email count for testing
+      if (emailResult.success) {
+        EmailTestingUtils.incrementEmailCount(orderData.orderNumber, 'order_confirmation');
+      }
 
       if (emailResult.success) {
         // Schedule PDF cleanup after successful email
@@ -738,55 +768,153 @@ export class EmailAttachmentService {
 
   /**
    * Generate minimal HTML email content that works with swaks
+   * Enhanced with proper HTML escaping and CSS formatting
    * @param orderData - Order data
    * @param locale - Language locale
    * @param translations - Translation object
-   * @returns Minimal HTML email content
+   * @returns Minimal HTML email content with proper escaping
    */
   private generateMinimalHTMLContent(
     orderData: OrderPDFData,
     locale: 'en' | 'vi',
     translations: any,
   ): string {
-    const greeting = translations.greeting.replace(
-      '{customerName}',
-      orderData.customerInfo.name,
+    try {
+      // Escape all dynamic content to prevent HTML injection and formatting issues
+      const escapedCustomerName = this.htmlEscapingService.escapeHtmlContent(
+        orderData.customerInfo.name || 'Customer'
+      );
+      const escapedOrderNumber = this.htmlEscapingService.escapeHtmlContent(
+        orderData.orderNumber || ''
+      );
+      const escapedOrderDate = this.htmlEscapingService.escapeHtmlContent(
+        orderData.orderDate || ''
+      );
+      const escapedCompanyName = this.htmlEscapingService.escapeHtmlContent(
+        BUSINESS.COMPANY.NAME.EN || 'Company'
+      );
+
+      // Build greeting with already-escaped customer name (don't escape again)
+      const greeting = translations.greeting.replace('{customerName}', escapedCustomerName);
+
+      // Translation strings don't need escaping as they don't contain user input
+      const thankYou = translations.thankYou || '';
+      const orderDetails = translations.orderDetails || '';
+      const orderNumberLabel = translations.orderNumber || '';
+      const orderDateLabel = translations.orderDate || '';
+      const totalLabel = translations.total || '';
+      const pdfAttachment = translations.pdfAttachment || '';
+      const contactInfo = translations.contactInfo || '';
+      const signature = translations.signature || '';
+
+      // Format currency safely
+      const formattedTotal = this.formatCurrency(orderData.pricing.total, locale);
+      const escapedTotal = this.htmlEscapingService.escapeHtmlContent(formattedTotal);
+
+      // Generate the HTML template with proper escaping
+      const htmlTemplate = `<!DOCTYPE html>
+<html lang="${locale}">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${this.htmlEscapingService.escapeHtmlContent(
+      translations.subject.replace('{orderNumber}', escapedOrderNumber)
+    )}</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+
+    <div style="background-color: #2c3e50; color: #ffffff; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 4px;">
+      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">${escapedCompanyName}</h1>
+    </div>
+
+    <p style="margin-bottom: 15px; font-size: 16px;">${greeting}</p>
+
+    <p style="margin-bottom: 20px; font-size: 16px;">${thankYou}</p>
+
+    <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db; border-radius: 4px;">
+      <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">${orderDetails}</h3>
+      <p style="margin: 8px 0; font-size: 14px;"><strong>${orderNumberLabel}:</strong> ${escapedOrderNumber}</p>
+      <p style="margin: 8px 0; font-size: 14px;"><strong>${orderDateLabel}:</strong> ${escapedOrderDate}</p>
+      <p style="margin: 8px 0; font-size: 14px;"><strong>${totalLabel}:</strong> ${escapedTotal}</p>
+    </div>
+
+    <p style="margin: 20px 0; font-size: 16px; font-weight: bold; color: #2c3e50;">${pdfAttachment}</p>
+
+    <p style="margin: 20px 0; font-size: 16px;">${contactInfo}</p>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #666666; font-size: 12px;">
+      <p style="margin: 10px 0;">${signature.replace('\\n', '<br>')}</p>
+      <p style="margin: 10px 0; text-align: center;">&copy; ${new Date().getFullYear()} ${escapedCompanyName}. All rights reserved.</p>
+    </div>
+
+  </body>
+</html>`;
+
+      // Validate the generated HTML structure
+      const validationResult = this.htmlEscapingService.validateHtmlStructure(htmlTemplate);
+
+      if (!validationResult.isValid) {
+        this.logger.warn(
+          `HTML validation issues found for order ${orderData.orderNumber}:`,
+          {
+            errors: validationResult.htmlIssues,
+            cssIssues: validationResult.cssIssues,
+            warnings: validationResult.recommendations,
+          }
+        );
+      }
+
+      // Log successful HTML generation
+      this.logger.debug(
+        `Generated HTML email template for order ${orderData.orderNumber} (${htmlTemplate.length} characters)`
+      );
+
+      return htmlTemplate;
+
+    } catch (error) {
+      this.logger.error(
+        `Error generating HTML email content for order ${orderData.orderNumber}:`,
+        error
+      );
+
+      // Return a safe fallback template
+      return this.generateFallbackHTMLTemplate(orderData, locale, translations);
+    }
+  }
+
+  /**
+   * Generate a safe fallback HTML template when the main template generation fails
+   * @param orderData - Order data
+   * @param locale - Language locale
+   * @param translations - Translation object
+   * @returns Safe fallback HTML template
+   */
+  private generateFallbackHTMLTemplate(
+    orderData: OrderPDFData,
+    locale: 'en' | 'vi',
+    translations: any,
+  ): string {
+    const safeOrderNumber = this.htmlEscapingService.escapeHtmlContent(
+      orderData.orderNumber || 'N/A'
+    );
+    const safeCustomerName = this.htmlEscapingService.escapeHtmlContent(
+      orderData.customerInfo.name || 'Customer'
     );
 
     return `<!DOCTYPE html>
-      <html>
-        <head>
-        <meta charset="UTF-8">
-        <title>${translations.subject.replace('{orderNumber}', orderData.orderNumber)}</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-
-        <div style="background-color: #2c3e50; color: white; padding: 20px; text-align: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">${BUSINESS.COMPANY.NAME.EN}</h1>
-        </div>
-
-        <p>${greeting}</p>
-
-        <p>${translations.thankYou}</p>
-
-        <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #3498db;">
-        <h3 style="margin-top: 0;">${translations.orderDetails}</h3>
-        <p><strong>${translations.orderNumber}:</strong> ${orderData.orderNumber}</p>
-        <p><strong>${translations.orderDate}:</strong> ${orderData.orderDate}</p>
-        <p><strong>${translations.total}:</strong> ${this.formatCurrency(orderData.pricing.total, locale)}</p>
-        </div>
-
-        <p><strong>${translations.pdfAttachment}</strong></p>
-
-        <p>${translations.contactInfo}</p>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
-        <p>${translations.signature.replace('\n', '<br>')}</p>
-        <p>&copy; ${new Date().getFullYear()} ${BUSINESS.COMPANY.NAME.EN}. All rights reserved.</p>
-        </div>
-
-        </body>
-      </html>`;
+<html lang="${locale}">
+  <head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; padding: 20px;">
+    <h1>Order Confirmation</h1>
+    <p>Dear ${safeCustomerName},</p>
+    <p>Thank you for your order ${safeOrderNumber}.</p>
+    <p>Please see the attached PDF for detailed information.</p>
+    <p>Best regards,<br>Customer Service Team</p>
+  </body>
+</html>`;
   }
 
   /**

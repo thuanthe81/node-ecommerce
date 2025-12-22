@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
+import { EmailTestingUtils } from '../../common/utils/email-testing.utils';
 import { SYSTEM } from '../../common/constants';
 
 const execAsync = promisify(exec);
