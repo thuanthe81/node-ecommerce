@@ -72,13 +72,6 @@ export class EmailService {
       const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
-      this.logger.log(`[EmailService] SMTP Configuration:`);
-      this.logger.log(`  - Server: ${smtpServer}`);
-      this.logger.log(`  - Port: ${smtpPort}`);
-      this.logger.log(`  - User: ${smtpUser}`);
-      this.logger.log(`  - Password: ${smtpPassword ? '[SET]' : '[NOT SET]'}`);
-      this.logger.log(`  - Footer Contact Email: ${footerSettings.contactEmail || '[NOT SET]'}`);
-
       // Check if SMTP configuration is valid
       if (!smtpServer || !smtpPort) {
         this.logger.error(`[EmailService] Missing SMTP server configuration. Server: ${smtpServer}, Port: ${smtpPort}`);
@@ -109,15 +102,13 @@ export class EmailService {
       }
 
       // Add HTML body with proper shell escaping
-      command += ` --body ${this.escapeHtmlForSwaks(simplifiedHtml)} --add-header "MIME-Version: 1.0" --add-header "Content-Type: ${SYSTEM.MIME_TYPES.HTML}"`;
+      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
 
       // Log the command for debugging (without sensitive info)
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
       this.logger.log(`[EmailService] Executing swaks command: ${debugCommand}`);
 
-      this.logger.log(`[EmailService] About to execute swaks command...`);
-      const result = await execAsync(command);
-      this.logger.log(`[EmailService] Swaks command executed successfully. Output: ${result.stdout || 'No output'}`);
+      const result = await execAsync(command, { maxBuffer: 4 * 1024 * 1024 });
       if (result.stderr) {
         this.logger.warn(`[EmailService] Swaks stderr: ${result.stderr}`);
       }
