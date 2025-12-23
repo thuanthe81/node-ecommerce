@@ -98,7 +98,7 @@ describe('OrdersService - Zero Price Products', () => {
   };
 
   const mockEmailTemplateService = {
-    getSimplifiedOrderConfirmationTemplate: jest.fn().mockReturnValue({
+    getOrderConfirmationTemplate: jest.fn().mockResolvedValue({
       subject: 'Order Confirmation',
       html: '<p>Order confirmed</p>',
     }),

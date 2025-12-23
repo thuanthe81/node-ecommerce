@@ -15,18 +15,22 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { EmailTestingUtils } from '../src/common/utils/email-testing.utils';
 import { EmailAttachmentService } from '../src/pdf-generator/services/email-attachment.service';
+import { EmailTemplateService } from '../src/notifications/services/email-template.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { OrderPDFData } from '../src/pdf-generator/types/pdf.types';
 
 class EmailTestingUtilitiesDemo {
   private emailAttachmentService: EmailAttachmentService;
+  private emailTemplateService: EmailTemplateService;
   private prismaService: PrismaService;
 
   constructor(
     emailAttachmentService: EmailAttachmentService,
+    emailTemplateService: EmailTemplateService,
     prismaService: PrismaService,
   ) {
     this.emailAttachmentService = emailAttachmentService;
+    this.emailTemplateService = emailTemplateService;
     this.prismaService = prismaService;
   }
 
@@ -368,11 +372,46 @@ class EmailTestingUtilitiesDemo {
       // Enable test mode for this order
       EmailTestingUtils.enableTestMode([recentOrder.orderNumber]);
 
-      // Generate email template
-      const emailTemplate = this.emailAttachmentService.generateSimplifiedEmailTemplate(
-        orderPDFData,
+      // Generate email template using the proper template service
+      const orderEmailData = {
+        orderNumber: orderPDFData.orderNumber,
+        customerName: orderPDFData.customerInfo.name,
+        orderDate: orderPDFData.orderDate,
+        items: orderPDFData.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.unitPrice,
+          total: item.totalPrice,
+          sku: item.sku,
+          nameEn: item.name,
+          nameVi: item.name,
+        })),
+        subtotal: orderPDFData.pricing.subtotal,
+        shippingCost: orderPDFData.pricing.shippingCost,
+        taxAmount: orderPDFData.pricing.taxAmount || 0,
+        discountAmount: orderPDFData.pricing.discountAmount || 0,
+        total: orderPDFData.pricing.total,
+        shippingAddress: orderPDFData.shippingAddress,
+        billingAddress: orderPDFData.billingAddress,
+        paymentMethod: orderPDFData.paymentMethod.displayName,
+        paymentStatus: orderPDFData.paymentMethod.status,
+        shippingMethod: orderPDFData.shippingMethod.name,
+        customerEmail: orderPDFData.customerInfo.email,
+        customerPhone: orderPDFData.customerInfo.phone,
+        notes: '',
+      };
+
+      const emailTemplateResult = await this.emailTemplateService.getOrderConfirmationTemplate(
+        orderEmailData,
         'en',
       );
+
+      // Convert to the expected format for testing
+      const emailTemplate = {
+        subject: emailTemplateResult.subject,
+        htmlContent: emailTemplateResult.html,
+        textContent: emailTemplateResult.html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(),
+      };
 
       console.log(`    Generated email template for ${recentOrder.orderNumber}`);
 
@@ -461,10 +500,12 @@ async function main() {
     const app = await NestFactory.createApplicationContext(AppModule);
 
     const emailAttachmentService = app.get(EmailAttachmentService);
+    const emailTemplateService = app.get(EmailTemplateService);
     const prismaService = app.get(PrismaService);
 
     const demo = new EmailTestingUtilitiesDemo(
       emailAttachmentService,
+      emailTemplateService,
       prismaService,
     );
 

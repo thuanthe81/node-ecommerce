@@ -2448,6 +2448,10 @@
       "en": "No",
       "vi": "Không"
     },
+    "yes": {
+      "en": "Yes",
+      "vi": "Có"
+    },
     "oldest": {
       "en": "Oldest",
       "vi": "Cũ nhất"
@@ -2591,6 +2595,10 @@
     "wishlist": {
       "en": "Wishlist",
       "vi": "Yêu thích"
+    },
+    "skipToContent": {
+      "en": "Skip to main content",
+      "vi": "Chuyển đến nội dung chính"
     }
   },
   "contact": {
@@ -3998,6 +4006,30 @@
       "noNotes": {
         "en": "No notes provided",
         "vi": "Không có ghi chú"
+      },
+      "greeting": {
+        "en": "Hello Admin,",
+        "vi": "Xin chào Admin,"
+      },
+      "paymentInfo": {
+        "en": "Payment Information",
+        "vi": "Thông tin thanh toán"
+      },
+      "viewOrder": {
+        "en": "View Order",
+        "vi": "Xem đơn hàng"
+      },
+      "processOrder": {
+        "en": "Process Order",
+        "vi": "Xử lý đơn hàng"
+      },
+      "urgent": {
+        "en": "Urgent",
+        "vi": "Khẩn cấp"
+      },
+      "normal": {
+        "en": "Normal",
+        "vi": "Bình thường"
       }
     },
     "orderStatusUpdate": {
@@ -4340,6 +4372,14 @@
       "address": {
         "en": "Address",
         "vi": "Địa chỉ"
+      },
+      "emailLabel": {
+        "en": "Email from AlaCraft",
+        "vi": "Email từ AlaCraft"
+      },
+      "signature": {
+        "en": "Best regards,<br>AlaCraft Team",
+        "vi": "Trân trọng,<br>Đội ngũ AlaCraft"
       }
     },
     "buttons": {

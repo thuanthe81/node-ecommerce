@@ -8,6 +8,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './src/app.module';
 import { EmailAttachmentService } from './src/pdf-generator/services/email-attachment.service';
+import { EmailTemplateService } from './src/notifications/services/email-template.service';
 import { OrderPDFData } from './src/pdf-generator/types/pdf.types';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,6 +18,7 @@ async function main() {
 
   const app = await NestFactory.createApplicationContext(AppModule);
   const emailAttachmentService = app.get(EmailAttachmentService);
+  const emailTemplateService = app.get(EmailTemplateService);
 
   // Create test order data with special characters
   const testOrderData: OrderPDFData = {
@@ -115,11 +117,46 @@ async function main() {
     console.log(`📧 Generating ${locale.toUpperCase()} email template...`);
 
     try {
-      // Generate email template
-      const template = emailAttachmentService.generateSimplifiedEmailTemplate(
-        { ...testOrderData, locale },
+      // Generate email template using the proper template service
+      const orderEmailData = {
+        orderNumber: testOrderData.orderNumber,
+        customerName: testOrderData.customerInfo.name,
+        orderDate: testOrderData.orderDate,
+        items: testOrderData.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.unitPrice,
+          total: item.totalPrice,
+          sku: item.sku,
+          nameEn: item.name,
+          nameVi: item.name,
+        })),
+        subtotal: testOrderData.pricing.subtotal,
+        shippingCost: testOrderData.pricing.shippingCost,
+        taxAmount: testOrderData.pricing.taxAmount || 0,
+        discountAmount: testOrderData.pricing.discountAmount || 0,
+        total: testOrderData.pricing.total,
+        shippingAddress: testOrderData.shippingAddress,
+        billingAddress: testOrderData.billingAddress,
+        paymentMethod: testOrderData.paymentMethod.displayName,
+        paymentStatus: testOrderData.paymentMethod.status,
+        shippingMethod: testOrderData.shippingMethod.name,
+        customerEmail: testOrderData.customerInfo.email,
+        customerPhone: testOrderData.customerInfo.phone,
+        notes: '',
+      };
+
+      const emailTemplate = await emailTemplateService.getOrderConfirmationTemplate(
+        orderEmailData,
         locale,
       );
+
+      // Convert to the expected format for compatibility testing
+      const template = {
+        subject: emailTemplate.subject,
+        htmlContent: emailTemplate.html,
+        textContent: emailTemplate.html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(),
+      };
 
       // Save HTML file for manual testing
       const htmlFileName = `order-confirmation-${locale}.html`;

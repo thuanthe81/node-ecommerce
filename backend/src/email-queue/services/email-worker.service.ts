@@ -759,7 +759,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     // Generate email template
-    const template = this.emailTemplateService.getAdminOrderNotificationTemplate(
+    const template = await this.emailTemplateService.getAdminOrderNotificationTemplate(
       this.mapOrderToAdminEmailData(order),
       event.locale
     );
@@ -802,7 +802,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Order not found: ${event.orderId}`);
     }
 
-    const template = this.emailTemplateService.getShippingNotificationTemplate(
+    const template = await this.emailTemplateService.getShippingNotificationTemplate(
       {
         ...this.mapOrderToEmailData(order),
         trackingNumber: event.trackingNumber,
@@ -847,7 +847,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       throw new Error(`Order not found: ${event.orderId}`);
     }
 
-    const template = this.emailTemplateService.getOrderStatusUpdateTemplate(
+    const template = await this.emailTemplateService.getOrderStatusUpdateTemplate(
       this.mapOrderToEmailData(order),
       event.locale
     );
@@ -881,7 +881,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       throw new Error(`User not found: ${event.userId}`);
     }
 
-    const template = this.emailTemplateService.getWelcomeEmailTemplate(
+    const template = await this.emailTemplateService.getWelcomeEmailTemplate(
       {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
@@ -919,7 +919,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     }
 
     const frontendUrl = this.configService.get('FRONTEND_URL', 'http://localhost:3000');
-    const template = this.emailTemplateService.getPasswordResetTemplate(
+    const template = await this.emailTemplateService.getPasswordResetTemplate(
       {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,

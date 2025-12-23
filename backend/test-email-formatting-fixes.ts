@@ -9,6 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './src/app.module';
 import { HTMLEscapingService } from './src/common/services/html-escaping.service';
 import { EmailAttachmentService } from './src/pdf-generator/services/email-attachment.service';
+import { EmailTemplateService } from './src/notifications/services/email-template.service';
 import { PrismaService } from './src/prisma/prisma.service';
 import { OrderPDFData } from './src/pdf-generator/types/pdf.types';
 
@@ -22,16 +23,19 @@ interface TestResult {
 class EmailFormattingTester {
   private htmlEscapingService: HTMLEscapingService;
   private emailAttachmentService: EmailAttachmentService;
+  private emailTemplateService: EmailTemplateService;
   private prismaService: PrismaService;
   private results: TestResult[] = [];
 
   constructor(
     htmlEscapingService: HTMLEscapingService,
     emailAttachmentService: EmailAttachmentService,
+    emailTemplateService: EmailTemplateService,
     prismaService: PrismaService,
   ) {
     this.htmlEscapingService = htmlEscapingService;
     this.emailAttachmentService = emailAttachmentService;
+    this.emailTemplateService = emailTemplateService;
     this.prismaService = prismaService;
   }
 
@@ -279,10 +283,46 @@ class EmailFormattingTester {
 
     for (const locale of locales) {
       try {
-        const template = this.emailAttachmentService.generateSimplifiedEmailTemplate(
-          testOrderData,
+        // Generate email template using the proper template service
+        const orderEmailData = {
+          orderNumber: testOrderData.orderNumber,
+          customerName: testOrderData.customerInfo.name,
+          orderDate: testOrderData.orderDate,
+          items: testOrderData.items.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.unitPrice,
+            total: item.totalPrice,
+            sku: item.sku,
+            nameEn: item.name,
+            nameVi: item.name,
+          })),
+          subtotal: testOrderData.pricing.subtotal,
+          shippingCost: testOrderData.pricing.shippingCost,
+          taxAmount: testOrderData.pricing.taxAmount || 0,
+          discountAmount: testOrderData.pricing.discountAmount || 0,
+          total: testOrderData.pricing.total,
+          shippingAddress: testOrderData.shippingAddress,
+          billingAddress: testOrderData.billingAddress,
+          paymentMethod: testOrderData.paymentMethod.displayName,
+          paymentStatus: testOrderData.paymentMethod.status,
+          shippingMethod: testOrderData.shippingMethod.name,
+          customerEmail: testOrderData.customerInfo.email,
+          customerPhone: testOrderData.customerInfo.phone,
+          notes: '',
+        };
+
+        const emailTemplate = await this.emailTemplateService.getOrderConfirmationTemplate(
+          orderEmailData,
           locale,
         );
+
+        // Convert to the expected format for testing
+        const template = {
+          subject: emailTemplate.subject,
+          htmlContent: emailTemplate.html,
+          textContent: emailTemplate.html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(),
+        };
 
         let passed = true;
         let details = `Generated template for locale: ${locale}`;
@@ -541,11 +581,46 @@ class EmailFormattingTester {
         locale: 'en',
       };
 
-      // Generate template with real data
-      const template = this.emailAttachmentService.generateSimplifiedEmailTemplate(
-        orderPDFData,
+      // Generate template with real data using the proper template service
+      const orderEmailData = {
+        orderNumber: orderPDFData.orderNumber,
+        customerName: orderPDFData.customerInfo.name,
+        orderDate: orderPDFData.orderDate,
+        items: orderPDFData.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.unitPrice,
+          total: item.totalPrice,
+          sku: item.sku,
+          nameEn: item.name,
+          nameVi: item.name,
+        })),
+        subtotal: orderPDFData.pricing.subtotal,
+        shippingCost: orderPDFData.pricing.shippingCost,
+        taxAmount: orderPDFData.pricing.taxAmount || 0,
+        discountAmount: orderPDFData.pricing.discountAmount || 0,
+        total: orderPDFData.pricing.total,
+        shippingAddress: orderPDFData.shippingAddress,
+        billingAddress: orderPDFData.billingAddress,
+        paymentMethod: orderPDFData.paymentMethod.displayName,
+        paymentStatus: orderPDFData.paymentMethod.status,
+        shippingMethod: orderPDFData.shippingMethod.name,
+        customerEmail: orderPDFData.customerInfo.email,
+        customerPhone: orderPDFData.customerInfo.phone,
+        notes: '',
+      };
+
+      const emailTemplate = await this.emailTemplateService.getOrderConfirmationTemplate(
+        orderEmailData,
         'en',
       );
+
+      // Convert to the expected format for testing
+      const template = {
+        subject: emailTemplate.subject,
+        htmlContent: emailTemplate.html,
+        textContent: emailTemplate.html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(),
+      };
 
       let passed = true;
       let details = `Tested with real order: ${recentOrder.orderNumber}`;
@@ -639,11 +714,13 @@ async function main() {
 
     const htmlEscapingService = app.get(HTMLEscapingService);
     const emailAttachmentService = app.get(EmailAttachmentService);
+    const emailTemplateService = app.get(EmailTemplateService);
     const prismaService = app.get(PrismaService);
 
     const tester = new EmailFormattingTester(
       htmlEscapingService,
       emailAttachmentService,
+      emailTemplateService,
       prismaService,
     );
 

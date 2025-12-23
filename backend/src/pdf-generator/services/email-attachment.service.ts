@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { EmailService } from '../../notifications/services/email.service';
+import { EmailTemplateService } from '../../notifications/services/email-template.service';
 import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
 import { EmailEventType } from '../../email-queue/types/email-event.types';
 import { PDFGeneratorService } from '../pdf-generator.service';
@@ -10,7 +11,6 @@ import { PDFAuditService } from './pdf-audit.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
-import { HTMLEscapingService } from '../../common/services/html-escaping.service';
 import { EmailTestingUtils } from '../../common/utils/email-testing.utils';
 import {
   OrderPDFData,
@@ -20,7 +20,7 @@ import {
   RateLimitResult, BusinessInfoData,
 } from '../types/pdf.types';
 import * as fs from 'fs';
-import { SYSTEM, BUSINESS } from '../../common/constants';
+import { SYSTEM } from '../../common/constants';
 
 interface DeliveryAttempt {
   timestamp: Date;
@@ -52,6 +52,7 @@ export class EmailAttachmentService {
 
   constructor(
     private emailService: EmailService,
+    private emailTemplateService: EmailTemplateService,
     @Inject(forwardRef(() => EmailEventPublisher))
     private emailEventPublisher: EmailEventPublisher,
     private pdfGeneratorService: PDFGeneratorService,
@@ -63,7 +64,6 @@ export class EmailAttachmentService {
     private prismaService: PrismaService,
     private footerSettingsService: FooterSettingsService,
     private businessInfoService: BusinessInfoService,
-    private htmlEscapingService: HTMLEscapingService,
   ) {}
 
   /**
@@ -148,18 +148,26 @@ export class EmailAttachmentService {
         };
       }
 
-      // Generate simplified email template
-      const emailTemplate = this.generateSimplifiedEmailTemplate(
-        orderData,
+      // Generate email template using the proper template service
+      const orderEmailData = this.mapOrderPDFDataToEmailData(orderData);
+      const emailTemplate = await this.emailTemplateService.getOrderConfirmationTemplate(
+        orderEmailData,
         locale,
       );
+
+      // Convert to SimplifiedEmailTemplate format for compatibility
+      const simplifiedTemplate: SimplifiedEmailTemplate = {
+        subject: emailTemplate.subject,
+        htmlContent: emailTemplate.html,
+        textContent: this.extractTextFromHtml(emailTemplate.html), // Extract text version from HTML
+      };
 
       // Verify email content formatting if testing utilities are enabled
       if (EmailTestingUtils.isTestModeEnabled()) {
         const verificationResult = EmailTestingUtils.verifyEmailContentFormatting(
-          emailTemplate.htmlContent,
-          emailTemplate.textContent,
-          emailTemplate.subject,
+          simplifiedTemplate.htmlContent,
+          simplifiedTemplate.textContent,
+          simplifiedTemplate.subject,
           orderData.orderNumber,
         );
 
@@ -179,7 +187,7 @@ export class EmailAttachmentService {
       // Send email with PDF attachment
       const emailResult = await this.sendEmailWithAttachment(
         customerEmail,
-        emailTemplate,
+        simplifiedTemplate,
         pdfResult.filePath!,
         pdfResult.fileName!,
       );
@@ -452,41 +460,57 @@ export class EmailAttachmentService {
   }
 
   /**
-   * Generate simplified email template that avoids swaks syntax errors
-   * @param orderData - Order data for template generation
-   * @param locale - Language locale
-   * @returns SimplifiedEmailTemplate - Template with subject, text, and minimal HTML
+   * Map OrderPDFData to OrderEmailData format
+   * @param orderData - Order PDF data
+   * @returns OrderEmailData - Data formatted for email templates
    */
-  generateSimplifiedEmailTemplate(
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi' = 'en',
-  ): SimplifiedEmailTemplate {
-    const translations = this.getEmailTranslations(locale);
-
-    const subject = translations.subject.replace(
-      '{orderNumber}',
-      orderData.orderNumber,
-    );
-
-    // Generate plain text content
-    const textContent = this.generatePlainTextContent(
-      orderData,
-      locale,
-      translations,
-    );
-
-    // Generate simple HTML content that works with email clients
-    const htmlContent = this.generateSimpleHTMLContent(
-      orderData,
-      locale,
-      translations,
-    );
-
+  private mapOrderPDFDataToEmailData(orderData: OrderPDFData): any {
     return {
-      subject,
-      textContent,
-      htmlContent,
+      orderNumber: orderData.orderNumber,
+      customerName: orderData.customerInfo.name,
+      orderDate: orderData.orderDate,
+      items: orderData.items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.unitPrice,
+        total: item.totalPrice,
+        sku: item.sku,
+        nameEn: item.name, // For template compatibility
+        nameVi: item.name, // For template compatibility
+      })),
+      subtotal: orderData.pricing.subtotal,
+      shippingCost: orderData.pricing.shippingCost,
+      taxAmount: orderData.pricing.taxAmount,
+      discountAmount: orderData.pricing.discountAmount,
+      total: orderData.pricing.total,
+      shippingAddress: orderData.shippingAddress,
+      billingAddress: orderData.billingAddress,
+      paymentMethod: orderData.paymentMethod.displayName,
+      paymentStatus: orderData.paymentMethod.status,
+      shippingMethod: orderData.shippingMethod.name,
+      customerEmail: orderData.customerInfo.email,
+      customerPhone: orderData.customerInfo.phone,
+      notes: '', // Add if needed
     };
+  }
+
+  /**
+   * Extract plain text from HTML content
+   * @param html - HTML content
+   * @returns Plain text version
+   */
+  private extractTextFromHtml(html: string): string {
+    // Simple HTML to text conversion
+    return html
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+      .replace(/&amp;/g, '&') // Replace HTML entities
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
   }
 
   /**
@@ -696,191 +720,11 @@ export class EmailAttachmentService {
     }
   }
 
-  /**
-   * Get email translations for the specified locale
-   * @param locale - Language locale
-   * @returns Translation object
-   */
-  private getEmailTranslations(locale: 'en' | 'vi') {
-    return {
-      subject:
-        locale === 'vi'
-          ? 'Xác nhận đơn hàng - Đơn hàng #{orderNumber}'
-          : 'Order Confirmation - Order #{orderNumber}',
-      greeting:
-        locale === 'vi' ? 'Xin chào {customerName},' : 'Hello {customerName},',
-      thankYou:
-        locale === 'vi'
-          ? `Cảm ơn bạn đã đặt hàng tại ${BUSINESS.COMPANY.NAME.VI}!`
-          : `Thank you for your order at ${BUSINESS.COMPANY.NAME.EN}!`,
-      orderDetails:
-        locale === 'vi' ? 'Chi tiết đơn hàng của bạn:' : 'Your order details:',
-      orderNumber: locale === 'vi' ? 'Mã đơn hàng' : 'Order Number',
-      orderDate: locale === 'vi' ? 'Ngày đặt hàng' : 'Order Date',
-      total: locale === 'vi' ? 'Tổng cộng' : 'Total',
-      pdfAttachment:
-        locale === 'vi'
-          ? 'Vui lòng xem file PDF đính kèm để biết thông tin chi tiết về đơn hàng của bạn.'
-          : 'Please see the attached PDF for detailed information about your order.',
-      contactInfo:
-        locale === 'vi'
-          ? 'Nếu bạn có câu hỏi, vui lòng liên hệ với chúng tôi.'
-          : 'If you have any questions, please contact us.',
-      signature:
-        locale === 'vi'
-          ? `Trân trọng,\nĐội ngũ ${BUSINESS.COMPANY.NAME.VI}`
-          : `Best regards,\nThe ${BUSINESS.COMPANY.NAME.EN} Team`,
-    };
-  }
 
-  /**
-   * Generate plain text email content
-   * @param orderData - Order data
-   * @param locale - Language locale
-   * @param translations - Translation object
-   * @returns Plain text email content
-   */
-  private generatePlainTextContent(
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi',
-    translations: any,
-  ): string {
-    const greeting = translations.greeting.replace(
-      '{customerName}',
-      orderData.customerInfo.name,
-    );
 
-    return `${greeting}
 
-      ${translations.thankYou}
 
-      ${translations.orderDetails}
-      ${translations.orderNumber}: ${orderData.orderNumber}
-      ${translations.orderDate}: ${orderData.orderDate}
-      ${translations.total}: ${this.formatCurrency(orderData.pricing.total, locale)}
 
-      ${translations.pdfAttachment}
-
-      ${translations.contactInfo}
-
-      ${translations.signature}`;
-  }
-
-  /**
-   * Generate simple HTML email content with essential information only
-   * Includes order ID, creation date, order link, and customer information
-   * Uses basic inline styles only (no CSS blocks or complex styling)
-   * @param orderData - Order data
-   * @param locale - Language locale
-   * @param translations - Translation object
-   * @returns Simple HTML email content with essential information
-   */
-  private generateSimpleHTMLContent(
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi',
-    translations: any,
-  ): string {
-    try {
-      // Escape all dynamic content to prevent HTML injection and formatting issues
-      const escapedCustomerName = this.htmlEscapingService.escapeHtmlContent(
-        orderData.customerInfo.name || 'Customer'
-      );
-      const escapedOrderNumber = this.htmlEscapingService.escapeHtmlContent(
-        orderData.orderNumber || ''
-      );
-      const escapedOrderDate = this.htmlEscapingService.escapeHtmlContent(
-        orderData.orderDate || ''
-      );
-      const escapedCompanyName = this.htmlEscapingService.escapeHtmlContent(
-        BUSINESS.COMPANY.NAME.EN || 'Company'
-      );
-
-      // Generate order link
-      const orderLink = this.generateOrderLink(orderData.orderId);
-      const escapedOrderLink = this.htmlEscapingService.escapeHtmlContent(orderLink);
-
-      // Build greeting with already-escaped customer name
-      const greeting = translations.greeting.replace('{customerName}', escapedCustomerName);
-
-      // Translation strings don't need escaping as they don't contain user input
-      const thankYou = translations.thankYou || '';
-      const orderDetails = translations.orderDetails || '';
-      const orderNumberLabel = translations.orderNumber || '';
-      const orderDateLabel = translations.orderDate || '';
-      const viewOrderLabel = locale === 'vi' ? 'Xem chi tiết đơn hàng' : 'View Order Details';
-      const contactInfo = translations.contactInfo || '';
-      const signature = translations.signature || '';
-
-      // Generate the simple HTML template with essential information only
-      const htmlTemplate = `<!DOCTYPE html>
-<html lang="${locale}">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${this.htmlEscapingService.escapeHtmlContent(
-      translations.subject.replace('{orderNumber}', escapedOrderNumber)
-    )}</title>
-  </head>
-  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
-
-    <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="color: #2c3e50; font-size: 24px; margin: 0;">${escapedCompanyName}</h1>
-    </div>
-
-    <p style="font-size: 16px; margin-bottom: 15px;">${greeting}</p>
-
-    <p style="font-size: 16px; margin-bottom: 20px;">${thankYou}</p>
-
-    <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 4px;">
-      <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">${orderDetails}</h3>
-      <p style="margin: 8px 0; font-size: 14px;"><strong>${orderNumberLabel}:</strong> ${escapedOrderNumber}</p>
-      <p style="margin: 8px 0; font-size: 14px;"><strong>${orderDateLabel}:</strong> ${escapedOrderDate}</p>
-
-      <div style="margin-top: 20px; text-align: center;">
-        <a href="${escapedOrderLink}" style="display: inline-block; background-color: #3498db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">${viewOrderLabel}</a>
-      </div>
-    </div>
-
-    <p style="font-size: 16px; margin: 20px 0;">${contactInfo}</p>
-
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #666666; font-size: 14px;">
-      <p style="margin: 10px 0;">${signature.replace('\\n', '<br>')}</p>
-      <p style="margin: 10px 0; text-align: center;">&copy; ${new Date().getFullYear()} ${escapedCompanyName}. All rights reserved.</p>
-    </div>
-
-  </body>
-</html>`;
-
-      // Validate HTML structure
-      const validationResult = this.htmlEscapingService.validateHtmlStructure(htmlTemplate);
-
-      if (!validationResult.isValid) {
-        this.logger.warn(
-          `HTML validation issues found for order ${orderData.orderNumber}:`,
-          {
-            errors: validationResult.htmlIssues,
-            warnings: validationResult.recommendations,
-          }
-        );
-      }
-
-      // Log successful HTML generation
-      this.logger.debug(
-        `Generated simple HTML email template for order ${orderData.orderNumber} (${htmlTemplate.length} characters)`
-      );
-
-      return htmlTemplate;
-
-    } catch (error) {
-      this.logger.error(
-        `Error generating simple HTML email content for order ${orderData.orderNumber}:`,
-        error
-      );
-
-      // Return a safe fallback template
-      return this.generateFallbackHTMLTemplate(orderData, locale, translations);
-    }
-  }
 
   /**
    * Generate order link for customer to view order details
@@ -910,53 +754,9 @@ export class EmailAttachmentService {
     }
   }
 
-  /**
-   * Generate a safe fallback HTML template when the main template generation fails
-   * @param orderData - Order data
-   * @param locale - Language locale
-   * @param translations - Translation object
-   * @returns Safe fallback HTML template
-   */
-  private generateFallbackHTMLTemplate(
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi',
-    translations: any,
-  ): string {
-    const safeOrderNumber = this.htmlEscapingService.escapeHtmlContent(
-      orderData.orderNumber || 'N/A'
-    );
-    const safeCustomerName = this.htmlEscapingService.escapeHtmlContent(
-      orderData.customerInfo.name || 'Customer'
-    );
-    const orderLink = this.generateOrderLink(orderData.orderId);
-    const safeOrderLink = this.htmlEscapingService.escapeHtmlContent(orderLink);
-    const viewOrderLabel = locale === 'vi' ? 'Xem đơn hàng' : 'View Order';
 
-    return `<!DOCTYPE html>
-<html lang="${locale}">
-  <head>
-    <meta charset="UTF-8">
-    <title>Order Confirmation</title>
-  </head>
-  <body style="font-family: Arial, sans-serif; padding: 20px;">
-    <h1>Order Confirmation</h1>
-    <p>Dear ${safeCustomerName},</p>
-    <p>Thank you for your order ${safeOrderNumber}.</p>
-    <p><a href="${safeOrderLink}" style="color: #3498db; text-decoration: none;">${viewOrderLabel}</a></p>
-    <p>Best regards,<br>Customer Service Team</p>
-  </body>
-</html>`;
-  }
 
-  /**
-   * Format currency value based on locale
-   * @param amount - Amount to format
-   * @param locale - Language locale
-   * @returns Formatted currency string
-   */
-  private formatCurrency(amount: number, locale: 'en' | 'vi'): string {
-    return `${amount.toLocaleString('vi-VN')} ₫`;
-  }
+
 
   /**
    * Send email with retry logic and delivery verification
@@ -1089,94 +889,9 @@ export class EmailAttachmentService {
     );
   }
 
-  /**
-   * Send fallback notification without PDF attachment
-   * @param customerEmail - Customer email address
-   * @param orderData - Order data
-   * @param locale - Language locale
-   */
-  private async sendFallbackNotification(
-    customerEmail: string,
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi',
-  ): Promise<void> {
-    try {
-      this.logger.log(
-        `Sending fallback notification without PDF for order ${orderData.orderNumber}`,
-      );
 
-      const fallbackTemplate = this.generateFallbackEmailTemplate(
-        orderData,
-        locale,
-      );
 
-      // Send simple email without attachment
-      const result = await this.emailService.sendEmail({
-        to: customerEmail,
-        subject: fallbackTemplate.subject,
-        html: fallbackTemplate.htmlContent,
-      });
 
-      if (result) {
-        this.logger.log(
-          `Fallback notification sent successfully for order ${orderData.orderNumber}`,
-        );
-      } else {
-        this.logger.error(
-          `Fallback notification also failed for order ${orderData.orderNumber}`,
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        `Fallback notification failed for order ${orderData.orderNumber}:`,
-        error,
-      );
-    }
-  }
-
-  /**
-   * Generate fallback email template without PDF attachment
-   * @param orderData - Order data
-   * @param locale - Language locale
-   * @returns Simplified email template for fallback
-   */
-  private generateFallbackEmailTemplate(
-    orderData: OrderPDFData,
-    locale: 'en' | 'vi',
-  ): SimplifiedEmailTemplate {
-    const translations = this.getEmailTranslations(locale);
-    const subject = translations.subject.replace(
-      '{orderNumber}',
-      orderData.orderNumber,
-    );
-
-    const fallbackMessage =
-      locale === 'vi'
-        ? 'Chúng tôi gặp sự cố kỹ thuật khi gửi file PDF đính kèm. Vui lòng liên hệ với chúng tôi để nhận thông tin chi tiết về đơn hàng.'
-        : 'We encountered a technical issue sending the PDF attachment. Please contact us to receive detailed order information.';
-
-    const textContent =
-      this.generatePlainTextContent(orderData, locale, translations) +
-      '\n\n' +
-      fallbackMessage;
-
-    const htmlContent = this.generateSimpleHTMLContent(
-      orderData,
-      locale,
-      translations,
-    ).replace(
-      '<p><strong>' + translations.pdfAttachment + '</strong></p>',
-      `<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 4px;">
-                  <p><strong>⚠️ ${fallbackMessage}</strong></p>
-                </div>`,
-    );
-
-    return {
-      subject,
-      textContent,
-      htmlContent,
-    };
-  }
 
   /**
    * Get delivery status for an order

@@ -1,0 +1,138 @@
+/* Order Confirmation Email Styles */
+
+/* Design token placeholders that will be replaced during preprocessing */
+:root {
+  --primary-color: {{designTokens.colors.primary}};
+  --secondary-color: {{designTokens.colors.secondary}};
+  --font-family: {{designTokens.typography.fontFamily}};
+  --font-size-base: {{designTokens.typography.fontSize.body}};
+  --spacing-md: {{designTokens.spacing.md}};
+  --border-radius-medium: {{designTokens.borderRadius.medium}};
+}
+
+/* Email-specific styles */
+.email-container {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  max-width: 600px;
+  margin-left: 20px;
+  padding: var(--spacing-md);
+  background-color: #ffffff;
+}
+
+.order-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: #ffffff;
+  padding: var(--spacing-md);
+  text-align: center;
+  border-radius: var(--border-radius-medium) var(--border-radius-medium) 0 0;
+}
+
+.order-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.order-details {
+  padding: var(--spacing-md);
+  border: 1px solid #ecf0f1;
+}
+
+.order-items {
+  margin: var(--spacing-md) 0;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-total {
+  background-color: #f8f9fa;
+  padding: var(--spacing-md);
+  font-weight: bold;
+  font-size: 18px;
+  text-align: right;
+  border-radius: 0 0 var(--border-radius-medium) var(--border-radius-medium);
+}
+
+/* Button styles specific to order confirmation */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: var(--border-radius-medium);
+  display: inline-block;
+  font-weight: bold;
+  text-align: center;
+  min-width: 200px;
+  margin: var(--spacing-md) 0;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* Shipping address styles */
+.shipping-address {
+  background-color: #f8f9fa;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-left: 4px solid var(--primary-color);
+  border-radius: var(--border-radius-medium);
+}
+
+.shipping-address h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+/* Email client compatibility styles */
+@media only screen and (max-width: 600px) {
+  .email-container {
+    padding: 10px;
+  }
+
+  .order-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .order-total {
+    text-align: center;
+  }
+
+  .btn-primary {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .email-container {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .order-details {
+    border-color: #404040;
+    background-color: #2d2d2d;
+  }
+
+  .order-total {
+    background-color: #333333;
+  }
+
+  .shipping-address {
+    background-color: #333333;
+  }
+}
