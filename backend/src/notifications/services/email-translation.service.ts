@@ -160,6 +160,7 @@ export class EmailTranslationService {
       'email.orderConfirmation.shippingAddress',
       'email.orderConfirmation.paymentMethod',
       'email.orderConfirmation.contactUs',
+      'email.orderConfirmation.trackOrder',
 
       // Admin order notification
       'email.adminOrderNotification.subject',
@@ -203,7 +204,12 @@ export class EmailTranslationService {
       'common.close',
       'common.confirm',
       'common.yes',
-      'common.no'
+      'common.no',
+
+      // Layout and branding
+      'layout.header.companyName',
+      'layout.footer.copyright',
+      'email.common.signature'
     ];
 
     const translations: Record<string, string> = {};
@@ -252,6 +258,10 @@ export class EmailTranslationService {
     translations.emailLabel = this.getTranslation('email.common.emailLabel', locale);
     translations.signature = this.getTranslation('email.common.signature', locale);
 
+    // Add special handling for layout-specific translations
+    translations.companyName = this.getTranslation('layout.header.companyName', locale);
+    translations.copyright = this.getTranslation('layout.footer.copyright', locale);
+
     // Fallback values for missing admin order notification translations
     if (!translations.subject) translations.subject = locale === 'vi' ? 'Đơn hàng mới' : 'New Order';
     if (!translations.title) translations.title = locale === 'vi' ? 'Đơn hàng mới đã được đặt' : 'New Order Received';
@@ -287,6 +297,10 @@ export class EmailTranslationService {
     if (!translations.skipToContent) translations.skipToContent = locale === 'vi' ? 'Chuyển đến nội dung chính' : 'Skip to main content';
     if (!translations.emailLabel) translations.emailLabel = locale === 'vi' ? 'Email từ AlaCraft' : 'Email from AlaCraft';
     if (!translations.signature) translations.signature = locale === 'vi' ? 'Trân trọng,<br>Đội ngũ AlaCraft' : 'Best regards,<br>AlaCraft Team';
+
+    // Add fallbacks for layout-specific translations
+    if (!translations.companyName) translations.companyName = locale === 'vi' ? 'AlaCraft' : 'AlaCraft';
+    if (!translations.copyright) translations.copyright = locale === 'vi' ? '© 2024 AlaCraft. Tất cả quyền được bảo lưu.' : '© 2024 AlaCraft. All rights reserved.';
 
     return translations;
   }
