@@ -306,6 +306,100 @@ export class EmailTranslationService {
   }
 
   /**
+   * Get translations specifically for order confirmation emails
+   * Returns order confirmation translations without admin notification overrides
+   */
+  getOrderConfirmationTranslations(locale: SupportedLocale = 'en'): Record<string, string> {
+    const orderConfirmationKeys = [
+      // Order confirmation specific
+      'email.orderConfirmation.subject',
+      'email.orderConfirmation.greeting',
+      'email.orderConfirmation.thankYou',
+      'email.orderConfirmation.orderReceived',
+      'email.orderConfirmation.orderDetails',
+      'email.orderConfirmation.orderNumber',
+      'email.orderConfirmation.orderDate',
+      'email.orderConfirmation.items',
+      'email.orderConfirmation.quantity',
+      'email.orderConfirmation.price',
+      'email.orderConfirmation.total',
+      'email.orderConfirmation.subtotal',
+      'email.orderConfirmation.shipping',
+      'email.orderConfirmation.tax',
+      'email.orderConfirmation.discount',
+      'email.orderConfirmation.grandTotal',
+      'email.orderConfirmation.shippingAddress',
+      'email.orderConfirmation.paymentMethod',
+      'email.orderConfirmation.contactUs',
+      'email.orderConfirmation.trackOrder',
+
+      // Common
+      'common.loading',
+      'common.error',
+      'common.success',
+      'common.cancel',
+      'common.save',
+      'common.edit',
+      'common.delete',
+      'common.view',
+      'common.back',
+      'common.next',
+      'common.previous',
+      'common.close',
+      'common.confirm',
+      'common.yes',
+      'common.no',
+
+      // Layout and branding
+      'layout.header.companyName',
+      'layout.footer.copyright',
+      'email.common.signature'
+    ];
+
+    const translations: Record<string, string> = {};
+
+    for (const key of orderConfirmationKeys) {
+      const translation = this.getTranslation(key, locale);
+      // Use the last part of the key as the template variable name
+      const templateKey = key.split('.').pop() || key;
+      translations[templateKey] = translation;
+    }
+
+    // Add special handling for layout-specific translations
+    translations.companyName = this.getTranslation('layout.header.companyName', locale);
+    translations.copyright = this.getTranslation('layout.footer.copyright', locale);
+
+    // Fallback values for missing order confirmation translations
+    if (!translations.subject) translations.subject = locale === 'vi' ? 'Xác nhận đơn hàng' : 'Order Confirmation';
+    if (!translations.greeting) translations.greeting = locale === 'vi' ? 'Xin chào' : 'Hello';
+    if (!translations.thankYou) translations.thankYou = locale === 'vi' ? 'Cảm ơn bạn đã đặt hàng!' : 'Thank you for your order!';
+    if (!translations.orderReceived) translations.orderReceived = locale === 'vi' ? 'Chúng tôi đã nhận được đơn hàng của bạn' : 'We have received your order';
+    if (!translations.orderDetails) translations.orderDetails = locale === 'vi' ? 'Chi tiết đơn hàng' : 'Order Details';
+    if (!translations.orderNumber) translations.orderNumber = locale === 'vi' ? 'Mã đơn hàng' : 'Order Number';
+    if (!translations.orderDate) translations.orderDate = locale === 'vi' ? 'Ngày đặt hàng' : 'Order Date';
+    if (!translations.items) translations.items = locale === 'vi' ? 'Sản phẩm' : 'Items';
+    if (!translations.quantity) translations.quantity = locale === 'vi' ? 'Số lượng' : 'Quantity';
+    if (!translations.price) translations.price = locale === 'vi' ? 'Giá' : 'Price';
+    if (!translations.total) translations.total = locale === 'vi' ? 'Tổng' : 'Total';
+    if (!translations.subtotal) translations.subtotal = locale === 'vi' ? 'Tạm tính' : 'Subtotal';
+    if (!translations.shipping) translations.shipping = locale === 'vi' ? 'Phí vận chuyển' : 'Shipping';
+    if (!translations.tax) translations.tax = locale === 'vi' ? 'Thuế' : 'Tax';
+    if (!translations.discount) translations.discount = locale === 'vi' ? 'Giảm giá' : 'Discount';
+    if (!translations.grandTotal) translations.grandTotal = locale === 'vi' ? 'Tổng cộng' : 'Grand Total';
+    if (!translations.shippingAddress) translations.shippingAddress = locale === 'vi' ? 'Địa chỉ giao hàng' : 'Shipping Address';
+    if (!translations.paymentMethod) translations.paymentMethod = locale === 'vi' ? 'Phương thức thanh toán' : 'Payment Method';
+    if (!translations.contactUs) translations.contactUs = locale === 'vi' ? 'Liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.' : 'Contact us if you have any questions.';
+    if (!translations.trackOrder) translations.trackOrder = locale === 'vi' ? 'Theo dõi đơn hàng' : 'Track Order';
+
+    // Add fallbacks for layout-specific translations
+    if (!translations.companyName) translations.companyName = locale === 'vi' ? 'AlaCraft' : 'AlaCraft';
+    if (!translations.copyright) translations.copyright = locale === 'vi' ? '© 2024 AlaCraft. Tất cả quyền được bảo lưu.' : '© 2024 AlaCraft. All rights reserved.';
+    if (!translations.signature) translations.signature = locale === 'vi' ? 'Trân trọng,<br>Đội ngũ AlaCraft' : 'Best regards,<br>AlaCraft Team';
+
+    return translations;
+  }
+
+  /**
    * Get status-specific translations
    */
   getStatusTranslations(locale: SupportedLocale = 'en'): Record<string, string> {

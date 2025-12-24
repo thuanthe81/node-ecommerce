@@ -73,7 +73,7 @@ export class VariableReplacerService implements IVariableReplacer {
       }
 
       // Prepare template context
-      const context = await this.prepareTemplateContext(data, locale);
+      const context = await this.prepareTemplateContext(data, locale, template);
 
       // Execute template with context and enhanced error handling
       let result: string;
@@ -406,7 +406,7 @@ export class VariableReplacerService implements IVariableReplacer {
   /**
    * Prepare template context with data, translations, and helpers
    */
-  private async prepareTemplateContext(data: any, locale: 'en' | 'vi'): Promise<TemplateContext> {
+  private async prepareTemplateContext(data: any, locale: 'en' | 'vi', template?: string): Promise<TemplateContext> {
     // Pre-process data to handle missing nested properties
     const safeData = this.createSafeDataProxy(data);
 
@@ -435,7 +435,7 @@ export class VariableReplacerService implements IVariableReplacer {
       // Nested access (for templates expecting {{data.orderNumber}})
       data: safeData,
       locale,
-      translations: this.getTranslationsForLocale(locale),
+      translations: this.getTranslationsForLocale(locale, template),
       designTokens: this.getDesignTokens(),
       // Business information
       supportEmail,
@@ -525,9 +525,13 @@ export class VariableReplacerService implements IVariableReplacer {
   /**
    * Get translations for the specified locale
    */
-  private getTranslationsForLocale(locale: 'en' | 'vi'): Record<string, string> {
-    // Use the EmailTranslationService to get comprehensive translations
-    return this.emailTranslationService.getEmailTemplateTranslations(locale);
+  private getTranslationsForLocale(locale: 'en' | 'vi', template?: string): Record<string, string> {
+    switch (template) {
+      case 'template-admin-order-notification':
+        return this.emailTranslationService.getEmailTemplateTranslations(locale);
+      default:
+        return this.emailTranslationService.getOrderConfirmationTranslations(locale);
+    }
   }
 
   /**

@@ -3822,8 +3822,8 @@
         "vi": "Xác nhận đơn hàng - Đơn hàng #{orderNumber}"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "thankYou": {
         "en": "Thank you for your order!",
@@ -4042,8 +4042,8 @@
         "vi": "Cập nhật trạng thái đơn hàng - Đơn hàng #{orderNumber}"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "statusUpdated": {
         "en": "Your order status has been updated.",
@@ -4454,8 +4454,8 @@
         "vi": "Xác nhận đơn hàng - Đơn hàng #{orderNumber}"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "thankYou": {
         "en": "Thank you for your order at AlaCraft!",
@@ -4812,8 +4812,8 @@
         "vi": "Đơn hàng của bạn đang trên đường!"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "intro": {
         "en": "Great news! Your order has been shipped and is on its way to you.",
@@ -4846,8 +4846,8 @@
         "vi": "Chào mừng đến với AlaCraft!"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "intro": {
         "en": "Thank you for joining our community of handmade craft enthusiasts!",
@@ -4868,8 +4868,8 @@
         "vi": "Yêu cầu đặt lại mật khẩu"
       },
       "greeting": {
-        "en": "Hello {customerName},",
-        "vi": "Xin chào {customerName},"
+        "en": "Hello",
+        "vi": "Xin chào"
       },
       "intro": {
         "en": "We received a request to reset your password. Click the button below to create a new password.",
