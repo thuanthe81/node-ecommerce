@@ -41,6 +41,7 @@ export class EmailHandlebarsHelpers {
       companyName: this.companyNameHelper(),
       supportEmail: this.supportEmailHelper(),
       websiteUrl: this.websiteUrlHelper(),
+      frontendUrl: this.frontendUrlHelper(),
 
       // Math helpers
       add: this.addHelper(),
@@ -365,20 +366,33 @@ export class EmailHandlebarsHelpers {
   }
 
   /**
-   * Support email helper
+   * Support email helper - gets email from footer settings or fallback to constants
    */
   private static supportEmailHelper(): HelperDelegate {
     return function() {
-      return BUSINESS.CONTACT.EMAIL;
+      // This will be injected by the template context preparation
+      // The actual logic is in the variable replacer service
+      return (this as any).supportEmail || BUSINESS.CONTACT.EMAIL.PRIMARY;
     };
   }
 
   /**
-   * Website URL helper
+   * Website URL helper - gets URL from config or fallback to constants
    */
   private static websiteUrlHelper(): HelperDelegate {
     return function() {
-      return BUSINESS.WEBSITE.PRIMARY;
+      // This will be injected by the template context preparation
+      // The actual logic is in the variable replacer service
+      return (this as any).websiteUrl || BUSINESS.WEBSITE.PRIMARY;
+    };
+  }
+
+  /**
+   * Frontend URL helper - gets URL from environment config
+   */
+  private static frontendUrlHelper(): HelperDelegate {
+    return function() {
+      return process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY;
     };
   }
 

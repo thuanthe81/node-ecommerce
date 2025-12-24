@@ -2,6 +2,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import * as Handlebars from 'handlebars';
 import type { HelperDelegate } from 'handlebars';
 import { HTMLEscapingService } from '../../common/services/html-escaping.service';
+import { BusinessInfoService } from '../../common/services/business-info.service';
 import type {
   IVariableReplacer,
   TemplateContext,
@@ -36,6 +37,7 @@ export class VariableReplacerService implements IVariableReplacer {
 
   constructor(
     private readonly htmlEscapingService: HTMLEscapingService,
+    private readonly businessInfoService: BusinessInfoService,
     private readonly designSystemInjector: DesignSystemInjector,
     private readonly emailTranslationService: EmailTranslationService,
     private readonly templateLoaderService: TemplateLoaderService,
@@ -71,7 +73,7 @@ export class VariableReplacerService implements IVariableReplacer {
       }
 
       // Prepare template context
-      const context = this.prepareTemplateContext(data, locale);
+      const context = await this.prepareTemplateContext(data, locale);
 
       // Execute template with context and enhanced error handling
       let result: string;
@@ -404,12 +406,26 @@ export class VariableReplacerService implements IVariableReplacer {
   /**
    * Prepare template context with data, translations, and helpers
    */
-  private prepareTemplateContext(data: any, locale: 'en' | 'vi'): TemplateContext {
+  private async prepareTemplateContext(data: any, locale: 'en' | 'vi'): Promise<TemplateContext> {
     // Pre-process data to handle missing nested properties
     const safeData = this.createSafeDataProxy(data);
 
     // Get template helpers
     const templateHelpers = this.getTemplateHelpers(locale);
+
+    // Get business info for correct support email and website URL
+    let supportEmail: string;
+    let websiteUrl: string;
+
+    try {
+      supportEmail = await this.businessInfoService.getContactEmail();
+      const businessInfo = await this.businessInfoService.getBusinessInfo(locale);
+      websiteUrl = businessInfo.website || process.env.FRONTEND_URL || 'https://alacraft.com';
+    } catch (error) {
+      this.logger.warn(`Failed to get business info: ${error.message}`);
+      supportEmail = 'contact@alacraft.com';
+      websiteUrl = process.env.FRONTEND_URL || 'https://alacraft.com';
+    }
 
     // Create a flattened context that provides direct access to data properties
     // while also maintaining the nested structure for compatibility
@@ -421,14 +437,17 @@ export class VariableReplacerService implements IVariableReplacer {
       locale,
       translations: this.getTranslationsForLocale(locale),
       designTokens: this.getDesignTokens(),
+      // Business information
+      supportEmail,
+      websiteUrl,
+      frontendUrl: process.env.FRONTEND_URL || websiteUrl,
+      currentYear: new Date().getFullYear(),
       // Make helpers available directly in the context
       helpers: templateHelpers,
       // Also make individual helper functions available at root level
       formatCurrency: templateHelpers.formatCurrency,
       formatDate: templateHelpers.formatDate,
       getStatusText: templateHelpers.getStatusText,
-      // Add admin URL for button generation
-      adminUrl: process.env.FRONTEND_URL,
     };
 
     // Register helpers directly with Handlebars for this context

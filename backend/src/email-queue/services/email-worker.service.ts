@@ -996,6 +996,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const businessInfo = await this.businessInfoService.getBusinessInfo(locale);
 
     return {
+      orderId: order.id,
       orderNumber: order.orderNumber,
       orderDate: order.createdAt.toISOString().split('T')[0],
       customerInfo: {
