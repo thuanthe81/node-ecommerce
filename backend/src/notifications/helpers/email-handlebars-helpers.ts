@@ -2,13 +2,10 @@
  * Custom Handlebars Helpers for Email Templates
  *
  * This file contains custom Handlebars helpers for email-specific functionality
- * including currency formatting, date formatting, button generation, and status badges.
+ * including currency formatting, date formatting, and utility functions.
  */
 
-import * as Handlebars from 'handlebars';
 import type { HelperDelegate } from 'handlebars';
-import { ModernButtonGenerator, ButtonStyleType } from '../services/email-button-generators';
-import { StatusBadgeGenerator } from '../services/email-status-badge-generators';
 import { BUSINESS } from '../../common/constants';
 
 /**
@@ -31,18 +28,8 @@ export class EmailHandlebarsHelpers {
       formatDateTime: this.formatDateTimeHelper(),
       formatRelativeDate: this.formatRelativeDateHelper(),
 
-      // Button generation helpers
-      generateButton: this.generateButtonHelper(),
-      primaryButton: this.primaryButtonHelper(),
-      secondaryButton: this.secondaryButtonHelper(),
-      successButton: this.successButtonHelper(),
-      warningButton: this.warningButtonHelper(),
-      linkButton: this.linkButtonHelper(),
-
-      // Status badge helpers
-      generateStatusBadge: this.generateStatusBadgeHelper(),
-      orderStatusBadge: this.orderStatusBadgeHelper(),
-      paymentStatusBadge: this.paymentStatusBadgeHelper(),
+      // Status text translation helper
+      getStatusText: this.getStatusTextHelper(),
 
       // Utility helpers
       pluralize: this.pluralizeHelper(),
@@ -240,117 +227,44 @@ export class EmailHandlebarsHelpers {
   }
 
   /**
-   * Button generation helper
+   * Status text translation helper
    */
-  private static generateButtonHelper(): HelperDelegate {
-    return function(text: string, url: string, style: ButtonStyleType = 'primary', fullWidth: boolean = false) {
-      if (!text || !url) return '';
-
-      try {
-        return new Handlebars.SafeString(
-          ModernButtonGenerator.generateModernButton({
-            text,
-            url,
-            style,
-            fullWidth
-          })
-        );
-      } catch (error) {
-        // Fallback to simple link
-        return new Handlebars.SafeString(
-          `<a href="${url}" style="color: #007bff; text-decoration: underline;">${text}</a>`
-        );
-      }
-    };
-  }
-
-  /**
-   * Primary button helper
-   */
-  private static primaryButtonHelper(): HelperDelegate {
-    return function(text: string, url: string, fullWidth: boolean = false) {
-      return EmailHandlebarsHelpers.generateButtonHelper().call(this, text, url, 'primary', fullWidth);
-    };
-  }
-
-  /**
-   * Secondary button helper
-   */
-  private static secondaryButtonHelper(): HelperDelegate {
-    return function(text: string, url: string, fullWidth: boolean = false) {
-      return EmailHandlebarsHelpers.generateButtonHelper().call(this, text, url, 'secondary', fullWidth);
-    };
-  }
-
-  /**
-   * Success button helper
-   */
-  private static successButtonHelper(): HelperDelegate {
-    return function(text: string, url: string, fullWidth: boolean = false) {
-      return EmailHandlebarsHelpers.generateButtonHelper().call(this, text, url, 'success', fullWidth);
-    };
-  }
-
-  /**
-   * Warning button helper
-   */
-  private static warningButtonHelper(): HelperDelegate {
-    return function(text: string, url: string, fullWidth: boolean = false) {
-      return EmailHandlebarsHelpers.generateButtonHelper().call(this, text, url, 'warning', fullWidth);
-    };
-  }
-
-  /**
-   * Link button helper
-   */
-  private static linkButtonHelper(): HelperDelegate {
-    return function(text: string, url: string) {
-      return EmailHandlebarsHelpers.generateButtonHelper().call(this, text, url, 'link', false);
-    };
-  }
-
-  /**
-   * Status badge generation helper
-   */
-  private static generateStatusBadgeHelper(): HelperDelegate {
-    return function(status: string, type: 'order' | 'payment' = 'order', size: 'small' | 'medium' | 'large' = 'medium', locale?: string) {
+  private static getStatusTextHelper(): HelperDelegate {
+    return function(status: string, locale?: string) {
       if (!status) return '';
 
       const templateLocale = locale || (this as any).locale || 'en';
 
-      try {
-        return new Handlebars.SafeString(
-          StatusBadgeGenerator.generateStatusBadge({
-            status,
-            type,
-            size,
-            locale: templateLocale as 'en' | 'vi'
-          })
-        );
-      } catch (error) {
-        // Fallback to simple span
-        return new Handlebars.SafeString(
-          `<span style="background-color: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${status}</span>`
-        );
-      }
-    };
-  }
+      // Basic status translations
+      const statusTranslations = {
+        en: {
+          pending: 'Pending',
+          confirmed: 'Confirmed',
+          processing: 'Processing',
+          shipped: 'Shipped',
+          delivered: 'Delivered',
+          cancelled: 'Cancelled',
+          refunded: 'Refunded',
+          paid: 'Paid',
+          unpaid: 'Unpaid',
+          failed: 'Failed'
+        },
+        vi: {
+          pending: 'Đang chờ',
+          confirmed: 'Đã xác nhận',
+          processing: 'Đang xử lý',
+          shipped: 'Đã gửi',
+          delivered: 'Đã giao',
+          cancelled: 'Đã hủy',
+          refunded: 'Đã hoàn tiền',
+          paid: 'Đã thanh toán',
+          unpaid: 'Chưa thanh toán',
+          failed: 'Thất bại'
+        }
+      };
 
-  /**
-   * Order status badge helper
-   */
-  private static orderStatusBadgeHelper(): HelperDelegate {
-    return function(status: string, size: 'small' | 'medium' | 'large' = 'medium', locale?: string) {
-      return EmailHandlebarsHelpers.generateStatusBadgeHelper().call(this, status, 'order', size, locale);
-    };
-  }
-
-  /**
-   * Payment status badge helper
-   */
-  private static paymentStatusBadgeHelper(): HelperDelegate {
-    return function(status: string, size: 'small' | 'medium' | 'large' = 'medium', locale?: string) {
-      return EmailHandlebarsHelpers.generateStatusBadgeHelper().call(this, status, 'payment', size, locale);
+      const translations = statusTranslations[templateLocale as 'en' | 'vi'] || statusTranslations.en;
+      return translations[status.toLowerCase() as keyof typeof translations] || status;
     };
   }
 

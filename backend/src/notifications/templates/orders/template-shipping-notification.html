@@ -174,7 +174,7 @@
             <!-- Email Header -->
             <tr>
               <td class="email-header" role="banner">
-                {{{emailHeader}}}
+                {{> email-header companyName=translations.companyName tagline=translations.tagline}}
               </td>
             </tr>
 
@@ -329,63 +329,23 @@
                     ">{{data.trackingNumber}}</span>
                   </div>
                   <div style="margin: 24px 0;">
-                    <a href="{{concat trackingUrl data.trackingNumber}}" style="
-                      display: inline-block;
-                      padding: 12px 24px;
-                      text-decoration: none;
-                      border-radius: 4px;
-                      font-weight: bold;
-                      text-align: center;
-                      background-color: #007bff;
-                      color: white;
-                    ">{{translations.trackPackage}}</a>
+                    {{> button text=translations.trackPackage url=(concat trackingUrl data.trackingNumber) style="primary"}}
                   </div>
                 </div>
                 {{/if}}
 
-                <!-- Shipping Address -->
                 <div style="margin: 32px 0;">
                   {{#if data.shippingAddress}}
-                    <div style="
-                      background-color: #f8f9fa;
-                      padding: 20px;
-                      margin: 16px 0;
-                      border-radius: 8px;
-                      border-left: 4px solid #3498db;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    ">
-                      <h3 style="
-                        margin-top: 0;
-                        color: #2c3e50;
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        font-size: 16px;
-                        font-weight: 600;
-                      ">{{translations.shippingAddress}}</h3>
-                      <div style="
-                        color: #34495e;
-                        font-size: 14px;
-                        line-height: 1.5;
-                      ">
-                        {{#if data.shippingAddress.fullName}}
-                          <div style="margin-bottom: 4px;">{{data.shippingAddress.fullName}}</div>
-                        {{/if}}
-                        {{#if data.shippingAddress.phone}}
-                          <div style="margin-bottom: 4px;">{{data.shippingAddress.phone}}</div>
-                        {{/if}}
-                        {{#if data.shippingAddress.addressLine1}}
-                          <div style="margin-bottom: 4px;">{{data.shippingAddress.addressLine1}}</div>
-                        {{/if}}
-                        {{#if data.shippingAddress.addressLine2}}
-                          <div style="margin-bottom: 4px;">{{data.shippingAddress.addressLine2}}</div>
-                        {{/if}}
-                        <div style="margin-bottom: 4px;">
-                          {{#if data.shippingAddress.city}}{{data.shippingAddress.city}}{{/if}}{{#if data.shippingAddress.state}}, {{data.shippingAddress.state}}{{/if}}{{#if data.shippingAddress.postalCode}} {{data.shippingAddress.postalCode}}{{/if}}
-                        </div>
-                        {{#if data.shippingAddress.country}}
-                          <div style="margin-bottom: 4px;">{{data.shippingAddress.country}}</div>
-                        {{/if}}
-                      </div>
-                    </div>
+                    {{> address-card
+                        title=translations.shippingAddress
+                        fullName=data.shippingAddress.fullName
+                        phone=data.shippingAddress.phone
+                        addressLine1=data.shippingAddress.addressLine1
+                        addressLine2=data.shippingAddress.addressLine2
+                        city=data.shippingAddress.city
+                        state=data.shippingAddress.state
+                        postalCode=data.shippingAddress.postalCode
+                        country=data.shippingAddress.country}}
                   {{/if}}
                 </div>
 
@@ -501,41 +461,14 @@
                 ">
                   {{#if data.trackingNumber}}
                   <div style="margin-bottom: 16px;">
-                    <a href="{{concat trackingUrl data.trackingNumber}}" style="
-                      display: inline-block;
-                      padding: 12px 24px;
-                      text-decoration: none;
-                      border-radius: 4px;
-                      font-weight: bold;
-                      text-align: center;
-                      background-color: #007bff;
-                      color: white;
-                    ">{{translations.trackPackage}}</a>
+                    {{> button text=translations.trackPackage url=(concat trackingUrl data.trackingNumber) style="primary"}}
                   </div>
                   {{/if}}
                   <div style="margin-bottom: 16px;">
-                    <a href="{{concat frontendUrl "/orders/" data.orderNumber}}" style="
-                      display: inline-block;
-                      padding: 12px 24px;
-                      text-decoration: none;
-                      border-radius: 4px;
-                      font-weight: bold;
-                      text-align: center;
-                      background-color: #6c757d;
-                      color: white;
-                    ">{{translations.viewOrder}}</a>
+                    {{> button text=translations.viewOrder url=(concat frontendUrl "/orders/" data.orderNumber) style="secondary"}}
                   </div>
                   <div>
-                    <a href="{{concat frontendUrl "/products"}}" style="
-                      display: inline-block;
-                      padding: 12px 24px;
-                      text-decoration: none;
-                      border-radius: 4px;
-                      font-weight: bold;
-                      text-align: center;
-                      background-color: #6c757d;
-                      color: white;
-                    ">{{translations.shopMore}}</a>
+                    {{> button text=translations.shopMore url=(concat frontendUrl "/products") style="secondary"}}
                   </div>
                 </div>
 
@@ -566,7 +499,12 @@
             <!-- Email Footer -->
             <tr>
               <td class="email-footer" role="contentinfo">
-                {{{emailFooter}}}
+                {{> email-footer
+                    currentYear=currentYear
+                    companyName=translations.companyName
+                    supportEmail=supportEmail
+                    websiteUrl=websiteUrl
+                    disclaimer=translations.disclaimer}}
               </td>
             </tr>
 

@@ -1,0 +1,157 @@
+/* Admin Order Notification Email Styles */
+
+/* Import component styles */
+@import '../components/layout/layout.css';
+@import '../components/forms/buttons.css';
+@import '../components/ui/badges.css';
+@import '../components/cards/cards.css';
+
+/* Design token placeholders that will be replaced during preprocessing */
+:root {
+  --primary-color: {{designTokens.colors.primary}};
+  --secondary-color: {{designTokens.colors.secondary}};
+  --font-family: {{designTokens.typography.fontFamily}};
+  --font-size-base: {{designTokens.typography.fontSize.body}};
+  --spacing-md: {{designTokens.spacing.md}};
+  --border-radius-medium: {{designTokens.borderRadius.medium}};
+}
+
+/* Email-specific styles */
+.email-container {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  max-width: 600px;
+  margin-left: 20px;
+  padding: var(--spacing-md);
+  background-color: #ffffff;
+}
+
+/* Admin notification specific styles */
+.alert-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.alert-icon {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #e74c3c 0%, #f39c12 100%);
+  border-radius: 50%;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.alert-icon::before {
+  content: '🔔';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.priority-urgent {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.priority-normal {
+  background-color: #27ae60;
+  color: white;
+}
+
+/* Items table styles */
+.items-table {
+  width: 100%;
+  margin: 24px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.items-table th {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: #ffffff;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.items-table td {
+  padding: 16px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.items-table tr:nth-child(even) td {
+  background-color: #f8f9fa;
+}
+
+.items-table tr:nth-child(odd) td {
+  background-color: #ffffff;
+}
+
+.total-row td {
+  font-weight: 600;
+  font-size: 16px;
+  background-color: #f8f9fa !important;
+  border-top: 2px solid #2c3e50;
+}
+
+/* Email client compatibility styles */
+@media only screen and (max-width: 600px) {
+  .email-container {
+    padding: 10px;
+  }
+
+  .items-table {
+    font-size: 12px;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 8px;
+  }
+
+  .alert-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .alert-icon::before {
+    font-size: 18px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .email-container {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .items-table tr:nth-child(even) td {
+    background-color: #2d2d2d;
+  }
+
+  .items-table tr:nth-child(odd) td {
+    background-color: #1e1e1e;
+  }
+
+  .total-row td {
+    background-color: #333333 !important;
+  }
+}

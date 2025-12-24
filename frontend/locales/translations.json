@@ -3892,6 +3892,10 @@
       "contactUs": {
         "en": "If you have any questions, please contact us.",
         "vi": "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
+      },
+      "trackOrder": {
+        "en": "View Order Details",
+        "vi": "Xem chi tiết đơn hàng"
       }
     },
     "adminOrderNotification": {
@@ -4388,8 +4392,8 @@
         "vi": "Xem đơn hàng"
       },
       "trackOrder": {
-        "en": "View Order Details",
-        "vi": "Xem chi tiết đơn hàng"
+        "en": "Track Order",
+        "vi": "Theo dõi đơn hàng"
       },
       "contactUs": {
         "en": "Contact Us",

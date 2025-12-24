@@ -1,5 +1,11 @@
 /* Order Confirmation Email Styles */
 
+/* Import component styles */
+@import '../components/layout/layout.css';
+@import '../components/forms/buttons.css';
+@import '../components/ui/badges.css';
+@import '../components/cards/cards.css';
+
 /* Design token placeholders that will be replaced during preprocessing */
 :root {
   --primary-color: {{designTokens.colors.primary}};

@@ -3,6 +3,8 @@ import { VariableReplacerService } from '../../../src/notifications/services/var
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
 import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
+import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
+import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type { VariableReplacerConfig } from '../../../src/notifications/interfaces/variable-replacer.interface';
 
 describe('VariableReplacerService', () => {
@@ -55,6 +57,27 @@ describe('VariableReplacerService', () => {
     })
   };
 
+  const mockTemplateLoaderService = {
+    partialExists: jest.fn(() => true),
+    loadPartial: jest.fn((partialName: string) => {
+      const partials = {
+        'email-header': '<div class="email-header"><h1>{{companyName}}</h1></div>',
+        'email-footer': '<div class="email-footer"><p>© {{currentYear}} {{companyName}}</p></div>',
+        'address-card': '<div class="address-card"><h3>{{title}}</h3><div>{{fullName}}</div></div>',
+        'button': '<a href="{{url}}" class="btn btn-{{style}}">{{text}}</a>',
+        'status-badge': '<span class="badge badge-{{status}}">{{statusText}}</span>'
+      };
+      return Promise.resolve(partials[partialName] || '');
+    }),
+    getPartialPath: jest.fn((partialName: string) => `/path/to/partials/${partialName}.hbs`)
+  };
+
+  const mockCSSInjectorService = {
+    loadCSSFile: jest.fn().mockResolvedValue('/* mock css content */'),
+    cssFileExists: jest.fn().mockReturnValue(true),
+    getCSSFilePath: jest.fn().mockReturnValue('/path/to/css/file.css')
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -67,6 +90,14 @@ describe('VariableReplacerService', () => {
         {
           provide: EmailTranslationService,
           useValue: mockEmailTranslationService
+        },
+        {
+          provide: TemplateLoaderService,
+          useValue: mockTemplateLoaderService
+        },
+        {
+          provide: CSSInjectorService,
+          useValue: mockCSSInjectorService
         },
         {
           provide: 'VariableReplacerConfig',

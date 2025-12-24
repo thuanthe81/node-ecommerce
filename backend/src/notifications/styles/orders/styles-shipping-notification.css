@@ -1,0 +1,173 @@
+/* Shipping Notification Email Styles */
+
+/* Import component styles */
+@import '../components/layout/layout.css';
+@import '../components/forms/buttons.css';
+@import '../components/ui/badges.css';
+@import '../components/cards/cards.css';
+
+/* Design token placeholders that will be replaced during preprocessing */
+:root {
+  --primary-color: {{designTokens.colors.primary}};
+  --secondary-color: {{designTokens.colors.secondary}};
+  --font-family: {{designTokens.typography.fontFamily}};
+  --font-size-base: {{designTokens.typography.fontSize.body}};
+  --spacing-md: {{designTokens.spacing.md}};
+  --border-radius-medium: {{designTokens.borderRadius.medium}};
+}
+
+/* Email-specific styles */
+.email-container {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  max-width: 600px;
+  margin-left: 20px;
+  padding: var(--spacing-md);
+  background-color: #ffffff;
+}
+
+/* Shipping notification specific styles */
+.shipping-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.shipping-icon {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  border-radius: 50%;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.shipping-icon::before {
+  content: '📦';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.tracking-info {
+  background-color: #e8f5e8;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-left: 4px solid #27ae60;
+  border-radius: var(--border-radius-medium);
+}
+
+.tracking-number {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #27ae60;
+  background-color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 8px 0;
+}
+
+.shipping-timeline {
+  margin: var(--spacing-md) 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius-medium);
+}
+
+.timeline-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #27ae60;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 14px;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.timeline-date {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+/* Email client compatibility styles */
+@media only screen and (max-width: 600px) {
+  .email-container {
+    padding: 10px;
+  }
+
+  .shipping-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .shipping-icon::before {
+    font-size: 18px;
+  }
+
+  .tracking-number {
+    font-size: 14px;
+    display: block;
+    text-align: center;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .timeline-icon {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .email-container {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .tracking-info {
+    background-color: #2d4a2d;
+  }
+
+  .tracking-number {
+    background-color: #2d2d2d;
+    color: #2ecc71;
+  }
+
+  .timeline-item {
+    background-color: #2d2d2d;
+  }
+
+  .timeline-title {
+    color: #ffffff;
+  }
+}

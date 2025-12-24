@@ -35,6 +35,19 @@ function getStylesPath(): string {
 }
 
 /**
+ * Get the correct partials path based on whether we're in development or production
+ */
+function getPartialsPath(): string {
+  if (process.env.NODE_ENV === 'production') {
+    // In production, partials are copied to dist/notifications/templates/partials by NestJS assets
+    return join(process.cwd(), 'dist', 'notifications', 'templates', 'partials');
+  } else {
+    // In development, use the source partials directory
+    return join(process.cwd(), 'src', 'notifications', 'templates', 'partials');
+  }
+}
+
+/**
  * Default configuration for the email template system
  */
 export const DEFAULT_TEMPLATE_SYSTEM_CONFIG = {
@@ -42,7 +55,9 @@ export const DEFAULT_TEMPLATE_SYSTEM_CONFIG = {
     templatesPath: getTemplatesPath(),
     isDevelopment: process.env.NODE_ENV === 'development',
     templateExtension: '.html',
-    enableCaching: true
+    enableCaching: true,
+    partialsPath: getPartialsPath(),
+    partialExtension: '.hbs'
   } as TemplateLoaderConfig,
 
   variableReplacer: {
@@ -86,7 +101,7 @@ export const TEMPLATE_DIRECTORIES = {
   ORDERS: 'orders',
   AUTH: 'auth',
   SHARED: 'shared',
-  PARTIALS: 'shared/partials',
+  PARTIALS: 'partials',
   LAYOUTS: 'shared/layouts'
 } as const;
 

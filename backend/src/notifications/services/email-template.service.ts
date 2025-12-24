@@ -152,16 +152,31 @@ export class EmailTemplateService implements OnModuleInit {
     // Load and process template
     const templateContent = await this.templateLoader.loadTemplate(templateName);
 
+    // Check if template was loaded successfully
+    if (!templateContent) {
+      throw new Error(`Failed to load template content for '${templateName}'`);
+    }
+
     // Verify we're loading the correct template by checking for distinctive content
-    if (!templateContent.includes('Welcome Section with Visual Icon')) {
-      console.error(`[EmailTemplateService] WARNING: Order confirmation template does not contain expected content. Template may be incorrect.`);
+    if (!templateContent.includes('{{> email-header')) {
+      console.error(`[EmailTemplateService] WARNING: Order confirmation template does not contain expected partial template content. Template may be incorrect.`);
     } else {
-      console.log(`[EmailTemplateService] Order confirmation template verified - contains expected welcome section`);
+      console.log(`[EmailTemplateService] Order confirmation template verified - contains expected partial templates`);
     }
 
     const processedTemplate = await this.variableReplacer.replaceVariables(templateContent, data, locale);
 
+    // Check if template processing was successful
+    if (!processedTemplate) {
+      throw new Error(`Failed to process template variables for '${templateName}'`);
+    }
+
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    // Check if design system injection was successful
+    if (!finalHtml) {
+      throw new Error(`Failed to inject design system for '${templateName}'`);
+    }
 
     return {
       subject: locale === 'vi'

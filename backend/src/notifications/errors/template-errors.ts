@@ -127,3 +127,16 @@ export class DesignSystemInjectionError extends TemplateError {
     );
   }
 }
+
+/**
+ * Thrown when a partial template cannot be found or loaded
+ */
+export class PartialTemplateError extends TemplateError {
+  constructor(partialName: string, message: string, expectedPath?: string) {
+    super(
+      `Partial template '${partialName}' error: ${message}`,
+      partialName,
+      { partialName, expectedPath }
+    );
+  }
+}

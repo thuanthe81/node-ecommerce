@@ -1,0 +1,81 @@
+/* Email Badge Components */
+
+/* Base Badge Styles */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  line-height: 1;
+}
+
+/* Status Badge Variants */
+.badge-pending {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.badge-confirmed {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-shipped {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.badge-delivered {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-cancelled {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Additional status variants for comprehensive coverage */
+.badge-processing {
+  background-color: #007bff;
+  color: white;
+}
+
+.badge-on-hold {
+  background-color: #fd7e14;
+  color: white;
+}
+
+.badge-refunded {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.badge-returned {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Badge container for better spacing */
+.badge-container {
+  margin: 8px 0;
+}
+
+/* Email client compatibility styles */
+.badge-text {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive badge styles for mobile email clients */
+@media only screen and (max-width: 600px) {
+  .badge {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}

@@ -1,0 +1,15 @@
+<div class="address-card">
+  <h3 class="address-title">{{title}}</h3>
+  <div class="address-content">
+    {{#if fullName}}<div class="address-line">{{fullName}}</div>{{/if}}
+    {{#if phone}}<div class="address-line">{{phone}}</div>{{/if}}
+    {{#if addressLine1}}<div class="address-line">{{addressLine1}}</div>{{/if}}
+    {{#if addressLine2}}<div class="address-line">{{addressLine2}}</div>{{/if}}
+    {{#if city}}
+      <div class="address-line">
+        {{city}}{{#if state}}, {{state}}{{/if}}{{#if postalCode}} {{postalCode}}{{/if}}
+      </div>
+    {{/if}}
+    {{#if country}}<div class="address-line">{{country}}</div>{{/if}}
+  </div>
+</div>

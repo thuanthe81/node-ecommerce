@@ -43,6 +43,40 @@ export interface ITemplateLoader {
    * @returns Full file system path to the template
    */
   getTemplatePath(templateName: string): string;
+
+  /**
+   * Load a partial template by name from the partials directory.
+   * Partial templates are cached after first load for performance.
+   *
+   * @param partialName - Name of the partial template file without extension (e.g., 'email-header')
+   * @returns Promise resolving to the partial template content
+   * @throws TemplateNotFoundError if partial template file doesn't exist
+   * @throws TemplateLoadError if file cannot be read
+   */
+  loadPartial(partialName: string): Promise<string>;
+
+  /**
+   * Check if a partial template file exists in the partials directory.
+   *
+   * @param partialName - Name of the partial template file without extension
+   * @returns True if partial template exists, false otherwise
+   */
+  partialExists(partialName: string): boolean;
+
+  /**
+   * Get the full path to a partial template file.
+   *
+   * @param partialName - Name of the partial template file without extension
+   * @returns Full file system path to the partial template
+   */
+  getPartialPath(partialName: string): string;
+
+  /**
+   * Get all available partial template names.
+   *
+   * @returns Array of partial template names (without extensions)
+   */
+  getAvailablePartials(): Promise<string[]>;
 }
 
 /**
@@ -60,4 +94,10 @@ export interface TemplateLoaderConfig {
 
   /** Whether to enable template caching (default: true) */
   enableCaching?: boolean;
+
+  /** Path to partial templates directory */
+  partialsPath?: string;
+
+  /** Partial template file extension (default: '.hbs') */
+  partialExtension?: string;
 }

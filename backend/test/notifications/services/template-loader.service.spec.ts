@@ -72,8 +72,8 @@ describe('TemplateLoaderService', () => {
       expect(result2).toBe(templateContent);
 
       const cacheStats = service.getCacheStats();
-      expect(cacheStats.size).toBe(1);
-      expect(cacheStats.keys).toContain(templateName);
+      expect(cacheStats.templates.size).toBe(1);
+      expect(cacheStats.templates.keys).toContain(templateName);
     });
 
     it('should throw TemplateNotFoundError for non-existent template', async () => {
@@ -140,13 +140,13 @@ describe('TemplateLoaderService', () => {
 
       // Load template to cache it
       await service.loadTemplate(templateName);
-      expect(service.getCacheStats().size).toBe(1);
+      expect(service.getCacheStats().templates.size).toBe(1);
 
       // Act
       service.clearCache();
 
       // Assert
-      expect(service.getCacheStats().size).toBe(0);
+      expect(service.getCacheStats().templates.size).toBe(0);
     });
   });
 

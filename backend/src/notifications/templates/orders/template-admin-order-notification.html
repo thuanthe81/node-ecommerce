@@ -174,7 +174,7 @@
             <!-- Email Header -->
             <tr>
               <td class="email-header" role="banner">
-                {{{emailHeader}}}
+                {{> email-header companyName=translations.companyName tagline=translations.tagline}}
               </td>
             </tr>
 
@@ -531,12 +531,30 @@
 
                 <!-- Shipping Address -->
                 <div style="margin: 32px 0;">
-                  {{{generateAddressCard data.shippingAddress translations.shippingAddress locale}}}
+                  {{> address-card
+                      title=translations.shippingAddress
+                      fullName=data.shippingAddress.fullName
+                      phone=data.shippingAddress.phone
+                      addressLine1=data.shippingAddress.addressLine1
+                      addressLine2=data.shippingAddress.addressLine2
+                      city=data.shippingAddress.city
+                      state=data.shippingAddress.state
+                      postalCode=data.shippingAddress.postalCode
+                      country=data.shippingAddress.country}}
                 </div>
 
                 <!-- Billing Address -->
                 <div style="margin: 32px 0;">
-                  {{{generateAddressCard data.billingAddress translations.billingAddress locale}}}
+                  {{> address-card
+                      title=translations.billingAddress
+                      fullName=data.billingAddress.fullName
+                      phone=data.billingAddress.phone
+                      addressLine1=data.billingAddress.addressLine1
+                      addressLine2=data.billingAddress.addressLine2
+                      city=data.billingAddress.city
+                      state=data.billingAddress.state
+                      postalCode=data.billingAddress.postalCode
+                      country=data.billingAddress.country}}
                 </div>
 
                 <!-- Payment Information -->
@@ -576,7 +594,7 @@
                       <td style="
                         padding: 8px 0;
                         color: #2c3e50;
-                      ">{{{generateStatusBadge data.paymentStatus locale}}}</td>
+                      ">{{> status-badge status=data.paymentStatus statusText=(getStatusText data.paymentStatus locale)}}</td>
                     </tr>
                   </table>
                 </div>
@@ -613,10 +631,10 @@
                   border-bottom: 1px solid #ecf0f1;
                 ">
                   <div style="margin-bottom: 16px;">
-                    {{{generateButton translations.viewOrder (concat adminUrl "/orders/" data.orderNumber) "primary"}}}
+                    {{> button text=translations.viewOrder url=(concat adminUrl "/orders/" data.orderNumber) style="primary"}}
                   </div>
                   <div>
-                    {{{generateButton translations.processOrder (concat adminUrl "/orders/" data.orderNumber "/process") "secondary"}}}
+                    {{> button text=translations.processOrder url=(concat adminUrl "/orders/" data.orderNumber "/process") style="secondary"}}
                   </div>
                 </div>
 
@@ -626,7 +644,12 @@
             <!-- Email Footer -->
             <tr>
               <td class="email-footer" role="contentinfo">
-                {{{emailFooter}}}
+                {{> email-footer
+                    currentYear=currentYear
+                    companyName=translations.companyName
+                    supportEmail=supportEmail
+                    websiteUrl=websiteUrl
+                    disclaimer=translations.disclaimer}}
               </td>
             </tr>
 

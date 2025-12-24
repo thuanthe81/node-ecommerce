@@ -11,11 +11,17 @@ import type {
 import {
   TemplateCompilationError,
   TemplateRuntimeError,
-  MissingVariableError
+  MissingVariableError,
+  PartialTemplateError,
+  TemplateValidationError
 } from '../errors/template-errors';
 import { EmailHandlebarsHelpers } from '../helpers/email-handlebars-helpers';
 import { DesignSystemInjector } from './design-system-injector.service';
 import { EmailTranslationService } from './email-translation.service';
+import { TemplateLoaderService } from './template-loader.service';
+import { CSSInjectorService } from './css-injector.service';
+import { PartialTemplateValidator } from '../utils/partial-template-validator';
+import { CSSComponentValidator } from '../utils/css-component-validator';
 
 /**
  * Service for processing templates with Handlebars.js and replacing variables with actual data.
@@ -32,6 +38,8 @@ export class VariableReplacerService implements IVariableReplacer {
     private readonly htmlEscapingService: HTMLEscapingService,
     private readonly designSystemInjector: DesignSystemInjector,
     private readonly emailTranslationService: EmailTranslationService,
+    private readonly templateLoaderService: TemplateLoaderService,
+    private readonly cssInjectorService: CSSInjectorService,
     @Inject('VariableReplacerConfig') private readonly config: VariableReplacerConfig
   ) {
     // Create isolated Handlebars instance to avoid global pollution
@@ -39,6 +47,8 @@ export class VariableReplacerService implements IVariableReplacer {
     this.setupHandlebarsConfiguration();
     this.registerDefaultHelpers();
     this.registerEmailHelpers();
+    // Register partial templates asynchronously after construction
+    this.initializePartialTemplates();
   }
 
   /**
@@ -63,14 +73,44 @@ export class VariableReplacerService implements IVariableReplacer {
       // Prepare template context
       const context = this.prepareTemplateContext(data, locale);
 
-      // Execute template with context
-      const result = compiledTemplate(context);
+      // Execute template with context and enhanced error handling
+      let result: string;
+      try {
+        result = compiledTemplate(context);
+      } catch (renderError) {
+        // Check if this is a partial template rendering error
+        if (this.isPartialTemplateError(renderError)) {
+          const partialName = this.extractPartialNameFromError(renderError);
+          this.logger.error(
+            `Partial template rendering failed - Partial: '${partialName}', Error: ${renderError.message}`,
+            renderError.stack
+          );
+
+          // Re-throw as PartialTemplateError for better error handling
+          throw new PartialTemplateError(
+            partialName,
+            `Rendering failed: ${renderError.message}`
+          );
+        }
+
+        // For other rendering errors, provide detailed context
+        this.logger.error(
+          `Template rendering failed - Template key: ${templateKey}, Locale: ${locale}, Error: ${renderError.message}`,
+          renderError.stack
+        );
+        throw renderError;
+      }
 
       this.logger.debug(`Successfully processed template for locale: ${locale}`);
       return result;
 
     } catch (error) {
       this.logger.error(`Failed to replace variables in template: ${error.message}`, error.stack);
+
+      if (error instanceof PartialTemplateError) {
+        // Re-throw partial template errors as-is
+        throw error;
+      }
 
       if (error.name === 'Error' && error.message.includes('Parse error')) {
         throw new TemplateCompilationError('unknown', error.message);
@@ -346,19 +386,9 @@ export class VariableReplacerService implements IVariableReplacer {
       return new this.handlebars.SafeString(this.designSystemInjector.generateCSS());
     });
 
-    // Email header helper
-    this.registerHelper('emailHeader', () => {
-      return new this.handlebars.SafeString(this.generateEmailHeader());
-    });
-
-    // Email footer helper
-    this.registerHelper('emailFooter', () => {
-      return new this.handlebars.SafeString(this.generateEmailFooter());
-    });
-
-    // Address card helper
-    this.registerHelper('generateAddressCard', (address: any, title: string, locale: string) => {
-      return new this.handlebars.SafeString(this.generateAddressCard(address, title, locale));
+    // Status text translation helper
+    this.registerHelper('getStatusText', (status: string, locale: string) => {
+      return this.getStatusText(status, locale as 'en' | 'vi');
     });
 
     // Concat helper for URL building
@@ -396,11 +426,9 @@ export class VariableReplacerService implements IVariableReplacer {
       // Also make individual helper functions available at root level
       formatCurrency: templateHelpers.formatCurrency,
       formatDate: templateHelpers.formatDate,
-      generateButton: templateHelpers.generateButton,
-      generateStatusBadge: templateHelpers.generateStatusBadge,
-      generateAddressCard: templateHelpers.generateAddressCard,
+      getStatusText: templateHelpers.getStatusText,
       // Add admin URL for button generation
-      adminUrl: process.env.ADMIN_URL || 'https://admin.alacraft.com'
+      adminUrl: process.env.FRONTEND_URL,
     };
 
     // Register helpers directly with Handlebars for this context
@@ -496,8 +524,7 @@ export class VariableReplacerService implements IVariableReplacer {
   private getTemplateHelpers(locale: 'en' | 'vi'): {
     formatCurrency: (amount: number, locale: string) => string;
     formatDate: (date: string, locale: string) => string;
-    generateButton: (text: string, url: string, style: string) => string;
-    generateStatusBadge: (status: string, locale: string) => string;
+    getStatusText: (status: string, locale: string) => string;
     [key: string]: Function;
   } {
     return {
@@ -530,55 +557,15 @@ export class VariableReplacerService implements IVariableReplacer {
         }
       },
 
-      generateButton: (text: string, url: string, style: string = 'primary') => {
-        const buttonStyles = this.getButtonStyles(style);
-        return `<a href="${url}" style="${buttonStyles}">${this.htmlEscapingService.escapeHtmlContent(text)}</a>`;
-      },
-
-      generateStatusBadge: (status: string, badgeLocale: string = locale) => {
-        const badgeStyles = this.getStatusBadgeStyles(status);
-        const statusText = this.getStatusText(status, badgeLocale as 'en' | 'vi');
-        return `<span style="${badgeStyles}">${this.htmlEscapingService.escapeHtmlContent(statusText)}</span>`;
-      },
-
-      generateAddressCard: (address: any, title: string, cardLocale: string = locale) => {
-        return this.generateAddressCard(address, title, cardLocale);
+      getStatusText: (status: string, statusLocale: string = locale) => {
+        return this.getStatusText(status, statusLocale as 'en' | 'vi');
       }
     };
   }
 
-  /**
-   * Get button styles based on button type
-   */
-  private getButtonStyles(style: string): string {
-    const baseStyles = 'display: inline-block; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; text-align: center;';
 
-    const styleMap: Record<string, string> = {
-      primary: `${baseStyles} background-color: #007bff; color: white;`,
-      secondary: `${baseStyles} background-color: #6c757d; color: white;`,
-      success: `${baseStyles} background-color: #28a745; color: white;`,
-      danger: `${baseStyles} background-color: #dc3545; color: white;`
-    };
 
-    return styleMap[style] || styleMap.primary;
-  }
 
-  /**
-   * Get status badge styles based on status
-   */
-  private getStatusBadgeStyles(status: string): string {
-    const baseStyles = 'display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;';
-
-    const statusMap: Record<string, string> = {
-      pending: `${baseStyles} background-color: #ffc107; color: #212529;`,
-      confirmed: `${baseStyles} background-color: #28a745; color: white;`,
-      shipped: `${baseStyles} background-color: #17a2b8; color: white;`,
-      delivered: `${baseStyles} background-color: #28a745; color: white;`,
-      cancelled: `${baseStyles} background-color: #dc3545; color: white;`
-    };
-
-    return statusMap[status] || statusMap.pending;
-  }
 
   /**
    * Get localized status text
@@ -602,107 +589,121 @@ export class VariableReplacerService implements IVariableReplacer {
     return hash.toString();
   }
 
+
+
+
+
+
+
   /**
-   * Generate email header HTML
+   * Initialize partial templates asynchronously after service construction
    */
-  private generateEmailHeader(): string {
-    return `
-      <div style="text-align: center; margin-bottom: 24px;">
-        <h1 style="
-          color: #2c3e50;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          font-size: 28px;
-          font-weight: 600;
-          margin: 0;
-          text-decoration: none;
-        ">AlaCraft</h1>
-        <p style="
-          color: #7f8c8d;
-          font-size: 14px;
-          margin: 8px 0 0 0;
-          font-style: italic;
-        ">Handcrafted with care</p>
-      </div>
-    `;
+  private initializePartialTemplates(): void {
+    // Use setImmediate to register partials after constructor completes
+    setImmediate(async () => {
+      try {
+        await this.registerPartialTemplates();
+      } catch (error) {
+        this.logger.error(`Failed to initialize partial templates: ${error.message}`);
+        // Don't throw here as it would be unhandled - log the error instead
+      }
+    });
   }
 
   /**
-   * Generate email footer HTML
+   * Register partial templates with Handlebars for use in main templates
    */
-  private generateEmailFooter(): string {
-    const currentYear = new Date().getFullYear();
-    return `
-      <div style="
-        text-align: center;
-        color: #7f8c8d;
-        font-size: 12px;
-        line-height: 1.5;
-        margin-top: 32px;
-        padding-top: 24px;
-        border-top: 1px solid #ecf0f1;
-      ">
-        <p style="margin: 0 0 8px 0;">
-          © ${currentYear} AlaCraft. All rights reserved.
-        </p>
-        <p style="margin: 0 0 8px 0;">
-          <a href="mailto:support@alacraft.com" style="color: #3498db; text-decoration: none;">support@alacraft.com</a>
-          |
-          <a href="https://alacraft.com" style="color: #3498db; text-decoration: none;">alacraft.com</a>
-        </p>
-        <p style="margin: 0; font-size: 11px; color: #95a5a6;">
-          This email was sent to you because you have an account with AlaCraft.
-        </p>
-      </div>
-    `;
-  }
+  private async registerPartialTemplates(): Promise<void> {
+    try {
+      // List of partial templates to register with their organized paths
+      const partialTemplates = [
+        'layout/email-header',
+        'layout/email-footer',
+        'cards/address-card',
+        'forms/button',
+        'ui/status-badge'
+      ];
 
-  /**
-   * Generate address card HTML
-   */
-  private generateAddressCard(address: any, title: string, locale: string): string {
-    if (!address) return '';
+      this.logger.debug('Starting partial template registration');
 
-    const addressLines = [];
-    if (address.fullName) addressLines.push(address.fullName);
-    if (address.phone) addressLines.push(address.phone);
-    if (address.addressLine1) addressLines.push(address.addressLine1);
-    if (address.addressLine2) addressLines.push(address.addressLine2);
+      for (const partialPath of partialTemplates) {
+        // Extract the simple name from the path for registration
+        const partialName = partialPath.split('/').pop();
 
-    const cityStateZip = [];
-    if (address.city) cityStateZip.push(address.city);
-    if (address.state) cityStateZip.push(address.state);
-    if (address.postalCode) cityStateZip.push(address.postalCode);
-    if (cityStateZip.length > 0) addressLines.push(cityStateZip.join(', '));
+        // Ensure partialName is not undefined
+        if (!partialName) {
+          throw new PartialTemplateError(
+            partialPath,
+            `Invalid partial path: ${partialPath}`
+          );
+        }
 
-    if (address.country) addressLines.push(address.country);
+        try {
+          // Check if partial exists before loading
+          if (!this.templateLoaderService.partialExists(partialPath)) {
+            const expectedPath = this.templateLoaderService.getPartialPath(partialPath);
+            throw new PartialTemplateError(
+              partialName,
+              `Partial template '${partialName}' not found at expected path: ${expectedPath}`,
+              expectedPath
+            );
+          }
 
-    return `
-      <div style="
-        background-color: #f8f9fa;
-        padding: 20px;
-        margin: 16px 0;
-        border-radius: 8px;
-        border-left: 4px solid #3498db;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      ">
-        <h3 style="
-          margin-top: 0;
-          color: #2c3e50;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          font-size: 16px;
-          font-weight: 600;
-        ">${this.htmlEscapingService.escapeHtmlContent(title)}</h3>
-        <div style="
-          color: #34495e;
-          font-size: 14px;
-          line-height: 1.5;
-        ">
-          ${addressLines.map(line =>
-            `<div style="margin-bottom: 4px;">${this.htmlEscapingService.escapeHtmlContent(line)}</div>`
-          ).join('')}
-        </div>
-      </div>
-    `;
+          // Load partial content
+          const partialContent = await this.templateLoaderService.loadPartial(partialPath);
+
+          // Validate partial content is not empty
+          if (!partialContent || partialContent.trim().length === 0) {
+            throw new PartialTemplateError(
+              partialName,
+              `Partial template '${partialName}' is empty or contains only whitespace`
+            );
+          }
+
+          // Validate partial template HTML structure and content
+          try {
+            PartialTemplateValidator.validatePartialTemplate(partialName, partialContent);
+            this.logger.debug(`Partial template '${partialName}' passed validation`);
+          } catch (error) {
+            if (error instanceof TemplateValidationError) {
+              // Re-throw as PartialTemplateError for consistency
+              throw new PartialTemplateError(
+                partialName,
+                `Validation failed: ${error.message}`
+              );
+            }
+            throw error;
+          }
+
+          // Validate expected parameters are present
+          const expectedParams = PartialTemplateValidator.getExpectedParameters(partialName);
+          const paramErrors = PartialTemplateValidator.validatePartialParameters(
+            partialName,
+            partialContent,
+            expectedParams
+          );
+
+          if (paramErrors.length > 0) {
+            this.logger.warn(`Partial template '${partialName}' parameter validation warnings: ${paramErrors.join(', ')}`);
+            // Log warnings but don't fail - some parameters might be optional
+          }
+
+          // Register with Handlebars using the simple name
+          this.handlebars.registerPartial(partialName, partialContent);
+
+          this.logger.debug(`Registered partial template: ${partialName} from ${partialPath}`);
+        } catch (error) {
+          // Use enhanced error handling
+          const partialError = this.handlePartialRegistrationError(partialName, error);
+          throw partialError;
+        }
+      }
+
+      this.logger.log(`Successfully registered ${partialTemplates.length} partial templates`);
+    } catch (error) {
+      this.logger.error(`Failed to register partial templates: ${error.message}`);
+      throw error;
+    }
   }
 
   /**
@@ -722,5 +723,291 @@ export class VariableReplacerService implements IVariableReplacer {
         currency: 'USD'
       }).format(amount);
     }
+  }
+
+  /**
+   * Validate a specific partial template
+   * @param partialName - Name of the partial template to validate
+   * @throws PartialTemplateError if validation fails
+   */
+  async validatePartialTemplate(partialName: string): Promise<void> {
+    try {
+      // Check if partial exists
+      if (!this.templateLoaderService.partialExists(partialName)) {
+        const expectedPath = this.templateLoaderService.getPartialPath(partialName);
+        throw new PartialTemplateError(
+          partialName,
+          `Partial template '${partialName}' not found at expected path: ${expectedPath}`,
+          expectedPath
+        );
+      }
+
+      // Load partial content
+      const partialContent = await this.templateLoaderService.loadPartial(partialName);
+
+      // Validate using the validator utility
+      PartialTemplateValidator.validatePartialTemplate(partialName, partialContent);
+
+      this.logger.debug(`Partial template '${partialName}' validation successful`);
+    } catch (error) {
+      if (error instanceof TemplateValidationError) {
+        throw new PartialTemplateError(
+          partialName,
+          `Validation failed: ${error.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Validate all registered partial templates
+   * @returns Array of validation results for each partial
+   */
+  async validateAllPartialTemplates(): Promise<Array<{ partialName: string; isValid: boolean; error?: string }>> {
+    const partialTemplates = [
+      'email-header',
+      'email-footer',
+      'address-card',
+      'button',
+      'status-badge'
+    ];
+
+    const results: Array<{ partialName: string; isValid: boolean; error?: string }> = [];
+
+    for (const partialName of partialTemplates) {
+      try {
+        await this.validatePartialTemplate(partialName);
+        results.push({ partialName, isValid: true });
+      } catch (error) {
+        results.push({
+          partialName,
+          isValid: false,
+          error: error.message
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Validate CSS component files
+   * @param componentName - Name of the CSS component to validate
+   * @param throwOnError - Whether to throw error or just log warnings (default: false)
+   */
+  async validateCSSComponent(componentName: string, throwOnError: boolean = false): Promise<string[]> {
+    try {
+      // Get CSS content from the CSS injector service
+      const cssContent = await this.getCSSComponentContent(componentName);
+
+      // Validate using the CSS validator utility
+      const validationErrors = CSSComponentValidator.validateCSSComponent(
+        componentName,
+        cssContent,
+        throwOnError
+      );
+
+      if (validationErrors.length === 0) {
+        this.logger.debug(`CSS component '${componentName}' validation successful`);
+      }
+
+      return validationErrors;
+    } catch (error) {
+      const errorMessage = `Failed to validate CSS component '${componentName}': ${error.message}`;
+
+      if (throwOnError) {
+        this.logger.error(errorMessage);
+        throw error;
+      } else {
+        this.logger.warn(errorMessage);
+        return [error.message];
+      }
+    }
+  }
+
+  /**
+   * Validate all CSS component files
+   * @returns Array of validation results for each component
+   */
+  async validateAllCSSComponents(): Promise<Array<{ componentName: string; isValid: boolean; warnings: string[] }>> {
+    const cssComponents = ['layout', 'buttons', 'badges', 'cards'];
+    const results: Array<{ componentName: string; isValid: boolean; warnings: string[] }> = [];
+
+    for (const componentName of cssComponents) {
+      try {
+        const warnings = await this.validateCSSComponent(componentName, false);
+        results.push({
+          componentName,
+          isValid: warnings.length === 0,
+          warnings
+        });
+      } catch (error) {
+        results.push({
+          componentName,
+          isValid: false,
+          warnings: [error.message]
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Get CSS component content (helper method)
+   * This method loads CSS content from component files
+   */
+  private async getCSSComponentContent(componentName: string): Promise<string> {
+    try {
+      // Map component name to organized CSS file path
+      const componentPathMap: Record<string, string> = {
+        'layout': 'components/layout/layout.css',
+        'buttons': 'components/forms/buttons.css',
+        'badges': 'components/ui/badges.css',
+        'cards': 'components/cards/cards.css'
+      };
+
+      const cssFileName = componentPathMap[componentName] || `components/${componentName}.css`;
+
+      // Use the CSS injector service to load the component CSS file
+      const cssContent = await this.cssInjectorService.loadCSSFile(cssFileName);
+
+      return cssContent;
+    } catch (error) {
+      // If the component CSS file doesn't exist, return a minimal placeholder
+      // This allows validation to proceed and provide appropriate warnings
+      this.logger.warn(`CSS component file '${componentName}.css' not found: ${error.message}`);
+      return `/* CSS component: ${componentName} - file not found */`;
+    }
+  }
+
+  /**
+   * Check if an error is related to partial template rendering
+   */
+  private isPartialTemplateError(error: any): boolean {
+    if (!error || !error.message) {
+      return false;
+    }
+
+    const errorMessage = error.message.toLowerCase();
+
+    // Check for common partial template error patterns
+    const partialErrorPatterns = [
+      'partial',
+      'missing partial',
+      'could not find partial',
+      'partial not found',
+      'unknown partial',
+      'email-header',
+      'email-footer',
+      'address-card',
+      'button',
+      'status-badge'
+    ];
+
+    return partialErrorPatterns.some(pattern => errorMessage.includes(pattern));
+  }
+
+  /**
+   * Extract partial name from error message
+   */
+  private extractPartialNameFromError(error: any): string {
+    if (!error || !error.message) {
+      return 'unknown';
+    }
+
+    const errorMessage = error.message;
+
+    // Try to extract partial name from common error message patterns
+    const partialNamePatterns = [
+      /partial\s+["']([^"']+)["']/i,
+      /partial\s+([a-zA-Z0-9\-_]+)/i,
+      /["']([a-zA-Z0-9\-_]+)["']\s+partial/i,
+      /(email-header|email-footer|address-card|button|status-badge)/i
+    ];
+
+    for (const pattern of partialNamePatterns) {
+      const match = errorMessage.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+
+    return 'unknown';
+  }
+
+  /**
+   * Enhanced error handling for partial template registration
+   */
+  private handlePartialRegistrationError(partialName: string, error: any): PartialTemplateError {
+    const errorDetails = {
+      partialName,
+      originalError: error.message,
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString()
+    };
+
+    this.logger.error(
+      `Partial template registration failed - Details: ${JSON.stringify(errorDetails)}`,
+      error.stack
+    );
+
+    if (error instanceof PartialTemplateError) {
+      return error;
+    }
+
+    return new PartialTemplateError(
+      partialName,
+      `Registration failed: ${error.message}`
+    );
+  }
+
+  /**
+   * Log detailed information about partial template rendering failures
+   */
+  private logPartialRenderingError(partialName: string, error: any, context?: any): void {
+    const errorDetails = {
+      partialName,
+      errorMessage: error.message,
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString(),
+      contextKeys: context ? Object.keys(context) : [],
+      stackTrace: error.stack
+    };
+
+    this.logger.error(
+      `Partial template rendering error - Partial: '${partialName}' failed to render`,
+      JSON.stringify(errorDetails, null, 2)
+    );
+
+    // Log additional context if available
+    if (context) {
+      this.logger.debug(
+        `Partial template context for '${partialName}': ${JSON.stringify(context, null, 2)}`
+      );
+    }
+  }
+
+  /**
+   * Validate partial template context before rendering
+   */
+  private validatePartialContext(partialName: string, context: any): string[] {
+    const warnings: string[] = [];
+    const expectedParams = PartialTemplateValidator.getExpectedParameters(partialName);
+
+    for (const param of expectedParams) {
+      if (context[param] === undefined || context[param] === null) {
+        warnings.push(`Missing expected parameter '${param}' for partial '${partialName}'`);
+      }
+    }
+
+    if (warnings.length > 0) {
+      this.logger.warn(
+        `Partial template context validation warnings for '${partialName}': ${warnings.join(', ')}`
+      );
+    }
+
+    return warnings;
   }
 }

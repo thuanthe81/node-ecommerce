@@ -19,6 +19,7 @@ import { DEFAULT_TEMPLATE_SYSTEM_CONFIG } from '../config/template-system.config
 export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
   private readonly logger = new Logger(TemplateLoaderService.name);
   private readonly templateCache = new Map<string, string>();
+  private readonly partialCache = new Map<string, string>();
   private readonly config: TemplateLoaderConfig;
   private fileWatcher?: FSWatcher;
   private reloadCallbacks: Array<(templateName: string) => void> = [];
@@ -90,9 +91,10 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
    * Useful for development when templates are modified.
    */
   async reloadTemplates(): Promise<void> {
-    this.logger.log('Reloading all cached templates');
+    this.logger.log('Reloading all cached templates and partials');
 
     const cachedTemplateNames = Array.from(this.templateCache.keys());
+    const cachedPartialNames = Array.from(this.partialCache.keys());
     this.clearCache();
 
     // Reload each previously cached template
@@ -105,7 +107,17 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
       }
     }
 
-    this.logger.log(`Reloaded ${cachedTemplateNames.length} templates`);
+    // Reload each previously cached partial
+    for (const partialName of cachedPartialNames) {
+      try {
+        await this.loadPartial(partialName);
+        this.logger.debug(`Reloaded partial '${partialName}'`);
+      } catch (error) {
+        this.logger.warn(`Failed to reload partial '${partialName}': ${error.message}`);
+      }
+    }
+
+    this.logger.log(`Reloaded ${cachedTemplateNames.length} templates and ${cachedPartialNames.length} partials`);
   }
 
   /**
@@ -122,9 +134,11 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
    * Forces next loadTemplate call to read from file system.
    */
   clearCache(): void {
-    const cacheSize = this.templateCache.size;
+    const templateCacheSize = this.templateCache.size;
+    const partialCacheSize = this.partialCache.size;
     this.templateCache.clear();
-    this.logger.debug(`Cleared template cache (${cacheSize} templates)`);
+    this.partialCache.clear();
+    this.logger.debug(`Cleared template cache (${templateCacheSize} templates) and partial cache (${partialCacheSize} partials)`);
   }
 
   /**
@@ -200,10 +214,19 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
   /**
    * Get cache statistics for monitoring.
    */
-  getCacheStats(): { size: number; keys: string[] } {
+  getCacheStats(): {
+    templates: { size: number; keys: string[] };
+    partials: { size: number; keys: string[] };
+  } {
     return {
-      size: this.templateCache.size,
-      keys: Array.from(this.templateCache.keys())
+      templates: {
+        size: this.templateCache.size,
+        keys: Array.from(this.templateCache.keys())
+      },
+      partials: {
+        size: this.partialCache.size,
+        keys: Array.from(this.partialCache.keys())
+      }
     };
   }
 
@@ -293,6 +316,15 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
     if (!this.config.templateExtension) {
       throw new Error('TemplateLoader templateExtension must be provided');
     }
+
+    // Validate partial template configuration
+    if (this.config.partialsPath && !existsSync(this.config.partialsPath)) {
+      this.logger.warn(`Partials directory does not exist: ${this.config.partialsPath}`);
+    }
+
+    if (!this.config.partialExtension) {
+      this.config.partialExtension = '.hbs'; // Set default if not provided
+    }
   }
 
   /**
@@ -357,6 +389,99 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
           this.logger.error(`Error in template reload callback: ${error.message}`);
         }
       });
+    }
+  }
+
+  /**
+   * Load a partial template by name from the partials directory.
+   * Partial templates are cached after first load for performance.
+   */
+  async loadPartial(partialName: string): Promise<string> {
+    try {
+      // Check cache first if caching is enabled
+      if (this.config.enableCaching && this.partialCache.has(partialName)) {
+        this.logger.debug(`Loading partial '${partialName}' from cache`);
+        return this.partialCache.get(partialName)!;
+      }
+
+      // Validate partial name
+      if (!partialName || typeof partialName !== 'string') {
+        throw new Error('Partial name must be a non-empty string');
+      }
+
+      // Load partial from file system
+      const partialPath = this.getPartialPath(partialName);
+      this.logger.debug(`Loading partial '${partialName}' from file: ${partialPath}`);
+
+      const partialContent = await fs.readFile(partialPath, 'utf-8');
+
+      // Cache the partial if caching is enabled
+      if (this.config.enableCaching) {
+        this.partialCache.set(partialName, partialContent);
+        this.logger.debug(`Cached partial '${partialName}'`);
+      }
+
+      return partialContent;
+
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        const partialPath = this.getPartialPath(partialName);
+        this.logger.error(`Partial template '${partialName}' not found at ${partialPath}`);
+        throw new TemplateNotFoundError(partialName, partialPath);
+      }
+
+      const partialPath = this.getPartialPath(partialName);
+      this.logger.error(`Failed to load partial '${partialName}' from ${partialPath}: ${error.message}`);
+      throw new TemplateLoadError(partialName, partialPath, error as Error);
+    }
+  }
+
+  /**
+   * Check if a partial template file exists in the partials directory.
+   */
+  partialExists(partialName: string): boolean {
+    try {
+      const partialPath = this.getPartialPath(partialName);
+      return existsSync(partialPath);
+    } catch (error) {
+      this.logger.warn(`Error checking if partial '${partialName}' exists: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Get the full path to a partial template file.
+   */
+  getPartialPath(partialName: string): string {
+    const partialsPath = this.config.partialsPath || join(this.config.templatesPath, 'partials');
+    const extension = this.config.partialExtension || '.hbs';
+    return resolve(join(partialsPath, `${partialName}${extension}`));
+  }
+
+  /**
+   * Get all available partial template names.
+   */
+  async getAvailablePartials(): Promise<string[]> {
+    try {
+      const partialsPath = this.config.partialsPath || join(this.config.templatesPath, 'partials');
+      const extension = this.config.partialExtension || '.hbs';
+
+      if (!existsSync(partialsPath)) {
+        this.logger.warn(`Partials directory does not exist: ${partialsPath}`);
+        return [];
+      }
+
+      const files = await fs.readdir(partialsPath);
+      const partials = files
+        .filter(file => file.endsWith(extension))
+        .map(file => file.replace(extension, ''));
+
+      this.logger.debug(`Found ${partials.length} partial templates: ${partials.join(', ')}`);
+      return partials;
+
+    } catch (error: any) {
+      this.logger.error(`Failed to get available partials: ${error.message}`);
+      return [];
     }
   }
 }

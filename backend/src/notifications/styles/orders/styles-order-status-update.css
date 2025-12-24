@@ -1,0 +1,222 @@
+/* Order Status Update Email Styles */
+
+/* Import component styles */
+@import '../components/layout/layout.css';
+@import '../components/forms/buttons.css';
+@import '../components/ui/badges.css';
+@import '../components/cards/cards.css';
+
+/* Design token placeholders that will be replaced during preprocessing */
+:root {
+  --primary-color: {{designTokens.colors.primary}};
+  --secondary-color: {{designTokens.colors.secondary}};
+  --font-family: {{designTokens.typography.fontFamily}};
+  --font-size-base: {{designTokens.typography.fontSize.body}};
+  --spacing-md: {{designTokens.spacing.md}};
+  --border-radius-medium: {{designTokens.borderRadius.medium}};
+}
+
+/* Email-specific styles */
+.email-container {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  max-width: 600px;
+  margin-left: 20px;
+  padding: var(--spacing-md);
+  background-color: #ffffff;
+}
+
+/* Status update specific styles */
+.status-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.status-icon {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.status-icon.pending {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+}
+
+.status-icon.confirmed {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.status-icon.shipped {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.status-icon.delivered {
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.status-icon.cancelled {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.status-icon::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-icon.pending::before {
+  content: '⏳';
+}
+
+.status-icon.confirmed::before {
+  content: '✓';
+}
+
+.status-icon.shipped::before {
+  content: '🚚';
+}
+
+.status-icon.delivered::before {
+  content: '📦';
+}
+
+.status-icon.cancelled::before {
+  content: '❌';
+}
+
+.status-message {
+  background-color: #e8f4fd;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-left: 4px solid #3498db;
+  border-radius: var(--border-radius-medium);
+  font-style: italic;
+}
+
+.status-timeline {
+  margin: var(--spacing-md) 0;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: var(--border-radius-medium);
+}
+
+.timeline-step.completed {
+  background-color: #e8f5e8;
+  border-left: 4px solid #27ae60;
+}
+
+.timeline-step.current {
+  background-color: #e8f4fd;
+  border-left: 4px solid #3498db;
+}
+
+.timeline-step.pending {
+  background-color: #f8f9fa;
+  border-left: 4px solid #bdc3c7;
+}
+
+.timeline-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 12px;
+  color: white;
+}
+
+.timeline-step.completed .timeline-step-icon {
+  background-color: #27ae60;
+}
+
+.timeline-step.current .timeline-step-icon {
+  background-color: #3498db;
+}
+
+.timeline-step.pending .timeline-step-icon {
+  background-color: #bdc3c7;
+}
+
+.timeline-step-content {
+  flex: 1;
+}
+
+.timeline-step-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.timeline-step-date {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+/* Email client compatibility styles */
+@media only screen and (max-width: 600px) {
+  .email-container {
+    padding: 10px;
+  }
+
+  .status-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .status-icon::before {
+    font-size: 18px;
+  }
+
+  .timeline-step {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .timeline-step-icon {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .email-container {
+    background-color: #1e1e1e;
+    color: #ffffff;
+  }
+
+  .status-message {
+    background-color: #2d3a4a;
+  }
+
+  .timeline-step.completed {
+    background-color: #2d4a2d;
+  }
+
+  .timeline-step.current {
+    background-color: #2d3a4a;
+  }
+
+  .timeline-step.pending {
+    background-color: #2d2d2d;
+  }
+
+  .timeline-step-title {
+    color: #ffffff;
+  }
+}

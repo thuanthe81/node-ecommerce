@@ -6,9 +6,7 @@
   <title>{{translations.subject}}</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 40px; padding: 20px; background-color: #ffffff;">
-  <div style="text-align: center; margin-bottom: 30px;">
-    <h1 style="color: #2c3e50; font-size: 24px; margin: 0;">{{translations.companyName}}</h1>
-  </div>
+  {{> email-header companyName=translations.companyName tagline=translations.tagline}}
 
   <p style="font-size: 16px; margin-bottom: 15px;">{{translations.greeting}}</p>
 
@@ -19,18 +17,17 @@
     <p style="margin: 8px 0; font-size: 14px;"><strong>{{translations.orderNumber}}:</strong> {{data.orderNumber}}</p>
     <p style="margin: 8px 0; font-size: 14px;"><strong>{{translations.orderDate}}:</strong> {{formatDate data.orderDate locale}}</p>
     <div style="margin-top: 20px; text-align: center;">
-      <a href="{{concat frontendUrl "/" locale "/orders/" data.orderNumber}}"
-         style="display: inline-block; background-color: #3498db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
-         {{translations.trackOrder}}
-      </a>
+      {{> button text=translations.trackOrder url=(concat frontendUrl "/" locale "/orders/" data.orderNumber) style="primary"}}
     </div>
   </div>
 
   <p style="font-size: 16px; margin: 20px 0;">{{translations.contactUs}}</p>
 
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eeeeee; color: #666666; font-size: 14px;">
-    <p style="margin: 10px 0;">{{{translations.signature}}}</p>
-    <p style="margin: 10px 0;">{{translations.copyright}}</p>
-  </div>
+  {{> email-footer
+      currentYear=currentYear
+      companyName=translations.companyName
+      supportEmail=supportEmail
+      websiteUrl=websiteUrl
+      disclaimer=translations.disclaimer}}
 </body>
 </html>

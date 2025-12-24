@@ -1,0 +1,176 @@
+/* Email Card Components */
+
+/* Base Card Styles */
+.card {
+  background-color: #f8f9fa;
+  padding: 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #e9ecef;
+}
+
+/* Address Card Specific Styles */
+.address-card {
+  background-color: #f8f9fa;
+  padding: 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.address-title {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.address-content {
+  color: #34495e;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.address-line {
+  margin-bottom: 4px;
+}
+
+.address-line:last-child {
+  margin-bottom: 0;
+}
+
+/* Order Summary Card */
+.order-summary-card {
+  background-color: #ffffff;
+  padding: 24px;
+  margin: 20px 0;
+  border-radius: 8px;
+  border: 2px solid #e3f2fd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.order-summary-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #1976d2;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Product Card */
+.product-card {
+  background-color: #ffffff;
+  padding: 16px;
+  margin: 12px 0;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.product-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.product-details {
+  color: #6c757d;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Info Card */
+.info-card {
+  background-color: #e7f3ff;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.info-card-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #004085;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info-card-content {
+  color: #004085;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Warning Card */
+.warning-card {
+  background-color: #fff3cd;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+  border-left: 4px solid #ffc107;
+}
+
+.warning-card-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #856404;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.warning-card-content {
+  color: #856404;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Email Client Compatibility */
+/* Ensure cards work well in Outlook */
+.card-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.card-table td {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  vertical-align: top;
+}
+
+/* Responsive card styles for mobile email clients */
+@media only screen and (max-width: 600px) {
+  .card,
+  .address-card,
+  .order-summary-card,
+  .product-card,
+  .info-card,
+  .warning-card {
+    margin: 12px 0;
+    padding: 16px;
+  }
+
+  .address-title,
+  .order-summary-title {
+    font-size: 15px;
+  }
+
+  .product-title,
+  .info-card-title,
+  .warning-card-title {
+    font-size: 13px;
+  }
+}
