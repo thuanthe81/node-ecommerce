@@ -25,7 +25,7 @@ const CONFIG_RECOMMENDATIONS: ConfigRecommendation[] = [
     environment: 'development',
     description: 'Development environment - optimized for local development with lower resource usage',
     config: {
-      EMAIL_WORKER_CONCURRENCY: '2',
+      EMAIL_WORKER_CONCURRENCY: '1',
       EMAIL_RATE_LIMIT_MAX: '50',
       EMAIL_RATE_LIMIT_DURATION: '60000',
       EMAIL_QUEUE_COMPLETED_RETENTION_AGE: '3600000',  // 1 hour
@@ -40,7 +40,7 @@ const CONFIG_RECOMMENDATIONS: ConfigRecommendation[] = [
     environment: 'staging',
     description: 'Staging environment - production-like settings with moderate resource usage',
     config: {
-      EMAIL_WORKER_CONCURRENCY: '5',
+      EMAIL_WORKER_CONCURRENCY: '1',
       EMAIL_RATE_LIMIT_MAX: '100',
       EMAIL_RATE_LIMIT_DURATION: '60000',
       EMAIL_QUEUE_COMPLETED_RETENTION_AGE: '86400000',   // 24 hours
@@ -55,7 +55,7 @@ const CONFIG_RECOMMENDATIONS: ConfigRecommendation[] = [
     environment: 'production',
     description: 'Production environment - optimized for performance and reliability',
     config: {
-      EMAIL_WORKER_CONCURRENCY: '10',
+      EMAIL_WORKER_CONCURRENCY: '1',
       EMAIL_RATE_LIMIT_MAX: '100',
       EMAIL_RATE_LIMIT_DURATION: '60000',
       EMAIL_QUEUE_COMPLETED_RETENTION_AGE: '86400000',   // 24 hours
@@ -71,7 +71,7 @@ const CONFIG_RECOMMENDATIONS: ConfigRecommendation[] = [
     environment: 'high-volume',
     description: 'High volume environment - for applications with heavy email usage',
     config: {
-      EMAIL_WORKER_CONCURRENCY: '20',
+      EMAIL_WORKER_CONCURRENCY: '1',
       EMAIL_RATE_LIMIT_MAX: '500',
       EMAIL_RATE_LIMIT_DURATION: '60000',
       EMAIL_QUEUE_COMPLETED_RETENTION_AGE: '43200000',   // 12 hours

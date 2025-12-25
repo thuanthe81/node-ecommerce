@@ -275,7 +275,7 @@ class EmailQueueDeployer {
       case 'development':
         return {
           ...baseConfig,
-          EMAIL_WORKER_CONCURRENCY: '2',
+          EMAIL_WORKER_CONCURRENCY: '1',
           EMAIL_RATE_LIMIT_MAX: '50',
           EMAIL_QUEUE_COMPLETED_RETENTION_COUNT: '100',
           EMAIL_QUEUE_FAILED_RETENTION_COUNT: '50',
@@ -284,7 +284,7 @@ class EmailQueueDeployer {
       case 'staging':
         return {
           ...baseConfig,
-          EMAIL_WORKER_CONCURRENCY: '5',
+          EMAIL_WORKER_CONCURRENCY: '1',
           EMAIL_RATE_LIMIT_MAX: '100',
           EMAIL_QUEUE_COMPLETED_RETENTION_COUNT: '500',
           EMAIL_QUEUE_FAILED_RETENTION_COUNT: '250',
@@ -293,7 +293,7 @@ class EmailQueueDeployer {
       case 'production':
         return {
           ...baseConfig,
-          EMAIL_WORKER_CONCURRENCY: '10',
+          EMAIL_WORKER_CONCURRENCY: '1',
           EMAIL_RATE_LIMIT_MAX: '100',
           EMAIL_QUEUE_COMPLETED_RETENTION_COUNT: '1000',
           EMAIL_QUEUE_FAILED_RETENTION_COUNT: '500',

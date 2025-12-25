@@ -32,7 +32,7 @@ export class EmailQueueConfigService implements OnModuleInit {
    * Get worker configuration
    */
   getWorkerConfig() {
-    const concurrency = parseInt(this.configService.get('EMAIL_WORKER_CONCURRENCY', '5'));
+    const concurrency = parseInt(this.configService.get('EMAIL_WORKER_CONCURRENCY', '1'));
     const rateLimitMax = parseInt(this.configService.get('EMAIL_RATE_LIMIT_MAX', '100'));
     const rateLimitDuration = parseInt(this.configService.get('EMAIL_RATE_LIMIT_DURATION', '60000'));
 
@@ -47,7 +47,7 @@ export class EmailQueueConfigService implements OnModuleInit {
    * Get queue job configuration
    */
   getQueueConfig() {
-    const maxAttempts = parseInt(this.configService.get('EMAIL_QUEUE_MAX_ATTEMPTS', '5'));
+    const maxAttempts = parseInt(this.configService.get('EMAIL_QUEUE_MAX_ATTEMPTS', '2'));
     const initialDelay = parseInt(this.configService.get('EMAIL_QUEUE_INITIAL_DELAY', '60000'));
     const completedRetentionAge = parseInt(this.configService.get('EMAIL_QUEUE_COMPLETED_RETENTION_AGE', '86400000'));
     const completedRetentionCount = parseInt(this.configService.get('EMAIL_QUEUE_COMPLETED_RETENTION_COUNT', '1000'));

@@ -70,10 +70,54 @@ export class PDFGeneratorService {
       // Add error handler for unexpected disconnections
       this.browser.on('disconnected', () => {
         this.logger.warn('Browser disconnected unexpectedly');
-        this.browser = null;
+        this.closeBrowser();
       });
     }
     return this.browser;
+  }
+
+  /**
+   * Set page content with retry logic to handle frame detachment
+   * @param page - Puppeteer page instance
+   * @param htmlContent - HTML content to set
+   * @returns Promise<void>
+   */
+  private async setPageContentWithRetry(page: puppeteer.Page, htmlContent: string): Promise<void> {
+    const maxRetries = 3;
+    let lastError: Error | undefined;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Check if page is still connected
+        if (page.isClosed()) {
+          throw new Error('Page is closed');
+        }
+
+        // Set content with shorter timeout and retry on failure
+        await page.setContent(htmlContent, {
+          waitUntil: 'domcontentloaded', // Less strict than 'networkidle0'
+          timeout: 15000 // 15 seconds timeout
+        });
+
+        // Success - exit retry loop
+        return;
+      } catch (error) {
+        lastError = error as Error;
+        this.logger.warn(`Failed to set page content (attempt ${attempt}/${maxRetries}): ${error.message}`);
+
+        if (attempt < maxRetries) {
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+
+          // If page is closed, we need to create a new one
+          if (page.isClosed()) {
+            throw new Error('Page closed during content setting - needs new page');
+          }
+        }
+      }
+    }
+
+    throw new Error(`Failed to set page content after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
   }
 
   /**
@@ -86,21 +130,43 @@ export class PDFGeneratorService {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const browser = await this.initializeBrowser();
-        return await browser.newPage();
+        this.browser = await this.initializeBrowser();
+        const page = await this.browser.newPage();
+
+        // Set up page error handlers to prevent frame detachment
+        page.on('error', (error) => {
+          this.logger.warn(`Page error detected: ${error.message}`);
+        });
+
+        page.on('pageerror', (error: Error) => {
+          this.logger.warn(`Page script error: ${error.message}`);
+        });
+
+        // Set reasonable timeouts
+        page.setDefaultTimeout(30000); // 30 seconds
+        page.setDefaultNavigationTimeout(30000);
+
+        return page;
       } catch (error) {
         lastError = error as Error;
         this.logger.warn(`Failed to create page (attempt ${attempt}/${maxRetries}): ${error.message}`);
 
         if (attempt < maxRetries) {
           // Reset browser connection and try again
-          this.browser = null;
+          await this.closeBrowser();
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
         }
       }
     }
 
     throw new Error(`Failed to create page after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
+  }
+
+  async closeBrowser() {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+    }
   }
 
   /**
@@ -238,7 +304,7 @@ export class PDFGeneratorService {
         tagged: true, // Enable tagged PDF for screen readers
       });
 
-      await page.close();
+      await this.closeBrowser();
 
       // Generate unique filename
       const timestamp = Date.now();
@@ -423,7 +489,7 @@ export class PDFGeneratorService {
         tagged: true, // Enable tagged PDF for screen readers
       });
 
-      await page.close();
+      await this.closeBrowser();
 
       // Generate unique filename for invoice
       const timestamp = Date.now();
@@ -618,7 +684,7 @@ export class PDFGeneratorService {
       const pdfOptions = this.compressionService.getCompressionOptimizedPDFOptions(compressionLevel);
       const pdfBuffer = await page.pdf(pdfOptions);
 
-      await page.close();
+      await this.closeBrowser();
 
       // Generate unique filename with compression level
       const timestamp = Date.now();
@@ -737,7 +803,7 @@ export class PDFGeneratorService {
       const pdfOptions = this.deviceOptimization.getDeviceOptimizedPDFOptions(deviceType);
       const pdfBuffer = await page.pdf(pdfOptions);
 
-      await page.close();
+      await this.closeBrowser();
 
       // Generate unique filename with device type
       const timestamp = Date.now();
