@@ -734,6 +734,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private async sendAdminOrderNotification(event: any): Promise<void> {
     // Get admin email from footer settings
     const footerSettings = await this.footerSettingsService.getFooterSettings();
+    // Send to admin always in vietnamese
+    const locale = 'vi';
 
     if (!footerSettings.contactEmail) {
       this.logger.warn('Admin email not configured, skipping notification');
@@ -744,9 +746,15 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
       include: {
+        user: true,
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+                category: true,
+              }
+            },
           },
         },
         shippingAddress: true,
@@ -761,7 +769,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     // Generate email template
     const template = await this.emailTemplateService.getAdminOrderNotificationTemplate(
       this.mapOrderToAdminEmailData(order),
-      event.locale
+      locale
     );
 
     // Send email
@@ -769,7 +777,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       to: footerSettings.contactEmail,
       subject: template.subject,
       html: template.html,
-      locale: event.locale,
+      locale: locale,
     });
 
     if (!success) {
@@ -1390,9 +1398,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private mapOrderToEmailData(order: any): any {
     // Implementation matches existing OrdersService mapping
     return {
+      orderId: order.id,
       orderNumber: order.orderNumber,
-      orderDate: order.createdAt,
-      customerName: order.customerName,
+      orderDate: order.createdAt.toISOString().split('T')[0],
+      customerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : order.email,
       customerEmail: order.email,
       items: order.items.map((item: any) => ({
         productName: item.product.name,

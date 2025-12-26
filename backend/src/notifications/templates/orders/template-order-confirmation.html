@@ -19,10 +19,59 @@
     <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">{{translations.orderDetails}}</h3>
     <p style="margin: 8px 0; font-size: 14px;"><strong>{{translations.orderNumber}}:</strong> {{data.orderNumber}}</p>
     <p style="margin: 8px 0; font-size: 14px;"><strong>{{translations.orderDate}}:</strong> {{formatDate data.orderDate locale}}</p>
+  </div>
+
+  <!-- Order Items and Total (if available) -->
+  {{#if data.items}}
+  <div style="background-color: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 4px;">
+    <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 18px;">{{translations.orderItems}}</h3>
+
+    <!-- Items Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+      <thead>
+        <tr style="background-color: #e9ecef;">
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">{{translations.product}}</th>
+          <th style="padding: 12px; text-align: center; font-weight: 600; color: #495057;">{{translations.quantity}}</th>
+          <th style="padding: 12px; text-align: right; font-weight: 600; color: #495057;">{{translations.price}}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each data.items}}
+        <tr style="border-bottom: 1px solid #dee2e6;">
+          <td style="padding: 12px; color: #2c3e50;">{{#if (eq ../locale 'vi')}}{{this.nameVi}}{{else}}{{this.nameEn}}{{/if}}</td>
+          <td style="padding: 12px; text-align: center; color: #2c3e50;">{{this.quantity}}</td>
+          <td style="padding: 12px; text-align: right; color: #2c3e50;">{{formatCurrency this.price ../locale}} ₫</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <!-- Order Total -->
+    <div style="text-align: right; padding-top: 16px; border-top: 2px solid #2c3e50;">
+      <p style="margin: 0; font-size: 18px; font-weight: 600; color: #2c3e50;">
+        {{translations.total}}: {{safeCalculateTotal data.items locale}}
+      </p>
+    </div>
+
+    <!-- Quote Items Message -->
+    {{#if data.hasQuoteItems}}
+    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 12px; margin-top: 16px;">
+      <p style="margin: 0; color: #856404; font-size: 14px;">
+        {{#if (eq locale 'vi')}}
+          ℹ️ Đơn hàng của bạn có sản phẩm cần báo giá. Chúng tôi sẽ liên hệ với bạn để xác nhận giá cuối cùng.
+        {{else}}
+          ℹ️ Your order contains items requiring quotes. We will contact you to confirm final pricing.
+        {{/if}}
+      </p>
+    </div>
+    {{/if}}
+
     <div style="margin-top: 20px; text-align: center;">
       {{> button text=translations.trackOrder url=(concat (frontendUrl) "/" locale "/orders/" data.orderId) style="primary"}}
     </div>
+
   </div>
+  {{/if}}
 
   <p style="font-size: 16px; margin: 20px 0;">{{translations.contactUs}}</p>
 

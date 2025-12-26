@@ -58,6 +58,7 @@ export class VariableReplacerService implements IVariableReplacer {
    * Supports nested object access, conditionals, and iteration.
    */
   async replaceVariables(
+    templateName: string,
     template: string,
     data: any,
     locale: 'en' | 'vi'
@@ -73,7 +74,7 @@ export class VariableReplacerService implements IVariableReplacer {
       }
 
       // Prepare template context
-      const context = await this.prepareTemplateContext(data, locale, template);
+      const context = await this.prepareTemplateContext(data, locale, templateName, template);
 
       // Execute template with context and enhanced error handling
       let result: string;
@@ -406,7 +407,7 @@ export class VariableReplacerService implements IVariableReplacer {
   /**
    * Prepare template context with data, translations, and helpers
    */
-  private async prepareTemplateContext(data: any, locale: 'en' | 'vi', template?: string): Promise<TemplateContext> {
+  private async prepareTemplateContext(data: any, locale: 'en' | 'vi', templateName: string, template?: string): Promise<TemplateContext> {
     // Pre-process data to handle missing nested properties
     const safeData = this.createSafeDataProxy(data);
 
@@ -435,7 +436,7 @@ export class VariableReplacerService implements IVariableReplacer {
       // Nested access (for templates expecting {{data.orderNumber}})
       data: safeData,
       locale,
-      translations: this.getTranslationsForLocale(locale, template),
+      translations: this.getTranslationsForLocale(locale, templateName, template),
       designTokens: this.getDesignTokens(),
       // Business information
       supportEmail,
@@ -525,9 +526,10 @@ export class VariableReplacerService implements IVariableReplacer {
   /**
    * Get translations for the specified locale
    */
-  private getTranslationsForLocale(locale: 'en' | 'vi', template?: string): Record<string, string> {
-    switch (template) {
-      case 'template-admin-order-notification':
+  private getTranslationsForLocale(locale: 'en' | 'vi', templateName: string, template?: string): Record<string, string> {
+    this.logger.debug("getTranslations for template: ", templateName);
+    switch (templateName) {
+      case 'orders/template-admin-order-notification':
         return this.emailTranslationService.getEmailTemplateTranslations(locale);
       default:
         return this.emailTranslationService.getOrderConfirmationTranslations(locale);

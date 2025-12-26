@@ -147,9 +147,10 @@ export class DocumentStorageService {
             await fs.promises.unlink(filePath);
             this.logger.log(`Scheduled cleanup completed for: ${fileName}`);
           }
-          this.cleanupSchedule.delete(filePath);
         } catch (error) {
           this.logger.error(`Scheduled cleanup failed for ${fileName}:`, error);
+        } finally {
+          this.cleanupSchedule.delete(filePath);
         }
       }, retentionMs);
 

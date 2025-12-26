@@ -241,6 +241,128 @@ export function isContactForPrice(product: Product): boolean {
 )}
 ```
 
+### Email Template Robustness
+
+The email templates need to be enhanced to handle undefined, null, or NaN price values gracefully. This is critical because when orders contain products without prices, the email template rendering can fail.
+
+#### Enhanced formatCurrency Helper
+
+```typescript
+// Enhanced formatCurrency helper in EmailHandlebarsHelpers
+private static formatCurrencyHelper(): HelperDelegate {
+  return function(amount: number, currency: string = 'VND', locale?: string) {
+    // Handle undefined, null, NaN, or non-numeric values
+    if (amount === undefined || amount === null || typeof amount !== 'number' || isNaN(amount)) {
+      const templateLocale = locale || (this as any).locale || 'en';
+
+      // Log the occurrence for debugging
+      console.warn(`[EmailTemplate] Undefined price encountered in formatCurrency: ${amount}`);
+
+      // Return localized "Contact for Price" text
+      return templateLocale === 'vi' ? 'Liên hệ để biết giá' : 'Contact for Price';
+    }
+
+    // Use the locale from template context if not provided
+    const templateLocale = locale || (this as any).locale || 'en';
+
+    try {
+      if (templateLocale === 'vi') {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: currency,
+          minimumFractionDigits: currency === 'VND' ? 0 : 2
+        }).format(amount);
+      } else {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: currency === 'VND' ? 'USD' : currency,
+          minimumFractionDigits: 2
+        }).format(amount);
+      }
+    } catch (error) {
+      // Fallback to simple formatting if Intl fails
+      const formattedAmount = amount.toLocaleString();
+      return currency === 'VND' ? `${formattedAmount} ₫` : `${formattedAmount}`;
+    }
+  };
+}
+```
+
+#### Safe Total Calculation Helper
+
+```typescript
+// New helper for safe total calculation
+private static safeCalculateTotalHelper(): HelperDelegate {
+  return function(items: any[], locale?: string) {
+    if (!Array.isArray(items)) return '0';
+
+    const templateLocale = locale || (this as any).locale || 'en';
+    let total = 0;
+    let hasUndefinedPrices = false;
+
+    for (const item of items) {
+      const price = item.price || item.total;
+      if (price === undefined || price === null || typeof price !== 'number' || isNaN(price)) {
+        hasUndefinedPrices = true;
+        // Treat undefined prices as 0 for calculation
+        continue;
+      }
+      total += price;
+    }
+
+    if (hasUndefinedPrices) {
+      console.warn(`[EmailTemplate] Order contains items with undefined prices`);
+
+      // Return total with note about quote items
+      const formattedTotal = this.formatCurrency(total, 'VND', templateLocale);
+      const quoteNote = templateLocale === 'vi'
+        ? ' (+ giá sản phẩm cần báo giá)'
+        : ' (+ quote items)';
+
+      return formattedTotal + quoteNote;
+    }
+
+    return this.formatCurrency(total, 'VND', templateLocale);
+  };
+}
+```
+
+#### Template Data Sanitization
+
+```typescript
+// Enhanced email template service to sanitize data
+export class EmailTemplateService {
+  private sanitizeOrderData(data: any): any {
+    const sanitized = { ...data };
+
+    // Sanitize order items
+    if (sanitized.items && Array.isArray(sanitized.items)) {
+      sanitized.items = sanitized.items.map(item => ({
+        ...item,
+        price: this.sanitizePrice(item.price),
+        total: this.sanitizePrice(item.total)
+      }));
+    }
+
+    // Sanitize order totals
+    sanitized.subtotal = this.sanitizePrice(sanitized.subtotal);
+    sanitized.total = this.sanitizePrice(sanitized.total);
+    sanitized.shippingCost = this.sanitizePrice(sanitized.shippingCost);
+    sanitized.taxAmount = this.sanitizePrice(sanitized.taxAmount);
+    sanitized.discountAmount = this.sanitizePrice(sanitized.discountAmount);
+
+    return sanitized;
+  }
+
+  private sanitizePrice(price: any): number {
+    if (price === undefined || price === null || typeof price !== 'number' || isNaN(price)) {
+      return 0; // Default to 0 for calculation purposes
+    }
+    return price;
+  }
+}
+```
+
 ## Data Models
 
 ### Database Schema Changes
@@ -373,6 +495,24 @@ The existing `OrderItem` model already supports custom prices per item through t
 *For any* order with requiresPricing = true, the admin order list should display a visual indicator highlighting that the order needs pricing.
 
 **Validates: Requirements 6.2**
+
+### Property 16: Email template undefined price handling
+
+*For any* email template rendering with undefined, null, or NaN price values, the template should render successfully without throwing errors and display appropriate fallback text.
+
+**Validates: Requirements 7.1, 7.2, 7.3**
+
+### Property 17: Email template total calculation robustness
+
+*For any* order data with undefined or null item prices, email templates should calculate totals by treating undefined prices as zero and display appropriate messaging about quote items.
+
+**Validates: Requirements 7.4**
+
+### Property 18: Email template error logging
+
+*For any* email template that encounters undefined price values, the system should log the occurrence for debugging while still successfully rendering and sending the email.
+
+**Validates: Requirements 7.5**
 
 ## Error Handling
 

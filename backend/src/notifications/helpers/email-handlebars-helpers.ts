@@ -49,6 +49,7 @@ export class EmailHandlebarsHelpers {
       multiply: this.multiplyHelper(),
       divide: this.divideHelper(),
       percentage: this.percentageHelper(),
+      safeCalculateTotal: this.safeCalculateTotalHelper(),
 
       // Array helpers
       join: this.joinHelper(),
@@ -72,12 +73,19 @@ export class EmailHandlebarsHelpers {
   }
 
   /**
-   * Currency formatting helper
+   * Currency formatting helper - Enhanced to handle undefined/null values
    */
   private static formatCurrencyHelper(): HelperDelegate {
     return function(amount: number, currency: string = 'VND', locale?: string) {
-      if (typeof amount !== 'number' || isNaN(amount)) {
-        return '0';
+      // Handle undefined, null, NaN, or non-numeric values
+      if (amount === undefined || amount === null || typeof amount !== 'number' || isNaN(amount)) {
+        const templateLocale = locale || (this as any).locale || 'en';
+
+        // Log the occurrence for debugging
+        console.warn(`[EmailTemplate] Undefined price encountered in formatCurrency: ${amount}`);
+
+        // Return localized "Contact for Price" text
+        return templateLocale === 'vi' ? 'Liên hệ để biết giá' : 'Contact for Price';
       }
 
       // Use the locale from template context if not provided
@@ -100,18 +108,25 @@ export class EmailHandlebarsHelpers {
       } catch (error) {
         // Fallback to simple formatting if Intl fails
         const formattedAmount = amount.toLocaleString();
-        return currency === 'VND' ? `${formattedAmount} ₫` : `$${formattedAmount}`;
+        return currency === 'VND' ? `${formattedAmount} ₫` : `${formattedAmount}`;
       }
     };
   }
 
   /**
-   * Price formatting helper (simplified currency formatting)
+   * Price formatting helper (simplified currency formatting) - Enhanced to handle undefined/null values
    */
   private static formatPriceHelper(): HelperDelegate {
     return function(amount: number, locale?: string) {
-      if (typeof amount !== 'number' || isNaN(amount)) {
-        return '0';
+      // Handle undefined, null, NaN, or non-numeric values
+      if (amount === undefined || amount === null || typeof amount !== 'number' || isNaN(amount)) {
+        const templateLocale = locale || (this as any).locale || 'en';
+
+        // Log the occurrence for debugging
+        console.warn(`[EmailTemplate] Undefined price encountered in formatPrice: ${amount}`);
+
+        // Return localized "Contact for Price" text
+        return templateLocale === 'vi' ? 'Liên hệ để biết giá' : 'Contact for Price';
       }
 
       const templateLocale = locale || (this as any).locale || 'en';
@@ -125,6 +140,45 @@ export class EmailHandlebarsHelpers {
       } catch (error) {
         return amount.toString();
       }
+    };
+  }
+
+  /**
+   * Safe total calculation helper for robust total calculation in templates
+   */
+  private static safeCalculateTotalHelper(): HelperDelegate {
+    return function(items: any[], locale?: string) {
+      if (!Array.isArray(items)) return '0';
+
+      const templateLocale = locale || (this as any).locale || 'en';
+      let total = 0;
+      let hasUndefinedPrices = false;
+
+      for (const item of items) {
+        const price = item.price || item.total;
+        if (price === undefined || price === null || typeof price !== 'number' || isNaN(price)) {
+          hasUndefinedPrices = true;
+          // Log the occurrence for debugging
+          console.warn(`[EmailTemplate] Order contains items with undefined prices`);
+          // Treat undefined prices as 0 for calculation
+          continue;
+        }
+        total += price;
+      }
+
+      // Format the total using the enhanced formatCurrency helper
+      const formattedTotal = EmailHandlebarsHelpers.formatCurrencyHelper()(total, 'VND', templateLocale);
+
+      if (hasUndefinedPrices) {
+        // Return total with note about quote items
+        const quoteNote = templateLocale === 'vi'
+          ? ' (+ giá sản phẩm cần báo giá)'
+          : ' (+ quote items)';
+
+        return formattedTotal + quoteNote;
+      }
+
+      return formattedTotal;
     };
   }
 

@@ -15,6 +15,7 @@ export interface IVariableReplacer {
    * @throws TemplateRuntimeError if template execution fails
    */
   replaceVariables(
+    templateName: string,
     template: string,
     data: any,
     locale: 'en' | 'vi'

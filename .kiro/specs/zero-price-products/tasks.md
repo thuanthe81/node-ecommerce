@@ -141,3 +141,34 @@
   - Test product listing with mixed regular and zero-price products
   - Test price updates from zero to non-zero and vice versa
   - _Requirements: All_
+
+- [x] 14. Enhance email template robustness for undefined prices
+  - Update formatCurrency helper in EmailHandlebarsHelpers to handle undefined/null values
+  - Add safeCalculateTotal helper for robust total calculation in templates
+  - Update EmailTemplateService to sanitize order data before template rendering
+  - Add logging for undefined price occurrences in email templates
+  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
+
+- [ ]* 14.1 Write property test for email template undefined price handling
+  - **Property 16: Email template undefined price handling**
+  - **Validates: Requirements 7.1, 7.2, 7.3**
+
+- [ ]* 14.2 Write property test for email template total calculation robustness
+  - **Property 17: Email template total calculation robustness**
+  - **Validates: Requirements 7.4**
+
+- [ ]* 14.3 Write property test for email template error logging
+  - **Property 18: Email template error logging**
+  - **Validates: Requirements 7.5**
+
+- [x] 15. Update email templates to use enhanced helpers
+  - Modify order confirmation template to use safeCalculateTotal helper
+  - Modify admin notification template to use safeCalculateTotal helper
+  - Add conditional messaging for orders with quote items in templates
+  - Test email rendering with undefined price scenarios
+  - _Requirements: 7.1, 7.2, 7.4_
+
+- [x] 16. Final checkpoint - Test email template robustness
+  - Create test orders with undefined prices and verify email sending works
+  - Verify email templates display appropriate messaging for quote items
+  - Ensure all tests pass, ask the user if questions arise.

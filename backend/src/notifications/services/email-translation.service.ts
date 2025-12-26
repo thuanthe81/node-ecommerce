@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import { join, resolve } from 'path';
 import { existsSync } from 'fs';
+import { BUSINESS } from '../../common/constants';
 
 export type SupportedLocale = 'en' | 'vi';
 
@@ -259,7 +260,7 @@ export class EmailTranslationService {
     translations.signature = this.getTranslation('email.common.signature', locale);
 
     // Add special handling for layout-specific translations
-    translations.companyName = this.getTranslation('layout.header.companyName', locale);
+    translations.companyName = BUSINESS.COMPANY.NAME.VI;
     translations.copyright = this.getTranslation('layout.footer.copyright', locale);
 
     // Fallback values for missing admin order notification translations
@@ -299,7 +300,7 @@ export class EmailTranslationService {
     if (!translations.signature) translations.signature = locale === 'vi' ? 'Trân trọng,<br>Đội ngũ AlaCraft' : 'Best regards,<br>AlaCraft Team';
 
     // Add fallbacks for layout-specific translations
-    if (!translations.companyName) translations.companyName = locale === 'vi' ? 'AlaCraft' : 'AlaCraft';
+    if (!translations.companyName) translations.companyName = 'Ala Craft';
     if (!translations.copyright) translations.copyright = locale === 'vi' ? '© 2024 AlaCraft. Tất cả quyền được bảo lưu.' : '© 2024 AlaCraft. All rights reserved.';
 
     return translations;
@@ -392,7 +393,7 @@ export class EmailTranslationService {
     if (!translations.trackOrder) translations.trackOrder = locale === 'vi' ? 'Theo dõi đơn hàng' : 'Track Order';
 
     // Add fallbacks for layout-specific translations
-    if (!translations.companyName) translations.companyName = locale === 'vi' ? 'AlaCraft' : 'AlaCraft';
+    if (!translations.companyName) translations.companyName = 'Ala Craft';
     if (!translations.copyright) translations.copyright = locale === 'vi' ? '© 2024 AlaCraft. Tất cả quyền được bảo lưu.' : '© 2024 AlaCraft. All rights reserved.';
     if (!translations.signature) translations.signature = locale === 'vi' ? 'Trân trọng,<br>Đội ngũ AlaCraft' : 'Best regards,<br>AlaCraft Team';
 

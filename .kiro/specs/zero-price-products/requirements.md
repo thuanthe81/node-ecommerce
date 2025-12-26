@@ -80,3 +80,15 @@ This feature enables the e-commerce system to support products with a price of z
 1. WHEN viewing product lists in the admin panel THEN the system SHALL visually indicate zero-price products
 2. WHEN viewing orders in the admin panel THEN the system SHALL highlight orders containing zero-price products that need pricing
 3. WHEN filtering orders in admin THEN the system SHALL provide an option to filter by orders requiring price quotes
+
+### Requirement 7
+
+**User Story:** As a system administrator, I want email templates to handle undefined or null price values gracefully, so that order confirmation and admin notification emails are sent successfully even when products lack pricing information.
+
+#### Acceptance Criteria
+
+1. WHEN generating order confirmation emails with undefined product prices THEN the Email Template Service SHALL render the email without errors
+2. WHEN generating admin notification emails with undefined product prices THEN the Email Template Service SHALL render the email without errors
+3. WHEN displaying undefined or null prices in email templates THEN the system SHALL show "Contact for Price" or equivalent localized text instead of causing template errors
+4. WHEN calculating order totals with undefined prices in email templates THEN the system SHALL treat undefined prices as zero and display appropriate messaging
+5. WHEN email templates encounter undefined price values THEN the system SHALL log the occurrence for debugging while still sending the email successfully

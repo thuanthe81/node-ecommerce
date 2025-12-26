@@ -466,6 +466,7 @@ export class EmailAttachmentService {
    */
   private mapOrderPDFDataToEmailData(orderData: OrderPDFData): any {
     return {
+      orderId: orderData.orderId,
       orderNumber: orderData.orderNumber,
       customerName: orderData.customerInfo.name,
       orderDate: orderData.orderDate,
