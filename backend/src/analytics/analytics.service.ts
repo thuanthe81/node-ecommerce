@@ -168,7 +168,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}::"PaymentStatus"
       GROUP BY DATE("createdAt")
       ORDER BY date ASC
     `;
@@ -191,7 +191,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}::"PaymentStatus"
       GROUP BY TO_CHAR("createdAt", 'IYYY-IW')
       ORDER BY week ASC
     `;
@@ -214,7 +214,7 @@ export class AnalyticsService {
       FROM orders
       WHERE "createdAt" >= ${startDate}
         AND "createdAt" <= ${endDate}
-        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
+        AND "paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}::"PaymentStatus"
       GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
       ORDER BY month ASC
     `;
@@ -261,7 +261,7 @@ export class AnalyticsService {
         AND ae."createdAt" <= ${endDate}
       LEFT JOIN order_items oi ON oi."productId" = p.id
       LEFT JOIN orders o ON o.id = oi."orderId"
-        AND o."paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}
+        AND o."paymentStatus" = ${STATUS.PAYMENT_STATUS.PAID}::"PaymentStatus"
         AND o."createdAt" >= ${startDate}
         AND o."createdAt" <= ${endDate}
       GROUP BY p.id, p."nameEn", p."nameVi"
