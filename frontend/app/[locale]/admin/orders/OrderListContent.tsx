@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { orderApi, Order, AdminOrderFilters } from '@/lib/order-api';
 import { getOrderStatusText, getPaymentStatusText } from '@/components/OrderDetailView/utils/statusTranslations';
+import { formatMoney } from '@/app/utils';
 import translations from '@/locales/translations.json';
 
 interface OrderListContentProps {
@@ -79,13 +80,6 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -291,7 +285,7 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatCurrency(order.total)}</div>
+                      <div className="text-sm font-medium text-gray-900">{formatMoney(order.total, locale)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link

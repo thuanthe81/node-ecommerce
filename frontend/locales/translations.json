@@ -3453,6 +3453,106 @@
     "viewLabel": {
       "en": "View Label",
       "vi": "Xem nhãn"
+    },
+    "cancelOrder": {
+      "en": "Cancel Order",
+      "vi": "Hủy đơn hàng"
+    },
+    "cancelOrderButton": {
+      "en": "Cancel Order",
+      "vi": "Hủy đơn hàng"
+    },
+    "confirmCancellation": {
+      "en": "Confirm Cancellation",
+      "vi": "Xác nhận hủy"
+    },
+    "keepOrder": {
+      "en": "Keep Order",
+      "vi": "Giữ đơn hàng"
+    },
+    "cancellationConfirmTitle": {
+      "en": "Cancel Order?",
+      "vi": "Hủy đơn hàng?"
+    },
+    "cancellationConfirmMessage": {
+      "en": "Are you sure you want to cancel this order? This action cannot be undone.",
+      "vi": "Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác."
+    },
+    "cancellationConsequences": {
+      "en": "If you cancel this order, any payment will be refunded to your original payment method within 3-5 business days.",
+      "vi": "Nếu bạn hủy đơn hàng này, bất kỳ khoản thanh toán nào sẽ được hoàn lại vào phương thức thanh toán ban đầu của bạn trong vòng 3-5 ngày làm việc."
+    },
+    "cancelling": {
+      "en": "Cancelling...",
+      "vi": "Đang hủy..."
+    },
+    "cancellationSuccess": {
+      "en": "Order cancelled successfully",
+      "vi": "Hủy đơn hàng thành công"
+    },
+    "cancellationError": {
+      "en": "Failed to cancel order. Please try again.",
+      "vi": "Không thể hủy đơn hàng. Vui lòng thử lại."
+    },
+    "orderCannotBeCancelled": {
+      "en": "This order cannot be cancelled",
+      "vi": "Đơn hàng này không thể hủy"
+    },
+    "orderAlreadyShipped": {
+      "en": "Order has already been shipped and cannot be cancelled",
+      "vi": "Đơn hàng đã được gửi đi và không thể hủy"
+    },
+    "orderAlreadyCancelled": {
+      "en": "Order has already been cancelled",
+      "vi": "Đơn hàng đã được hủy"
+    },
+    "retryOperation": {
+      "en": "Retry",
+      "vi": "Thử lại"
+    },
+    "retryIn": {
+      "en": "Retry in {seconds}s",
+      "vi": "Thử lại sau {seconds}s"
+    },
+    "retryAfterDelay": {
+      "en": "Please wait {seconds} seconds before trying again",
+      "vi": "Vui lòng đợi {seconds} giây trước khi thử lại"
+    },
+    "sessionExpired": {
+      "en": "Your session has expired. Please refresh the page.",
+      "vi": "Phiên làm việc đã hết hạn. Vui lòng làm mới trang."
+    },
+    "serverError": {
+      "en": "A server error occurred. Please try again in a few minutes.",
+      "vi": "Đã xảy ra lỗi máy chủ. Vui lòng thử lại sau ít phút."
+    },
+    "rateLimited": {
+      "en": "Too many requests. Please wait before trying again.",
+      "vi": "Quá nhiều yêu cầu. Vui lòng đợi trước khi thử lại."
+    },
+    "transientError": {
+      "en": "A temporary error occurred. This usually resolves itself - please try again.",
+      "vi": "Đã xảy ra lỗi tạm thời. Lỗi này thường tự khắc phục - vui lòng thử lại."
+    },
+    "permanentError": {
+      "en": "This operation cannot be completed. Please contact support if you need assistance.",
+      "vi": "Không thể hoàn thành thao tác này. Vui lòng liên hệ hỗ trợ nếu bạn cần trợ giúp."
+    },
+    "contactSupport": {
+      "en": "If this problem persists, please contact our support team.",
+      "vi": "Nếu vấn đề này vẫn tiếp tục, vui lòng liên hệ đội hỗ trợ của chúng tôi."
+    },
+    "refreshPage": {
+      "en": "Refresh Page",
+      "vi": "Làm mới trang"
+    },
+    "continueShopping": {
+      "en": "Continue Shopping",
+      "vi": "Tiếp tục mua sắm"
+    },
+    "retryAttempt": {
+      "en": "Attempt {count}",
+      "vi": "Lần thử {count}"
     }
   },
   "product": {
@@ -5038,6 +5138,214 @@
           "en": "Optimized layout for printing",
           "vi": "Bố cục tối ưu hóa cho in ấn"
         }
+      }
+    },
+    "orderCancellation": {
+      "subject": {
+        "en": "Order Cancelled - Order #{orderNumber}",
+        "vi": "Đơn hàng đã hủy - Đơn hàng #{orderNumber}"
+      },
+      "title": {
+        "en": "Order Cancellation Confirmation",
+        "vi": "Xác nhận hủy đơn hàng"
+      },
+      "greeting": {
+        "en": "Hello",
+        "vi": "Xin chào"
+      },
+      "intro": {
+        "en": "Your order has been successfully cancelled as requested.",
+        "vi": "Đơn hàng của bạn đã được hủy thành công theo yêu cầu."
+      },
+      "cancellationDetails": {
+        "en": "Cancellation Details",
+        "vi": "Chi tiết hủy đơn"
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "orderDate": {
+        "en": "Order Date",
+        "vi": "Ngày đặt hàng"
+      },
+      "cancellationDate": {
+        "en": "Cancellation Date",
+        "vi": "Ngày hủy đơn"
+      },
+      "cancellationReason": {
+        "en": "Reason",
+        "vi": "Lý do"
+      },
+      "refundInformation": {
+        "en": "Refund Information",
+        "vi": "Thông tin hoàn tiền"
+      },
+      "refundAmount": {
+        "en": "Refund Amount",
+        "vi": "Số tiền hoàn lại"
+      },
+      "refundMethod": {
+        "en": "Refund Method",
+        "vi": "Phương thức hoàn tiền"
+      },
+      "estimatedRefundDate": {
+        "en": "Estimated Refund Date",
+        "vi": "Ngày hoàn tiền dự kiến"
+      },
+      "refundProcessing": {
+        "en": "Your refund will be processed to your original payment method within 3-5 business days.",
+        "vi": "Số tiền hoàn lại sẽ được xử lý về phương thức thanh toán ban đầu của bạn trong vòng 3-5 ngày làm việc."
+      },
+      "orderItems": {
+        "en": "Cancelled Items",
+        "vi": "Sản phẩm đã hủy"
+      },
+      "product": {
+        "en": "Product",
+        "vi": "Sản phẩm"
+      },
+      "quantity": {
+        "en": "Quantity",
+        "vi": "Số lượng"
+      },
+      "price": {
+        "en": "Price",
+        "vi": "Giá"
+      },
+      "total": {
+        "en": "Total",
+        "vi": "Tổng"
+      },
+      "orderTotal": {
+        "en": "Order Total",
+        "vi": "Tổng đơn hàng"
+      },
+      "contactUs": {
+        "en": "If you have any questions about this cancellation, please contact us.",
+        "vi": "Nếu bạn có bất kỳ câu hỏi nào về việc hủy đơn này, vui lòng liên hệ với chúng tôi."
+      },
+      "shopAgain": {
+        "en": "Shop Again",
+        "vi": "Mua sắm lại"
+      },
+      "noRefundRequired": {
+        "en": "No refund required - order was not yet paid",
+        "vi": "Không cần hoàn tiền - đơn hàng chưa được thanh toán"
+      },
+      "adminNotification": {
+        "subject": {
+          "en": "Order Cancelled by Customer - Order #{orderNumber}",
+          "vi": "Đơn hàng bị hủy bởi khách hàng - Đơn hàng #{orderNumber}"
+        },
+        "title": {
+          "en": "Customer Order Cancellation",
+          "vi": "Khách hàng hủy đơn hàng"
+        },
+        "greeting": {
+          "en": "Hello Admin,",
+          "vi": "Xin chào Admin,"
+        },
+        "intro": {
+          "en": "A customer has cancelled their order and may require a refund.",
+          "vi": "Một khách hàng đã hủy đơn hàng và có thể cần được hoàn tiền."
+        },
+        "customerInfo": {
+          "en": "Customer Information",
+          "vi": "Thông tin khách hàng"
+        },
+        "customerName": {
+          "en": "Customer Name",
+          "vi": "Tên khách hàng"
+        },
+        "customerEmail": {
+          "en": "Customer Email",
+          "vi": "Email khách hàng"
+        },
+        "actionRequired": {
+          "en": "Action Required",
+          "vi": "Cần hành động"
+        },
+        "processRefund": {
+          "en": "Process refund if payment was completed",
+          "vi": "Xử lý hoàn tiền nếu thanh toán đã hoàn tất"
+        },
+        "updateInventory": {
+          "en": "Update inventory for cancelled items",
+          "vi": "Cập nhật tồn kho cho các sản phẩm đã hủy"
+        },
+        "viewOrder": {
+          "en": "View Order Details",
+          "vi": "Xem chi tiết đơn hàng"
+        },
+        "processOrder": {
+          "en": "Process Cancellation",
+          "vi": "Xử lý hủy đơn"
+        }
+      }
+    },
+    "paymentStatusUpdate": {
+      "subject": {
+        "en": "Payment Status Update - Order #{orderNumber}",
+        "vi": "Cập nhật trạng thái thanh toán - Đơn hàng #{orderNumber}"
+      },
+      "title": {
+        "en": "Payment Status Update",
+        "vi": "Cập nhật trạng thái thanh toán"
+      },
+      "greeting": {
+        "en": "Hello",
+        "vi": "Xin chào"
+      },
+      "intro": {
+        "en": "Your payment status has been updated.",
+        "vi": "Trạng thái thanh toán của bạn đã được cập nhật."
+      },
+      "orderOverview": {
+        "en": "Order Overview",
+        "vi": "Tổng quan đơn hàng"
+      },
+      "orderNumber": {
+        "en": "Order Number",
+        "vi": "Mã đơn hàng"
+      },
+      "orderDate": {
+        "en": "Order Date",
+        "vi": "Ngày đặt hàng"
+      },
+      "orderTotal": {
+        "en": "Order Total",
+        "vi": "Tổng đơn hàng"
+      },
+      "newPaymentStatus": {
+        "en": "New Payment Status",
+        "vi": "Trạng thái thanh toán mới"
+      },
+      "trackOrder": {
+        "en": "Track Order",
+        "vi": "Theo dõi đơn hàng"
+      },
+      "statusMessages": {
+        "paid": {
+          "en": "Your payment has been successfully processed. Your order will be prepared for shipment.",
+          "vi": "Thanh toán của bạn đã được xử lý thành công. Đơn hàng sẽ được chuẩn bị để gửi hàng."
+        },
+        "failed": {
+          "en": "Your payment could not be processed. Please contact us to resolve this issue.",
+          "vi": "Thanh toán của bạn không thể được xử lý. Vui lòng liên hệ với chúng tôi để giải quyết vấn đề này."
+        },
+        "pending": {
+          "en": "Your payment is being processed. We will notify you once it's complete.",
+          "vi": "Thanh toán của bạn đang được xử lý. Chúng tôi sẽ thông báo khi hoàn tất."
+        },
+        "refunded": {
+          "en": "Your payment has been refunded. The amount will appear in your account within 3-5 business days.",
+          "vi": "Thanh toán của bạn đã được hoàn lại. Số tiền sẽ xuất hiện trong tài khoản của bạn trong vòng 3-5 ngày làm việc."
+        }
+      },
+      "contactUs": {
+        "en": "If you have any questions, please contact us.",
+        "vi": "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
       }
     }
   }

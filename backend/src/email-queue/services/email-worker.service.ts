@@ -9,6 +9,7 @@ import { FooterSettingsService } from '../../footer-settings/footer-settings.ser
 import { EmailQueueConfigService } from './email-queue-config.service';
 import { EmailAttachmentService } from '../../pdf-generator/services/email-attachment.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
+import { STATUS } from '../../common/constants';
 import Redis from 'ioredis';
 
 /**
@@ -479,6 +480,18 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
         case EmailEventType.ORDER_STATUS_UPDATE:
           await this.sendOrderStatusUpdate(event);
+          break;
+
+        case EmailEventType.ORDER_CANCELLATION:
+          await this.sendOrderCancellation(event);
+          break;
+
+        case EmailEventType.ADMIN_CANCELLATION_NOTIFICATION:
+          await this.sendAdminCancellationNotification(event);
+          break;
+
+        case EmailEventType.PAYMENT_STATUS_UPDATE:
+          await this.sendPaymentStatusUpdate(event);
           break;
 
         case EmailEventType.WELCOME_EMAIL:
@@ -994,6 +1007,246 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     this.markEmailAsDelivered(event);
 
     this.logger.log(`[sendContactForm] Completed successfully from: ${event.senderEmail}`);
+  }
+
+  /**
+   * Send order cancellation email to customer
+   */
+  private async sendOrderCancellation(event: any): Promise<void> {
+    this.logger.log(`[sendOrderCancellation] Starting for order: ${event.orderId}`);
+
+    // Fetch order details
+    const order = await this.prisma.order.findUnique({
+      where: { id: event.orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error(`Order not found: ${event.orderId}`);
+    }
+
+    // Prepare cancellation email data
+    const cancellationData = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerName: event.customerName,
+      customerEmail: event.customerEmail,
+      customerPhone: order.shippingAddress?.phone || order.billingAddress?.phone,
+      orderDate: order.createdAt.toISOString(),
+      cancelledAt: order.cancelledAt?.toISOString() || new Date().toISOString(),
+      cancellationReason: event.cancellationReason,
+      items: order.items.map((item: any) => ({
+        nameEn: item.product.nameEn,
+        nameVi: item.product.nameVi || item.product.nameEn,
+        sku: item.product.sku,
+        quantity: item.quantity,
+        price: Number(item.price),
+        total: Number(item.total || item.price * item.quantity),
+      })),
+      orderTotal: Number(order.total),
+      refundRequired: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID,
+      refundAmount: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
+      refundMethod: order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Original Payment Method',
+      estimatedRefundDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
+      paymentStatus: order.paymentStatus,
+    };
+
+    // Generate email template
+    const template = await this.emailTemplateService.getOrderCancellationTemplate(
+      cancellationData,
+      event.locale,
+    );
+
+    // Send email
+    const success = await this.emailService.sendEmail({
+      to: event.customerEmail,
+      subject: template.subject,
+      html: template.html,
+      locale: event.locale,
+    });
+
+    if (!success) {
+      throw new Error('Email service returned false');
+    }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendOrderCancellation] Completed successfully for order: ${event.orderNumber}`);
+  }
+
+  /**
+   * Send admin cancellation notification email
+   */
+  private async sendAdminCancellationNotification(event: any): Promise<void> {
+    this.logger.log(`[sendAdminCancellationNotification] Starting for order: ${event.orderId}`);
+
+    // Get admin email from footer settings
+    const footerSettings = await this.footerSettingsService.getFooterSettings();
+
+    if (!footerSettings.contactEmail) {
+      this.logger.warn('Admin email not configured, skipping admin cancellation notification');
+      return;
+    }
+
+    // Fetch order details
+    const order = await this.prisma.order.findUnique({
+      where: { id: event.orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error(`Order not found: ${event.orderId}`);
+    }
+
+    // Prepare admin cancellation email data
+    const cancellationData = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerName: order.shippingAddress?.fullName || order.billingAddress?.fullName || order.email || 'Customer',
+      customerEmail: order.email,
+      customerPhone: order.shippingAddress?.phone || order.billingAddress?.phone,
+      orderDate: order.createdAt.toISOString(),
+      cancelledAt: order.cancelledAt?.toISOString() || new Date().toISOString(),
+      cancellationReason: event.cancellationReason,
+      items: order.items.map((item: any) => ({
+        nameEn: item.product.nameEn,
+        nameVi: item.product.nameVi || item.product.nameEn,
+        sku: item.product.sku,
+        quantity: item.quantity,
+        price: Number(item.price),
+        total: Number(item.total || item.price * item.quantity),
+      })),
+      orderTotal: Number(order.total),
+      refundRequired: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID,
+      refundAmount: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
+      refundMethod: order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Original Payment Method',
+      estimatedRefundDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
+      paymentStatus: order.paymentStatus,
+    };
+
+    // Generate email template
+    const template = await this.emailTemplateService.getAdminOrderCancellationTemplate(
+      cancellationData,
+      event.locale,
+    );
+
+    // Send email
+    const success = await this.emailService.sendEmail({
+      to: footerSettings.contactEmail,
+      subject: template.subject,
+      html: template.html,
+      locale: event.locale,
+    });
+
+    if (!success) {
+      throw new Error('Email service returned false');
+    }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendAdminCancellationNotification] Completed successfully for order: ${event.orderNumber}`);
+  }
+
+  /**
+   * Send payment status update email to customer
+   */
+  private async sendPaymentStatusUpdate(event: any): Promise<void> {
+    this.logger.log(`[sendPaymentStatusUpdate] Starting for order: ${event.orderId}`);
+
+    // Fetch order details
+    const order = await this.prisma.order.findUnique({
+      where: { id: event.orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        createdAt: true,
+        total: true,
+        paymentStatus: true,
+        email: true,
+        shippingAddress: {
+          select: {
+            fullName: true,
+          },
+        },
+        billingAddress: {
+          select: {
+            fullName: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error(`Order not found: ${event.orderId}`);
+    }
+
+    // Prepare payment status update email data
+    const paymentData = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerName: event.customerName,
+      orderDate: order.createdAt.toISOString(),
+      orderTotal: Number(order.total),
+      paymentStatus: event.paymentStatus,
+      statusMessage: event.statusMessage,
+    };
+
+    // Generate email template
+    const template = await this.emailTemplateService.getPaymentStatusUpdateTemplate(
+      paymentData,
+      event.locale,
+    );
+
+    // Send email
+    const success = await this.emailService.sendEmail({
+      to: event.customerEmail,
+      subject: template.subject,
+      html: template.html,
+      locale: event.locale,
+    });
+
+    if (!success) {
+      throw new Error('Email service returned false');
+    }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event);
+
+    this.logger.log(`[sendPaymentStatusUpdate] Completed successfully for order: ${event.orderNumber}`);
   }
 
   /**
@@ -1796,6 +2049,15 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         break;
       case EmailEventType.ORDER_STATUS_UPDATE:
         keyParts.push(event.orderId, event.newStatus || 'status-update');
+        break;
+      case EmailEventType.ORDER_CANCELLATION:
+        keyParts.push(event.orderId, event.customerEmail, 'cancellation');
+        break;
+      case EmailEventType.ADMIN_CANCELLATION_NOTIFICATION:
+        keyParts.push(event.orderId, 'admin', 'cancellation');
+        break;
+      case EmailEventType.PAYMENT_STATUS_UPDATE:
+        keyParts.push(event.orderId, event.customerEmail, event.paymentStatus);
         break;
       case EmailEventType.WELCOME_EMAIL:
         keyParts.push(event.userId, event.userEmail);

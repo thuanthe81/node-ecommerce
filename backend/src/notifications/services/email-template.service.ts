@@ -32,6 +32,41 @@ export interface OrderEmailData {
   status?: string;
 }
 
+export interface OrderCancellationEmailData {
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  orderDate: string;
+  cancelledAt: string;
+  cancellationReason?: string;
+  items: Array<{
+    nameEn: string;
+    nameVi: string;
+    sku?: string;
+    quantity: number;
+    price: number;
+    total: number;
+  }>;
+  orderTotal: number;
+  refundRequired: boolean;
+  refundAmount?: number;
+  refundMethod?: string;
+  estimatedRefundDate?: string;
+  paymentStatus?: string;
+}
+
+export interface PaymentStatusUpdateEmailData {
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  orderDate: string;
+  orderTotal: number;
+  paymentStatus: string;
+  statusMessage?: string;
+}
+
 export interface AdminOrderEmailData {
   orderId: string;
   orderNumber: string;
@@ -367,6 +402,114 @@ export class EmailTemplateService implements OnModuleInit {
       subject: locale === 'vi'
         ? 'Đặt lại mật khẩu'
         : 'Password Reset',
+      html: finalHtml
+    };
+  }
+
+  /**
+   * Order cancellation email template
+   */
+  async getOrderCancellationTemplate(
+    data: OrderCancellationEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): Promise<{ subject: string; html: string }> {
+    // Sanitize data before processing
+    const sanitizedData = this.sanitizeOrderData(data);
+
+    // Use the new template system
+    const templateName = 'orders/template-order-cancellation';
+
+    // Load and process template
+    const templateContent = await this.templateLoader.loadTemplate(templateName);
+    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+
+    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    return {
+      subject: locale === 'vi'
+        ? `Đơn hàng đã hủy - Đơn hàng #${sanitizedData.orderNumber}`
+        : `Order Cancelled - Order #${sanitizedData.orderNumber}`,
+      html: finalHtml
+    };
+  }
+
+  /**
+   * Admin order cancellation notification email template
+   */
+  async getAdminOrderCancellationTemplate(
+    data: OrderCancellationEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): Promise<{ subject: string; html: string }> {
+    // Sanitize data before processing
+    const sanitizedData = this.sanitizeOrderData(data);
+
+    // Use the new template system
+    const templateName = 'orders/template-admin-order-cancellation';
+
+    // Load and process template
+    const templateContent = await this.templateLoader.loadTemplate(templateName);
+    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+
+    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    return {
+      subject: locale === 'vi'
+        ? `Đơn hàng bị hủy bởi khách hàng - Đơn hàng #${sanitizedData.orderNumber}`
+        : `Order Cancelled by Customer - Order #${sanitizedData.orderNumber}`,
+      html: finalHtml
+    };
+  }
+
+  /**
+   * Payment status update email template
+   */
+  async getPaymentStatusUpdateTemplate(
+    data: PaymentStatusUpdateEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): Promise<{ subject: string; html: string }> {
+    // Sanitize data before processing
+    const sanitizedData = this.sanitizeOrderData(data);
+
+    // Use the new template system
+    const templateName = 'orders/template-payment-status-update';
+
+    // Load and process template
+    const templateContent = await this.templateLoader.loadTemplate(templateName);
+    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+
+    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    return {
+      subject: locale === 'vi'
+        ? `Cập nhật trạng thái thanh toán - Đơn hàng #${sanitizedData.orderNumber}`
+        : `Payment Status Update - Order #${sanitizedData.orderNumber}`,
+      html: finalHtml
+    };
+  }
+
+  /**
+   * Simplified order status update email template
+   */
+  async getSimplifiedOrderStatusUpdateTemplate(
+    data: OrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): Promise<{ subject: string; html: string }> {
+    // Sanitize data before processing
+    const sanitizedData = this.sanitizeOrderData(data);
+
+    // Use the new template system
+    const templateName = 'orders/template-order-status-update-simplified';
+
+    // Load and process template
+    const templateContent = await this.templateLoader.loadTemplate(templateName);
+    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+
+    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    return {
+      subject: locale === 'vi'
+        ? `Cập nhật đơn hàng #${sanitizedData.orderNumber}`
+        : `Order Update #${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }

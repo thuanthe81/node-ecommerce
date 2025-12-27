@@ -14,11 +14,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import { OrderDetailViewProps } from './types';
 import { useOrderData } from './hooks/useOrderData';
 import { useBankSettings } from './hooks/useBankSettings';
+import { useCancellation } from './hooks/useCancellation';
 import { LoadingState } from './components/LoadingState';
 import { ErrorState } from './components/ErrorState';
 import { SuccessBanner } from './components/SuccessBanner';
@@ -28,6 +30,8 @@ import { OrderItems } from './components/OrderItems';
 import { ShippingInfo } from './components/ShippingInfo';
 import { BankTransferInfo } from './components/BankTransferInfo';
 import { ResendEmailButton } from './components/ResendEmailButton';
+import { CancelButton } from './components/CancelButton';
+import { CancellationModal } from './components/CancellationModal';
 
 export default function OrderDetailView({
   orderId,
@@ -38,6 +42,7 @@ export default function OrderDetailView({
   const { isAuthenticated } = useAuth();
   const t = useTranslations("orders");
   const tEmailAttachment = useTranslations("email.pdfAttachment")
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch order data using custom hook
   const {
@@ -55,8 +60,46 @@ export default function OrderDetailView({
     refetch: refetchSettings,
   } = useBankSettings(order, showBankTransferForPaidOrders);
 
+  // Cancellation functionality
+  const {
+    cancellationState,
+    openCancellationModal,
+    closeCancellationModal,
+    cancelOrder,
+    retryCancellation,
+    clearError,
+  } = useCancellation();
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+
+    try {
+      await cancelOrder(order.id, undefined, locale as 'en' | 'vi');
+      setSuccessMessage(t('cancellationSuccess'));
+      // Refetch order to get updated status
+      await refetchOrder();
+    } catch (error) {
+      // Error is handled by the useCancellation hook
+      console.error('Cancellation failed:', error);
+    }
+  };
+
+  const handleRetryCancellation = async () => {
+    if (!order) return;
+
+    try {
+      await retryCancellation(order.id, undefined, locale as 'en' | 'vi');
+      setSuccessMessage(t('cancellationSuccess'));
+      // Refetch order to get updated status
+      await refetchOrder();
+    } catch (error) {
+      // Error is handled by the useCancellation hook
+      console.error('Retry cancellation failed:', error);
+    }
   };
 
   // Determine if we should show bank transfer section
@@ -99,6 +142,27 @@ export default function OrderDetailView({
       </a>
       <div className="container mx-auto px-4 py-6 sm:py-8 lg:py-12">
         <main id="main-content" className="max-w-5xl mx-auto">
+          {/* Success Message for Cancellation */}
+          {successMessage && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex">
+                <svg
+                  className="w-5 h-5 text-green-400 mt-0.5 mr-3 flex-shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p className="text-sm text-green-800">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
           {/* Success Banner - Only shown if showSuccessBanner is true */}
           {showSuccessBanner && (
             <SuccessBanner orderNumber={order.orderNumber} />
@@ -163,6 +227,14 @@ export default function OrderDetailView({
               </svg>
               {t('printOrder')}
             </button>
+
+            {/* Cancel Order Button */}
+            <CancelButton
+              order={order}
+              onCancel={openCancellationModal}
+              disabled={cancellationState.isLoading}
+              locale={locale as 'en' | 'vi'}
+            />
 
             {isAuthenticated && (
               <Link
@@ -234,6 +306,20 @@ export default function OrderDetailView({
           )}
         </main>
       </div>
+
+      {/* Cancellation Modal */}
+      <CancellationModal
+        isOpen={cancellationState.isModalOpen}
+        onClose={closeCancellationModal}
+        onConfirm={handleCancelOrder}
+        onRetry={handleRetryCancellation}
+        order={order}
+        locale={locale as 'en' | 'vi'}
+        isLoading={cancellationState.isLoading}
+        error={cancellationState.error}
+        isRetryable={cancellationState.isRetryable}
+        retryCount={cancellationState.retryCount}
+      />
     </div>
   );
 }

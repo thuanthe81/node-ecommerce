@@ -7,7 +7,7 @@ import { orderApi, Order } from '@/lib/order-api';
 import { paymentApi, RefundInfo } from '@/lib/payment-api';
 import { shippingApi, ShippingLabel } from '@/lib/shipping-api';
 import PaymentStatusUpdateModal from '@/components/PaymentStatusUpdateModal';
-import { isContactForPrice, getAdminOrderPricingMessage } from '@/app/utils';
+import { isContactForPrice, getAdminOrderPricingMessage, formatMoney } from '@/app/utils';
 import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText, getShippingMethodText } from '@/components/OrderDetailView/utils/statusTranslations';
 import translations from '@/locales/translations.json';
 
@@ -224,13 +224,6 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {
       PENDING: 'bg-yellow-100 text-yellow-800',
@@ -363,7 +356,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.processRefund')}</h2>
           <p className="text-sm text-gray-600 mb-4">
-            {t('orders.total')}: {formatCurrency(order.total)}
+            {t('orders.total')}: {formatMoney(order.total, locale)}
           </p>
           <button
             onClick={() => setShowRefundModal(true)}
@@ -425,10 +418,10 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                   value={refundAmount}
                   onChange={(e) => setRefundAmount(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder={formatCurrency(order.total)}
+                  placeholder={formatMoney(order.total, locale)}
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  {t('orders.fullRefund')}: {formatCurrency(order.total)}
+                  {t('orders.fullRefund')}: {formatMoney(order.total, locale)}
                 </p>
               </div>
 
@@ -703,7 +696,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                         </button>
                       </div>
                     ) : (
-                      formatCurrency(item.price)
+                      formatMoney(item.price, locale)
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -712,7 +705,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                         {locale === 'vi' ? 'Chưa có giá' : 'Not Priced'}
                       </span>
                     ) : (
-                      formatCurrency(item.total)
+                      formatMoney(item.total, locale)
                     )}
                   </td>
                 </tr>
@@ -726,25 +719,25 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           <dl className="space-y-2">
             <div className="flex justify-between text-sm">
               <dt className="text-gray-600">{t('orders.subtotal')}</dt>
-              <dd className="text-gray-900">{formatCurrency(order.subtotal)}</dd>
+              <dd className="text-gray-900">{formatMoney(order.subtotal, locale)}</dd>
             </div>
             <div className="flex justify-between text-sm">
               <dt className="text-gray-600">{t('orders.shipping')}</dt>
-              <dd className="text-gray-900">{formatCurrency(order.shippingCost)}</dd>
+              <dd className="text-gray-900">{formatMoney(order.shippingCost, locale)}</dd>
             </div>
             <div className="flex justify-between text-sm">
               <dt className="text-gray-600">{t('orders.tax')}</dt>
-              <dd className="text-gray-900">{formatCurrency(order.taxAmount)}</dd>
+              <dd className="text-gray-900">{formatMoney(order.taxAmount, locale)}</dd>
             </div>
             {order.discountAmount > 0 && (
               <div className="flex justify-between text-sm">
                 <dt className="text-gray-600">{t('orders.discount')}</dt>
-                <dd className="text-green-600">-{formatCurrency(order.discountAmount)}</dd>
+                <dd className="text-green-600">-{formatMoney(order.discountAmount, locale)}</dd>
               </div>
             )}
             <div className="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
               <dt className="text-gray-900">{t('orders.total')}</dt>
-              <dd className="text-gray-900">{formatCurrency(order.total)}</dd>
+              <dd className="text-gray-900">{formatMoney(order.total, locale)}</dd>
             </div>
           </dl>
         </div>

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import AdminLayout from '@/components/AdminLayout';
 import PromotionForm from '@/components/PromotionForm';
 import { promotionApi, Promotion, CreatePromotionData } from '@/lib/promotion-api';
+import { formatMoney } from '@/app/utils';
 
 export default function EditPromotionContent({
   locale,
@@ -75,7 +76,7 @@ export default function EditPromotionContent({
               <p className="text-sm font-medium text-blue-900">{t('recentOrders')}</p>
               {promotion.orders.slice(0, 5).map((order) => (
                 <div key={order.id} className="text-sm text-blue-800">
-                  Order #{order.orderNumber} - ${order.total} - {new Date(order.createdAt).toLocaleDateString(locale)}
+                  Order #{order.orderNumber} - {formatMoney(order.total, locale)} - {new Date(order.createdAt).toLocaleDateString(locale)}
                 </div>
               ))}
             </div>

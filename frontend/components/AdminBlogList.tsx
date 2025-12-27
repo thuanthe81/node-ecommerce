@@ -309,7 +309,7 @@ export default function AdminBlogList({ locale, token }: AdminBlogListProps) {
                         : '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {formatDate(post.publishedAt)}
+                      {formatDate(post.publishedAt || null)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm space-x-2">
                       <button

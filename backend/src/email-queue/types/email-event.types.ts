@@ -14,6 +14,9 @@ export enum EmailEventType {
   ADMIN_ORDER_NOTIFICATION = 'ADMIN_ORDER_NOTIFICATION',
   SHIPPING_NOTIFICATION = 'SHIPPING_NOTIFICATION',
   ORDER_STATUS_UPDATE = 'ORDER_STATUS_UPDATE',
+  ORDER_CANCELLATION = 'ORDER_CANCELLATION',
+  ADMIN_CANCELLATION_NOTIFICATION = 'ADMIN_CANCELLATION_NOTIFICATION',
+  PAYMENT_STATUS_UPDATE = 'PAYMENT_STATUS_UPDATE',
   WELCOME_EMAIL = 'WELCOME_EMAIL',
   PASSWORD_RESET = 'PASSWORD_RESET',
   CONTACT_FORM = 'CONTACT_FORM',
@@ -119,6 +122,44 @@ export interface ContactFormEvent extends BaseEmailEvent {
 }
 
 /**
+ * Order cancellation email event
+ * Sent to customers when their order is cancelled
+ */
+export interface OrderCancellationEvent extends BaseEmailEvent {
+  type: EmailEventType.ORDER_CANCELLATION;
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+  cancellationReason?: string;
+}
+
+/**
+ * Admin cancellation notification email event
+ * Sent to administrators when an order is cancelled
+ */
+export interface AdminCancellationNotificationEvent extends BaseEmailEvent {
+  type: EmailEventType.ADMIN_CANCELLATION_NOTIFICATION;
+  orderId: string;
+  orderNumber: string;
+  cancellationReason?: string;
+}
+
+/**
+ * Payment status update email event
+ * Sent to customers when their payment status changes
+ */
+export interface PaymentStatusUpdateEvent extends BaseEmailEvent {
+  type: EmailEventType.PAYMENT_STATUS_UPDATE;
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+  paymentStatus: string;
+  statusMessage?: string;
+}
+
+/**
  * Union type representing all possible email events
  * Used for type-safe event handling
  */
@@ -128,6 +169,9 @@ export type EmailEvent =
   | AdminOrderNotificationEvent
   | ShippingNotificationEvent
   | OrderStatusUpdateEvent
+  | OrderCancellationEvent
+  | AdminCancellationNotificationEvent
+  | PaymentStatusUpdateEvent
   | WelcomeEmailEvent
   | PasswordResetEvent
   | ContactFormEvent;

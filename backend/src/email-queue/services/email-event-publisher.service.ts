@@ -531,6 +531,9 @@ export class EmailEventPublisher implements OnModuleDestroy {
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 3 * 60 * 1000, // 3 minutes
       [EmailEventType.SHIPPING_NOTIFICATION]: 2 * 60 * 1000, // 2 minutes
       [EmailEventType.ORDER_STATUS_UPDATE]: 2 * 60 * 1000, // 2 minutes
+      [EmailEventType.ORDER_CANCELLATION]: 3 * 60 * 1000, // 3 minutes
+      [EmailEventType.ADMIN_CANCELLATION_NOTIFICATION]: 3 * 60 * 1000, // 3 minutes
+      [EmailEventType.PAYMENT_STATUS_UPDATE]: 2 * 60 * 1000, // 2 minutes
       [EmailEventType.WELCOME_EMAIL]: 2 * 60 * 1000, // 2 minutes
       [EmailEventType.PASSWORD_RESET]: 2 * 60 * 1000, // 2 minutes
       [EmailEventType.CONTACT_FORM]: 2 * 60 * 1000, // 2 minutes
@@ -601,6 +604,10 @@ export class EmailEventPublisher implements OnModuleDestroy {
 
       case EmailEventType.ORDER_STATUS_UPDATE:
         this.validateOrderStatusUpdateEvent(event);
+        break;
+
+      case EmailEventType.PAYMENT_STATUS_UPDATE:
+        this.validatePaymentStatusUpdateEvent(event);
         break;
 
       case EmailEventType.WELCOME_EMAIL:
@@ -697,6 +704,27 @@ export class EmailEventPublisher implements OnModuleDestroy {
   }
 
   /**
+   * Validate payment status update event fields
+   */
+  private validatePaymentStatusUpdateEvent(event: any): void {
+    if (!event.orderId || typeof event.orderId !== 'string') {
+      throw new Error('Payment status update events require valid orderId');
+    }
+    if (!event.orderNumber || typeof event.orderNumber !== 'string') {
+      throw new Error('Payment status update events require valid orderNumber');
+    }
+    if (!event.customerEmail || !this.isValidEmail(event.customerEmail)) {
+      throw new Error('Payment status update events require valid customerEmail');
+    }
+    if (!event.customerName || typeof event.customerName !== 'string') {
+      throw new Error('Payment status update events require valid customerName');
+    }
+    if (!event.paymentStatus || typeof event.paymentStatus !== 'string') {
+      throw new Error('Payment status update events require valid paymentStatus');
+    }
+  }
+
+  /**
    * Validate welcome email event fields
    */
   private validateWelcomeEmailEvent(event: any): void {
@@ -770,10 +798,13 @@ export class EmailEventPublisher implements OnModuleDestroy {
       [EmailEventType.ORDER_CONFIRMATION]: 2,
       [EmailEventType.ORDER_CONFIRMATION_RESEND]: 2, // Same priority as original confirmation
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 2,
-      [EmailEventType.SHIPPING_NOTIFICATION]: 3,
-      [EmailEventType.ORDER_STATUS_UPDATE]: 4,
-      [EmailEventType.WELCOME_EMAIL]: 5,
-      [EmailEventType.CONTACT_FORM]: 6, // Lowest priority
+      [EmailEventType.ORDER_CANCELLATION]: 3, // High priority for cancellations
+      [EmailEventType.ADMIN_CANCELLATION_NOTIFICATION]: 3, // High priority for admin notifications
+      [EmailEventType.PAYMENT_STATUS_UPDATE]: 4, // Important payment updates
+      [EmailEventType.SHIPPING_NOTIFICATION]: 4,
+      [EmailEventType.ORDER_STATUS_UPDATE]: 5,
+      [EmailEventType.WELCOME_EMAIL]: 6,
+      [EmailEventType.CONTACT_FORM]: 7, // Lowest priority
     };
 
     return priorities[type] || 10;
@@ -1562,6 +1593,99 @@ export class EmailEventPublisher implements OnModuleDestroy {
       senderName,
       senderEmail,
       message,
+    };
+
+    return this.publishEvent(event);
+  }
+
+  /**
+   * Send order cancellation notification to customer
+   * @param orderId - Order ID
+   * @param orderNumber - Order number
+   * @param customerEmail - Customer email address
+   * @param customerName - Customer name
+   * @param locale - Language locale
+   * @param reason - Cancellation reason
+   * @returns Job ID for tracking
+   */
+  async sendOrderCancellation(
+    orderId: string,
+    orderNumber: string,
+    customerEmail: string,
+    customerName: string,
+    locale: 'en' | 'vi' = 'en',
+    reason?: string
+  ): Promise<string> {
+    const event: EmailEvent = {
+      type: EmailEventType.ORDER_CANCELLATION,
+      locale,
+      timestamp: new Date(),
+      orderId,
+      orderNumber,
+      customerEmail,
+      customerName,
+      cancellationReason: reason,
+    };
+
+    return this.publishEvent(event);
+  }
+
+  /**
+   * Send order cancellation notification to admin
+   * @param orderId - Order ID
+   * @param orderNumber - Order number
+   * @param locale - Language locale
+   * @param reason - Cancellation reason
+   * @returns Job ID for tracking
+   */
+  async sendAdminCancellationNotification(
+    orderId: string,
+    orderNumber: string,
+    locale: 'en' | 'vi' = 'en',
+    reason?: string
+  ): Promise<string> {
+    const event: EmailEvent = {
+      type: EmailEventType.ADMIN_CANCELLATION_NOTIFICATION,
+      locale,
+      timestamp: new Date(),
+      orderId,
+      orderNumber,
+      cancellationReason: reason,
+    };
+
+    return this.publishEvent(event);
+  }
+
+  /**
+   * Send payment status update notification to customer
+   * @param orderId - Order ID
+   * @param orderNumber - Order number
+   * @param customerEmail - Customer email address
+   * @param customerName - Customer name
+   * @param paymentStatus - New payment status
+   * @param locale - Language locale
+   * @param statusMessage - Optional status message
+   * @returns Job ID for tracking
+   */
+  async sendPaymentStatusUpdate(
+    orderId: string,
+    orderNumber: string,
+    customerEmail: string,
+    customerName: string,
+    paymentStatus: string,
+    locale: 'en' | 'vi' = 'en',
+    statusMessage?: string
+  ): Promise<string> {
+    const event: EmailEvent = {
+      type: EmailEventType.PAYMENT_STATUS_UPDATE,
+      locale,
+      timestamp: new Date(),
+      orderId,
+      orderNumber,
+      customerEmail,
+      customerName,
+      paymentStatus,
+      statusMessage,
     };
 
     return this.publishEvent(event);

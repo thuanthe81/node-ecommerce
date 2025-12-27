@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -29,6 +29,7 @@ import { ContentMediaModule } from './content-media/content-media.module';
 import { BlogCategoryModule } from './blog-category/blog-category.module';
 import { EmailQueueModule } from './email-queue/email-queue.module';
 import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware';
+import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 @Module({
   imports: [
@@ -84,6 +85,14 @@ import { ImageRetrievalMiddleware } from './products/image-retrieval.middleware'
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // Apply CSRF protection to order cancellation endpoints
+    consumer
+      .apply(CsrfMiddleware)
+      .forRoutes(
+        { path: 'orders/*/cancel', method: RequestMethod.PATCH },
+        { path: 'csrf/token', method: RequestMethod.GET }
+      );
+
     // Apply image retrieval middleware to handle backward compatibility
     // for product images (checks hierarchical location first, then legacy)
     consumer

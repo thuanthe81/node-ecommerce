@@ -3,6 +3,9 @@ import { EncryptionService } from './services/encryption.service';
 import { BusinessInfoService } from './services/business-info.service';
 import { TranslationService } from './services/translation.service';
 import { HTMLEscapingService } from './services/html-escaping.service';
+import { ErrorHandlingService } from './services/error-handling.service';
+import { EnhancedRateLimitGuard } from './guards/enhanced-rate-limit.guard';
+import { CsrfController } from './controllers/csrf.controller';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 
 /**
@@ -12,7 +15,22 @@ import { FooterSettingsModule } from '../footer-settings/footer-settings.module'
 @Global()
 @Module({
   imports: [FooterSettingsModule],
-  providers: [EncryptionService, BusinessInfoService, TranslationService, HTMLEscapingService],
-  exports: [EncryptionService, BusinessInfoService, TranslationService, HTMLEscapingService],
+  controllers: [CsrfController],
+  providers: [
+    EncryptionService,
+    BusinessInfoService,
+    TranslationService,
+    HTMLEscapingService,
+    ErrorHandlingService,
+    EnhancedRateLimitGuard,
+  ],
+  exports: [
+    EncryptionService,
+    BusinessInfoService,
+    TranslationService,
+    HTMLEscapingService,
+    ErrorHandlingService,
+    EnhancedRateLimitGuard,
+  ],
 })
 export class CommonModule {}

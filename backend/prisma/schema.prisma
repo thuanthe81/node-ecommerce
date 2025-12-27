@@ -209,6 +209,9 @@ model Order {
   paymentIntentId   String?
   promotionId       String?
   notes             String?
+  cancelledAt       DateTime?
+  cancellationReason String?
+  cancelledBy       String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -228,6 +231,7 @@ model Order {
   @@index([userId, status])
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([cancelledAt])
   @@map("orders")
 }
 

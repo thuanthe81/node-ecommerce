@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="{{locale}}" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{translations.subject}}</title>
+  <style type="text/css">
+    /* Simplified Email Design System CSS */
+    .email-body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #2c3e50;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    .preheader {
+      display: none;
+      font-size: 1px;
+      color: #fefefe;
+      line-height: 1px;
+      max-height: 0px;
+      max-width: 0px;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    .email-wrapper {
+      width: 100%;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      border-collapse: collapse;
+    }
+
+    .email-wrapper-cell {
+      padding: 20px;
+      vertical-align: top;
+    }
+
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-collapse: collapse;
+    }
+
+    .email-header {
+      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .email-content {
+      padding: 24px;
+      background-color: #ffffff;
+    }
+
+    .email-footer {
+      background-color: #f8f9fa;
+      padding: 16px 24px;
+      text-align: center;
+      border-radius: 0 0 8px 8px;
+      border-top: 1px solid #ecf0f1;
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+
+    /* Responsive styles */
+    @media only screen and (max-width: 480px) {
+      .email-wrapper-cell {
+        padding: 10px !important;
+      }
+
+      .email-content {
+        padding: 16px !important;
+      }
+
+      .email-header {
+        padding: 16px !important;
+      }
+
+      .email-footer {
+        padding: 12px 16px !important;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      .email-body {
+        background-color: #121212 !important;
+        color: #ffffff !important;
+      }
+
+      .email-container {
+        background-color: #1e1e1e !important;
+      }
+
+      .email-content {
+        background-color: #1e1e1e !important;
+      }
+    }
+  </style>
+</head>
+<body class="email-body">
+  <!-- Preheader text for email preview -->
+  <div class="preheader" style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;" aria-hidden="true">
+    {{translations.subject}}
+  </div>
+
+  <!-- Main email wrapper -->
+  <div role="document" aria-label="{{translations.emailLabel}}">
+    <table class="email-wrapper" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
+      <tr>
+        <td class="email-wrapper-cell">
+          <table class="email-container" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
+
+            <!-- Email Header -->
+            <tr>
+              <td class="email-header" role="banner">
+                <h1 style="
+                  margin: 0;
+                  font-size: 20px;
+                  font-weight: 600;
+                  color: white;
+                ">{{translations.companyName}}</h1>
+                <p style="
+                  margin: 4px 0 0 0;
+                  font-size: 12px;
+                  color: rgba(255,255,255,0.8);
+                ">{{translations.tagline}}</p>
+              </td>
+            </tr>
+
+            <!-- Main Email Content -->
+            <tr>
+              <td class="email-content" role="main">
+
+                <!-- Order Status Update Header -->
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <h2 style="
+                    color: #2c3e50;
+                    margin: 0 0 8px 0;
+                    font-size: 18px;
+                    font-weight: 600;
+                  ">{{translations.title}}</h2>
+                </div>
+
+                <p style="
+                  font-size: 14px;
+                  color: #2c3e50;
+                  margin-bottom: 16px;
+                ">{{translations.greeting}} {{data.customerName}},</p>
+
+                <p style="
+                  color: #7f8c8d;
+                  margin-bottom: 24px;
+                  font-size: 14px;
+                ">{{translations.intro}}</p>
+
+                <!-- Order Status Badge -->
+                <div style="
+                  text-align: center;
+                  margin: 24px 0;
+                  padding: 16px;
+                  background-color: #f8f9fa;
+                  border-radius: 6px;
+                ">
+                  <p style="
+                    margin: 0 0 8px 0;
+                    font-size: 12px;
+                    color: #7f8c8d;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  ">{{translations.newStatus}}</p>
+                  <span style="
+                    display: inline-block;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    {{#if (eq data.status 'pending')}}background-color: #f39c12; color: white;{{/if}}
+                    {{#if (eq data.status 'confirmed')}}background-color: #27ae60; color: white;{{/if}}
+                    {{#if (eq data.status 'processing')}}background-color: #3498db; color: white;{{/if}}
+                    {{#if (eq data.status 'shipped')}}background-color: #3498db; color: white;{{/if}}
+                    {{#if (eq data.status 'delivered')}}background-color: #27ae60; color: white;{{/if}}
+                    {{#if (eq data.status 'cancelled')}}background-color: #e74c3c; color: white;{{/if}}
+                  ">{{> status-badge status=data.status statusText=(getStatusText data.status locale)}}</span>
+                </div>
+
+                <!-- Status Message -->
+                {{#if data.statusMessage}}
+                <div style="
+                  background-color: #ecf0f1;
+                  padding: 16px;
+                  border-radius: 6px;
+                  margin: 16px 0;
+                ">
+                  <p style="
+                    margin: 0;
+                    color: #2c3e50;
+                    font-size: 14px;
+                    font-style: italic;
+                  ">{{data.statusMessage}}</p>
+                </div>
+                {{/if}}
+
+                <!-- Order Overview -->
+                <div style="
+                  background-color: #ffffff;
+                  border: 1px solid #ecf0f1;
+                  border-radius: 6px;
+                  padding: 16px;
+                  margin: 24px 0;
+                ">
+                  <h3 style="
+                    margin: 0 0 12px 0;
+                    color: #2c3e50;
+                    font-size: 16px;
+                    font-weight: 600;
+                  ">{{translations.orderOverview}}</h3>
+
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #7f8c8d;
+                        width: 40%;
+                      ">{{translations.orderNumber}}:</td>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #2c3e50;
+                        font-weight: 600;
+                      ">#{{data.orderNumber}}</td>
+                    </tr>
+                    <tr>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #7f8c8d;
+                      ">{{translations.orderDate}}:</td>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #2c3e50;
+                      ">{{formatDate data.orderDate locale}}</td>
+                    </tr>
+                    <tr>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #7f8c8d;
+                      ">{{translations.orderTotal}}:</td>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 16px;
+                        color: #2c3e50;
+                        font-weight: 600;
+                      ">{{formatCurrency data.orderTotal locale}}</td>
+                    </tr>
+                    {{#if data.trackingNumber}}
+                    <tr>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #7f8c8d;
+                      ">{{translations.trackingNumber}}:</td>
+                      <td style="
+                        padding: 4px 0;
+                        font-size: 14px;
+                        color: #27ae60;
+                        font-weight: 600;
+                        font-family: monospace;
+                      ">{{data.trackingNumber}}</td>
+                    </tr>
+                    {{/if}}
+                  </table>
+                </div>
+
+                <!-- Track Order Button -->
+                <div style="
+                  text-align: center;
+                  margin: 32px 0;
+                ">
+                  <a href="{{concat frontendUrl '/' locale '/orders/' data.orderId}}" style="
+                    display: inline-block;
+                    background-color: #3498db;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 24px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    text-align: center;
+                    min-width: 120px;
+                  ">{{translations.trackOrder}}</a>
+                </div>
+
+                <!-- Contact Information -->
+                <div style="
+                  text-align: center;
+                  margin: 24px 0;
+                  padding: 16px;
+                  background-color: #f8f9fa;
+                  border-radius: 6px;
+                ">
+                  <p style="
+                    color: #7f8c8d;
+                    margin: 0;
+                    font-size: 12px;
+                  ">{{translations.contactUs}}</p>
+                </div>
+
+              </td>
+            </tr>
+
+            <!-- Email Footer -->
+            <tr>
+              <td class="email-footer" role="contentinfo">
+                <p style="margin: 0;">
+                  {{translations.copyright}}
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

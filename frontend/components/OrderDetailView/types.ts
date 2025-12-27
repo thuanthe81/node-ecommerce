@@ -36,3 +36,15 @@ export interface OrderState {
   /** Error message when loading settings fails */
   settingsError: string | null;
 }
+
+/**
+ * State for managing order cancellation
+ */
+export interface CancellationState {
+  /** Whether the cancellation modal is open */
+  isModalOpen: boolean;
+  /** Whether cancellation is in progress */
+  isLoading: boolean;
+  /** Error message if cancellation fails */
+  error: string | null;
+}

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { SvgCurrency, SvgClipboard, SvgBoxes, SvgUsers, SvgPlus, SvgGrid, SvgTag } from '@/components/Svgs';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import { formatCurrency, formatNumber } from '@/app/utils';
+import { formatMoney, formatNumber } from '@/app/utils';
 
 export default function AdminDashboardPage() {
   const params = useParams();
@@ -137,7 +137,7 @@ export default function AdminDashboardPage() {
                           {!stat.stat.loading && !stat.stat.error && stat.stat.value !== null && (
                             <span aria-live="polite">
                               {stat.type === 'currency'
-                                ? formatCurrency(stat.stat.value, locale)
+                                ? formatMoney(stat.stat.value, locale)
                                 : formatNumber(stat.stat.value, locale)
                               }
                             </span>

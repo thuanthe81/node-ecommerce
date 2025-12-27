@@ -93,7 +93,7 @@ export default function ProductDetailContent({
     <>
       <StructuredData data={[productSchema, breadcrumbSchema]} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        <ProductImageGallery images={product.images} productName={productName} locale={currentLocale} />
+        <ProductImageGallery images={product.images} productName={productName} />
         <ProductInfo product={product} />
       </div>
 

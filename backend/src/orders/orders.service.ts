@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { AccessControlService } from './services/access-control.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
@@ -25,6 +26,7 @@ import { ShippingService } from '../shipping/shipping.service';
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
+    private accessControlService: AccessControlService,
     private emailEventPublisher: EmailEventPublisher,
     private footerSettingsService: FooterSettingsService,
     private emailAttachmentService: EmailAttachmentService,

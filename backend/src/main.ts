@@ -11,7 +11,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Enable cookie parser
+  // Enable cookie parser (required for CSRF protection)
   app.use(cookieParser());
 
   // Security headers with Helmet
@@ -35,6 +35,10 @@ async function bootstrap() {
       },
       noSniff: true,
       xssFilter: true,
+      // Additional security headers for CSRF protection
+      referrerPolicy: {
+        policy: 'strict-origin-when-cross-origin',
+      },
     }),
   );
 
@@ -77,13 +81,14 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    // Include custom headers used by the app (e.g., x-session-id)
+    // Include custom headers used by the app (e.g., x-session-id, x-csrf-token)
     // Cache-busting headers (Cache-Control, Pragma, Expires) are added by frontend for admin requests
     allowedHeaders: [
       'Content-Type',
       'Authorization',
       'X-Requested-With',
       'x-session-id',
+      'x-csrf-token',
       'Cache-Control',
       'Pragma',
       'Expires',
