@@ -12,7 +12,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { Prisma } from '@prisma/client';
 import { ProductsImageService } from './products-image.service';
-import { CACHE_KEYS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class ProductsService {
@@ -164,7 +164,7 @@ export class ProductsService {
     } = query;
 
     // Generate cache key based on query parameters
-    const cacheKey = `${CACHE_KEYS.PRODUCTS.LIST}:${JSON.stringify(query)}`;
+    const cacheKey = `${CONSTANTS.CACHE_KEYS.PRODUCTS.LIST}:${JSON.stringify(query)}`;
 
     // Try to get from cache
     const cached = await this.cacheManager.get(cacheKey);
@@ -317,7 +317,7 @@ export class ProductsService {
 
   async findBySlug(slug: string) {
     // Try to get from cache
-    const cacheKey = CACHE_KEYS.PRODUCTS.BY_SLUG(slug);
+    const cacheKey = CONSTANTS.CACHE_KEYS.PRODUCTS.BY_SLUG(slug);
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
       return cached;
@@ -455,8 +455,8 @@ export class ProductsService {
     });
 
     // Invalidate cache for this product
-    await this.cacheManager.del(CACHE_KEYS.PRODUCTS.BY_SLUG(product.slug));
-    await this.cacheManager.del(CACHE_KEYS.PRODUCTS.BY_ID(id));
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.PRODUCTS.BY_SLUG(product.slug));
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.PRODUCTS.BY_ID(id));
     await this.invalidateProductCache();
 
     return updatedProduct;
@@ -499,8 +499,8 @@ export class ProductsService {
     });
 
     // Invalidate cache
-    await this.cacheManager.del(CACHE_KEYS.PRODUCTS.BY_SLUG(product.slug));
-    await this.cacheManager.del(CACHE_KEYS.PRODUCTS.BY_ID(id));
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.PRODUCTS.BY_SLUG(product.slug));
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.PRODUCTS.BY_ID(id));
     await this.invalidateProductCache();
 
     return deleted;

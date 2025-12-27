@@ -4,7 +4,7 @@ import { UpdateFooterSettingsDto } from './dto/update-footer-settings.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Controller('footer-settings')
 export class FooterSettingsController {
@@ -27,7 +27,7 @@ export class FooterSettingsController {
    * Admin only endpoint
    */
   @Patch()
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   async updateFooterSettings(@Body() updateDto: UpdateFooterSettingsDto) {
     return this.footerSettingsService.updateFooterSettings(updateDto);
   }

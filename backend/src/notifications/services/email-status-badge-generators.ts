@@ -11,11 +11,11 @@ import {
   STATUS_BADGE_STYLES,
   ACCESSIBILITY_STANDARDS
 } from './email-design-tokens';
-import { STATUS, OrderStatus, PaymentStatus } from '../../common/constants';
+import { CONSTANTS, OrderStatus, PaymentStatus } from '@alacraft/shared';
 import { TranslationService } from '../../common/services/translation.service';
 
 // Re-export types for backward compatibility
-export type { OrderStatus, PaymentStatus } from '../../common/constants';
+export type { OrderStatus, PaymentStatus } from '@alacraft/shared';
 
 export interface StatusBadgeOptions {
   status: string;
@@ -133,32 +133,32 @@ export class StatusBadgeGenerator {
     // Order status colors
     if (type === 'order') {
       switch (status.toLowerCase()) {
-        case STATUS.ORDER_STATUS.PENDING.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.warning};
             color: #ffffff;
           `;
-        case STATUS.ORDER_STATUS.PROCESSING.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.secondary};
             color: #ffffff;
           `;
-        case STATUS.ORDER_STATUS.SHIPPED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase():
           return `${commonStyle}
             background-color: #9b59b6;
             color: #ffffff;
           `;
-        case STATUS.ORDER_STATUS.DELIVERED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.success};
             color: #ffffff;
           `;
-        case STATUS.ORDER_STATUS.CANCELLED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.accent};
             color: #ffffff;
           `;
-        case STATUS.ORDER_STATUS.REFUNDED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase():
           return `${commonStyle}
             background-color: #95a5a6;
             color: #ffffff;
@@ -174,22 +174,22 @@ export class StatusBadgeGenerator {
     // Payment status colors
     if (type === 'payment') {
       switch (status.toLowerCase()) {
-        case STATUS.PAYMENT_STATUS.PENDING.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.warning};
             color: #ffffff;
           `;
-        case STATUS.PAYMENT_STATUS.PAID.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.success};
             color: #ffffff;
           `;
-        case STATUS.PAYMENT_STATUS.FAILED.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase():
           return `${commonStyle}
             background-color: ${MODERN_EMAIL_STYLES.colors.accent};
             color: #ffffff;
           `;
-        case STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase():
           return `${commonStyle}
             background-color: #95a5a6;
             color: #ffffff;
@@ -257,37 +257,37 @@ export class StatusBadgeGenerator {
   private static getStatusDisplayText(status: string, type: string, locale: string): string {
     const orderStatusTranslations = {
       en: {
-        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Pending',
-        [STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Pending Quote',
-        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Processing',
-        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Shipped',
-        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Delivered',
-        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Cancelled',
-        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Refunded',
+        [CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Pending',
+        [CONSTANTS.STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Pending Quote',
+        [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Processing',
+        [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Shipped',
+        [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Delivered',
+        [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Cancelled',
+        [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Refunded',
       },
       vi: {
-        [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Chờ xử lý',
-        [STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Chờ báo giá',
-        [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Đang xử lý',
-        [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Đã giao vận',
-        [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Đã giao hàng',
-        [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Đã hủy',
-        [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Đã hoàn tiền',
+        [CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Chờ xử lý',
+        [CONSTANTS.STATUS.ORDER_STATUS.PENDING_QUOTE.toLowerCase()]: 'Chờ báo giá',
+        [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Đang xử lý',
+        [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Đã giao vận',
+        [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Đã giao hàng',
+        [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Đã hủy',
+        [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Đã hoàn tiền',
       },
     };
 
     const paymentStatusTranslations = {
       en: {
-        [STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Pending',
-        [STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Paid',
-        [STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Failed',
-        [STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Refunded',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Pending',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Paid',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Failed',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Refunded',
       },
       vi: {
-        [STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Chờ thanh toán',
-        [STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Đã thanh toán',
-        [STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Thất bại',
-        [STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Đã hoàn tiền',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Chờ thanh toán',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Đã thanh toán',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Thất bại',
+        [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Đã hoàn tiền',
       },
     };
 
@@ -317,34 +317,34 @@ export class StatusBadgeGenerator {
     const ariaLabels = {
       en: {
         order: {
-          [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Order status: Pending',
-          [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Order status: Processing',
-          [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Order status: Shipped',
-          [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Order status: Delivered',
-          [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Order status: Cancelled',
-          [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Order status: Refunded',
+          [CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Order status: Pending',
+          [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Order status: Processing',
+          [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Order status: Shipped',
+          [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Order status: Delivered',
+          [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Order status: Cancelled',
+          [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Order status: Refunded',
         },
         payment: {
-          [STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Payment status: Pending',
-          [STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Payment status: Paid',
-          [STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Payment status: Failed',
-          [STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Payment status: Refunded',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Payment status: Pending',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Payment status: Paid',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Payment status: Failed',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Payment status: Refunded',
         },
       },
       vi: {
         order: {
-          [STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Trạng thái đơn hàng: Chờ xử lý',
-          [STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Trạng thái đơn hàng: Đang xử lý',
-          [STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Trạng thái đơn hàng: Đã giao vận',
-          [STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Trạng thái đơn hàng: Đã giao hàng',
-          [STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Trạng thái đơn hàng: Đã hủy',
-          [STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Trạng thái đơn hàng: Đã hoàn tiền',
+          [CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase()]: 'Trạng thái đơn hàng: Chờ xử lý',
+          [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase()]: 'Trạng thái đơn hàng: Đang xử lý',
+          [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase()]: 'Trạng thái đơn hàng: Đã giao vận',
+          [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase()]: 'Trạng thái đơn hàng: Đã giao hàng',
+          [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase()]: 'Trạng thái đơn hàng: Đã hủy',
+          [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()]: 'Trạng thái đơn hàng: Đã hoàn tiền',
         },
         payment: {
-          [STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Trạng thái thanh toán: Chờ thanh toán',
-          [STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Trạng thái thanh toán: Đã thanh toán',
-          [STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Trạng thái thanh toán: Thất bại',
-          [STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Trạng thái thanh toán: Đã hoàn tiền',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase()]: 'Trạng thái thanh toán: Chờ thanh toán',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase()]: 'Trạng thái thanh toán: Đã thanh toán',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase()]: 'Trạng thái thanh toán: Thất bại',
+          [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()]: 'Trạng thái thanh toán: Đã hoàn tiền',
         },
       },
     };
@@ -394,17 +394,17 @@ export class StatusBadgeGenerator {
   private static getStatusIcon(status: string, type: string): string {
     if (type === 'order') {
       switch (status.toLowerCase()) {
-        case STATUS.ORDER_STATUS.PENDING.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase():
           return '⏳';
-        case STATUS.ORDER_STATUS.PROCESSING.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase():
           return '⚙️';
-        case STATUS.ORDER_STATUS.SHIPPED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase():
           return '🚚';
-        case STATUS.ORDER_STATUS.DELIVERED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase():
           return '✅';
-        case STATUS.ORDER_STATUS.CANCELLED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase():
           return '❌';
-        case STATUS.ORDER_STATUS.REFUNDED.toLowerCase():
+        case CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase():
           return '💰';
         default:
           return '📦';
@@ -413,13 +413,13 @@ export class StatusBadgeGenerator {
 
     if (type === 'payment') {
       switch (status.toLowerCase()) {
-        case STATUS.PAYMENT_STATUS.PENDING.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase():
           return '⏳';
-        case STATUS.PAYMENT_STATUS.PAID.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase():
           return '✅';
-        case STATUS.PAYMENT_STATUS.FAILED.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase():
           return '❌';
-        case STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase():
+        case CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase():
           return '💰';
         default:
           return '💳';
@@ -487,18 +487,18 @@ export class StatusBadgeUtils {
    */
   static isValidStatus(status: string, type: 'order' | 'payment'): boolean {
     const validOrderStatuses = [
-      STATUS.ORDER_STATUS.PENDING.toLowerCase(),
-      STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
-      STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
-      STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
-      STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
-      STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
+      CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
     ];
     const validPaymentStatuses = [
-      STATUS.PAYMENT_STATUS.PENDING.toLowerCase(),
-      STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
-      STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
-      STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
+      CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase(),
+      CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
+      CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
+      CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
     ];
 
     if (type === 'order') {
@@ -521,21 +521,21 @@ export class StatusBadgeUtils {
   static getValidStatuses(type: 'order' | 'payment'): string[] {
     if (type === 'order') {
       return [
-        STATUS.ORDER_STATUS.PENDING.toLowerCase(),
-        STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
-        STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
-        STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
-        STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
-        STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
+        CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase(),
+        CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
+        CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
+        CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
+        CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
+        CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
       ];
     }
 
     if (type === 'payment') {
       return [
-        STATUS.PAYMENT_STATUS.PENDING.toLowerCase(),
-        STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
-        STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
-        STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
+        CONSTANTS.STATUS.PAYMENT_STATUS.PENDING.toLowerCase(),
+        CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
+        CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
+        CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
       ];
     }
 
@@ -551,14 +551,14 @@ export class StatusBadgeUtils {
    */
   static isCompletedStatus(status: string, type: 'order' | 'payment'): boolean {
     const completedOrderStatuses = [
-      STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
-      STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
-      STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
+      CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.REFUNDED.toLowerCase()
     ];
     const completedPaymentStatuses = [
-      STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
-      STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
-      STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
+      CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase(),
+      CONSTANTS.STATUS.PAYMENT_STATUS.FAILED.toLowerCase(),
+      CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED.toLowerCase()
     ];
 
     if (type === 'order') {
@@ -581,11 +581,11 @@ export class StatusBadgeUtils {
    */
   static isPositiveStatus(status: string, type: 'order' | 'payment'): boolean {
     const positiveOrderStatuses = [
-      STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
-      STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
-      STATUS.ORDER_STATUS.DELIVERED.toLowerCase()
+      CONSTANTS.STATUS.ORDER_STATUS.PROCESSING.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
+      CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase()
     ];
-    const positivePaymentStatuses = [STATUS.PAYMENT_STATUS.PAID.toLowerCase()];
+    const positivePaymentStatuses = [CONSTANTS.STATUS.PAYMENT_STATUS.PAID.toLowerCase()];
 
     if (type === 'order') {
       return positiveOrderStatuses.includes(status.toLowerCase());

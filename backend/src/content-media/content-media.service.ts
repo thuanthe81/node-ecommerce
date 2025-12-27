@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ContentMedia } from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { SYSTEM } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class ContentMediaService {
@@ -19,10 +19,10 @@ export class ContentMediaService {
   async uploadMedia(file: Express.Multer.File): Promise<ContentMedia> {
     // Validate file type
     const allowedMimeTypes = [
-      SYSTEM.MIME_TYPES.JPEG,
-      SYSTEM.MIME_TYPES.PNG,
+      CONSTANTS.SYSTEM.MIME_TYPES.JPEG,
+      CONSTANTS.SYSTEM.MIME_TYPES.PNG,
       'image/gif',
-      SYSTEM.MIME_TYPES.WEBP,
+      CONSTANTS.SYSTEM.MIME_TYPES.WEBP,
     ];
     if (!allowedMimeTypes.includes(file.mimetype as any)) {
       throw new BadRequestException(

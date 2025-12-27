@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { BUSINESS } from '../../common/constants';
+import { CONSTANTS, OrderStatus, PaymentStatus } from '@alacraft/shared';
 import { TemplateLoaderService } from './template-loader.service';
 import { VariableReplacerService } from './variable-replacer.service';
 import { DesignSystemInjector } from './design-system-injector.service';
@@ -376,8 +376,8 @@ export class EmailTemplateService implements OnModuleInit {
 
     return {
       subject: locale === 'vi'
-        ? `Chào mừng đến với ${BUSINESS.COMPANY.NAME.VI}!`
-        : `Welcome to ${BUSINESS.COMPANY.NAME.EN}!`,
+        ? `Chào mừng đến với ${CONSTANTS.BUSINESS.COMPANY.NAME.VI}!`
+        : `Welcome to ${CONSTANTS.BUSINESS.COMPANY.NAME.EN}!`,
       html: finalHtml
     };
   }

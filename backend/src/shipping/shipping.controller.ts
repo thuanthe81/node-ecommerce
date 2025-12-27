@@ -6,7 +6,7 @@ import { ShippingResilienceService } from './services/shipping-resilience.servic
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Controller('shipping')
 export class ShippingController {
@@ -22,13 +22,13 @@ export class ShippingController {
   }
 
   @Post('generate-label')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   async generateLabel(@Body() generateLabelDto: GenerateLabelDto) {
     return this.shippingService.generateShippingLabel(generateLabelDto);
   }
 
   @Get('health')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   async healthCheck() {
     return this.shippingResilienceService.healthCheck();
   }

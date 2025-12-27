@@ -14,7 +14,7 @@ import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { PDFImageOptimizationMetricsService } from './services/pdf-image-optimization-metrics.service';
-import { BUSINESS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { PDFCompressionService } from './services/pdf-compression.service';
 
 @Injectable()
@@ -253,7 +253,7 @@ export class PDFTemplateEngine {
     const formattedDate = this.localization.formatDate(data.orderDate, locale);
     const companyName =
       data.businessInfo?.companyName ||
-      BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+      CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="header-container">
@@ -277,7 +277,7 @@ export class PDFTemplateEngine {
    */
   private generateInvoiceHeaderHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const formattedDate = this.localization.formatDate(data.orderDate, locale);
-    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = data.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="header-container">
@@ -461,7 +461,7 @@ export class PDFTemplateEngine {
    */
   private generateFooterHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
-    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = data.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <div class="footer-content">
@@ -512,14 +512,14 @@ export class PDFTemplateEngine {
    */
   private createMetadata(data: OrderPDFData, locale: 'en' | 'vi'): PDFMetadata {
     const isVietnamese = locale === 'vi';
-    const companyName = data.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = data.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return {
       title: isVietnamese ? `Đơn hàng ${data.orderNumber}` : `Order ${data.orderNumber}`,
       author: companyName,
       subject: isVietnamese ? 'Xác nhận đơn hàng' : 'Order Confirmation',
-      creator: `${BUSINESS.COMPANY.NAME.EN} PDF Generator`,
-      producer: `${BUSINESS.COMPANY.NAME.EN} E-commerce System`,
+      creator: `${CONSTANTS.BUSINESS.COMPANY.NAME.EN} PDF Generator`,
+      producer: `${CONSTANTS.BUSINESS.COMPANY.NAME.EN} E-commerce System`,
       creationDate: new Date(),
       keywords: [
         'order',

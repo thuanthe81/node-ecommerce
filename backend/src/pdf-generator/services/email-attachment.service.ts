@@ -20,7 +20,7 @@ import {
   RateLimitResult, BusinessInfoData,
 } from '../types/pdf.types';
 import * as fs from 'fs';
-import { SYSTEM } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 interface DeliveryAttempt {
   timestamp: Date;
@@ -571,7 +571,7 @@ export class EmailAttachmentService {
           {
             filename: finalPdfFileName,
             path: finalPdfPath,
-            contentType: SYSTEM.MIME_TYPES.PDF,
+            contentType: CONSTANTS.SYSTEM.MIME_TYPES.PDF,
           },
         ],
       });

@@ -2,19 +2,30 @@
  * Status translation utilities for OrderDetailView
  *
  * Provides functions to translate order status, payment status, payment method,
- * and shipping method values to localized text.
+ * and shipping method values to localized text using the shared library.
  */
+
+import { translateOrderStatus, translatePaymentStatus, OrderStatus, PaymentStatus } from '@alacraft/shared';
 
 /**
- * Get translated order status text
+ * Get translated order status text using shared library
  * @param status - Raw order status value (e.g., "PENDING", "PROCESSING")
- * @param t - Translation function from useTranslations
+ * @param t - Translation function from useTranslations (for fallback)
+ * @param locale - Current locale ('en' | 'vi')
  * @returns Translated status text
  */
-export function getOrderStatusText(status: string, t: (key: string) => string): string {
-  const statusKey = status.toLowerCase();
+export function getOrderStatusText(status: string, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+  // Try to use shared library translation first
+  try {
+    if (Object.values(OrderStatus).includes(status as OrderStatus) && locale) {
+      return translateOrderStatus(status as OrderStatus, locale);
+    }
+  } catch (error) {
+    console.warn('Failed to translate order status with shared library:', error);
+  }
 
-  // Map backend status values to translation keys
+  // Fallback to existing translation system
+  const statusKey = status.toLowerCase();
   const statusMap: Record<string, string> = {
     'pending': 'statusPending',
     'pending_quote': 'statusPendingQuote',
@@ -30,15 +41,24 @@ export function getOrderStatusText(status: string, t: (key: string) => string): 
 }
 
 /**
- * Get translated payment status text
+ * Get translated payment status text using shared library
  * @param status - Raw payment status value (e.g., "PENDING", "PAID")
- * @param t - Translation function from useTranslations
+ * @param t - Translation function from useTranslations (for fallback)
+ * @param locale - Current locale ('en' | 'vi')
  * @returns Translated payment status text
  */
-export function getPaymentStatusText(status: string, t: (key: string) => string): string {
-  const statusKey = status.toLowerCase();
+export function getPaymentStatusText(status: string, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+  // Try to use shared library translation first
+  try {
+    if (Object.values(PaymentStatus).includes(status as PaymentStatus) && locale) {
+      return translatePaymentStatus(status as PaymentStatus, locale);
+    }
+  } catch (error) {
+    console.warn('Failed to translate payment status with shared library:', error);
+  }
 
-  // Map backend status values to translation keys
+  // Fallback to existing translation system
+  const statusKey = status.toLowerCase();
   const statusMap: Record<string, string> = {
     'pending': 'paymentStatus.pending',
     'paid': 'paymentStatus.paid',

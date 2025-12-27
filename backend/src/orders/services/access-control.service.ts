@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserRole, OrderStatus } from '@prisma/client';
-import { STATUS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export interface OrderAccessContext {
   userId?: string;
@@ -73,7 +73,7 @@ export class AccessControlService {
     }
 
     // Admin users can access any order
-    if (userRole === STATUS.USER_ROLES.ADMIN) {
+    if (userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN) {
       this.logger.log(`Order access granted: Admin user ${userId} accessing order ${orderId}`, {
         orderId,
         userId,
@@ -174,8 +174,8 @@ export class AccessControlService {
 
       // Check if order status allows cancellation
       const cancellableStatuses = [
-        STATUS.ORDER_STATUS.PENDING,
-        STATUS.ORDER_STATUS.PROCESSING,
+        CONSTANTS.STATUS.ORDER_STATUS.PENDING,
+        CONSTANTS.STATUS.ORDER_STATUS.PROCESSING,
       ];
 
       if (!cancellableStatuses.includes(order.status as any)) {
@@ -189,7 +189,7 @@ export class AccessControlService {
       }
 
       // Admin users can cancel any order (that they have access to)
-      if (userRole === STATUS.USER_ROLES.ADMIN) {
+      if (userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN) {
         this.logger.log(`Order cancellation allowed: Admin user ${userId} can cancel order ${orderId}`, {
           orderId,
           userId,
@@ -241,7 +241,7 @@ export class AccessControlService {
       const canCancel = await this.canCancelOrder(orderId, context);
 
       // Check modification access (admin only)
-      const canModify = userRole === STATUS.USER_ROLES.ADMIN;
+      const canModify = userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN;
 
       return {
         canView,

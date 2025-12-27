@@ -15,7 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Controller('analytics')
 export class AnalyticsController {
@@ -32,21 +32,21 @@ export class AnalyticsController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   @Get('dashboard')
   async getDashboard(@Query() query: AnalyticsQueryDto) {
     return this.analyticsService.getDashboardMetrics(query);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   @Get('sales')
   async getSalesReport(@Query() query: AnalyticsQueryDto) {
     return this.analyticsService.getSalesReport(query);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   @Get('products/:id/performance')
   async getProductPerformance(
     @Param('id') productId: string,

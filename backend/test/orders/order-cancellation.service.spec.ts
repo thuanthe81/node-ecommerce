@@ -4,7 +4,7 @@ import { AccessControlService } from '../../src/orders/services/access-control.s
 import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
-import { STATUS } from '../../src/common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 describe('OrderCancellationService', () => {
   let service: OrderCancellationService;
@@ -59,32 +59,32 @@ describe('OrderCancellationService', () => {
 
   describe('isOrderCancellable', () => {
     it('should return true for PENDING orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.PENDING };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.PENDING };
       expect(service.isOrderCancellable(order)).toBe(true);
     });
 
     it('should return true for PROCESSING orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.PROCESSING };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.PROCESSING };
       expect(service.isOrderCancellable(order)).toBe(true);
     });
 
     it('should return false for SHIPPED orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.SHIPPED };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.SHIPPED };
       expect(service.isOrderCancellable(order)).toBe(false);
     });
 
     it('should return false for DELIVERED orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.DELIVERED };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.DELIVERED };
       expect(service.isOrderCancellable(order)).toBe(false);
     });
 
     it('should return false for CANCELLED orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.CANCELLED };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.CANCELLED };
       expect(service.isOrderCancellable(order)).toBe(false);
     });
 
     it('should return false for REFUNDED orders', () => {
-      const order = { status: STATUS.ORDER_STATUS.REFUNDED };
+      const order = { status: CONSTANTS.STATUS.ORDER_STATUS.REFUNDED };
       expect(service.isOrderCancellable(order)).toBe(false);
     });
   });

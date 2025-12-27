@@ -14,20 +14,20 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
 
   @Get('product-images')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   getProductImages() {
     return this.categoriesService.getAvailableProductImages();
   }
@@ -51,7 +51,7 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -60,7 +60,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }

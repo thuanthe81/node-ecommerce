@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OrderPDFData, PDFStyling } from './types/pdf.types';
-import { BUSINESS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { PDFLocalizationService } from './services/pdf-localization.service';
 import { ShippingService } from '../shipping/shipping.service';
 
@@ -58,7 +58,7 @@ export class PDFDocumentStructureService {
    */
   private generateHeader(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
-    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = orderData.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <header class="document-header">
@@ -648,7 +648,7 @@ export class PDFDocumentStructureService {
    */
   private generateFooter(orderData: OrderPDFData, locale: 'en' | 'vi'): string {
     const isVietnamese = locale === 'vi';
-    const companyName = orderData.businessInfo?.companyName || (isVietnamese ? 'Ala Craft' : 'Ala Craft');
+    const companyName = orderData.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return `
       <footer class="document-footer">

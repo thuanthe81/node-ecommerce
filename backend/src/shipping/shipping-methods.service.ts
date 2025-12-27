@@ -10,7 +10,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateShippingMethodDto } from './dto/create-shipping-method.dto';
 import { UpdateShippingMethodDto } from './dto/update-shipping-method.dto';
-import { CACHE_KEYS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { ShippingValidationService } from './services/shipping-validation.service';
 
 // Cache TTL: 30 minutes (in milliseconds)
@@ -76,7 +76,7 @@ export class ShippingMethodsService {
    */
   async findAllActive() {
     // Try to get from cache
-    const cacheKey = CACHE_KEYS.SHIPPING.METHODS;
+    const cacheKey = CONSTANTS.CACHE_KEYS.SHIPPING.METHODS;
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) {
       return cached as any[];
@@ -254,15 +254,15 @@ export class ShippingMethodsService {
    */
   private async invalidateCache(id?: string, methodId?: string) {
     // Invalidate list caches
-    await this.cacheManager.del(CACHE_KEYS.SHIPPING.METHODS);
-    await this.cacheManager.del(CACHE_KEYS.SHIPPING.METHOD_LIST);
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SHIPPING.METHODS);
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SHIPPING.METHOD_LIST);
 
     // Invalidate specific method caches if provided
     if (id) {
-      await this.cacheManager.del(CACHE_KEYS.SHIPPING.METHOD_BY_ID(id));
+      await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SHIPPING.METHOD_BY_ID(id));
     }
     if (methodId) {
-      await this.cacheManager.del(CACHE_KEYS.SHIPPING.METHOD_BY_METHOD_ID(methodId));
+      await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SHIPPING.METHOD_BY_METHOD_ID(methodId));
     }
   }
 }

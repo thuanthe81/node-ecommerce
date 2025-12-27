@@ -14,11 +14,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
-import { STATUS } from '../common/constants';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UpdatePasswordDto } from './dto/update-password.dto';
+import { CONSTANTS } from '@alacraft/shared';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -27,7 +27,7 @@ export class UsersController {
 
   @Get('count')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   getCount() {
     return this.usersService.getCount();
   }

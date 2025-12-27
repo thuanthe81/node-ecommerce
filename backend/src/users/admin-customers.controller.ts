@@ -11,12 +11,12 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { CustomerFiltersDto } from './dto/customer-filters.dto';
 
 @Controller('admin/customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(STATUS.USER_ROLES.ADMIN)
+@Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
 export class AdminCustomersController {
   constructor(private readonly usersService: UsersService) {}
 

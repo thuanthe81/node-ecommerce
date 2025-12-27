@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { BusinessInfoData, AddressData } from '../../pdf-generator/types/pdf.types';
-import { BUSINESS, ConstantUtils } from '../constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 /**
  * Service for managing business information across the application
@@ -32,8 +32,8 @@ export class BusinessInfoService {
    */
   async getBusinessInfo(locale: 'en' | 'vi' = 'en'): Promise<BusinessInfoData> {
     const businessInfo: BusinessInfoData = {
-      companyName: ConstantUtils.getCompanyName(locale),
-      logoUrl: BUSINESS.ASSETS.LOGO,
+      companyName: locale === 'vi' ? CONSTANTS.BUSINESS.COMPANY.NAME.VI : CONSTANTS.BUSINESS.COMPANY.NAME.EN,
+      logoUrl: CONSTANTS.BUSINESS.ASSETS.LOGO,
       contactEmail: '',
       contactPhone: undefined,
       website: '',
@@ -104,7 +104,7 @@ export class BusinessInfoService {
     }
 
     // Default to the primary website URL from constants
-    return BUSINESS.WEBSITE.WWW;
+    return CONSTANTS.BUSINESS.WEBSITE.WWW;
   }
 
   /**
@@ -134,12 +134,13 @@ export class BusinessInfoService {
 
   /**
    * Get company name for the specified locale
-   *
+   * @deprecated Use CONSTANTS.BUSINESS.COMPANY.NAME from @alacraft/shared instead
    * @param locale - Language locale
    * @returns Localized company name
    */
   getCompanyName(locale: 'en' | 'vi' = 'en'): string {
-    return ConstantUtils.getCompanyName(locale);
+    console.warn('BusinessInfoService.getCompanyName is deprecated. Use CONSTANTS.BUSINESS.COMPANY.NAME from @alacraft/shared instead.');
+    return locale === 'vi' ? CONSTANTS.BUSINESS.COMPANY.NAME.VI : CONSTANTS.BUSINESS.COMPANY.NAME.EN;
   }
 
   /**
@@ -150,10 +151,10 @@ export class BusinessInfoService {
   async getContactEmail(): Promise<string> {
     try {
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      return footerSettings?.contactEmail || BUSINESS.CONTACT.EMAIL.PRIMARY;
+      return footerSettings?.contactEmail || CONSTANTS.BUSINESS.CONTACT.EMAIL.PRIMARY;
     } catch (error) {
       this.logger.error('Failed to fetch contact email from footer settings:', error);
-      return BUSINESS.CONTACT.EMAIL.PRIMARY;
+      return CONSTANTS.BUSINESS.CONTACT.EMAIL.PRIMARY;
     }
   }
 

@@ -16,7 +16,7 @@ import type { Response } from 'express';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { STATUS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { EmailEventPublisher } from '../services/email-event-publisher.service';
 import { EmailQueueMonitoringService } from '../services/email-queue-monitoring.service';
 
@@ -30,7 +30,7 @@ import { EmailQueueMonitoringService } from '../services/email-queue-monitoring.
  */
 @Controller('admin/email-queue')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(STATUS.USER_ROLES.ADMIN)
+@Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
 export class EmailQueueAdminController {
   constructor(
     private emailEventPublisher: EmailEventPublisher,

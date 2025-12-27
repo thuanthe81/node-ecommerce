@@ -9,7 +9,7 @@ import { CreateProductImageDto } from './dto/create-product-image.dto';
 import sharp from 'sharp';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { SYSTEM } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class ProductsImageService {
@@ -184,7 +184,7 @@ export class ProductsImageService {
     }
 
     // Validate file type
-    const allowedMimeTypes = [SYSTEM.MIME_TYPES.JPEG, SYSTEM.MIME_TYPES.PNG, SYSTEM.MIME_TYPES.WEBP];
+    const allowedMimeTypes = [CONSTANTS.SYSTEM.MIME_TYPES.JPEG, CONSTANTS.SYSTEM.MIME_TYPES.PNG, CONSTANTS.SYSTEM.MIME_TYPES.WEBP];
     if (!allowedMimeTypes.includes(file.mimetype as any)) {
       throw new BadRequestException(
         'Invalid file type. Only JPEG, PNG, and WebP are allowed.',
@@ -288,7 +288,7 @@ export class ProductsImageService {
     // Ensure product-specific directories exist
     await this.ensureProductDirectories(productId);
 
-    const allowedMimeTypes = [SYSTEM.MIME_TYPES.JPEG, SYSTEM.MIME_TYPES.PNG, SYSTEM.MIME_TYPES.WEBP];
+    const allowedMimeTypes = [CONSTANTS.SYSTEM.MIME_TYPES.JPEG, CONSTANTS.SYSTEM.MIME_TYPES.PNG, CONSTANTS.SYSTEM.MIME_TYPES.WEBP];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     // Validate all files first and collect errors

@@ -9,7 +9,7 @@ import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
-import { CACHE_KEYS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class CartService {
@@ -365,7 +365,7 @@ export class CartService {
   }
 
   private getCacheKey(userId: string): string {
-    return CACHE_KEYS.CART.BY_USER(userId);
+    return CONSTANTS.CACHE_KEYS.CART.BY_USER(userId);
   }
 
   private async invalidateCache(userId: string) {

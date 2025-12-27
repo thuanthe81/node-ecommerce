@@ -49,9 +49,9 @@ export default function OrderCard({ order, locale }: OrderCardProps) {
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${statusColor}`}
-          aria-label={`${t('status')}: ${getOrderStatusText(order.status, t)}`}
+          aria-label={`${t('status')}: ${getOrderStatusText(order.status, t, locale as 'en' | 'vi')}`}
         >
-          {getOrderStatusText(order.status, t)}
+          {getOrderStatusText(order.status, t, locale as 'en' | 'vi')}
         </span>
       </div>
 

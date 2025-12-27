@@ -18,7 +18,15 @@ import {
 } from '../errors/template-errors';
 import { EmailHandlebarsHelpers } from '../helpers/email-handlebars-helpers';
 import { DesignSystemInjector } from './design-system-injector.service';
-import { EmailTranslationService } from './email-translation.service';
+import {
+  getEmailTemplateTranslations,
+  getOrderConfirmationTranslations,
+  getAdminOrderNotificationTranslations,
+  getOrderStatusUpdateTranslations,
+  translateOrderStatus,
+  translatePaymentStatus,
+  SupportedLocale
+} from '@alacraft/shared';
 import { TemplateLoaderService } from './template-loader.service';
 import { CSSInjectorService } from './css-injector.service';
 import { PartialTemplateValidator } from '../utils/partial-template-validator';
@@ -39,7 +47,6 @@ export class VariableReplacerService implements IVariableReplacer {
     private readonly htmlEscapingService: HTMLEscapingService,
     private readonly businessInfoService: BusinessInfoService,
     private readonly designSystemInjector: DesignSystemInjector,
-    private readonly emailTranslationService: EmailTranslationService,
     private readonly templateLoaderService: TemplateLoaderService,
     private readonly cssInjectorService: CSSInjectorService,
     @Inject('VariableReplacerConfig') private readonly config: VariableReplacerConfig
@@ -530,9 +537,9 @@ export class VariableReplacerService implements IVariableReplacer {
     this.logger.debug("getTranslations for template: ", templateName);
     switch (templateName) {
       case 'orders/template-admin-order-notification':
-        return this.emailTranslationService.getEmailTemplateTranslations(locale);
+        return getAdminOrderNotificationTranslations(locale);
       default:
-        return this.emailTranslationService.getOrderConfirmationTranslations(locale);
+        return getOrderConfirmationTranslations(locale);
     }
   }
 
@@ -596,8 +603,16 @@ export class VariableReplacerService implements IVariableReplacer {
    * Get localized status text
    */
   private getStatusText(status: string, locale: 'en' | 'vi'): string {
-    const statusTranslations = this.emailTranslationService.getStatusTranslations(locale);
-    return statusTranslations[status.toLowerCase()] || status;
+    // Try to translate as order status first, then payment status
+    try {
+      return translateOrderStatus(status as any, locale);
+    } catch {
+      try {
+        return translatePaymentStatus(status as any, locale);
+      } catch {
+        return status; // Fallback to original status
+      }
+    }
   }
 
   /**

@@ -17,10 +17,10 @@ import { EmailAttachmentService } from '../pdf-generator/services/email-attachme
 import { EmailFlowLogger } from '../email-queue/utils/email-flow-logger';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
 import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
+import { ShippingService } from '../shipping/shipping.service';
 import { BusinessInfoService } from '../common/services/business-info.service';
 import { TranslationService } from '../common/services/translation.service';
-import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
 export class OrdersService {
@@ -584,7 +584,7 @@ export class OrdersService {
     // - Admins can view any order
     // - Authenticated users can only view their own orders
     // - Guest users (no userId) can view guest orders (order.userId is null)
-    if (userRole === STATUS.USER_ROLES.ADMIN) {
+    if (userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN) {
       // Admin can view any order
       return order;
     }

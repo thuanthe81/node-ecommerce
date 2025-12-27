@@ -50,7 +50,7 @@ export function OrderSummary({ order, locale }: OrderSummaryProps) {
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('status')}</dt>
-          <dd className="text-base font-semibold text-gray-900">{getOrderStatusText(order.status, t)}</dd>
+          <dd className="text-base font-semibold text-gray-900">{getOrderStatusText(order.status, t, locale as 'en' | 'vi')}</dd>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentMethod')}</dt>
@@ -58,7 +58,7 @@ export function OrderSummary({ order, locale }: OrderSummaryProps) {
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('paymentStatus')}</dt>
-          <dd className="text-base font-semibold text-gray-900">{getPaymentStatusText(order.paymentStatus, tEmail)}</dd>
+          <dd className="text-base font-semibold text-gray-900">{getPaymentStatusText(order.paymentStatus, tEmail, locale as 'en' | 'vi')}</dd>
         </div>
       </dl>
 

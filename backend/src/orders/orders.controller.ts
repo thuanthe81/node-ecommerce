@@ -29,7 +29,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import type { Request } from 'express';
 
 @Controller('orders')
@@ -55,7 +55,7 @@ export class OrdersController {
   @Get()
   findAll(@CurrentUser() user: { userId: string; role: UserRole }) {
     // Regular users get their own orders
-    if (user.role === STATUS.USER_ROLES.CUSTOMER) {
+    if (user.role === CONSTANTS.STATUS.USER_ROLES.CUSTOMER) {
       return this.ordersService.findAllByUser(user.userId);
     }
 
@@ -64,7 +64,7 @@ export class OrdersController {
   }
 
   @Get('admin/all')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   findAllAdmin(
     @Query('status') status?: OrderStatus,
     @Query('paymentStatus') paymentStatus?: PaymentStatus,
@@ -265,7 +265,7 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   updateStatus(
     @Param('id') id: string,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
@@ -274,7 +274,7 @@ export class OrdersController {
   }
 
   @Patch(':id/payment-status')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   updatePaymentStatus(
     @Param('id') id: string,
     @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
@@ -283,7 +283,7 @@ export class OrdersController {
   }
 
   @Patch(':orderId/items/:orderItemId/price')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   setOrderItemPrice(
     @Param('orderId') orderId: string,
     @Param('orderItemId') orderItemId: string,

@@ -6,7 +6,7 @@
  * and provide a centralized place to manage the visual design system.
  */
 
-import { BUSINESS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export interface ModernEmailStyles {
   colors: {
@@ -649,7 +649,7 @@ export const ACCESSIBILITY_STANDARDS = {
     skipLink: 'Skip to main content',
     tableCaption: 'Order details table',
     imageAlt: {
-      logo: `${BUSINESS.COMPANY.NAME.EN} logo`,
+      logo: `${CONSTANTS.BUSINESS.COMPANY.NAME.EN} logo`,
       product: 'Product image',
       qrCode: 'QR code for payment',
       decorative: '', // Empty alt for decorative images

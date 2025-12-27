@@ -4,7 +4,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { TranslationService } from '../../../src/common/services/translation.service';
-import { STATUS } from '../../../src/common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 describe('TranslationService', () => {
   let service: TranslationService;

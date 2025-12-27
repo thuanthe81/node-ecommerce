@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleStrategy } from '../../../src/auth/strategies/google.strategy';
 import { AuthService } from '../../../src/auth/auth.service';
 import { Profile } from 'passport-google-oauth20';
-import { STATUS } from '../../../src/common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 describe('GoogleStrategy', () => {
   let strategy: GoogleStrategy;

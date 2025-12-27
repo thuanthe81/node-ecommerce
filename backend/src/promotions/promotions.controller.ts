@@ -14,7 +14,7 @@ import { UpdatePromotionDto } from './dto/update-promotion.dto';
 import { ValidatePromotionDto } from './dto/validate-promotion.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -23,25 +23,25 @@ export class PromotionsController {
   constructor(private readonly promotionsService: PromotionsService) {}
 
   @Post()
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   create(@Body() createPromotionDto: CreatePromotionDto) {
     return this.promotionsService.create(createPromotionDto);
   }
 
   @Get()
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   findAll() {
     return this.promotionsService.findAll();
   }
 
   @Get(':id')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.promotionsService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updatePromotionDto: UpdatePromotionDto,
@@ -50,7 +50,7 @@ export class PromotionsController {
   }
 
   @Delete(':id')
-  @Roles(STATUS.USER_ROLES.ADMIN)
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.promotionsService.remove(id);
   }

@@ -1,5 +1,7 @@
 
+import { BUSINESS } from '@alacraft/shared';
+
 export const ShopInfo = {
-  name: "ALA Craft",
+  name: BUSINESS.COMPANY.NAME.EN,
   desc: "Handmade Accessories Shop"
-}
+};

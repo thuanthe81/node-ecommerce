@@ -6,7 +6,7 @@
  */
 
 import type { HelperDelegate } from 'handlebars';
-import { BUSINESS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 /**
  * Collection of email-specific Handlebars helpers
@@ -415,7 +415,7 @@ export class EmailHandlebarsHelpers {
   private static companyNameHelper(): HelperDelegate {
     return function(locale?: string) {
       const templateLocale = locale || (this as any).locale || 'en';
-      return templateLocale === 'vi' ? BUSINESS.COMPANY.NAME.VI : BUSINESS.COMPANY.NAME.EN;
+      return templateLocale === 'vi' ? CONSTANTS.BUSINESS.COMPANY.NAME.VI : CONSTANTS.BUSINESS.COMPANY.NAME.EN;
     };
   }
 
@@ -426,7 +426,7 @@ export class EmailHandlebarsHelpers {
     return function() {
       // This will be injected by the template context preparation
       // The actual logic is in the variable replacer service
-      return (this as any).supportEmail || BUSINESS.CONTACT.EMAIL.PRIMARY;
+      return (this as any).supportEmail || CONSTANTS.BUSINESS.CONTACT.EMAIL.PRIMARY;
     };
   }
 
@@ -437,7 +437,7 @@ export class EmailHandlebarsHelpers {
     return function() {
       // This will be injected by the template context preparation
       // The actual logic is in the variable replacer service
-      return (this as any).websiteUrl || BUSINESS.WEBSITE.PRIMARY;
+      return (this as any).websiteUrl || CONSTANTS.BUSINESS.WEBSITE.PRIMARY;
     };
   }
 
@@ -446,7 +446,7 @@ export class EmailHandlebarsHelpers {
    */
   private static frontendUrlHelper(): HelperDelegate {
     return function() {
-      return process.env.FRONTEND_URL || BUSINESS.WEBSITE.PRIMARY;
+      return process.env.FRONTEND_URL || CONSTANTS.BUSINESS.WEBSITE.PRIMARY;
     };
   }
 

@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmailTestingUtils } from '../src/common/utils/email-testing.utils';
 import { UserRole, OrderStatus, PaymentStatus } from '@prisma/client';
-import { STATUS } from '../src/common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 /**
  * Integration Tests for Order Access Control and Cancellation
@@ -203,7 +203,7 @@ describe('Order Access Control and Cancellation Integration (e2e)', () => {
           .expect(200);
 
         expect(cancellationResponse.body.success).toBe(true);
-        expect(cancellationResponse.body.order.status).toBe(STATUS.ORDER_STATUS.CANCELLED);
+        expect(cancellationResponse.body.order.status).toBe(CONSTANTS.STATUS.ORDER_STATUS.CANCELLED);
         expect(cancellationResponse.body.emailSent).toBe(true);
 
         // Step 3: Verify order status in database
@@ -211,7 +211,7 @@ describe('Order Access Control and Cancellation Integration (e2e)', () => {
           where: { id: cancellableOrder.id },
         });
 
-        expect(updatedOrder?.status).toBe(STATUS.ORDER_STATUS.CANCELLED);
+        expect(updatedOrder?.status).toBe(CONSTANTS.STATUS.ORDER_STATUS.CANCELLED);
         expect(updatedOrder?.cancelledAt).toBeDefined();
         expect(updatedOrder?.cancellationReason).toBe('Changed my mind');
 
@@ -242,7 +242,7 @@ describe('Order Access Control and Cancellation Integration (e2e)', () => {
           .expect(200);
 
         expect(cancellationResponse.body.success).toBe(true);
-        expect(cancellationResponse.body.order.status).toBe(STATUS.ORDER_STATUS.CANCELLED);
+        expect(cancellationResponse.body.order.status).toBe(CONSTANTS.STATUS.ORDER_STATUS.CANCELLED);
 
         // Verify audit logging (check database for audit records)
         const updatedOrder = await prismaService.order.findUnique({
@@ -347,7 +347,7 @@ describe('Order Access Control and Cancellation Integration (e2e)', () => {
 
       expect(response.body.success).toBe(true);
       // Email failure should not prevent cancellation
-      expect(response.body.order.status).toBe(STATUS.ORDER_STATUS.CANCELLED);
+      expect(response.body.order.status).toBe(CONSTANTS.STATUS.ORDER_STATUS.CANCELLED);
     });
   });
 

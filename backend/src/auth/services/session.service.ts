@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { EncryptionService } from '../../common/services/encryption.service';
-import { CACHE_KEYS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export interface SessionData {
   userId: string;
@@ -45,7 +45,7 @@ export class SessionService {
 
     // Store in Redis with TTL
     await this.cacheManager.set(
-      CACHE_KEYS.SESSION.BY_ID(sessionId),
+      CONSTANTS.CACHE_KEYS.SESSION.BY_ID(sessionId),
       encryptedData,
       this.sessionTTL * 1000, // Convert to milliseconds
     );
@@ -60,7 +60,7 @@ export class SessionService {
    */
   async getSession(sessionId: string): Promise<SessionData | null> {
     const encryptedData = await this.cacheManager.get<string>(
-      CACHE_KEYS.SESSION.BY_ID(sessionId),
+      CONSTANTS.CACHE_KEYS.SESSION.BY_ID(sessionId),
     );
 
     if (!encryptedData) {
@@ -103,7 +103,7 @@ export class SessionService {
     );
 
     await this.cacheManager.set(
-      CACHE_KEYS.SESSION.BY_ID(sessionId),
+      CONSTANTS.CACHE_KEYS.SESSION.BY_ID(sessionId),
       encryptedData,
       this.sessionTTL * 1000,
     );
@@ -114,7 +114,7 @@ export class SessionService {
    * @param sessionId - Session ID
    */
   async deleteSession(sessionId: string): Promise<void> {
-    await this.cacheManager.del(CACHE_KEYS.SESSION.BY_ID(sessionId));
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SESSION.BY_ID(sessionId));
   }
 
   /**

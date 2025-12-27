@@ -9,7 +9,7 @@ import { FooterSettingsService } from '../../footer-settings/footer-settings.ser
 import { EmailQueueConfigService } from './email-queue-config.service';
 import { EmailAttachmentService } from '../../pdf-generator/services/email-attachment.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
-import { STATUS } from '../../common/constants';
+import { CONSTANTS, OrderStatus, PaymentStatus } from '@alacraft/shared';
 import Redis from 'ioredis';
 
 /**
@@ -1060,8 +1060,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         total: Number(item.total || item.price * item.quantity),
       })),
       orderTotal: Number(order.total),
-      refundRequired: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID,
-      refundAmount: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
+      refundRequired: order.paymentStatus === CONSTANTS.STATUS.PAYMENT_STATUS.PAID,
+      refundAmount: order.paymentStatus === CONSTANTS.STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
       refundMethod: order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Original Payment Method',
       estimatedRefundDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
       paymentStatus: order.paymentStatus,
@@ -1150,8 +1150,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         total: Number(item.total || item.price * item.quantity),
       })),
       orderTotal: Number(order.total),
-      refundRequired: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID,
-      refundAmount: order.paymentStatus === STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
+      refundRequired: order.paymentStatus === CONSTANTS.STATUS.PAYMENT_STATUS.PAID,
+      refundAmount: order.paymentStatus === CONSTANTS.STATUS.PAYMENT_STATUS.PAID ? Number(order.total) : 0,
       refundMethod: order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Original Payment Method',
       estimatedRefundDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days from now
       paymentStatus: order.paymentStatus,

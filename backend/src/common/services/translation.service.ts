@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { STATUS } from '../constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export type SupportedLocale = 'en' | 'vi';
 
@@ -17,22 +17,22 @@ export class TranslationService {
    */
   private readonly orderStatusTranslations: Record<SupportedLocale, Record<string, string>> = {
     en: {
-      [STATUS.ORDER_STATUS.PENDING]: 'Pending',
-      [STATUS.ORDER_STATUS.PENDING_QUOTE]: 'Pending Quote',
-      [STATUS.ORDER_STATUS.PROCESSING]: 'Processing',
-      [STATUS.ORDER_STATUS.SHIPPED]: 'Shipped',
-      [STATUS.ORDER_STATUS.DELIVERED]: 'Delivered',
-      [STATUS.ORDER_STATUS.CANCELLED]: 'Cancelled',
-      [STATUS.ORDER_STATUS.REFUNDED]: 'Refunded',
+      [CONSTANTS.STATUS.ORDER_STATUS.PENDING]: 'Pending',
+      [CONSTANTS.STATUS.ORDER_STATUS.PENDING_QUOTE]: 'Pending Quote',
+      [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING]: 'Processing',
+      [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED]: 'Shipped',
+      [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED]: 'Delivered',
+      [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED]: 'Cancelled',
+      [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED]: 'Refunded',
     },
     vi: {
-      [STATUS.ORDER_STATUS.PENDING]: 'Chờ xử lý',
-      [STATUS.ORDER_STATUS.PENDING_QUOTE]: 'Chờ báo giá',
-      [STATUS.ORDER_STATUS.PROCESSING]: 'Đang xử lý',
-      [STATUS.ORDER_STATUS.SHIPPED]: 'Đã giao vận',
-      [STATUS.ORDER_STATUS.DELIVERED]: 'Đã giao hàng',
-      [STATUS.ORDER_STATUS.CANCELLED]: 'Đã hủy',
-      [STATUS.ORDER_STATUS.REFUNDED]: 'Đã hoàn tiền',
+      [CONSTANTS.STATUS.ORDER_STATUS.PENDING]: 'Chờ xử lý',
+      [CONSTANTS.STATUS.ORDER_STATUS.PENDING_QUOTE]: 'Chờ báo giá',
+      [CONSTANTS.STATUS.ORDER_STATUS.PROCESSING]: 'Đang xử lý',
+      [CONSTANTS.STATUS.ORDER_STATUS.SHIPPED]: 'Đã giao vận',
+      [CONSTANTS.STATUS.ORDER_STATUS.DELIVERED]: 'Đã giao hàng',
+      [CONSTANTS.STATUS.ORDER_STATUS.CANCELLED]: 'Đã hủy',
+      [CONSTANTS.STATUS.ORDER_STATUS.REFUNDED]: 'Đã hoàn tiền',
     },
   };
 
@@ -41,16 +41,16 @@ export class TranslationService {
    */
   private readonly paymentStatusTranslations: Record<SupportedLocale, Record<string, string>> = {
     en: {
-      [STATUS.PAYMENT_STATUS.PENDING]: 'Pending',
-      [STATUS.PAYMENT_STATUS.PAID]: 'Paid',
-      [STATUS.PAYMENT_STATUS.FAILED]: 'Failed',
-      [STATUS.PAYMENT_STATUS.REFUNDED]: 'Refunded',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING]: 'Pending',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.PAID]: 'Paid',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED]: 'Failed',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED]: 'Refunded',
     },
     vi: {
-      [STATUS.PAYMENT_STATUS.PENDING]: 'Chờ thanh toán',
-      [STATUS.PAYMENT_STATUS.PAID]: 'Đã thanh toán',
-      [STATUS.PAYMENT_STATUS.FAILED]: 'Thất bại',
-      [STATUS.PAYMENT_STATUS.REFUNDED]: 'Đã hoàn tiền',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.PENDING]: 'Chờ thanh toán',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.PAID]: 'Đã thanh toán',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.FAILED]: 'Thất bại',
+      [CONSTANTS.STATUS.PAYMENT_STATUS.REFUNDED]: 'Đã hoàn tiền',
     },
   };
 
@@ -140,11 +140,14 @@ export class TranslationService {
 
   /**
    * Translate order status to localized text
+   * @deprecated Use translateOrderStatus from @alacraft/shared instead
    * @param status - Order status value
    * @param locale - Target locale
    * @returns Translated status text
    */
   translateOrderStatus(status: string, locale: SupportedLocale = 'en'): string {
+    console.warn('TranslationService.translateOrderStatus is deprecated. Use translateOrderStatus from @alacraft/shared instead.');
+
     if (!status) return status;
 
     const normalizedStatus = status.toUpperCase();
@@ -155,11 +158,14 @@ export class TranslationService {
 
   /**
    * Translate payment status to localized text
+   * @deprecated Use translatePaymentStatus from @alacraft/shared instead
    * @param status - Payment status value
    * @param locale - Target locale
    * @returns Translated status text
    */
   translatePaymentStatus(status: string, locale: SupportedLocale = 'en'): string {
+    console.warn('TranslationService.translatePaymentStatus is deprecated. Use translatePaymentStatus from @alacraft/shared instead.');
+
     if (!status) return status;
 
     const normalizedStatus = status.toUpperCase();

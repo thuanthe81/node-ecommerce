@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
 import * as http from 'http';
-import { SYSTEM } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 /**
  * PDF Image Converter Service
@@ -219,17 +219,17 @@ export class PDFImageConverterService {
     const ext = path.extname(filePath).toLowerCase();
 
     const mimeTypes: Record<string, string> = {
-      '.jpg': SYSTEM.MIME_TYPES.JPEG,
-      '.jpeg': SYSTEM.MIME_TYPES.JPEG,
-      '.png': SYSTEM.MIME_TYPES.PNG,
+      '.jpg': CONSTANTS.SYSTEM.MIME_TYPES.JPEG,
+      '.jpeg': CONSTANTS.SYSTEM.MIME_TYPES.JPEG,
+      '.png': CONSTANTS.SYSTEM.MIME_TYPES.PNG,
       '.gif': 'image/gif',
-      '.webp': SYSTEM.MIME_TYPES.WEBP,
+      '.webp': CONSTANTS.SYSTEM.MIME_TYPES.WEBP,
       '.svg': 'image/svg+xml',
       '.bmp': 'image/bmp',
       '.ico': 'image/x-icon',
     };
 
-    return mimeTypes[ext] || SYSTEM.MIME_TYPES.JPEG; // Default to JPEG
+    return mimeTypes[ext] || CONSTANTS.SYSTEM.MIME_TYPES.JPEG; // Default to JPEG
   }
 
   /**

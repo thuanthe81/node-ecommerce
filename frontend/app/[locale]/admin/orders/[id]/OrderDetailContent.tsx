@@ -289,7 +289,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
               order.status
             )}`}
           >
-            {getOrderStatusText(order.status, t)}
+            {getOrderStatusText(order.status, t, locale as 'en' | 'vi')}
           </span>
         </div>
       </div>
@@ -310,13 +310,13 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="PENDING">{getOrderStatusText('PENDING', t)}</option>
-            <option value="PENDING_QUOTE">{getOrderStatusText('PENDING_QUOTE', t)}</option>
-            <option value="PROCESSING">{getOrderStatusText('PROCESSING', t)}</option>
-            <option value="SHIPPED">{getOrderStatusText('SHIPPED', t)}</option>
-            <option value="DELIVERED">{getOrderStatusText('DELIVERED', t)}</option>
-            <option value="CANCELLED">{getOrderStatusText('CANCELLED', t)}</option>
-            <option value="REFUNDED">{getOrderStatusText('REFUNDED', t)}</option>
+            <option value="PENDING">{getOrderStatusText('PENDING', t, locale as 'en' | 'vi')}</option>
+            <option value="PENDING_QUOTE">{getOrderStatusText('PENDING_QUOTE', t, locale as 'en' | 'vi')}</option>
+            <option value="PROCESSING">{getOrderStatusText('PROCESSING', t, locale as 'en' | 'vi')}</option>
+            <option value="SHIPPED">{getOrderStatusText('SHIPPED', t, locale as 'en' | 'vi')}</option>
+            <option value="DELIVERED">{getOrderStatusText('DELIVERED', t, locale as 'en' | 'vi')}</option>
+            <option value="CANCELLED">{getOrderStatusText('CANCELLED', t, locale as 'en' | 'vi')}</option>
+            <option value="REFUNDED">{getOrderStatusText('REFUNDED', t, locale as 'en' | 'vi')}</option>
           </select>
           <button
             onClick={handleStatusUpdate}
@@ -339,7 +339,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                 order.paymentStatus
               )}`}
             >
-              {getPaymentStatusText(order.paymentStatus, t)}
+              {getPaymentStatusText(order.paymentStatus, t, locale as 'en' | 'vi')}
             </span>
           </div>
           <button
@@ -532,7 +532,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                     order.status
                   )}`}
                 >
-                  {getOrderStatusText(order.status, t)}
+                  {getOrderStatusText(order.status, t, locale as 'en' | 'vi')}
                 </span>
               </dd>
             </div>
@@ -544,7 +544,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                     order.paymentStatus
                   )}`}
                 >
-                  {getPaymentStatusText(order.paymentStatus, t)}
+                  {getPaymentStatusText(order.paymentStatus, t, locale as 'en' | 'vi')}
                 </span>
               </dd>
             </div>

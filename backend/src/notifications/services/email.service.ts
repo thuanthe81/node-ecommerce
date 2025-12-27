@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { EmailTestingUtils } from '../../common/utils/email-testing.utils';
-import { SYSTEM } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 const execAsync = promisify(exec);
 
@@ -65,11 +65,11 @@ export class EmailService {
 
       // Get contact email from footer settings to use as "from" address and SMTP user
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
+      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || CONSTANTS.SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
-      const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
+      const smtpServer = process.env.SMTP_SERVER || CONSTANTS.SYSTEM.EMAIL.SMTP_SERVER;
+      const smtpPort = process.env.SMTP_PORT || CONSTANTS.SYSTEM.EMAIL.SMTP_PORT;
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
       // Check if SMTP configuration is valid
@@ -102,7 +102,7 @@ export class EmailService {
       }
 
       // Add HTML body with proper shell escaping
-      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
+      command += ` --attach-type ${CONSTANTS.SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
 
       // Log the command for debugging (without sensitive info)
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
@@ -150,11 +150,11 @@ export class EmailService {
 
       // Get contact email from footer settings to use as "from" address and SMTP user
       const footerSettings = await this.footerSettingsService.getFooterSettings();
-      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || SYSTEM.EMAIL.DEFAULT_FROM;
+      const smtpUser = footerSettings.contactEmail || process.env.SMTP_USER || CONSTANTS.SYSTEM.EMAIL.DEFAULT_FROM;
 
       // Get SMTP configuration from environment variables
-      const smtpServer = process.env.SMTP_SERVER || SYSTEM.EMAIL.SMTP_SERVER;
-      const smtpPort = process.env.SMTP_PORT || SYSTEM.EMAIL.SMTP_PORT;
+      const smtpServer = process.env.SMTP_SERVER || CONSTANTS.SYSTEM.EMAIL.SMTP_SERVER;
+      const smtpPort = process.env.SMTP_PORT || CONSTANTS.SYSTEM.EMAIL.SMTP_PORT;
       const smtpPassword = process.env.SMTP_PASSWORD || '';
 
       // Build swaks command with proper escaping
@@ -197,7 +197,7 @@ export class EmailService {
 
       // When attachments are present, swaks handles MIME structure automatically
       // Just add the body content and let swaks create the multipart structure
-      command += ` --attach-type ${SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
+      command += ` --attach-type ${CONSTANTS.SYSTEM.MIME_TYPES.HTML} --attach-body ${this.escapeHtmlForSwaks(simplifiedHtml)}`;
 
       // Log the command for debugging (without sensitive info)
       const debugCommand = command.replace(/--auth-password "[^"]*"/, '--auth-password "[REDACTED]"');
@@ -229,17 +229,17 @@ export class EmailService {
     const ext = path.extname(filePath).toLowerCase();
 
     const mimeTypes: Record<string, string> = {
-      '.pdf': SYSTEM.MIME_TYPES.PDF,
-      '.jpg': SYSTEM.MIME_TYPES.JPEG,
-      '.jpeg': SYSTEM.MIME_TYPES.JPEG,
-      '.png': SYSTEM.MIME_TYPES.PNG,
+      '.pdf': CONSTANTS.SYSTEM.MIME_TYPES.PDF,
+      '.jpg': CONSTANTS.SYSTEM.MIME_TYPES.JPEG,
+      '.jpeg': CONSTANTS.SYSTEM.MIME_TYPES.JPEG,
+      '.png': CONSTANTS.SYSTEM.MIME_TYPES.PNG,
       '.gif': 'image/gif',
-      '.txt': SYSTEM.MIME_TYPES.TEXT,
-      '.html': SYSTEM.MIME_TYPES.HTML,
+      '.txt': CONSTANTS.SYSTEM.MIME_TYPES.TEXT,
+      '.html': CONSTANTS.SYSTEM.MIME_TYPES.HTML,
       '.css': 'text/css',
       '.js': 'application/javascript',
-      '.json': SYSTEM.MIME_TYPES.JSON,
-      '.xml': SYSTEM.MIME_TYPES.XML,
+      '.json': CONSTANTS.SYSTEM.MIME_TYPES.JSON,
+      '.xml': CONSTANTS.SYSTEM.MIME_TYPES.XML,
       '.zip': 'application/zip',
       '.doc': 'application/msword',
       '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

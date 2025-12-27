@@ -13,7 +13,7 @@ import { CustomerFiltersDto } from './dto/customer-filters.dto';
 import { AddressDeduplicationUtil, NormalizedAddress } from './utils/address-deduplication.util';
 import { Address } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { STATUS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class UsersService {
@@ -365,7 +365,7 @@ export class UsersService {
 
     // Build where clause
     const where: any = {
-      role: STATUS.USER_ROLES.CUSTOMER, // Only fetch customers, not admins
+      role: CONSTANTS.STATUS.USER_ROLES.CUSTOMER, // Only fetch customers, not admins
     };
 
     // Add search filter
@@ -558,7 +558,7 @@ export class UsersService {
 
   async getCount() {
     const count = await this.prisma.user.count({
-      where: { role: STATUS.USER_ROLES.CUSTOMER },
+      where: { role: CONSTANTS.STATUS.USER_ROLES.CUSTOMER },
     });
     return { count };
   }

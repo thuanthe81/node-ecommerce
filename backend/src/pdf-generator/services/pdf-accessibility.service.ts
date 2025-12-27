@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PDFStyling, OrderPDFData } from '../types/pdf.types';
-import { BUSINESS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 /**
  * PDF Accessibility Service
@@ -110,7 +110,7 @@ export class PDFAccessibilityService {
     this.logger.log(`Enhancing image alt text for locale ${locale}`);
 
     // Enhance company logo alt text
-    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = orderData.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
     content = content.replace(
       /(<img[^>]*class="company-logo"[^>]*alt=")[^"]*(")/g,
       `$1${this.getCompanyLogoAltText(companyName, locale)}$2`
@@ -147,7 +147,7 @@ export class PDFAccessibilityService {
    */
   generateAccessibilityMetadata(orderData: OrderPDFData, locale: 'en' | 'vi'): Record<string, any> {
     const isVietnamese = locale === 'vi';
-    const companyName = orderData.businessInfo?.companyName || BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+    const companyName = orderData.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
     return {
       // PDF/UA compliance metadata

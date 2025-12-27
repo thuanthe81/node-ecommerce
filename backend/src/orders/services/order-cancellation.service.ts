@@ -10,7 +10,7 @@ import { AccessControlService, OrderAccessContext } from './access-control.servi
 import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
 import { ErrorHandlingService, ErrorCodes } from '../../common/services/error-handling.service';
 import { OrderStatus, UserRole } from '@prisma/client';
-import { STATUS } from '../../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export interface CancellationResult {
   success: boolean;
@@ -316,8 +316,8 @@ export class OrderCancellationService {
    */
   isOrderCancellable(order: any): boolean {
     const cancellableStatuses = [
-      STATUS.ORDER_STATUS.PENDING,
-      STATUS.ORDER_STATUS.PROCESSING,
+      CONSTANTS.STATUS.ORDER_STATUS.PENDING,
+      CONSTANTS.STATUS.ORDER_STATUS.PROCESSING,
     ];
 
     return cancellableStatuses.includes(order.status as any);
@@ -404,7 +404,7 @@ export class OrderCancellationService {
    */
   async getCancellationStatistics(startDate?: Date, endDate?: Date): Promise<any> {
     const where: any = {
-      status: STATUS.ORDER_STATUS.CANCELLED,
+      status: CONSTANTS.STATUS.ORDER_STATUS.CANCELLED,
     };
 
     if (startDate || endDate) {

@@ -7,7 +7,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateFooterSettingsDto } from './dto/update-footer-settings.dto';
-import { CACHE_KEYS } from '../common/constants';
+import { CONSTANTS } from '@alacraft/shared';
 
 export interface FooterSettings {
   id: string;
@@ -43,7 +43,7 @@ export class FooterSettingsService {
     try {
       // Try to get from cache first
       const cached = await this.cacheManager.get<FooterSettings>(
-        CACHE_KEYS.SETTINGS.FOOTER,
+        CONSTANTS.CACHE_KEYS.SETTINGS.FOOTER,
       );
 
       if (cached) {
@@ -80,7 +80,7 @@ export class FooterSettingsService {
 
       // Store in cache with 1-hour TTL
       await this.cacheManager.set(
-        CACHE_KEYS.SETTINGS.FOOTER,
+        CONSTANTS.CACHE_KEYS.SETTINGS.FOOTER,
         result,
         this.FOOTER_SETTINGS_CACHE_TTL,
       );
@@ -158,6 +158,6 @@ export class FooterSettingsService {
    * Called when footer settings are updated
    */
   private async invalidateFooterSettingsCache(): Promise<void> {
-    await this.cacheManager.del(CACHE_KEYS.SETTINGS.FOOTER);
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.SETTINGS.FOOTER);
   }
 }
