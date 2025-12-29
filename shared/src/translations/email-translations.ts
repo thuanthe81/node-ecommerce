@@ -50,18 +50,31 @@ export const EMAIL_TRANSLATIONS = {
   // Admin Order Notification Email
   adminOrderNotification: {
     subject: { en: 'New Order', vi: 'Đơn hàng mới' },
+    title: { en: 'New Order Received', vi: 'Đơn hàng mới đã được đặt' },
     newOrder: { en: 'New Order Received', vi: 'Đơn hàng mới đã được đặt' },
     greeting: { en: 'Hello', vi: 'Xin chào' },
     orderDetails: { en: 'Order Details', vi: 'Chi tiết đơn hàng' },
+    orderNumber: { en: 'Order Number', vi: 'Số đơn hàng' },
+    orderDate: { en: 'Order Date', vi: 'Ngày đặt hàng' },
+    total: { en: 'Total', vi: 'Tổng cộng' },
+    customerInfo: { en: 'Customer Information', vi: 'Thông tin khách hàng' },
     customerInformation: {
       en: 'Customer Information',
       vi: 'Thông tin khách hàng',
     },
+    name: { en: 'Name', vi: 'Tên' },
+    email: { en: 'Email', vi: 'Email' },
     customerName: { en: 'Name', vi: 'Tên' },
     customerEmail: { en: 'Email', vi: 'Email' },
     customerPhone: { en: 'Phone', vi: 'Số điện thoại' },
     viewOrder: { en: 'View Order', vi: 'Xem đơn hàng' },
+    trackOrder: { en: 'Track Order', vi: 'Theo dõi đơn hàng' },
     processOrder: { en: 'Process Order', vi: 'Xử lý đơn hàng' },
+    urgent: { en: 'URGENT', vi: 'KHẨN CẤP' },
+    normal: { en: 'NORMAL', vi: 'BÌNH THƯỜNG' },
+    emailLabel: { en: 'Email from AlaCraft', vi: 'Email từ AlaCraft' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    disclaimer: { en: 'This is an automated message. Please do not reply to this email.', vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.' },
   },
 
   // Order Status Update Email
