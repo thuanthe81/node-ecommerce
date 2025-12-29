@@ -35,13 +35,13 @@ describe('PDFAccessibilityService', () => {
       expect(result).toContain('role="contentinfo"');
     });
 
-    it('should add skip navigation', () => {
+    it('should not add skip navigation (removed for PDF)', () => {
       const content = '<html><body><main>Content</main></body></html>';
       const result = service.enhanceHTMLAccessibility(content, 'en');
 
-      expect(result).toContain('Skip to main content');
-      expect(result).toContain('class="skip-nav"');
-      expect(result).toContain('id="main-content"');
+      expect(result).not.toContain('Skip to main content');
+      expect(result).not.toContain('class="skip-nav"');
+      expect(result).toContain('id="main-content"'); // Still adds main content ID
     });
   });
 
@@ -141,7 +141,7 @@ describe('PDFAccessibilityService', () => {
 
       const result = service.generateAccessibilityCSS(styling);
 
-      expect(result).toContain('.skip-nav');
+      expect(result).not.toContain('.skip-nav'); // Skip nav removed
       expect(result).toContain('*:focus');
       expect(result).toContain('@media (prefers-contrast: high)');
       expect(result).toContain('.sr-only');

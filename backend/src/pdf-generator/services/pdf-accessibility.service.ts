@@ -52,8 +52,8 @@ export class PDFAccessibilityService {
     // Enhance table accessibility
     accessibleContent = this.enhanceTableAccessibility(accessibleContent, locale);
 
-    // Add skip navigation for screen readers
-    accessibleContent = this.addSkipNavigation(accessibleContent, locale);
+    // Add main content ID (skip navigation removed but ID still needed for other features)
+    accessibleContent = this.addMainContentId(accessibleContent);
 
     // Enhance heading hierarchy
     accessibleContent = this.enhanceHeadingHierarchy(accessibleContent);
@@ -192,24 +192,7 @@ export class PDFAccessibilityService {
     return `
       /* Accessibility enhancements */
 
-      /* Skip navigation for screen readers */
-      .skip-nav {
-        position: absolute;
-        top: -40px;
-        left: 6px;
-        background: ${styling.colors.primary};
-        color: ${styling.colors.background};
-        padding: 8px;
-        text-decoration: none;
-        border-radius: 3px;
-        font-size: 14px;
-        font-weight: bold;
-        z-index: 1000;
-      }
-
-      .skip-nav:focus {
-        top: 6px;
-      }
+      /* Skip navigation removed - not appropriate for PDF documents */
 
       /* Enhanced focus indicators */
       *:focus {
@@ -310,9 +293,7 @@ export class PDFAccessibilityService {
 
       /* Print accessibility */
       @media print {
-        .skip-nav {
-          display: none;
-        }
+        /* Skip navigation removed - not needed in PDF */
 
         /* Ensure sufficient contrast in print */
         body {
@@ -360,23 +341,11 @@ export class PDFAccessibilityService {
   }
 
   /**
-   * Add skip navigation for screen readers
+   * Add main content ID for accessibility - skip navigation removed
+   * Only adds the main content ID, skip navigation links removed for PDF
    */
-  private addSkipNavigation(content: string, locale: 'en' | 'vi'): string {
-    const isVietnamese = locale === 'vi';
-    const skipText = isVietnamese ? 'Bỏ qua đến nội dung chính' : 'Skip to main content';
-
-    const skipNav = `
-      <a href="#main-content" class="skip-nav">${skipText}</a>
-    `;
-
-    // Add skip navigation after body tag
-    content = content.replace(
-      /<body[^>]*>/,
-      `$&${skipNav}`
-    );
-
-    // Add id to main content
+  private addMainContentId(content: string): string {
+    // Add id to main content for accessibility features
     content = content.replace(
       /<main[^>]*>/,
       '<main role="main" id="main-content" aria-label="Order details">'

@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 
@@ -14,8 +14,8 @@ describe('VariableReplacerService - Partial Template Integration', () => {
       providers: [
         VariableReplacerService,
         HTMLEscapingService,
+        BusinessInfoService,
         DesignSystemInjector,
-        EmailTranslationService,
         TemplateLoaderService,
         CSSInjectorService,
         {

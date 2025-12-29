@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type { VariableReplacerConfig } from '../../../src/notifications/interfaces/variable-replacer.interface';
@@ -21,9 +21,12 @@ describe('VariableReplacerService Integration', () => {
     getDesignTokens: jest.fn().mockReturnValue({})
   };
 
-  const mockEmailTranslationService = {
-    getEmailTemplateTranslations: jest.fn().mockReturnValue({}),
-    getStatusTranslations: jest.fn().mockReturnValue({})
+  const mockBusinessInfoService = {
+    getContactEmail: jest.fn().mockResolvedValue('contact@alacraft.com'),
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      website: 'https://alacraft.com',
+      companyName: 'AlaCraft'
+    })
   };
 
   const mockTemplateLoaderService = {
@@ -57,8 +60,8 @@ describe('VariableReplacerService Integration', () => {
           useValue: mockDesignSystemInjector
         },
         {
-          provide: EmailTranslationService,
-          useValue: mockEmailTranslationService
+          provide: BusinessInfoService,
+          useValue: mockBusinessInfoService
         },
         {
           provide: TemplateLoaderService,

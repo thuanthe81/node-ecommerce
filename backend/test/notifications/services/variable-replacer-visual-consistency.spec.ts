@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type { VariableReplacerConfig } from '../../../src/notifications/interfaces/variable-replacer.interface';
@@ -52,28 +52,12 @@ describe('VariableReplacerService - Visual Output Consistency', () => {
     })
   };
 
-  const mockEmailTranslationService = {
-    getEmailTemplateTranslations: jest.fn().mockImplementation((locale) => ({
-      companyName: 'AlaCraft',
-      tagline: locale === 'vi' ? 'Thủ công chất lượng cao' : 'High Quality Handmade',
-      greeting: locale === 'vi' ? 'Xin chào' : 'Hello',
-      thankYou: locale === 'vi' ? 'Cảm ơn bạn' : 'Thank you',
-      orderConfirmation: locale === 'vi' ? 'Xác nhận đơn hàng' : 'Order Confirmation',
-      shippingAddress: locale === 'vi' ? 'Địa chỉ giao hàng' : 'Shipping Address',
-      orderDetails: locale === 'vi' ? 'Chi tiết đơn hàng' : 'Order Details',
-      viewOrder: locale === 'vi' ? 'Xem đơn hàng' : 'View Order',
-      copyright: locale === 'vi' ? 'Bản quyền thuộc về' : 'Copyright',
-      disclaimer: locale === 'vi' ? 'Email này được gửi tự động' : 'This email was sent automatically',
-      supportEmail: 'support@alacraft.com',
-      websiteUrl: 'https://alacraft.com'
-    })),
-    getStatusTranslations: jest.fn().mockImplementation((locale) => ({
-      pending: locale === 'vi' ? 'Chờ xử lý' : 'Pending',
-      confirmed: locale === 'vi' ? 'Đã xác nhận' : 'Confirmed',
-      shipped: locale === 'vi' ? 'Đã giao vận' : 'Shipped',
-      delivered: locale === 'vi' ? 'Đã giao hàng' : 'Delivered',
-      cancelled: locale === 'vi' ? 'Đã hủy' : 'Cancelled'
-    }))
+  const mockBusinessInfoService = {
+    getContactEmail: jest.fn().mockResolvedValue('contact@alacraft.com'),
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      website: 'https://alacraft.com',
+      companyName: 'AlaCraft'
+    })
   };
 
   // Mock template loader to disable partial templates for this test
@@ -99,8 +83,8 @@ describe('VariableReplacerService - Visual Output Consistency', () => {
           useValue: mockDesignSystemInjector
         },
         {
-          provide: EmailTranslationService,
-          useValue: mockEmailTranslationService
+          provide: BusinessInfoService,
+          useValue: mockBusinessInfoService
         },
         {
           provide: TemplateLoaderService,

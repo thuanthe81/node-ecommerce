@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type {
@@ -36,15 +36,12 @@ describe('VariableReplacerService - API Compatibility (Core)', () => {
     })
   };
 
-  const mockEmailTranslationService = {
-    getEmailTemplateTranslations: jest.fn().mockImplementation((locale) => ({
-      greeting: locale === 'vi' ? 'Xin chào' : 'Hello',
-      thankYou: locale === 'vi' ? 'Cảm ơn bạn' : 'Thank you'
-    })),
-    getStatusTranslations: jest.fn().mockImplementation((locale) => ({
-      pending: locale === 'vi' ? 'Chờ xử lý' : 'Pending',
-      shipped: locale === 'vi' ? 'Đã giao vận' : 'Shipped'
-    }))
+  const mockBusinessInfoService = {
+    getContactEmail: jest.fn().mockResolvedValue('contact@alacraft.com'),
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      website: 'https://alacraft.com',
+      companyName: 'AlaCraft'
+    })
   };
 
   const mockTemplateLoaderService = {
@@ -69,8 +66,8 @@ describe('VariableReplacerService - API Compatibility (Core)', () => {
           useValue: mockDesignSystemInjector
         },
         {
-          provide: EmailTranslationService,
-          useValue: mockEmailTranslationService
+          provide: BusinessInfoService,
+          useValue: mockBusinessInfoService
         },
         {
           provide: TemplateLoaderService,

@@ -187,35 +187,42 @@ export class PartialTemplateValidator {
 
     switch (partialName) {
       case 'email-header':
-        if (!content.includes('email-header') && !content.includes('header')) {
-          errors.push('Email header partial should contain header-related CSS classes or structure');
+        // Check for header-like structure: h1-h6 tags, header role, or header-related classes
+        const hasHeaderStructure = /(<h[1-6][^>]*>|role=["']?header["']?|class=["'][^"']*header[^"']*["']|class=["'][^"']*company[^"']*["'])/i.test(content);
+        if (!hasHeaderStructure) {
+          errors.push('Email header partial should contain header-related structure (h1-h6 tags, header role, or header/company classes)');
         }
         break;
 
       case 'email-footer':
-        if (!content.includes('email-footer') && !content.includes('footer')) {
-          errors.push('Email footer partial should contain footer-related CSS classes or structure');
+        // Check for footer-like structure: footer tag, footer role, or footer-related classes
+        const hasFooterStructure = /(<footer[^>]*>|role=["']?contentinfo["']?|class=["'][^"']*footer[^"']*["'])/i.test(content);
+        if (!hasFooterStructure) {
+          errors.push('Email footer partial should contain footer-related structure (footer tag, contentinfo role, or footer classes)');
         }
         break;
 
       case 'button':
-        if (!content.includes('btn') && !content.includes('button')) {
-          errors.push('Button partial should contain button-related CSS classes or structure');
-        }
-        if (!content.includes('{{url}}') && !content.includes('href')) {
-          errors.push('Button partial should include URL/href functionality');
+        // Check for button-like structure: button tag, a tag with href, or button-related classes
+        const hasButtonStructure = /(<button[^>]*>|<a[^>]*href|class=["'][^"']*btn[^"']*["']|class=["'][^"']*button[^"']*["'])/i.test(content);
+        if (!hasButtonStructure) {
+          errors.push('Button partial should contain button-related structure (button tag, link with href, or button/btn classes)');
         }
         break;
 
       case 'status-badge':
-        if (!content.includes('badge') && !content.includes('status')) {
-          errors.push('Status badge partial should contain badge-related CSS classes or structure');
+        // Check for badge-like structure: span with badge/status classes or similar
+        const hasBadgeStructure = /(<span[^>]*>|class=["'][^"']*badge[^"']*["']|class=["'][^"']*status[^"']*["'])/i.test(content);
+        if (!hasBadgeStructure) {
+          errors.push('Status badge partial should contain badge-related structure (span tag or badge/status classes)');
         }
         break;
 
       case 'address-card':
-        if (!content.includes('address')) {
-          errors.push('Address card partial should contain address-related CSS classes or structure');
+        // Check for address-like structure: address tag or address-related classes
+        const hasAddressStructure = /(<address[^>]*>|class=["'][^"']*address[^"']*["'])/i.test(content);
+        if (!hasAddressStructure) {
+          errors.push('Address card partial should contain address-related structure (address tag or address classes)');
         }
         break;
     }

@@ -330,10 +330,7 @@ export class PDFDeviceOptimizationService {
           page-break-inside: avoid;
         }
 
-        /* Hide screen-only elements */
-        .skip-nav {
-          display: none !important;
-        }
+        /* Hide screen-only elements - skip nav removed */
 
         /* Ensure images print properly */
         .company-logo,

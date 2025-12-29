@@ -44,6 +44,7 @@ export class VariableReplacerService implements IVariableReplacer {
   private readonly handlebars: typeof Handlebars;
   private readonly compiledTemplates = new Map<string, HandlebarsTemplateDelegate>();
   private readonly registeredHelpers = new Set<string>();
+  private partialRegistrationPromise: Promise<void>;
 
   constructor(
     private readonly htmlEscapingService: HTMLEscapingService,
@@ -58,8 +59,8 @@ export class VariableReplacerService implements IVariableReplacer {
     this.setupHandlebarsConfiguration();
     this.registerDefaultHelpers();
     this.registerEmailHelpers();
-    // Register partial templates asynchronously after construction
-    this.initializePartialTemplates();
+    // Register partial templates and store the promise
+    this.partialRegistrationPromise = this.registerPartialTemplates();
   }
 
   /**
@@ -73,6 +74,9 @@ export class VariableReplacerService implements IVariableReplacer {
     locale: 'en' | 'vi'
   ): Promise<string> {
     try {
+      // Ensure partials are registered before processing templates
+      await this.partialRegistrationPromise;
+
       // Compile template if not already compiled
       const templateKey = this.generateTemplateKey(template);
       let compiledTemplate = this.compiledTemplates.get(templateKey);
@@ -643,21 +647,6 @@ export class VariableReplacerService implements IVariableReplacer {
 
 
 
-
-  /**
-   * Initialize partial templates asynchronously after service construction
-   */
-  private initializePartialTemplates(): void {
-    // Use setImmediate to register partials after constructor completes
-    setImmediate(async () => {
-      try {
-        await this.registerPartialTemplates();
-      } catch (error) {
-        this.logger.error(`Failed to initialize partial templates: ${error.message}`);
-        // Don't throw here as it would be unhandled - log the error instead
-      }
-    });
-  }
 
   /**
    * Register partial templates with Handlebars for use in main templates

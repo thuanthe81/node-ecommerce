@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type { VariableReplacerConfig } from '../../../src/notifications/interfaces/variable-replacer.interface';
@@ -11,7 +11,6 @@ describe('VariableReplacerService', () => {
   let service: VariableReplacerService;
   let htmlEscapingService: HTMLEscapingService;
   let designSystemInjector: DesignSystemInjector;
-  let emailTranslationService: EmailTranslationService;
 
   const mockConfig: VariableReplacerConfig = {
     escapeHtml: true,
@@ -28,32 +27,11 @@ describe('VariableReplacerService', () => {
     })
   };
 
-  const mockEmailTranslationService = {
-    getEmailTemplateTranslations: jest.fn().mockImplementation((locale) => {
-      if (locale === 'vi') {
-        return {
-          greeting: 'Xin chào',
-          thankYou: 'Cảm ơn bạn',
-          orderNumber: 'Mã đơn hàng'
-        };
-      }
-      return {
-        greeting: 'Hello',
-        thankYou: 'Thank you',
-        orderNumber: 'Order Number'
-      };
-    }),
-    getStatusTranslations: jest.fn().mockImplementation((locale) => {
-      if (locale === 'vi') {
-        return {
-          pending: 'Chờ xử lý',
-          shipped: 'Đã giao vận'
-        };
-      }
-      return {
-        pending: 'Pending',
-        shipped: 'Shipped'
-      };
+  const mockBusinessInfoService = {
+    getContactEmail: jest.fn().mockResolvedValue('contact@alacraft.com'),
+    getBusinessInfo: jest.fn().mockResolvedValue({
+      website: 'https://alacraft.com',
+      companyName: 'AlaCraft'
     })
   };
 
@@ -88,8 +66,8 @@ describe('VariableReplacerService', () => {
           useValue: mockDesignSystemInjector
         },
         {
-          provide: EmailTranslationService,
-          useValue: mockEmailTranslationService
+          provide: BusinessInfoService,
+          useValue: mockBusinessInfoService
         },
         {
           provide: TemplateLoaderService,
@@ -112,7 +90,6 @@ describe('VariableReplacerService', () => {
     service = module.get<VariableReplacerService>(VariableReplacerService);
     htmlEscapingService = module.get<HTMLEscapingService>(HTMLEscapingService);
     designSystemInjector = module.get<DesignSystemInjector>(DesignSystemInjector);
-    emailTranslationService = module.get<EmailTranslationService>(EmailTranslationService);
   });
 
   it('should be defined', () => {

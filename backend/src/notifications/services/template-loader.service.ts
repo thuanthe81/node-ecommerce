@@ -451,10 +451,14 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
 
   /**
    * Get the full path to a partial template file.
+   * Supports subdirectory paths like 'layout/email-header' or simple names like 'email-header'
    */
   getPartialPath(partialName: string): string {
     const partialsPath = this.config.partialsPath || join(this.config.templatesPath, 'partials');
     const extension = this.config.partialExtension || '.hbs';
+
+    // Handle subdirectory paths (e.g., 'layout/email-header')
+    // The partialName can include subdirectory paths
     return resolve(join(partialsPath, `${partialName}${extension}`));
   }
 
