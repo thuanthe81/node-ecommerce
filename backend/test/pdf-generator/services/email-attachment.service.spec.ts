@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmailAttachmentService } from '../../../src/pdf-generator/services/email-attachment.service';
 import { EmailService } from '../../../src/notifications/services/email.service';
+import { EmailTemplateService } from '../../../src/notifications/services/email-template.service';
+import { EmailEventPublisher } from '../../../src/email-queue/services/email-event-publisher.service';
 import { PDFGeneratorService } from '../../../src/pdf-generator/pdf-generator.service';
 import { DocumentStorageService } from '../../../src/pdf-generator/services/document-storage.service';
 import { PDFErrorHandlerService } from '../../../src/pdf-generator/services/pdf-error-handler.service';
@@ -26,6 +28,16 @@ describe('EmailAttachmentService', () => {
   const mockEmailService = {
     sendEmailWithAttachment: jest.fn(),
     sendEmail: jest.fn(),
+  };
+
+  const mockEmailTemplateService = {
+    getOrderConfirmationTemplate: jest.fn().mockResolvedValue('<html>Mock template</html>'),
+    getAdminOrderNotificationTemplate: jest.fn().mockResolvedValue('<html>Mock admin template</html>'),
+  };
+
+  const mockEmailEventPublisher = {
+    publishOrderConfirmationEvent: jest.fn(),
+    publishAdminOrderNotificationEvent: jest.fn(),
   };
 
   const mockPDFGeneratorService = {
@@ -96,6 +108,8 @@ describe('EmailAttachmentService', () => {
       providers: [
         EmailAttachmentService,
         { provide: EmailService, useValue: mockEmailService },
+        { provide: EmailTemplateService, useValue: mockEmailTemplateService },
+        { provide: EmailEventPublisher, useValue: mockEmailEventPublisher },
         { provide: PDFGeneratorService, useValue: mockPDFGeneratorService },
         { provide: DocumentStorageService, useValue: mockDocumentStorageService },
         { provide: PDFErrorHandlerService, useValue: mockPDFErrorHandlerService },
@@ -232,7 +246,7 @@ describe('EmailAttachmentService', () => {
       );
 
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Order not found or email mismatch');
+      expect(result.message).toContain('Email address does not match order email');
     });
   });
 

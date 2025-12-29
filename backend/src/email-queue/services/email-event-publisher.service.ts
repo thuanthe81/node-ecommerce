@@ -622,6 +622,14 @@ export class EmailEventPublisher implements OnModuleDestroy {
         this.validateContactFormEvent(event);
         break;
 
+      case EmailEventType.ORDER_CANCELLATION:
+        this.validateOrderCancellationEvent(event);
+        break;
+
+      case EmailEventType.ADMIN_CANCELLATION_NOTIFICATION:
+        this.validateAdminCancellationNotificationEvent(event);
+        break;
+
       default:
         throw new Error(`Unknown email event type: ${(event as any).type}`);
     }
@@ -766,6 +774,36 @@ export class EmailEventPublisher implements OnModuleDestroy {
     }
     if (!event.message || typeof event.message !== 'string') {
       throw new Error('Contact form events require valid message');
+    }
+  }
+
+  /**
+   * Validate order cancellation event fields
+   */
+  private validateOrderCancellationEvent(event: any): void {
+    if (!event.orderId || typeof event.orderId !== 'string') {
+      throw new Error('Order cancellation events require valid orderId');
+    }
+    if (!event.orderNumber || typeof event.orderNumber !== 'string') {
+      throw new Error('Order cancellation events require valid orderNumber');
+    }
+    if (!event.customerEmail || !this.isValidEmail(event.customerEmail)) {
+      throw new Error('Order cancellation events require valid customerEmail');
+    }
+    if (!event.customerName || typeof event.customerName !== 'string') {
+      throw new Error('Order cancellation events require valid customerName');
+    }
+  }
+
+  /**
+   * Validate admin cancellation notification event fields
+   */
+  private validateAdminCancellationNotificationEvent(event: any): void {
+    if (!event.orderId || typeof event.orderId !== 'string') {
+      throw new Error('Admin cancellation notification events require valid orderId');
+    }
+    if (!event.orderNumber || typeof event.orderNumber !== 'string') {
+      throw new Error('Admin cancellation notification events require valid orderNumber');
     }
   }
 

@@ -22,6 +22,8 @@ import {
   getEmailTemplateTranslations,
   getOrderConfirmationTranslations,
   getAdminOrderNotificationTranslations,
+  getOrderCancellationTranslations,
+  getAdminOrderCancellationTranslations,
   getOrderStatusUpdateTranslations,
   translateOrderStatus,
   translatePaymentStatus,
@@ -538,6 +540,13 @@ export class VariableReplacerService implements IVariableReplacer {
     switch (templateName) {
       case 'orders/template-admin-order-notification':
         return getAdminOrderNotificationTranslations(locale);
+      case 'orders/template-order-cancellation':
+        return getOrderCancellationTranslations(locale);
+      case 'orders/template-admin-order-cancellation':
+        return getAdminOrderCancellationTranslations(locale);
+      case 'orders/template-order-status-update-simplified':
+      case 'orders/template-payment-status-update':
+        return getOrderStatusUpdateTranslations(locale);
       default:
         return getOrderConfirmationTranslations(locale);
     }

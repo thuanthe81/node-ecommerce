@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VariableReplacerService } from '../../../src/notifications/services/variable-replacer.service';
 import { HTMLEscapingService } from '../../../src/common/services/html-escaping.service';
 import { DesignSystemInjector } from '../../../src/notifications/services/design-system-injector.service';
-import { EmailTranslationService } from '../../../src/notifications/services/email-translation.service';
+import { BusinessInfoService } from '../../../src/common/services/business-info.service';
 import { TemplateLoaderService } from '../../../src/notifications/services/template-loader.service';
 import { CSSInjectorService } from '../../../src/notifications/services/css-injector.service';
 import type { VariableReplacerConfig } from '../../../src/notifications/interfaces/variable-replacer.interface';
@@ -90,18 +90,15 @@ describe('VariableReplacerService - Email Client Compatibility & Accessibility',
     })
   };
 
-  const mockEmailTranslationService = {
-    getEmailTemplateTranslations: jest.fn().mockImplementation((locale) => ({
+  const mockBusinessInfoService = {
+    getContactEmail: jest.fn().mockResolvedValue('contact@alacraft.com'),
+    getBusinessInfo: jest.fn().mockImplementation((locale) => ({
       companyName: 'AlaCraft',
       tagline: locale === 'vi' ? 'Thủ công chất lượng cao' : 'High Quality Handmade',
-      greeting: locale === 'vi' ? 'Xin chào' : 'Hello',
-      viewOrder: locale === 'vi' ? 'Xem đơn hàng' : 'View Order',
-      shippingAddress: locale === 'vi' ? 'Địa chỉ giao hàng' : 'Shipping Address',
-      orderStatus: locale === 'vi' ? 'Trạng thái đơn hàng' : 'Order Status'
-    })),
-    getStatusTranslations: jest.fn().mockImplementation((locale) => ({
-      shipped: locale === 'vi' ? 'Đã giao vận' : 'Shipped',
-      delivered: locale === 'vi' ? 'Đã giao hàng' : 'Delivered'
+      website: 'https://alacraft.com',
+      address: '123 Business Street',
+      phone: '+84 123 456 789',
+      email: 'contact@alacraft.com'
     }))
   };
 
@@ -128,8 +125,8 @@ describe('VariableReplacerService - Email Client Compatibility & Accessibility',
           useValue: mockDesignSystemInjector
         },
         {
-          provide: EmailTranslationService,
-          useValue: mockEmailTranslationService
+          provide: BusinessInfoService,
+          useValue: mockBusinessInfoService
         },
         {
           provide: TemplateLoaderService,

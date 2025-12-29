@@ -159,11 +159,6 @@
     {{translations.subject}}
   </div>
 
-  <!-- Skip link for accessibility -->
-  <a href="#main-content" class="skip-link" tabindex="1">
-    {{translations.skipToContent}}
-  </a>
-
   <!-- Main email wrapper -->
   <div role="document" aria-label="{{translations.emailLabel}}">
     <table class="email-wrapper" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
@@ -194,13 +189,11 @@
                     position: relative;
                   ">
                     <div style="
-                      position: absolute;
-                      top: 50%;
-                      left: 50%;
-                      transform: translate(-50%, -50%);
                       color: white;
                       font-size: 24px;
                       font-weight: bold;
+                      margin-top: 12px;
+                      margin-left: 4px;
                     ">❌</div>
                   </div>
                   <h2 style="
@@ -472,28 +465,6 @@
                     {{> button text=translations.contactUs url=(concat frontendUrl "/contact") style="secondary"}}
                   </div>
                 </div>
-
-                <!-- Closing Message -->
-                <div style="
-                  text-align: center;
-                  margin: 32px 0;
-                  padding: 24px;
-                  background-color: #f8f9fa;
-                  border-radius: 8px;
-                  border-left: 4px solid #e74c3c;
-                ">
-                  <p style="
-                    color: #2c3e50;
-                    margin: 0 0 8px 0;
-                    font-weight: 500;
-                  ">{{translations.contactUs}}</p>
-                  <p style="
-                    color: #7f8c8d;
-                    margin: 0;
-                    font-size: 12px;
-                  ">{{{translations.signature}}}</p>
-                </div>
-
               </td>
             </tr>
 

@@ -159,11 +159,6 @@
     {{translations.subject}}
   </div>
 
-  <!-- Skip link for accessibility -->
-  <a href="#main-content" class="skip-link" tabindex="1">
-    {{translations.skipToContent}}
-  </a>
-
   <!-- Main email wrapper -->
   <div role="document" aria-label="{{translations.emailLabel}}">
     <table class="email-wrapper" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
@@ -194,13 +189,11 @@
                     position: relative;
                   ">
                     <div style="
-                      position: absolute;
-                      top: 50%;
-                      left: 50%;
-                      transform: translate(-50%, -50%);
                       color: white;
                       font-size: 24px;
                       font-weight: bold;
+                      margin-top: 8px;
+                      margin-left: 2px;
                     ">⚠️</div>
                   </div>
                   <h2 style="
@@ -474,11 +467,11 @@
                   border-bottom: 1px solid #ecf0f1;
                 ">
                   <div style="margin-bottom: 16px;">
-                    {{> button text=translations.viewOrder url=(concat adminUrl "/orders/" data.orderId) style="primary"}}
+                    {{> button text=translations.viewOrder url=(concat (frontendUrl) "/orders/" data.orderId) style="primary"}}
                   </div>
-                  <div>
-                    {{> button text=translations.processOrder url=(concat adminUrl "/orders/" data.orderId "/cancel") style="secondary"}}
-                  </div>
+<!--                  <div>-->
+<!--                    {{> button text=translations.processOrder url=(concat adminUrl "/orders/" data.orderId "/cancel") style="secondary"}}-->
+<!--                  </div>-->
                 </div>
 
                 <!-- Closing Message -->

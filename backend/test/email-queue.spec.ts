@@ -106,7 +106,7 @@ describe('EmailQueue', () => {
     it('should get correct priority for event types', () => {
       expect((emailEventPublisher as any).getEventPriority(EmailEventType.PASSWORD_RESET)).toBe(1);
       expect((emailEventPublisher as any).getEventPriority(EmailEventType.ORDER_CONFIRMATION)).toBe(2);
-      expect((emailEventPublisher as any).getEventPriority(EmailEventType.CONTACT_FORM)).toBe(6);
+      expect((emailEventPublisher as any).getEventPriority(EmailEventType.CONTACT_FORM)).toBe(7);
     });
   });
 });
