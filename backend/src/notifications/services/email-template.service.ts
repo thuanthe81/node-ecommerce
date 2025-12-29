@@ -486,31 +486,30 @@ export class EmailTemplateService implements OnModuleInit {
       html: finalHtml
     };
   }
-
-  /**
-   * Simplified order status update email template
-   */
-  async getSimplifiedOrderStatusUpdateTemplate(
-    data: OrderEmailData,
-    locale: 'en' | 'vi' = 'en',
-  ): Promise<{ subject: string; html: string }> {
-    // Sanitize data before processing
-    const sanitizedData = this.sanitizeOrderData(data);
-
-    // Use the new template system
-    const templateName = 'orders/template-order-status-update-simplified';
-
-    // Load and process template
-    const templateContent = await this.templateLoader.loadTemplate(templateName);
-    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
-
-    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
-
-    return {
-      subject: locale === 'vi'
-        ? `Cập nhật đơn hàng #${sanitizedData.orderNumber}`
-        : `Order Update #${sanitizedData.orderNumber}`,
-      html: finalHtml
-    };
-  }
+  // /**
+  //  * Simplified order status update email template
+  //  */
+  // async getSimplifiedOrderStatusUpdateTemplate(
+  //   data: OrderEmailData,
+  //   locale: 'en' | 'vi' = 'en',
+  // ): Promise<{ subject: string; html: string }> {
+  //   // Sanitize data before processing
+  //   const sanitizedData = this.sanitizeOrderData(data);
+  //
+  //   // Use the new simplified template system
+  //   const templateName = 'orders/template-order-status-update';
+  //
+  //   // Load and process template
+  //   const templateContent = await this.templateLoader.loadTemplate(templateName);
+  //   const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+  //
+  //   const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+  //
+  //   return {
+  //     subject: locale === 'vi'
+  //       ? `Cập nhật đơn hàng #${sanitizedData.orderNumber}`
+  //       : `Order Update #${sanitizedData.orderNumber}`,
+  //     html: finalHtml
+  //   };
+  // }
 }

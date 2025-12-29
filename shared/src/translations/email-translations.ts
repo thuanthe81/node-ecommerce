@@ -80,7 +80,12 @@ export const EMAIL_TRANSLATIONS = {
   // Order Status Update Email
   orderStatusUpdate: {
     subject: { en: 'Order Status Update', vi: 'Cập nhật trạng thái đơn hàng' },
+    title: { en: 'Order Status Update', vi: 'Cập nhật trạng thái đơn hàng' },
     greeting: { en: 'Hello', vi: 'Xin chào' },
+    intro: {
+      en: 'Your order status has been updated',
+      vi: 'Trạng thái đơn hàng của bạn đã được cập nhật',
+    },
     statusUpdated: {
       en: 'Your order status has been updated',
       vi: 'Trạng thái đơn hàng của bạn đã được cập nhật',
@@ -88,9 +93,25 @@ export const EMAIL_TRANSLATIONS = {
     newStatus: { en: 'New Status', vi: 'Trạng thái mới' },
     trackingNumber: { en: 'Tracking Number', vi: 'Mã theo dõi' },
     trackYourOrder: { en: 'Track Your Order', vi: 'Theo dõi đơn hàng của bạn' },
+    trackOrder: { en: 'Track Order', vi: 'Theo dõi đơn hàng' },
     contactUs: {
       en: 'Contact us if you have any questions.',
       vi: 'Liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.',
+    },
+    // Additional translations for simplified template
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    emailLabel: { en: 'Order status update email from AlaCraft', vi: 'Email cập nhật trạng thái đơn hàng từ AlaCraft' },
+    orderOverview: { en: 'Order Overview', vi: 'Tổng quan đơn hàng' },
+    orderNumber: { en: 'Order Number', vi: 'Mã đơn hàng' },
+    orderDate: { en: 'Order Date', vi: 'Ngày đặt hàng' },
+    orderTotal: { en: 'Order Total', vi: 'Tổng đơn hàng' },
+    orderStatus: { en: 'Order Status', vi: 'Trạng thái đơn hàng' },
+    paymentStatus: { en: 'Payment Status', vi: 'Trạng thái thanh toán' },
+    viewOrderDetails: { en: 'View Order Details', vi: 'Xem chi tiết đơn hàng' },
+    copyright: {
+      en: '© 2024 AlaCraft. All rights reserved.',
+      vi: '© 2024 AlaCraft. Tất cả quyền được bảo lưu.',
     },
   },
 
@@ -240,6 +261,60 @@ export const EMAIL_TRANSLATIONS = {
     temporaryUnavailable: {
       en: 'Service temporarily unavailable',
       vi: 'Dịch vụ tạm thời không khả dụng',
+    },
+  },
+
+  // Status Messages for Email Updates
+  statusMessages: {
+    // Order Status Messages
+    order: {
+      PENDING: {
+        en: 'Your order has been received and is awaiting processing.',
+        vi: 'Đơn hàng của bạn đã được nhận và đang chờ xử lý.',
+      },
+      PENDING_QUOTE: {
+        en: 'Your order is pending quote approval. We will contact you soon with pricing details.',
+        vi: 'Đơn hàng của bạn đang chờ phê duyệt báo giá. Chúng tôi sẽ liên hệ với bạn sớm với chi tiết giá cả.',
+      },
+      PROCESSING: {
+        en: 'Your order is being prepared for shipment. We will notify you once it ships.',
+        vi: 'Đơn hàng của bạn đang được chuẩn bị để giao hàng. Chúng tôi sẽ thông báo cho bạn khi nó được giao.',
+      },
+      SHIPPED: {
+        en: 'Your order has been shipped and is on its way to you.',
+        vi: 'Đơn hàng của bạn đã được giao và đang trên đường đến với bạn.',
+      },
+      DELIVERED: {
+        en: 'Your order has been successfully delivered. Thank you for your business!',
+        vi: 'Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã mua hàng!',
+      },
+      CANCELLED: {
+        en: 'Your order has been cancelled. If you have any questions, please contact us.',
+        vi: 'Đơn hàng của bạn đã bị hủy. Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.',
+      },
+      REFUNDED: {
+        en: 'Your order has been refunded. The refund will appear in your original payment method within 3-5 business days.',
+        vi: 'Đơn hàng của bạn đã được hoàn tiền. Tiền hoàn sẽ xuất hiện trong phương thức thanh toán gốc của bạn trong vòng 3-5 ngày làm việc.',
+      },
+    },
+    // Payment Status Messages
+    payment: {
+      PENDING: {
+        en: 'Your payment is being processed. We will update you once the payment is confirmed.',
+        vi: 'Thanh toán của bạn đang được xử lý. Chúng tôi sẽ cập nhật cho bạn khi thanh toán được xác nhận.',
+      },
+      PAID: {
+        en: 'Your payment has been successfully processed. Thank you for your payment!',
+        vi: 'Thanh toán của bạn đã được xử lý thành công. Cảm ơn bạn đã thanh toán!',
+      },
+      FAILED: {
+        en: 'Your payment could not be processed. Please try again or contact us for assistance.',
+        vi: 'Thanh toán của bạn không thể được xử lý. Vui lòng thử lại hoặc liên hệ với chúng tôi để được hỗ trợ.',
+      },
+      REFUNDED: {
+        en: 'Your payment has been refunded. The refund will appear in your original payment method within 3-5 business days.',
+        vi: 'Thanh toán của bạn đã được hoàn lại. Tiền hoàn sẽ xuất hiện trong phương thức thanh toán gốc của bạn trong vòng 3-5 ngày làm việc.',
+      },
     },
   },
 } as const;
@@ -508,6 +583,54 @@ export function getTranslation(
   }
 
   return translation[locale] || translation.en;
+}
+
+/**
+ * Get Order Status Message
+ *
+ * Retrieves a descriptive message for an order status in the specified locale.
+ *
+ * @param status - The order status
+ * @param locale - The target locale (defaults to 'en')
+ * @returns The status message string
+ */
+export function getOrderStatusMessage(
+  status: string,
+  locale: SupportedLocale = 'en'
+): string {
+  const statusMessages = EMAIL_TRANSLATIONS.statusMessages.order;
+  const message = statusMessages[status as keyof typeof statusMessages];
+
+  if (!message) {
+    console.warn(`Missing order status message for status: ${status}`);
+    return status; // Fallback to raw status
+  }
+
+  return message[locale] || message.en; // Fallback to English
+}
+
+/**
+ * Get Payment Status Message
+ *
+ * Retrieves a descriptive message for a payment status in the specified locale.
+ *
+ * @param status - The payment status
+ * @param locale - The target locale (defaults to 'en')
+ * @returns The status message string
+ */
+export function getPaymentStatusMessage(
+  status: string,
+  locale: SupportedLocale = 'en'
+): string {
+  const statusMessages = EMAIL_TRANSLATIONS.statusMessages.payment;
+  const message = statusMessages[status as keyof typeof statusMessages];
+
+  if (!message) {
+    console.warn(`Missing payment status message for status: ${status}`);
+    return status; // Fallback to raw status
+  }
+
+  return message[locale] || message.en; // Fallback to English
 }
 
 /**

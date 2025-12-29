@@ -548,8 +548,9 @@ export class VariableReplacerService implements IVariableReplacer {
         return getOrderCancellationTranslations(locale);
       case 'orders/template-admin-order-cancellation':
         return getAdminOrderCancellationTranslations(locale);
-      case 'orders/template-order-status-update-simplified':
       case 'orders/template-payment-status-update':
+        return getOrderStatusUpdateTranslations(locale);
+      case 'orders/template-order-status-update':
         return getOrderStatusUpdateTranslations(locale);
       default:
         return getOrderConfirmationTranslations(locale);

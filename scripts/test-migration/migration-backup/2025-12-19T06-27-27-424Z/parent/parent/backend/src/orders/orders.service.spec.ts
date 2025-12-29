@@ -115,8 +115,7 @@ describe('OrdersService', () => {
   const mockEmailTemplateService = {
     getSimplifiedOrderConfirmationTemplate: jest.fn(),
     getSimplifiedShippingNotificationTemplate: jest.fn(),
-    getSimplifiedOrderStatusUpdateTemplate: jest.fn(),
-    getSimplifiedAdminOrderNotificationTemplate: jest.fn(),
+    getOrderStatusUpdateTemplate: jest.fn(),
   };
 
   const mockFooterSettingsService = {

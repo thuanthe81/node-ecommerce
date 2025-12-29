@@ -56,6 +56,8 @@ import {
   getTranslation,
   getAllTranslations,
   getEmailTranslation,
+  getOrderStatusMessage,
+  getPaymentStatusMessage,
   EMAIL_TRANSLATIONS,
   STATUS_TRANSLATIONS,
 } from './translations';
@@ -118,6 +120,10 @@ export const AlaCraftShared = {
       adminNotification: getAdminOrderNotificationTranslations,
       statusUpdate: getOrderStatusUpdateTranslations,
       generic: getTranslation,
+    },
+    statusMessages: {
+      order: getOrderStatusMessage,
+      payment: getPaymentStatusMessage,
     },
     data: EMAIL_TRANSLATIONS,
   },

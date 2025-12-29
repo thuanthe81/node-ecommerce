@@ -9,7 +9,7 @@ import { FooterSettingsService } from '../../footer-settings/footer-settings.ser
 import { EmailQueueConfigService } from './email-queue-config.service';
 import { EmailAttachmentService } from '../../pdf-generator/services/email-attachment.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
-import { CONSTANTS, OrderStatus, PaymentStatus } from '@alacraft/shared';
+import { CONSTANTS, OrderStatus, PaymentStatus, getOrderStatusMessage, getPaymentStatusMessage } from '@alacraft/shared';
 import Redis from 'ioredis';
 
 /**
@@ -640,6 +640,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
       include: {
+        user: true,
         items: {
           include: {
             product: {
@@ -695,6 +696,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
       include: {
+        user: true,
         items: {
           include: {
             product: {
@@ -781,7 +783,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     // Generate email template
     const template = await this.emailTemplateService.getAdminOrderNotificationTemplate(
-      this.mapOrderToAdminEmailData(order),
+      this.mapOrderToAdminEmailData(order, locale),
       locale
     );
 
@@ -810,6 +812,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
       include: {
+        user: true,
         items: {
           include: {
             product: true,
@@ -825,7 +828,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     const template = await this.emailTemplateService.getShippingNotificationTemplate(
       {
-        ...this.mapOrderToEmailData(order),
+        ...this.mapOrderToEmailData(order, event.locale),
         trackingNumber: event.trackingNumber,
       },
       event.locale
@@ -855,6 +858,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findUnique({
       where: { id: event.orderId },
       include: {
+        user: true,
         items: {
           include: {
             product: true,
@@ -867,9 +871,9 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     if (!order) {
       throw new Error(`Order not found: ${event.orderId}`);
     }
-
+    this.logger.debug("Loaded order ", order.user);
     const template = await this.emailTemplateService.getOrderStatusUpdateTemplate(
-      this.mapOrderToEmailData(order),
+      this.mapOrderToEmailData(order, event.locale),
       event.locale
     );
 
@@ -1222,7 +1226,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       orderDate: order.createdAt.toISOString(),
       orderTotal: Number(order.total),
       paymentStatus: event.paymentStatus,
-      statusMessage: event.statusMessage,
+      statusMessage: event.statusMessage || getPaymentStatusMessage(event.paymentStatus, event.locale),
     };
 
     // Generate email template
@@ -1646,41 +1650,47 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   /**
    * Helper to map order to email data
    * @param order - Prisma order object with relations
+   * @param locale - Language locale for status message
    * @returns Email template data
    */
-  private mapOrderToEmailData(order: any): any {
+  private mapOrderToEmailData(order: any, locale: 'en' | 'vi' = 'en'): any {
     // Implementation matches existing OrdersService mapping
     return {
       orderId: order.id,
       orderNumber: order.orderNumber,
       orderDate: order.createdAt.toISOString().split('T')[0],
-      customerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : order.email,
+      customerName: order.user ? `${order.user.firstName}` : order.email,
       customerEmail: order.email,
       items: order.items.map((item: any) => ({
         productName: item.product.name,
         productNameVi: item.product.nameVi,
         quantity: item.quantity,
         price: item.price,
-        total: item.quantity * item.price,
+        total: item.total || (item.quantity * item.price), // Use item.total if available, otherwise calculate
       })),
       subtotal: order.subtotal,
       shippingCost: order.shippingCost,
-      tax: order.tax,
-      discount: order.discount,
-      total: order.total,
+      tax: order.taxAmount || order.tax, // Support both field names
+      taxAmount: order.taxAmount || order.tax,
+      discount: order.discountAmount || order.discount, // Support both field names
+      discountAmount: order.discountAmount || order.discount,
+      total: order.total, // Keep for backward compatibility, but template will use calculated total
       shippingAddress: order.shippingAddress,
       status: order.status,
+      paymentStatus: order.paymentStatus,
+      statusMessage: getOrderStatusMessage(order.status, locale),
     };
   }
 
   /**
    * Helper to map order to admin email data
    * @param order - Prisma order object with relations
+   * @param locale - Language locale for status message
    * @returns Admin email template data
    */
-  private mapOrderToAdminEmailData(order: any): any {
+  private mapOrderToAdminEmailData(order: any, locale: 'en' | 'vi' = 'en'): any {
     return {
-      ...this.mapOrderToEmailData(order),
+      ...this.mapOrderToEmailData(order, locale),
       billingAddress: order.billingAddress,
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,

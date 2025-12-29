@@ -50,6 +50,7 @@ export class EmailHandlebarsHelpers {
       divide: this.divideHelper(),
       percentage: this.percentageHelper(),
       safeCalculateTotal: this.safeCalculateTotalHelper(),
+      safeCalculateOrderTotal: this.safeCalculateOrderTotalHelper(),
 
       // Array helpers
       join: this.joinHelper(),
@@ -77,9 +78,20 @@ export class EmailHandlebarsHelpers {
    */
   private static formatCurrencyHelper(): HelperDelegate {
     return function(amount: number, currency: string = 'VND', locale?: string) {
+      // Handle the case where the helper is called with (amount, locale) instead of (amount, currency, locale)
+      // In this case, currency will actually be the locale string ('en' or 'vi')
+      let actualCurrency = currency;
+      let actualLocale = locale;
+
+      if ((currency === 'en' || currency === 'vi') && (typeof locale === 'object' || locale === undefined)) {
+        // Called with (amount, locale) - adjust parameters
+        actualLocale = currency;
+        actualCurrency = 'VND';
+      }
+
       // Handle undefined, null, NaN, or non-numeric values
       if (amount === undefined || amount === null || typeof amount !== 'number' || isNaN(amount)) {
-        const templateLocale = locale || (this as any).locale || 'en';
+        const templateLocale = (typeof actualLocale === 'string') ? actualLocale : ((this as any).locale || 'en');
 
         // Log the occurrence for debugging
         console.warn(`[EmailTemplate] Undefined price encountered in formatCurrency: ${amount}`);
@@ -89,26 +101,32 @@ export class EmailHandlebarsHelpers {
       }
 
       // Use the locale from template context if not provided
-      const templateLocale = locale || (this as any).locale || 'en';
+      const templateLocale = (typeof actualLocale === 'string') ? actualLocale : ((this as any).locale || 'en');
 
+      // For VND currency, use simple Vietnamese formatting with ₫ symbol
+      if (actualCurrency === 'VND') {
+        return `${amount.toLocaleString('vi-VN')} ₫`;
+      }
+
+      // For other currencies, use Intl.NumberFormat
       try {
         if (templateLocale === 'vi') {
           return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
-            currency: currency,
-            minimumFractionDigits: currency === 'VND' ? 0 : 2
+            currency: actualCurrency,
+            minimumFractionDigits: actualCurrency === 'VND' ? 0 : 2
           }).format(amount);
         } else {
           return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: currency === 'VND' ? 'USD' : currency,
+            currency: actualCurrency,
             minimumFractionDigits: 2
           }).format(amount);
         }
       } catch (error) {
         // Fallback to simple formatting if Intl fails
         const formattedAmount = amount.toLocaleString();
-        return currency === 'VND' ? `${formattedAmount} ₫` : `${formattedAmount}`;
+        return actualCurrency === 'VND' ? `${formattedAmount} ₫` : `${formattedAmount}`;
       }
     };
   }
@@ -168,6 +186,64 @@ export class EmailHandlebarsHelpers {
 
       // Format the total using the enhanced formatCurrency helper
       const formattedTotal = EmailHandlebarsHelpers.formatCurrencyHelper()(total, 'VND', templateLocale);
+
+      if (hasUndefinedPrices) {
+        // Return total with note about quote items
+        const quoteNote = templateLocale === 'vi'
+          ? ' (+ giá sản phẩm cần báo giá)'
+          : ' (+ quote items)';
+
+        return formattedTotal + quoteNote;
+      }
+
+      return formattedTotal;
+    };
+  }
+
+  /**
+   * Safe order total calculation helper that includes shipping, tax, and discounts
+   */
+  private static safeCalculateOrderTotalHelper(): HelperDelegate {
+    return function(orderData: any, locale?: string) {
+      if (!orderData || typeof orderData !== 'object') return '0';
+
+      const templateLocale = locale || (this as any).locale || 'en';
+      let subtotal = 0;
+      let hasUndefinedPrices = false;
+
+      // Calculate subtotal from items
+      if (Array.isArray(orderData.items)) {
+        for (const item of orderData.items) {
+          const itemTotal = item.total || (item.price * item.quantity);
+          if (itemTotal === undefined || itemTotal === null || typeof itemTotal !== 'number' || isNaN(itemTotal)) {
+            hasUndefinedPrices = true;
+            console.warn(`[EmailTemplate] Order contains items with undefined prices`);
+            continue;
+          }
+          subtotal += itemTotal;
+        }
+      }
+
+      // Add shipping cost
+      const shippingCost = orderData.shippingCost || 0;
+      if (typeof shippingCost === 'number' && !isNaN(shippingCost)) {
+        subtotal += shippingCost;
+      }
+
+      // Add tax
+      const tax = orderData.tax || orderData.taxAmount || 0;
+      if (typeof tax === 'number' && !isNaN(tax)) {
+        subtotal += tax;
+      }
+
+      // Subtract discount
+      const discount = orderData.discount || orderData.discountAmount || 0;
+      if (typeof discount === 'number' && !isNaN(discount)) {
+        subtotal -= discount;
+      }
+
+      // Format the total using the enhanced formatCurrency helper
+      const formattedTotal = EmailHandlebarsHelpers.formatCurrencyHelper()(subtotal, 'VND', templateLocale);
 
       if (hasUndefinedPrices) {
         // Return total with note about quote items
