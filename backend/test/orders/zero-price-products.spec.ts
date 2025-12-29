@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { AccessControlService } from '../../src/orders/services/access-control.service';
+import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
 import { EmailService } from '../../src/notifications/services/email.service';
 import { EmailTemplateService } from '../../src/notifications/services/email-template.service';
 import { FooterSettingsService } from '../../src/footer-settings/footer-settings.service';
@@ -8,6 +10,7 @@ import { EmailAttachmentService } from '../../src/pdf-generator/services/email-a
 import { ResendEmailHandlerService } from '../../src/pdf-generator/services/resend-email-handler.service';
 import { BusinessInfoService } from '../../src/common/services/business-info.service';
 import { ShippingService } from '../../src/shipping/shipping.service';
+import { TranslationService } from '../../src/common/services/translation.service';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 
 describe('OrdersService - Zero Price Products', () => {
@@ -165,6 +168,13 @@ describe('OrdersService - Zero Price Products', () => {
       providers: [
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: AccessControlService, useValue: {} },
+        { provide: EmailEventPublisher, useValue: {
+          sendOrderConfirmation: jest.fn().mockResolvedValue('job-id'),
+          sendAdminOrderNotification: jest.fn().mockResolvedValue('job-id'),
+          sendOrderStatusUpdate: jest.fn().mockResolvedValue('job-id'),
+          sendShippingNotification: jest.fn().mockResolvedValue('job-id'),
+        } },
         { provide: EmailService, useValue: mockEmailService },
         { provide: EmailTemplateService, useValue: mockEmailTemplateService },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
@@ -172,6 +182,7 @@ describe('OrdersService - Zero Price Products', () => {
         { provide: ResendEmailHandlerService, useValue: mockResendEmailHandlerService },
         { provide: BusinessInfoService, useValue: mockBusinessInfoService },
         { provide: ShippingService, useValue: mockShippingService },
+        { provide: TranslationService, useValue: {} },
       ],
     }).compile();
 
@@ -571,7 +582,20 @@ describe('OrdersService - Zero Price Products', () => {
         total: 335.0,
         status: OrderStatus.PENDING,
         requiresPricing: false,
-        items: [updatedOrderItem],
+        items: [{
+          ...updatedOrderItem,
+          product: {
+            id: 'prod-zero',
+            slug: 'custom-product',
+            images: [{
+              url: 'https://example.com/image.jpg',
+              altTextEn: 'Custom Product',
+              altTextVi: 'Sản phẩm tùy chỉnh',
+            }],
+          },
+        }],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
       };
 
       mockPrismaService.order.findUnique
@@ -604,8 +628,12 @@ describe('OrdersService - Zero Price Products', () => {
         },
       });
 
-      // Verify product base price remains unchanged
-      expect(result.productBasePriceUnchanged).toBe(true);
+      // Verify the complete updated order is returned
+      expect(result).toBeDefined();
+      expect(result.id).toBe(orderId);
+      expect(result.items).toBeDefined();
+      expect(result.shippingAddress).toBeDefined();
+      expect(result.billingAddress).toBeDefined();
     });
 
     it('should throw NotFoundException if order not found', async () => {

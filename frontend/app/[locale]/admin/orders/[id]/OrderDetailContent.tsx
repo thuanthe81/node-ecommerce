@@ -295,7 +295,7 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
       </div>
 
       {/* Warning message for orders requiring pricing */}
-      {order.requiresPricing && order.items.some((item) => isContactForPrice(item.price)) && (
+      {order.requiresPricing && order.items && order.items.some((item) => isContactForPrice(item.price)) && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-sm text-yellow-800">{getAdminOrderPricingMessage(locale)}</p>
         </div>
@@ -579,47 +579,59 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         {/* Shipping Address */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.shippingInfo')}</h2>
-          <address className="not-italic text-sm text-gray-900">
-            <div className="font-medium">{order.shippingAddress.fullName}</div>
-            <div>{order.shippingAddress.phone}</div>
-            <div className="mt-2">
-              {order.shippingAddress.addressLine1}
-              {order.shippingAddress.addressLine2 && (
-                <>
-                  <br />
-                  {order.shippingAddress.addressLine2}
-                </>
-              )}
-              <br />
-              {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
-              {order.shippingAddress.postalCode}
-              <br />
-              {order.shippingAddress.country}
+          {order.shippingAddress ? (
+            <address className="not-italic text-sm text-gray-900">
+              <div className="font-medium">{order.shippingAddress.fullName}</div>
+              <div>{order.shippingAddress.phone}</div>
+              <div className="mt-2">
+                {order.shippingAddress.addressLine1}
+                {order.shippingAddress.addressLine2 && (
+                  <>
+                    <br />
+                    {order.shippingAddress.addressLine2}
+                  </>
+                )}
+                <br />
+                {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+                {order.shippingAddress.postalCode}
+                <br />
+                {order.shippingAddress.country}
+              </div>
+            </address>
+          ) : (
+            <div className="text-sm text-gray-500">
+              {locale === 'vi' ? 'Không có thông tin địa chỉ giao hàng' : 'No shipping address information'}
             </div>
-          </address>
+          )}
         </div>
 
         {/* Billing Address */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.billingInfo')}</h2>
-          <address className="not-italic text-sm text-gray-900">
-            <div className="font-medium">{order.billingAddress.fullName}</div>
-            <div>{order.billingAddress.phone}</div>
-            <div className="mt-2">
-              {order.billingAddress.addressLine1}
-              {order.billingAddress.addressLine2 && (
-                <>
-                  <br />
-                  {order.billingAddress.addressLine2}
-                </>
-              )}
-              <br />
-              {order.billingAddress.city}, {order.billingAddress.state}{' '}
-              {order.billingAddress.postalCode}
-              <br />
-              {order.billingAddress.country}
+          {order.billingAddress ? (
+            <address className="not-italic text-sm text-gray-900">
+              <div className="font-medium">{order.billingAddress.fullName}</div>
+              <div>{order.billingAddress.phone}</div>
+              <div className="mt-2">
+                {order.billingAddress.addressLine1}
+                {order.billingAddress.addressLine2 && (
+                  <>
+                    <br />
+                    {order.billingAddress.addressLine2}
+                  </>
+                )}
+                <br />
+                {order.billingAddress.city}, {order.billingAddress.state}{' '}
+                {order.billingAddress.postalCode}
+                <br />
+                {order.billingAddress.country}
+              </div>
+            </address>
+          ) : (
+            <div className="text-sm text-gray-500">
+              {locale === 'vi' ? 'Không có thông tin địa chỉ thanh toán' : 'No billing address information'}
             </div>
-          </address>
+          )}
         </div>
       </div>
 
@@ -650,7 +662,8 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {order.items.map((item) => (
+              {order.items && order.items.length > 0 ? (
+                order.items.map((item) => (
                 <tr key={item.id} className={isContactForPrice(item.price) ? 'bg-yellow-50' : ''}>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
@@ -709,7 +722,14 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
                     )}
                   </td>
                 </tr>
-              ))}
+              ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                    {locale === 'vi' ? 'Không có sản phẩm nào trong đơn hàng' : 'No items in this order'}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

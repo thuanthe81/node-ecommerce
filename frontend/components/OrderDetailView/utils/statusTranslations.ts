@@ -14,7 +14,12 @@ import { translateOrderStatus, translatePaymentStatus, OrderStatus, PaymentStatu
  * @param locale - Current locale ('en' | 'vi')
  * @returns Translated status text
  */
-export function getOrderStatusText(status: string, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+export function getOrderStatusText(status: string | undefined | null, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+  // Handle undefined/null status
+  if (!status) {
+    return 'Unknown';
+  }
+
   // Try to use shared library translation first
   try {
     if (Object.values(OrderStatus).includes(status as OrderStatus) && locale) {
@@ -47,7 +52,12 @@ export function getOrderStatusText(status: string, t: (key: string) => string, l
  * @param locale - Current locale ('en' | 'vi')
  * @returns Translated payment status text
  */
-export function getPaymentStatusText(status: string, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+export function getPaymentStatusText(status: string | undefined | null, t: (key: string) => string, locale?: 'en' | 'vi'): string {
+  // Handle undefined/null status
+  if (!status) {
+    return 'Unknown';
+  }
+
   // Try to use shared library translation first
   try {
     if (Object.values(PaymentStatus).includes(status as PaymentStatus) && locale) {
@@ -76,7 +86,12 @@ export function getPaymentStatusText(status: string, t: (key: string) => string,
  * @param t - Translation function from useTranslations
  * @returns Translated payment method text
  */
-export function getPaymentMethodText(method: string, t: (key: string) => string): string {
+export function getPaymentMethodText(method: string | undefined | null, t: (key: string) => string): string {
+  // Handle undefined/null method
+  if (!method) {
+    return 'Unknown';
+  }
+
   // Normalize the method string to match translation keys
   const methodKey = method.toLowerCase().replace(/\s+/g, '').replace(/[-_]/g, '');
 
@@ -98,7 +113,12 @@ export function getPaymentMethodText(method: string, t: (key: string) => string)
  * @param t - Translation function from useTranslations
  * @returns Translated shipping method text
  */
-export function getShippingMethodText(method: string, t: (key: string) => string): string {
+export function getShippingMethodText(method: string | undefined | null, t: (key: string) => string): string {
+  // Handle undefined/null method
+  if (!method) {
+    return 'Unknown';
+  }
+
   // For shipping methods, we need to handle dynamic values from the database
   // Since shipping methods are user-configurable, we'll try common translations first
   const methodKey = method.toLowerCase().replace(/\s+/g, '').replace(/[-_]/g, '');

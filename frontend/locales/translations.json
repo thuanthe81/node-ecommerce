@@ -4484,6 +4484,10 @@
       "signature": {
         "en": "Best regards,<br>AlaCraft Team",
         "vi": "Trân trọng,<br>Đội ngũ AlaCraft"
+      },
+      "noShippingAddress": {
+        "en": "No shipping address information available",
+        "vi": "Không có thông tin địa chỉ giao hàng"
       }
     },
     "buttons": {

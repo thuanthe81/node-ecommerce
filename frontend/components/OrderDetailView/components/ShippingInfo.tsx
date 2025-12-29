@@ -21,7 +21,7 @@ interface ShippingAddress {
 }
 
 interface ShippingInfoProps {
-  shippingAddress: ShippingAddress;
+  shippingAddress?: ShippingAddress;
   shippingMethod: string;
 }
 
@@ -72,38 +72,46 @@ export function ShippingInfo({ shippingAddress, shippingMethod }: ShippingInfoPr
             className="not-italic text-gray-700 text-sm sm:text-base leading-relaxed"
             aria-labelledby="delivery-address-heading"
           >
-            <strong className="text-gray-900">{shippingAddress.fullName}</strong>
-            <br />
-            {shippingAddress.addressLine1}
-            <br />
-            {shippingAddress.addressLine2 && (
+            {shippingAddress ? (
               <>
-                {shippingAddress.addressLine2}
+                <strong className="text-gray-900">{shippingAddress.fullName}</strong>
                 <br />
-              </>
-            )}
-            {shippingAddress.city}, {shippingAddress.state}{' '}
-            {shippingAddress.postalCode}
-            <br />
-            {shippingAddress.country}
-            <br />
-            <span className="inline-flex items-center gap-1 mt-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                {shippingAddress.addressLine1}
+                <br />
+                {shippingAddress.addressLine2 && (
+                  <>
+                    {shippingAddress.addressLine2}
+                    <br />
+                  </>
+                )}
+                {shippingAddress.city}, {shippingAddress.state}{' '}
+                {shippingAddress.postalCode}
+                <br />
+                {shippingAddress.country}
+                <br />
+                <span className="inline-flex items-center gap-1 mt-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                   strokeWidth={2}
                   d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                 />
               </svg>
               {t('phone')}: <strong>{shippingAddress.phone}</strong>
             </span>
+              </>
+            ) : (
+              <div className="text-gray-500">
+                {tEmail('noShippingAddress')}
+              </div>
+            )}
           </address>
         </div>
 

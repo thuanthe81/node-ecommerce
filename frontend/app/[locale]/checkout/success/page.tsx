@@ -193,21 +193,27 @@ function SuccessContent() {
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h3 className="font-semibold mb-3">Shipping Address</h3>
-        <div className="text-sm text-gray-600">
-          <p className="font-medium text-gray-900">
-            {order.shippingAddress.fullName}
-          </p>
-          <p>{order.shippingAddress.addressLine1}</p>
-          {order.shippingAddress.addressLine2 && (
-            <p>{order.shippingAddress.addressLine2}</p>
-          )}
-          <p>
-            {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
-            {order.shippingAddress.postalCode}
-          </p>
-          <p>{order.shippingAddress.country}</p>
-          <p className="mt-2">{order.shippingAddress.phone}</p>
-        </div>
+        {order.shippingAddress ? (
+          <div className="text-sm text-gray-600">
+            <p className="font-medium text-gray-900">
+              {order.shippingAddress.fullName}
+            </p>
+            <p>{order.shippingAddress.addressLine1}</p>
+            {order.shippingAddress.addressLine2 && (
+              <p>{order.shippingAddress.addressLine2}</p>
+            )}
+            <p>
+              {order.shippingAddress.city}, {order.shippingAddress.state}{' '}
+              {order.shippingAddress.postalCode}
+            </p>
+            <p>{order.shippingAddress.country}</p>
+            <p className="mt-2">{order.shippingAddress.phone}</p>
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">
+            No shipping address information available
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center">

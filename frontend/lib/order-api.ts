@@ -38,8 +38,8 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
-  shippingAddress: Address;
-  billingAddress: Address;
+  shippingAddress?: Address;
+  billingAddress?: Address;
 }
 
 export interface OrderItem {

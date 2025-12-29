@@ -525,7 +525,14 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
           },
         },
         shippingAddress: true,
@@ -646,19 +653,15 @@ export class OrdersService {
     });
 
     // Recalculate order total
-    await this.recalculateOrderTotal(orderId);
+    const updatedOrder = await this.recalculateOrderTotal(orderId);
 
     // Verify product base price remains unchanged
     const product = await this.prisma.product.findUnique({
       where: { id: orderItem.productId },
     });
 
-    return {
-      orderItem: updatedOrderItem,
-      productBasePriceUnchanged: product
-        ? Number(product.price) === 0
-        : false,
-    };
+    // Return the complete updated order instead of just the order item
+    return updatedOrder;
   }
 
   /**
@@ -713,7 +716,14 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
           },
         },
         shippingAddress: true,
@@ -765,7 +775,14 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
           },
         },
         shippingAddress: true,
@@ -887,7 +904,14 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
           },
         },
         shippingAddress: true,
