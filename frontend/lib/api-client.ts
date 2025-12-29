@@ -5,9 +5,17 @@
  * It includes several interceptors that handle:
  *
  * 1. Authentication: Automatically adds JWT access tokens to requests
- * 2. Admin Cache-Busting: Prevents caching of admin API responses to ensure
+ * 2. CSRF Protection: Automatically adds CSRF tokens to protected endpoints
+ * 3. Admin Cache-Busting: Prevents caching of admin API responses to ensure
  *    administrators always see fresh, real-time data
- * 3. Token Refresh: Automatically refreshes expired tokens and retries failed requests
+ * 4. Token Refresh: Automatically refreshes expired tokens and retries failed requests
+ *
+ * ## CSRF Protection
+ *
+ * Certain endpoints require CSRF tokens for security. The client automatically:
+ * - Fetches CSRF tokens when needed
+ * - Adds tokens to protected endpoints (like order cancellation)
+ * - Retries requests with fresh tokens if CSRF validation fails
  *
  * ## Admin API Cache-Busting
  *
@@ -23,13 +31,34 @@
  */
 
 import axios from 'axios';
+import { csrfService } from './csrf';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Enable cookies for CSRF protection
 });
+
+/**
+ * List of endpoints that require CSRF protection
+ */
+const CSRF_PROTECTED_ENDPOINTS = [
+  /\/orders\/[^/]+\/cancel$/, // Order cancellation endpoints
+];
+
+/**
+ * Check if an endpoint requires CSRF protection
+ */
+function requiresCsrfToken(url: string, method: string): boolean {
+  // Only non-GET requests need CSRF protection
+  if (method.toUpperCase() === 'GET') {
+    return false;
+  }
+
+  return CSRF_PROTECTED_ENDPOINTS.some(pattern => pattern.test(url));
+}
 
 // Request interceptor to add access token
 apiClient.interceptors.request.use(
@@ -40,6 +69,31 @@ apiClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Request interceptor to add CSRF token for protected endpoints
+apiClient.interceptors.request.use(
+  async (config) => {
+    const url = config.url || '';
+    const method = config.method || 'GET';
+
+    // Add CSRF token if this endpoint requires it
+    if (requiresCsrfToken(url, method)) {
+      try {
+        const token = await csrfService.getToken();
+        config.headers['x-csrf-token'] = token;
+        console.log(`Added CSRF token to ${method.toUpperCase()} ${url}`);
+      } catch (error) {
+        console.error('Failed to add CSRF token to request:', error);
+        // Continue with request - let the server handle the missing token
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -93,13 +147,35 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle token refresh and CSRF errors
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't tried to refresh yet
+    // Handle CSRF token errors
+    if (error.response?.status === 403 &&
+        error.response?.data?.code === 'CSRF_TOKEN_INVALID' &&
+        !originalRequest._csrfRetry) {
+
+      originalRequest._csrfRetry = true;
+
+      try {
+        // Clear the cached CSRF token and get a fresh one
+        csrfService.clearToken();
+        const newToken = await csrfService.getToken();
+
+        console.log('Retrying request with fresh CSRF token');
+        // Retry the request with the new CSRF token
+        originalRequest.headers['x-csrf-token'] = newToken;
+        return apiClient(originalRequest);
+      } catch (csrfError) {
+        console.error('Failed to retry request with fresh CSRF token:', csrfError);
+        return Promise.reject(error);
+      }
+    }
+
+    // Handle JWT token refresh (existing logic)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 

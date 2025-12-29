@@ -315,12 +315,7 @@ export class OrderCancellationService {
    * @returns boolean - True if the order can be cancelled
    */
   isOrderCancellable(order: any): boolean {
-    const cancellableStatuses = [
-      CONSTANTS.STATUS.ORDER_STATUS.PENDING,
-      CONSTANTS.STATUS.ORDER_STATUS.PROCESSING,
-    ];
-
-    return cancellableStatuses.includes(order.status as any);
+    return CONSTANTS.ORDER_STATUS_GROUPS.CANCELLABLE.includes(order.status as any);
   }
 
   /**

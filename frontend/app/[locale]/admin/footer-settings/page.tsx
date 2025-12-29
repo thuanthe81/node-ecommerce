@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/AdminLayout';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import { useLocale } from 'next-intl';
+import { BUSINESS } from '@alacraft/shared';
 import {
   footerSettingsApi,
   FooterSettings,
@@ -220,7 +221,7 @@ export default function FooterSettingsPage() {
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="contact@alacraft.com"
+                    placeholder={BUSINESS.CONTACT.EMAIL.PRIMARY}
                   />
                 </div>
 

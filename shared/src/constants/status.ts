@@ -113,6 +113,24 @@ export const STATUS = {
 } as const;
 
 /**
+ * Order Status Groups
+ *
+ * Predefined groups of order statuses for common business logic.
+ */
+export const ORDER_STATUS_GROUPS = {
+  /**
+   * Order statuses that allow cancellation
+   *
+   * Orders in these statuses can be cancelled by customers or administrators.
+   */
+  CANCELLABLE: [
+    OrderStatus.PENDING,
+    OrderStatus.PENDING_QUOTE,
+    OrderStatus.PROCESSING,
+  ] as const,
+} as const;
+
+/**
  * Type Exports
  *
  * TypeScript type definitions derived from the constants for type safety.
@@ -123,3 +141,4 @@ export type PaymentStatusType =
   (typeof STATUS.PAYMENT_STATUS)[keyof typeof STATUS.PAYMENT_STATUS];
 export type UserRoleType =
   (typeof STATUS.USER_ROLES)[keyof typeof STATUS.USER_ROLES];
+export type CancellableOrderStatus = (typeof ORDER_STATUS_GROUPS.CANCELLABLE)[number];

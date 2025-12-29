@@ -173,12 +173,7 @@ export class AccessControlService {
       }
 
       // Check if order status allows cancellation
-      const cancellableStatuses = [
-        CONSTANTS.STATUS.ORDER_STATUS.PENDING,
-        CONSTANTS.STATUS.ORDER_STATUS.PROCESSING,
-      ];
-
-      if (!cancellableStatuses.includes(order.status as any)) {
+      if (!CONSTANTS.ORDER_STATUS_GROUPS.CANCELLABLE.includes(order.status as any)) {
         this.logger.log(`Order cancellation denied: Order ${orderId} has non-cancellable status ${order.status}`, {
           orderId,
           userId,

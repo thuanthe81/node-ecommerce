@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { CONSTANTS } from '@alacraft/shared';
 import { CSSValidationError } from '../interfaces/css-injector.interface';
 
 /**
@@ -142,7 +143,13 @@ export class CSSComponentValidator {
         if (!cssContent.includes('.badge')) {
           errors.push('Badge component should contain .badge class definitions');
         }
-        const badgeStyles = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+        const badgeStyles = [
+          CONSTANTS.STATUS.ORDER_STATUS.PENDING.toLowerCase(),
+          'confirmed', // This is not an order status, it's a UI state
+          CONSTANTS.STATUS.ORDER_STATUS.SHIPPED.toLowerCase(),
+          CONSTANTS.STATUS.ORDER_STATUS.DELIVERED.toLowerCase(),
+          CONSTANTS.STATUS.ORDER_STATUS.CANCELLED.toLowerCase(),
+        ];
         const missingBadgeStyles = badgeStyles.filter(style => !cssContent.includes(`.badge-${style}`));
         if (missingBadgeStyles.length > 0) {
           errors.push(`Missing badge styles: ${missingBadgeStyles.join(', ')}`);

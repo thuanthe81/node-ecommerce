@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { productApi, Product } from '@/lib/product-api';
 import Image from 'next/image';
 import { SvgClose } from './Svgs';
+import { Portal } from '@/components/Portal';
 
 interface ImagePickerModalProps {
   isOpen: boolean;
@@ -62,7 +63,8 @@ export default function ImagePickerModal({
   const totalImages = products.reduce((total, product) => total + product.images.length, 0);
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+    <Portal>
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-gray-200">
@@ -187,7 +189,8 @@ export default function ImagePickerModal({
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </Portal>
   );
 }

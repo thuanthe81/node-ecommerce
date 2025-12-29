@@ -11,6 +11,7 @@
 import { useTranslations } from 'next-intl';
 import { Order } from '@/lib/order-api';
 import { formatMoney } from '@/app/utils';
+import { Portal } from '@/components/Portal';
 
 interface CancellationModalProps {
   /** Whether the modal is open */
@@ -89,15 +90,16 @@ export function CancellationModal({
   const showRetryButton = error && isRetryable && onRetry && retryCount < 3;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cancellation-modal-title"
-      aria-describedby="cancellation-modal-description"
-    >
+    <Portal>
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        onClick={handleBackdropClick}
+        onKeyDown={handleKeyDown}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancellation-modal-title"
+        aria-describedby="cancellation-modal-description"
+      >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-gray-200">
@@ -308,8 +310,9 @@ export function CancellationModal({
               </button>
             )}
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

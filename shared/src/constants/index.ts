@@ -12,7 +12,7 @@ export * from './system';
 export * from './cache';
 
 // Import for unified export
-import { STATUS, OrderStatus, PaymentStatus, UserRole } from './status';
+import { STATUS, OrderStatus, PaymentStatus, UserRole, ORDER_STATUS_GROUPS } from './status';
 import { BUSINESS } from './business';
 import { SYSTEM } from './system';
 import { CACHE_KEYS } from './cache';
@@ -25,13 +25,14 @@ import { CACHE_KEYS } from './cache';
  */
 export const CONSTANTS = {
   STATUS,
+  ORDER_STATUS_GROUPS,
   BUSINESS,
   SYSTEM,
   CACHE_KEYS,
 } as const;
 
 // Re-export enums for direct access
-export { OrderStatus, PaymentStatus, UserRole };
+export { OrderStatus, PaymentStatus, UserRole, ORDER_STATUS_GROUPS };
 
 /**
  * Utility Functions
@@ -73,6 +74,15 @@ export const ConstantUtils = {
    */
   isValidMimeType: (mimeType: string): boolean => {
     return (Object.values(SYSTEM.MIME_TYPES) as string[]).includes(mimeType);
+  },
+
+  /**
+   * Check if an order status allows cancellation
+   * @param status - The order status to check
+   * @returns True if the order can be cancelled
+   */
+  isOrderCancellable: (status: string): boolean => {
+    return ORDER_STATUS_GROUPS.CANCELLABLE.includes(status as any);
   },
 
   /**

@@ -11,17 +11,17 @@ export class CsrfMiddleware implements NestMiddleware {
       sameSite: 'strict',
       maxAge: 3600000, // 1 hour
     },
-    ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+    // Don't ignore any methods - we'll handle this manually
   });
 
   use(req: Request, res: Response, next: NextFunction) {
-    // Skip CSRF protection for GET requests and preflight OPTIONS
-    if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
-      return next();
-    }
+    console.log(`CSRF Validation Middleware applied to: ${req.method} ${req.path}`);
 
-    // Apply CSRF protection
+    // Apply CSRF middleware for validation
     this.csrfProtection(req, res, (err: any) => {
+      console.log(`CSRF validation callback - Path: ${req.path}, Method: ${req.method}, Error:`, err?.message || 'none');
+
+      // This middleware is only for validation, so we check for errors
       if (err) {
         // Log CSRF violation for security monitoring
         console.error('CSRF Protection Error:', {

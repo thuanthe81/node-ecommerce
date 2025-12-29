@@ -8,6 +8,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { ConstantUtils } from '@alacraft/shared';
 import { Order } from '@/lib/order-api';
 
 interface CancelButtonProps {
@@ -25,8 +26,7 @@ interface CancelButtonProps {
  * Determines if an order can be cancelled based on its status
  */
 function canCancelOrder(order: Order): boolean {
-  const cancellableStatuses = ['PENDING', 'PENDING_QUOTE', 'PROCESSING'];
-  return cancellableStatuses.includes(order.status);
+  return ConstantUtils.isOrderCancellable(order.status);
 }
 
 export function CancelButton({ order, onCancel, disabled = false, locale }: CancelButtonProps) {

@@ -7,6 +7,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Portal } from '@/components/Portal';
 import { MediaPickerModalProps } from './types';
 import { ModalHeader } from './components/ModalHeader';
 import { ModalBody } from './components/ModalBody';
@@ -37,8 +38,9 @@ export function MediaPickerModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+    <Portal>
+      <div
+        className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="media-picker-title"
@@ -71,5 +73,6 @@ export function MediaPickerModal({
         />
       </div>
     </div>
+    </Portal>
   );
 }
