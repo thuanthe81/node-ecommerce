@@ -122,6 +122,7 @@ describe('OrdersService', () => {
     sendAdminOrderNotification: jest.fn().mockResolvedValue('job-id-2'),
     sendShippingNotification: jest.fn().mockResolvedValue('job-id-3'),
     sendOrderStatusUpdate: jest.fn().mockResolvedValue('job-id-4'),
+    sendPaymentStatusUpdate: jest.fn().mockResolvedValue('job-id-5'),
   };
 
   const mockTranslationService = {
@@ -546,6 +547,87 @@ describe('OrdersService', () => {
       await expect(
         service.updateStatus('non-existent-id', updateStatusDto),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updatePaymentStatus', () => {
+    const updatePaymentStatusDto = {
+      paymentStatus: PaymentStatus.PAID,
+    };
+
+    it('should successfully update payment status and send email notification', async () => {
+      const orderWithDetails = {
+        ...mockOrder,
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(orderWithDetails);
+      mockPrismaService.order.update.mockResolvedValue({
+        ...orderWithDetails,
+        paymentStatus: PaymentStatus.PAID,
+      });
+
+      const result = await service.updatePaymentStatus('order-1', updatePaymentStatusDto);
+
+      expect(result.paymentStatus).toBe(PaymentStatus.PAID);
+      expect(mockEmailEventPublisher.sendPaymentStatusUpdate).toHaveBeenCalledWith(
+        'order-1',
+        'ORD-123456',
+        'test@example.com',
+        'John Doe',
+        PaymentStatus.PAID,
+        'vi'
+      );
+    });
+
+    it('should throw NotFoundException if order not found', async () => {
+      mockPrismaService.order.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updatePaymentStatus('non-existent-id', updatePaymentStatusDto),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should continue with payment status update even if email notification fails', async () => {
+      const orderWithDetails = {
+        ...mockOrder,
+        items: [],
+        shippingAddress: mockAddress,
+        billingAddress: mockAddress,
+        promotion: null,
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+        },
+      };
+
+      mockPrismaService.order.findUnique.mockResolvedValue(orderWithDetails);
+      mockPrismaService.order.update.mockResolvedValue({
+        ...orderWithDetails,
+        paymentStatus: PaymentStatus.PAID,
+      });
+
+      // Mock email service to throw an error
+      mockEmailEventPublisher.sendPaymentStatusUpdate.mockRejectedValue(
+        new Error('Email service unavailable')
+      );
+
+      const result = await service.updatePaymentStatus('order-1', updatePaymentStatusDto);
+
+      // Payment status should still be updated despite email failure
+      expect(result.paymentStatus).toBe(PaymentStatus.PAID);
+      expect(mockEmailEventPublisher.sendPaymentStatusUpdate).toHaveBeenCalled();
     });
   });
 });

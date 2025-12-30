@@ -13,6 +13,9 @@ This document outlines the requirements for fixing critical bugs in the order co
 - **Simple_Email_Template**: A minimal email template containing only essential order information without complex CSS or styling
 - **Order_Link**: A direct link to view the order details on the website
 - **Essential_Information**: Core order data including order ID, creation date, and customer information
+- **Order_Status**: The current status of an order (e.g., PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED)
+- **Payment_Status**: The current payment status of an order (e.g., PENDING, PAID, FAILED, REFUNDED)
+- **Status_Translation_Service**: The service responsible for translating status values to localized text
 
 ## Requirements
 
@@ -75,3 +78,31 @@ This document outlines the requirements for fixing critical bugs in the order co
 3. WHEN an order is placed in test mode THEN the system SHALL log all email events and deliveries
 4. WHEN reviewing email logs THEN the system SHALL show clear evidence of deduplication working
 5. WHEN reviewing email content THEN the system SHALL show that HTML is properly formatted without CSS artifacts
+
+### Requirement 5
+
+**User Story:** As a customer, I want to receive email notifications when my payment status is updated by an administrator, so that I stay informed about my payment progress.
+
+#### Acceptance Criteria
+
+1. WHEN an administrator updates an order's payment status THEN the Order_Service SHALL publish a payment status update event to the email queue
+2. WHEN a payment status update event is published THEN the Email_Event_Publisher SHALL use deduplication to prevent duplicate events
+3. WHEN a payment status update event is processed THEN the Email_Worker SHALL send exactly one payment status update email to the customer
+4. WHEN the payment status update email is generated THEN it SHALL use the same simple template design as order confirmation emails
+5. WHEN the payment status update email is sent THEN it SHALL include the order ID, new payment status, order link, and customer information
+6. WHEN the payment status update fails THEN the system SHALL log the error but not prevent the status update from completing
+7. WHEN the payment status update email is sent THEN it SHALL be sent in the customer's preferred language (English or Vietnamese)
+
+### Requirement 6
+
+**User Story:** As a customer, I want to see correctly translated order and payment statuses on the order details page, so that I can understand my order information clearly without confusion between different status types.
+
+#### Acceptance Criteria
+
+1. WHEN displaying an order status THEN the Status_Translation_Service SHALL use only order-specific translation keys from the 'orders' namespace
+2. WHEN displaying a payment status THEN the Status_Translation_Service SHALL use only payment-specific translation keys from the 'email' namespace
+3. WHEN an order status translation fails THEN the system SHALL NOT fall back to payment status translations
+4. WHEN a payment status translation fails THEN the system SHALL NOT fall back to order status translations
+5. WHEN both order status and payment status are displayed THEN each SHALL use its appropriate translation namespace without cross-contamination
+6. WHEN a status value is unknown or invalid THEN the system SHALL display the raw status value rather than an incorrect translation
+7. WHEN the order details page is viewed THEN order status and payment status SHALL be clearly distinguished and correctly translated

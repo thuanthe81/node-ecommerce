@@ -8,16 +8,17 @@
 import { translateOrderStatus, translatePaymentStatus, OrderStatus, PaymentStatus } from '@alacraft/shared';
 
 /**
- * Get translated order status text using shared library
+ * Get translated order status text using orders namespace only
  * @param status - Raw order status value (e.g., "PENDING", "PROCESSING")
- * @param t - Translation function from useTranslations (for fallback)
+ * @param t - Translation function from useTranslations('orders')
  * @param locale - Current locale ('en' | 'vi')
  * @returns Translated status text
  */
 export function getOrderStatusText(status: string | undefined | null, t: (key: string) => string, locale?: 'en' | 'vi'): string {
   // Handle undefined/null status
   if (!status) {
-    return 'Unknown';
+    console.warn('Order status is undefined or null');
+    return status || 'Unknown';
   }
 
   // Try to use shared library translation first
@@ -29,7 +30,7 @@ export function getOrderStatusText(status: string | undefined | null, t: (key: s
     console.warn('Failed to translate order status with shared library:', error);
   }
 
-  // Fallback to existing translation system
+  // Fallback to orders namespace translation system ONLY
   const statusKey = status.toLowerCase();
   const statusMap: Record<string, string> = {
     'pending': 'statusPending',
@@ -42,20 +43,38 @@ export function getOrderStatusText(status: string | undefined | null, t: (key: s
   };
 
   const translationKey = statusMap[statusKey];
-  return translationKey ? t(translationKey) : status;
+  if (translationKey) {
+    try {
+      const translated = t(translationKey);
+      // If translation returns the key itself, it means translation failed
+      if (translated === translationKey) {
+        console.warn(`Order status translation not found for key: ${translationKey}`);
+        return status; // Return raw status instead of falling back to other namespaces
+      }
+      return translated;
+    } catch (error) {
+      console.warn(`Failed to translate order status key: ${translationKey}`, error);
+      return status; // Return raw status instead of falling back to other namespaces
+    }
+  }
+
+  // Log unknown status and return raw value
+  console.warn(`Unknown order status: ${status}`);
+  return status;
 }
 
 /**
- * Get translated payment status text using shared library
+ * Get translated payment status text using email namespace only
  * @param status - Raw payment status value (e.g., "PENDING", "PAID")
- * @param t - Translation function from useTranslations (for fallback)
+ * @param t - Translation function from useTranslations('email')
  * @param locale - Current locale ('en' | 'vi')
  * @returns Translated payment status text
  */
 export function getPaymentStatusText(status: string | undefined | null, t: (key: string) => string, locale?: 'en' | 'vi'): string {
   // Handle undefined/null status
   if (!status) {
-    return 'Unknown';
+    console.warn('Payment status is undefined or null');
+    return status || 'Unknown';
   }
 
   // Try to use shared library translation first
@@ -67,7 +86,7 @@ export function getPaymentStatusText(status: string | undefined | null, t: (key:
     console.warn('Failed to translate payment status with shared library:', error);
   }
 
-  // Fallback to existing translation system
+  // Fallback to email namespace translation system ONLY
   const statusKey = status.toLowerCase();
   const statusMap: Record<string, string> = {
     'pending': 'paymentStatus.pending',
@@ -77,7 +96,24 @@ export function getPaymentStatusText(status: string | undefined | null, t: (key:
   };
 
   const translationKey = statusMap[statusKey];
-  return translationKey ? t(translationKey) : status;
+  if (translationKey) {
+    try {
+      const translated = t(translationKey);
+      // If translation returns the key itself, it means translation failed
+      if (translated === translationKey) {
+        console.warn(`Payment status translation not found for key: ${translationKey}`);
+        return status; // Return raw status instead of falling back to other namespaces
+      }
+      return translated;
+    } catch (error) {
+      console.warn(`Failed to translate payment status key: ${translationKey}`, error);
+      return status; // Return raw status instead of falling back to other namespaces
+    }
+  }
+
+  // Log unknown status and return raw value
+  console.warn(`Unknown payment status: ${status}`);
+  return status;
 }
 
 /**

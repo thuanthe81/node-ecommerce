@@ -141,6 +141,90 @@ This implementation plan addresses two critical bugs in the order confirmation e
   - Review all test results and logs
   - Ensure all tests pass, ask the user if questions arise.
 
+- [ ] 9. Fix payment status update email notifications
+  - [x] 9.1 Investigate payment status update email issue
+    - Identify that updatePaymentStatus method doesn't trigger email notifications
+    - Review existing email infrastructure for payment status updates
+    - Confirm EmailEventPublisher.sendPaymentStatusUpdate method exists
+    - _Requirements: New requirement for payment status email notifications_
+
+  - [x] 9.2 Add email notification to payment status updates
+    - Modify OrdersService.updatePaymentStatus method to trigger email notifications
+    - Call EmailEventPublisher.sendPaymentStatusUpdate after successful status update
+    - Include proper error handling for email notification failures
+    - Ensure email is sent in customer's preferred language
+    - _Requirements: Payment status update email notifications_
+
+  - [ ]* 9.3 Write property test for payment status email notifications
+    - **Property 17: Payment Status Update Email Notification**
+    - **Validates: Payment status update email notifications**
+
+  - [ ] 9.4 Test payment status update email flow
+    - Create test order and update payment status via admin interface
+    - Verify customer receives payment status update email
+    - Test with different payment status values (PENDING, PAID, FAILED, REFUNDED)
+    - Verify email contains correct status information and order details
+    - _Requirements: Payment status update email notifications_
+
+- [x] 10. Fix status translation cross-contamination
+  - [x] 10.1 Analyze current status translation implementation
+    - Review getOrderStatusText and getPaymentStatusText functions
+    - Identify cross-namespace fallback logic causing incorrect translations
+    - Document current translation namespace usage patterns
+    - _Requirements: 6.1, 6.2, 6.3, 6.4_
+
+  - [x] 10.2 Separate order and payment status translation logic
+    - Remove fallback from order status to payment status translations
+    - Remove fallback from payment status to order status translations
+    - Ensure order status only uses 'orders' namespace translation keys
+    - Ensure payment status only uses 'email' namespace translation keys
+    - _Requirements: 6.1, 6.2, 6.3, 6.4_
+
+  - [ ]* 10.3 Write property test for order status namespace isolation
+    - **Property 18: Order Status Translation Namespace Isolation**
+    - **Validates: Requirements 6.1**
+
+  - [ ]* 10.4 Write property test for payment status namespace isolation
+    - **Property 19: Payment Status Translation Namespace Isolation**
+    - **Validates: Requirements 6.2**
+
+  - [x] 10.5 Implement raw value fallback for unknown statuses
+    - Modify getOrderStatusText to return raw value for unknown order statuses
+    - Modify getPaymentStatusText to return raw value for unknown payment statuses
+    - Add logging for unknown status values
+    - _Requirements: 6.6_
+
+  - [ ]* 10.6 Write property test for fallback prevention
+    - **Property 20: Order Status Translation Fallback Prevention**
+    - **Property 21: Payment Status Translation Fallback Prevention**
+    - **Validates: Requirements 6.3, 6.4**
+
+  - [ ]* 10.7 Write property test for raw value display
+    - **Property 23: Invalid Status Raw Value Display**
+    - **Validates: Requirements 6.6**
+
+  - [x] 10.8 Update OrderSummary component to use separated translation logic
+    - Ensure order status uses correct translation function and namespace
+    - Ensure payment status uses correct translation function and namespace
+    - Test both statuses display correctly without cross-contamination
+    - _Requirements: 6.5, 6.7_
+
+  - [ ]* 10.9 Write property test for dual status independence
+    - **Property 22: Dual Status Translation Independence**
+    - **Validates: Requirements 6.5**
+
+  - [ ]* 10.10 Write property test for order details correctness
+    - **Property 24: Order Details Status Translation Correctness**
+    - **Validates: Requirements 6.7**
+
+- [x] 11. Final checkpoint - Status translation verification
+  - Test order details page with various status combinations
+  - Verify order status uses only 'orders' namespace translations
+  - Verify payment status uses only 'email' namespace translations
+  - Confirm no cross-namespace fallback occurs
+  - Test with invalid status values to ensure raw value display
+  - Ensure all tests pass, ask the user if questions arise.
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP

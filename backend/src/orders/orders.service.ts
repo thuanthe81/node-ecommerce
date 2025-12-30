@@ -1144,6 +1144,54 @@ export class OrdersService {
       },
     });
 
+    // Send payment status update email notification
+    try {
+      const locale = 'vi' as 'en' | 'vi'; // Default to Vietnamese, consistent with order creation
+      const customerName = updatedOrder.user ? `${updatedOrder.user.firstName} ${updatedOrder.user.lastName}`.trim() : 'Unknown Customer';
+      const customerEmail = updatedOrder.user?.email || '';
+
+      if (customerEmail) {
+        await this.emailEventPublisher.sendPaymentStatusUpdate(
+          updatedOrder.id,
+          updatedOrder.orderNumber,
+          customerEmail,
+          customerName,
+          updatePaymentStatusDto.paymentStatus,
+          locale
+        );
+
+        this.logger.log(`Payment status update email sent successfully`, {
+          orderId: updatedOrder.id,
+          orderNumber: updatedOrder.orderNumber,
+          customerEmail: updatedOrder.user?.email || 'unknown',
+          newPaymentStatus: updatePaymentStatusDto.paymentStatus,
+          locale,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        this.logger.warn(`Cannot send payment status update email - no customer email found`, {
+          orderId: updatedOrder.id,
+          orderNumber: updatedOrder.orderNumber,
+          newPaymentStatus: updatePaymentStatusDto.paymentStatus,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the payment status update
+      this.logger.error(`Failed to send payment status update email`, {
+        orderId: updatedOrder.id,
+        orderNumber: updatedOrder.orderNumber,
+        customerEmail: updatedOrder.user?.email || 'unknown',
+        newPaymentStatus: updatePaymentStatusDto.paymentStatus,
+        error: emailError.message,
+        stack: emailError.stack,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Email failure should not prevent the payment status update from completing
+      // The status update was successful, email is a secondary concern
+    }
+
     return updatedOrder;
   }
 
