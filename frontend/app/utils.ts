@@ -133,3 +133,91 @@ export function getAdminProductZeroPriceMessage(locale: string = 'en'): string {
     ? '💡 Giá 0 = Khách hàng cần liên hệ để biết giá'
     : '💡 Price 0 = Customer must contact for pricing';
 }
+/**
+ * Safely format a date string with error handling for invalid dates
+ * @param dateString - The date string to format
+ * @param locale - The locale ('en' or 'vi')
+ * @param options - Intl.DateTimeFormat options
+ * @returns Formatted date string or 'Invalid date' if the date is invalid
+ */
+export function formatDateSafe(
+  dateString: string | null | undefined,
+  locale: string = 'en',
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateString) {
+    return 'Invalid date';
+  }
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+
+  const localeCode = locale === 'vi' ? 'vi-VN' : 'en-US';
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+
+  return new Intl.DateTimeFormat(localeCode, options || defaultOptions).format(date);
+}
+
+/**
+ * Safely format a date string for display in lists (shorter format)
+ * @param dateString - The date string to format
+ * @param locale - The locale ('en' or 'vi')
+ * @returns Formatted date string or 'Invalid date' if the date is invalid
+ */
+export function formatDateShort(
+  dateString: string | null | undefined,
+  locale: string = 'en'
+): string {
+  return formatDateSafe(dateString, locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+/**
+ * Safely format a date string with date and time
+ * @param dateString - The date string to format
+ * @param locale - The locale ('en' or 'vi')
+ * @returns Formatted date and time string or 'Invalid date' if the date is invalid
+ */
+export function formatDateTime(
+  dateString: string | null | undefined,
+  locale: string = 'en'
+): string {
+  return formatDateSafe(dateString, locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/**
+ * Safely compare two date strings for sorting
+ * @param dateA - First date string
+ * @param dateB - Second date string
+ * @returns Comparison result for sorting (negative, zero, or positive)
+ */
+export function compareDates(
+  dateA: string | null | undefined,
+  dateB: string | null | undefined
+): number {
+  const timeA = dateA ? new Date(dateA).getTime() : 0;
+  const timeB = dateB ? new Date(dateB).getTime() : 0;
+
+  // Handle invalid dates by treating them as 0
+  const validTimeA = isNaN(timeA) ? 0 : timeA;
+  const validTimeB = isNaN(timeB) ? 0 : timeB;
+
+  return validTimeB - validTimeA; // Descending order (newest first)
+}

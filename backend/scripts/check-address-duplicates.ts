@@ -34,7 +34,7 @@ async function main() {
     });
   }
 
-  // Check guest addresses
+  // Check guest addresses (addresses without userId)
   console.log('\n📊 Guest addresses (userId = null):\n');
 
   const guestAddressCount = await prisma.address.count({
@@ -104,7 +104,7 @@ async function main() {
 
     recentOrders.forEach((order, index) => {
       const sameAddress = order.shippingAddressId === order.billingAddressId;
-      const userType = order.userId ? 'Authenticated' : 'Guest';
+      const userType = 'Authenticated'; // All orders now require userId
 
       console.log(`${index + 1}. Order ${order.orderNumber}`);
       console.log(`   Type: ${userType}`);
@@ -132,20 +132,15 @@ async function main() {
   });
 
   const totalOrders = await prisma.order.count();
-  const guestOrders = await prisma.order.count({
-    where: { userId: null },
-  });
-  const authenticatedOrders = await prisma.order.count({
-    where: { userId: { not: null } },
-  });
+  // Note: All orders now require userId (no guest orders after migration)
+  const authenticatedOrders = await prisma.order.count();
 
   console.log(`Total addresses: ${totalAddresses}`);
   console.log(`  - Authenticated user addresses: ${authenticatedAddresses}`);
   console.log(`  - Guest addresses: ${guestAddresses}`);
   console.log('');
   console.log(`Total orders: ${totalOrders}`);
-  console.log(`  - Authenticated user orders: ${authenticatedOrders}`);
-  console.log(`  - Guest orders: ${guestOrders}`);
+  console.log(`  - All orders are now authenticated (userId required): ${authenticatedOrders}`);
 
   // Check for orphaned guest addresses (no associated orders)
   const orphanedGuestAddresses = await prisma.$queryRaw<any[]>`

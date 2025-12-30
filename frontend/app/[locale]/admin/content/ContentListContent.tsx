@@ -186,7 +186,12 @@ export default function ContentListContent({ contentType }: ContentListContentPr
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(content.updatedAt).toLocaleDateString()}
+                    {(() => {
+                      const date = content.updatedAt ? new Date(content.updatedAt) : null;
+                      return date && !isNaN(date.getTime())
+                        ? date.toLocaleDateString()
+                        : 'Invalid date';
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link

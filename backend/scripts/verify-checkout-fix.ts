@@ -67,19 +67,20 @@ async function getAddressCount(userId?: string): Promise<number> {
   }
 }
 
-// Test 1: Guest user checkout with same billing address
+// Test 1: Authenticated user checkout with same billing address
 async function testGuestCheckoutSameAddress() {
-  console.log('\n🧪 Test 1: Guest user checkout with same billing address');
+  console.log('\n🧪 Test 1: Authenticated user checkout with same billing address');
 
   try {
     const product = await createTestProduct();
+    const testUser = await createTestUser('test-checkout-same@example.com');
     const guestAddressCountBefore = await getAddressCount();
 
-    // Create address for guest user
+    // Create address for authenticated user
     const address = await prisma.address.create({
       data: {
-        userId: null, // Guest user
-        fullName: 'Guest User',
+        userId: testUser.id, // Associate with authenticated user
+        fullName: 'Test User',
         phone: '1234567890',
         addressLine1: '123 Test St',
         city: 'Test City',
@@ -94,7 +95,8 @@ async function testGuestCheckoutSameAddress() {
     const order = await prisma.order.create({
       data: {
         orderNumber: `TEST-${Date.now()}`,
-        email: 'guest@test.com',
+        userId: testUser.id, // Required field
+        email: 'test-checkout-verification@example.com',
         status: 'PENDING',
         subtotal: 100.00,
         shippingCost: 5.00,
@@ -164,17 +166,18 @@ async function testGuestCheckoutSameAddress() {
 
 // Test 2: Guest user checkout with different billing address
 async function testGuestCheckoutDifferentAddress() {
-  console.log('\n🧪 Test 2: Guest user checkout with different billing address');
+  console.log('\n🧪 Test 2: Authenticated user checkout with different billing address');
 
   try {
     const product = await createTestProduct();
+    const testUser = await createTestUser('test-checkout-different@example.com');
     const guestAddressCountBefore = await getAddressCount();
 
-    // Create shipping address
+    // Create shipping address for authenticated user
     const shippingAddress = await prisma.address.create({
       data: {
-        userId: null,
-        fullName: 'Guest User',
+        userId: testUser.id, // Associate with authenticated user
+        fullName: 'Test User',
         phone: '1234567890',
         addressLine1: '123 Shipping St',
         city: 'Shipping City',
@@ -185,11 +188,11 @@ async function testGuestCheckoutDifferentAddress() {
       },
     });
 
-    // Create billing address
+    // Create billing address for authenticated user
     const billingAddress = await prisma.address.create({
       data: {
-        userId: null,
-        fullName: 'Guest User',
+        userId: testUser.id, // Associate with authenticated user
+        fullName: 'Test User',
         phone: '1234567890',
         addressLine1: '456 Billing Ave',
         city: 'Billing City',
@@ -200,11 +203,12 @@ async function testGuestCheckoutDifferentAddress() {
       },
     });
 
-    // Create order
+    // Create order with different addresses
     const order = await prisma.order.create({
       data: {
         orderNumber: `TEST-${Date.now()}`,
-        email: 'guest@test.com',
+        userId: testUser.id, // Required field
+        email: 'test-checkout-verification@example.com',
         status: 'PENDING',
         subtotal: 100.00,
         shippingCost: 5.00,

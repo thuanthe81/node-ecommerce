@@ -3,6 +3,7 @@ import {
   ConflictException,
   UnauthorizedException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -16,10 +17,13 @@ import {
 } from './entities/refresh-token.entity';
 import { User, UserRole } from '@prisma/client';
 import { EmailEventPublisher } from '../email-queue/services/email-event-publisher.service';
+import { EmailValidationErrorHandler } from '../common/utils/email-validation-error-handler.util';
 import { OAuthUserData, AuthResponse } from './dto/oauth-user.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -30,40 +34,94 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const { email, password, firstName, lastName } = registerDto;
 
-    // Check if user already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
+    this.logger.log(`User registration attempt`, {
+      email: EmailValidationErrorHandler['redactEmail'](email),
+      firstName,
+      lastName,
+      timestamp: new Date().toISOString(),
     });
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+    // Validate email uniqueness with detailed error message
+    const validationResult = await EmailValidationErrorHandler.validateEmailUniqueness(
+      email,
+      async (email) => {
+        return this.prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true },
+        });
+      },
+      {
+        email,
+        operation: 'registration',
+      }
+    );
+
+    if (!validationResult.isValid) {
+      throw EmailValidationErrorHandler.createExceptionFromValidation(validationResult);
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = await this.prisma.user.create({
-      data: {
+    // Create user with database constraint protection
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          firstName,
+          lastName,
+          role: UserRole.CUSTOMER,
+          isEmailVerified: false,
+        },
+      });
+
+      EmailValidationErrorHandler.logEmailValidationSuccess({
         email,
-        passwordHash,
-        firstName,
-        lastName,
-        role: UserRole.CUSTOMER,
-        isEmailVerified: false,
+        operation: 'registration',
+        userId: user.id,
+      });
+
+      // Generate tokens
+      const tokens = await this.generateTokens(user);
+
+      // Send welcome email
+      await this.sendWelcomeEmail(user);
+
+      return {
+        user: this.sanitizeUser(user),
+        ...tokens,
+      };
+    } catch (error) {
+      const handledException = EmailValidationErrorHandler.handleEmailConstraintViolation(error, {
+        email,
+        operation: 'registration',
+      });
+      throw handledException;
+    }
+  }
+
+  private async validateEmailUniqueness(email: string, excludeUserId?: string) {
+    const validationResult = await EmailValidationErrorHandler.validateEmailUniqueness(
+      email,
+      async (email) => {
+        return this.prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true },
+        });
       },
-    });
+      {
+        email,
+        operation: 'email_uniqueness_check',
+        excludeUserId,
+      }
+    );
 
-    // Generate tokens
-    const tokens = await this.generateTokens(user);
+    if (!validationResult.isValid) {
+      throw EmailValidationErrorHandler.createExceptionFromValidation(validationResult);
+    }
 
-    // Send welcome email
-    await this.sendWelcomeEmail(user);
-
-    return {
-      user: this.sanitizeUser(user),
-      ...tokens,
-    };
+    return true;
   }
 
   /**
@@ -215,43 +273,86 @@ export class AuthService {
 
   /**
    * Find or create OAuth user
-   * Implements account linking based on email
+   * Implements account linking based on email with enhanced error handling
    */
   async findOrCreateOAuthUser(oauthData: OAuthUserData): Promise<User> {
     const { email, firstName, lastName, provider, providerId, username } =
       oauthData;
 
-    // Check if user exists by email
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
+    this.logger.log(`OAuth user authentication attempt`, {
+      email,
+      provider,
+      providerId,
+      timestamp: new Date().toISOString(),
     });
 
-    if (existingUser) {
-      // User exists - link OAuth provider to existing account
-      return this.linkOAuthProvider(
-        existingUser.id,
-        provider,
-        providerId,
-        username,
-      );
-    }
+    try {
+      // Check if user exists by email
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email },
+      });
 
-    // User doesn't exist - create new user with OAuth data
-    const newUser = await this.prisma.user.create({
-      data: {
+      if (existingUser) {
+        this.logger.log(`Existing user found for OAuth login, linking provider`, {
+          userId: existingUser.id,
+          email,
+          provider,
+          timestamp: new Date().toISOString(),
+        });
+        // User exists - link OAuth provider to existing account
+        return this.linkOAuthProvider(
+          existingUser.id,
+          provider,
+          providerId,
+          username,
+        );
+      }
+
+      // User doesn't exist - create new user with OAuth data
+      try {
+        const newUser = await this.prisma.user.create({
+          data: {
+            email,
+            firstName,
+            lastName,
+            username,
+            role: UserRole.CUSTOMER,
+            isEmailVerified: true, // OAuth users have verified emails
+            googleId: provider === 'google' ? providerId : null,
+            facebookId: provider === 'facebook' ? providerId : null,
+            passwordHash: null, // OAuth users don't have passwords
+          },
+        });
+
+        this.logger.log(`New OAuth user created successfully`, {
+          userId: newUser.id,
+          email,
+          provider,
+          timestamp: new Date().toISOString(),
+        });
+
+        return newUser;
+      } catch (error) {
+        const handledException = EmailValidationErrorHandler.handleEmailConstraintViolation(error, {
+          email,
+          operation: 'oauth_registration',
+          provider,
+        });
+        throw handledException;
+      }
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+
+      this.logger.error(`OAuth user authentication failed`, {
         email,
-        firstName,
-        lastName,
-        username,
-        role: UserRole.CUSTOMER,
-        isEmailVerified: true, // OAuth users have verified emails
-        googleId: provider === 'google' ? providerId : null,
-        facebookId: provider === 'facebook' ? providerId : null,
-        passwordHash: null, // OAuth users don't have passwords
-      },
-    });
-
-    return newUser;
+        provider,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
   }
 
   /**

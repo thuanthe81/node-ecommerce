@@ -1659,7 +1659,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       orderId: order.id,
       orderNumber: order.orderNumber,
       orderDate: order.createdAt.toISOString().split('T')[0],
-      customerName: order.user ? `${order.user.firstName}` : order.email,
+      customerName: order.user ? `${order.user.firstName} ${order.user.lastName}` : order.email,
       customerEmail: order.email,
       items: order.items.map((item: any) => ({
         productName: item.product.name,

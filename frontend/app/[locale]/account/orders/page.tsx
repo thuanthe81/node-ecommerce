@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { orderApi, Order } from '@/lib/order-api';
+import { compareDates } from '@/app/utils';
 import OrderCard from '@/components/OrderCard';
 
 export default function OrdersPage() {
@@ -31,9 +32,7 @@ export default function OrdersPage() {
         setError(null);
         const fetchedOrders = await orderApi.getOrders();
         // Sort orders by createdAt in descending order (newest first)
-        const sortedOrders = fetchedOrders.sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+        const sortedOrders = fetchedOrders.sort((a, b) => compareDates(a.createdAt, b.createdAt));
         setOrders(sortedOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
@@ -54,9 +53,7 @@ export default function OrdersPage() {
       setError(null);
       orderApi.getOrders()
         .then(fetchedOrders => {
-          const sortedOrders = fetchedOrders.sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+          const sortedOrders = fetchedOrders.sort((a, b) => compareDates(a.createdAt, b.createdAt));
           setOrders(sortedOrders);
         })
         .catch(err => {

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { AccessControlService } from '../../src/orders/services/access-control.service';
 import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
 import { FooterSettingsService } from '../../src/footer-settings/footer-settings.service';
 import { EmailAttachmentService } from '../../src/pdf-generator/services/email-attachment.service';
@@ -19,6 +20,7 @@ import { CONSTANTS } from '@alacraft/shared';
 describe('OrdersService', () => {
   let service: OrdersService;
   let prismaService: PrismaService;
+  let accessControlService: AccessControlService;
   let emailEventPublisher: EmailEventPublisher;
   let footerSettingsService: FooterSettingsService;
   let emailAttachmentService: EmailAttachmentService;
@@ -84,6 +86,14 @@ describe('OrdersService', () => {
     notes: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+  };
+
+  const mockAccessControlService = {
+    validateOrderAccess: jest.fn(),
+    canCancelOrder: jest.fn(),
+    getOrderPermissions: jest.fn(),
+    validateOrderOwnership: jest.fn(),
+    logSecurityViolation: jest.fn(),
   };
 
   const mockPrismaService = {
@@ -182,6 +192,7 @@ describe('OrdersService', () => {
       providers: [
         OrdersService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: AccessControlService, useValue: mockAccessControlService },
         { provide: EmailEventPublisher, useValue: mockEmailEventPublisher },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
         { provide: EmailAttachmentService, useValue: mockEmailAttachmentService },
@@ -194,6 +205,7 @@ describe('OrdersService', () => {
 
     service = module.get<OrdersService>(OrdersService);
     prismaService = module.get<PrismaService>(PrismaService);
+    accessControlService = module.get<AccessControlService>(AccessControlService);
     emailEventPublisher = module.get<EmailEventPublisher>(EmailEventPublisher);
     footerSettingsService = module.get<FooterSettingsService>(
       FooterSettingsService,
@@ -292,82 +304,26 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should successfully create an order for guest user with null userId address', async () => {
+    it('should require authentication for order creation (no guest orders)', async () => {
       const guestAddress = { ...mockAddress, userId: null };
       mockPrismaService.address.findUnique.mockResolvedValue(guestAddress);
       mockPrismaService.product.findMany.mockResolvedValue([mockProduct]);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
-        return callback({
-          order: {
-            create: jest.fn().mockResolvedValue({
-              ...mockOrder,
-              userId: null,
-              items: [
-                {
-                  id: 'item-1',
-                  orderId: 'order-1',
-                  productId: 'prod-1',
-                  productNameEn: 'Test Product',
-                  productNameVi: 'Sản phẩm test',
-                  sku: 'SKU-001',
-                  quantity: 2,
-                  price: 50.0,
-                  total: 100.0,
-                  product: mockProduct,
-                },
-              ],
-              shippingAddress: guestAddress,
-              billingAddress: guestAddress,
-            }),
-          },
-          product: {
-            update: jest.fn(),
-          },
-        });
-      });
-      const result = await service.create(createOrderDto, undefined);
 
-      expect(result).toHaveProperty('orderNumber');
-      expect(result.items).toHaveLength(1);
-      expect(result.userId).toBeNull();
+      // Since all orders now require authentication, passing undefined userId should fail
+      await expect(service.create(createOrderDto, undefined)).rejects.toThrow(
+        'Address does not belong to user'
+      );
     });
 
-    it('should allow authenticated user to use guest address (null userId)', async () => {
+    it('should require authenticated user to use authenticated address', async () => {
       const guestAddress = { ...mockAddress, userId: null };
       mockPrismaService.address.findUnique.mockResolvedValue(guestAddress);
       mockPrismaService.product.findMany.mockResolvedValue([mockProduct]);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
-        return callback({
-          order: {
-            create: jest.fn().mockResolvedValue({
-              ...mockOrder,
-              items: [
-                {
-                  id: 'item-1',
-                  orderId: 'order-1',
-                  productId: 'prod-1',
-                  productNameEn: 'Test Product',
-                  productNameVi: 'Sản phẩm test',
-                  sku: 'SKU-001',
-                  quantity: 2,
-                  price: 50.0,
-                  total: 100.0,
-                  product: mockProduct,
-                },
-              ],
-              shippingAddress: guestAddress,
-              billingAddress: guestAddress,
-            }),
-          },
-          product: {
-            update: jest.fn(),
-          },
-        });
-      });
-      const result = await service.create(createOrderDto, 'user-1');
 
-      expect(result).toHaveProperty('orderNumber');
-      expect(result.items).toHaveLength(1);
+      // Authenticated user cannot use guest address (null userId)
+      await expect(service.create(createOrderDto, 'user-1')).rejects.toThrow(
+        'Address does not belong to user'
+      );
     });
 
     it('should throw BadRequestException if product is on pre-order (zero stock)', async () => {
@@ -470,7 +426,7 @@ describe('OrdersService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
 
-    it('should allow guest user to view guest order', async () => {
+    it('should require authentication for order access (no guest access)', async () => {
       const guestOrder = {
         ...mockOrder,
         userId: null,
@@ -483,10 +439,10 @@ describe('OrdersService', () => {
 
       mockPrismaService.order.findUnique.mockResolvedValue(guestOrder);
 
-      const result = await service.findOne('order-1', undefined, undefined);
-
-      expect(result).toHaveProperty('orderNumber');
-      expect(result.userId).toBeNull();
+      // Since all orders now require authentication, guest access should fail
+      await expect(service.findOne('order-1', undefined, undefined)).rejects.toThrow(
+        ForbiddenException
+      );
     });
 
     it('should throw ForbiddenException if guest user tries to view authenticated user order', async () => {

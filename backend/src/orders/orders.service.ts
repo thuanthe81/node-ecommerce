@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccessControlService } from './services/access-control.service';
@@ -21,9 +22,12 @@ import { CONSTANTS } from '@alacraft/shared';
 import { ShippingService } from '../shipping/shipping.service';
 import { BusinessInfoService } from '../common/services/business-info.service';
 import { TranslationService } from '../common/services/translation.service';
+import { UserIdErrorHandler } from '../common/utils/userid-error-handler.util';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+
   constructor(
     private prisma: PrismaService,
     private accessControlService: AccessControlService,
@@ -62,7 +66,7 @@ export class OrdersService {
   /**
    * Create a new order
    */
-  async create(createOrderDto: CreateOrderDto, userId?: string) {
+  async create(createOrderDto: CreateOrderDto, userId: string) {
     const {
       email,
       shippingAddressId,
@@ -73,37 +77,93 @@ export class OrdersService {
       items,
       promotionCode,
       notes,
-      locale = 'vi', // Default to English if not provided
+      locale = 'vi', // Default to Vietnamese if not provided
     } = createOrderDto;
 
-    // Verify addresses exist and belong to user if authenticated
-    const shippingAddress = await this.prisma.address.findUnique({
-      where: { id: shippingAddressId },
+    // Log order creation attempt with userId context
+    this.logger.log(`Order creation initiated`, {
+      userId,
+      userType: 'authenticated',
+      email,
+      itemCount: items?.length || 0,
+      shippingAddressId,
+      billingAddressId,
+      timestamp: new Date().toISOString(),
     });
 
-    if (!shippingAddress) {
-      throw new NotFoundException('Shipping address not found');
-    }
+    try {
+      // Verify addresses exist and belong to user if authenticated
+      const shippingAddress = await this.prisma.address.findUnique({
+        where: { id: shippingAddressId },
+      });
 
-    // Only check ownership if both userId and address.userId exist
-    // This allows guest addresses (null userId) to be used in orders
-    if (userId && shippingAddress.userId && shippingAddress.userId !== userId) {
-      throw new ForbiddenException('Shipping address does not belong to user');
-    }
+      if (!shippingAddress) {
+        this.logger.warn(`Shipping address not found during order creation`, {
+          userId,
+          shippingAddressId,
+          email,
+          timestamp: new Date().toISOString(),
+        });
+        throw new NotFoundException('Shipping address not found');
+      }
 
-    const billingAddress = await this.prisma.address.findUnique({
-      where: { id: billingAddressId },
-    });
+      // Validate that the address belongs to the authenticated user
+      if (!shippingAddress.userId) {
+        this.logger.warn(`Shipping address has no userId - guest addresses not allowed for authenticated orders`, {
+          userId,
+          shippingAddressId,
+          email,
+          timestamp: new Date().toISOString(),
+        });
+        throw new BadRequestException('Address must belong to an authenticated user');
+      }
 
-    if (!billingAddress) {
-      throw new NotFoundException('Billing address not found');
-    }
+      const shippingValidation = UserIdErrorHandler.validateAddressOwnership(
+        shippingAddress.userId,
+        userId,
+        shippingAddressId,
+        'order_creation_shipping_address'
+      );
 
-    // Only check ownership if both userId and address.userId exist
-    // This allows guest addresses (null userId) to be used in orders
-    if (userId && billingAddress.userId && billingAddress.userId !== userId) {
-      throw new ForbiddenException('Billing address does not belong to user');
-    }
+      if (!shippingValidation.isValid) {
+        throw UserIdErrorHandler.createExceptionFromValidation(shippingValidation);
+      }
+
+      const billingAddress = await this.prisma.address.findUnique({
+        where: { id: billingAddressId },
+      });
+
+      if (!billingAddress) {
+        this.logger.warn(`Billing address not found during order creation`, {
+          userId,
+          billingAddressId,
+          email,
+          timestamp: new Date().toISOString(),
+        });
+        throw new NotFoundException('Billing address not found');
+      }
+
+      // Validate that the address belongs to the authenticated user
+      if (!billingAddress.userId) {
+        this.logger.warn(`Billing address has no userId - guest addresses not allowed for authenticated orders`, {
+          userId,
+          billingAddressId,
+          email,
+          timestamp: new Date().toISOString(),
+        });
+        throw new BadRequestException('Address must belong to an authenticated user');
+      }
+
+      const billingValidation = UserIdErrorHandler.validateAddressOwnership(
+        billingAddress.userId,
+        userId,
+        billingAddressId,
+        'order_creation_billing_address'
+      );
+
+      if (!billingValidation.isValid) {
+        throw UserIdErrorHandler.createExceptionFromValidation(billingValidation);
+      }
 
     // Fetch products and validate stock
     const productIds = items.map((item) => item.productId);
@@ -112,6 +172,14 @@ export class OrdersService {
     });
 
     if (products.length !== items.length) {
+      this.logger.warn(`Product validation failed during order creation`, {
+        userId,
+        requestedProducts: productIds.length,
+        foundProducts: products.length,
+        missingProducts: productIds.filter(id => !products.find(p => p.id === id)),
+        email,
+        timestamp: new Date().toISOString(),
+      });
       throw new BadRequestException('One or more products not found');
     }
 
@@ -136,10 +204,23 @@ export class OrdersService {
       const product = productMap.get(item.productId);
 
       if (!product) {
+        this.logger.error(`Product not found in validation map during order creation`, {
+          userId,
+          productId: item.productId,
+          email,
+          timestamp: new Date().toISOString(),
+        });
         throw new BadRequestException(`Product ${item.productId} not found`);
       }
 
       if (!product.isActive) {
+        this.logger.warn(`Inactive product in order creation attempt`, {
+          userId,
+          productId: item.productId,
+          productName: product.nameEn,
+          email,
+          timestamp: new Date().toISOString(),
+        });
         throw new BadRequestException(
           `Product ${product.nameEn} is not available`,
         );
@@ -153,6 +234,15 @@ export class OrdersService {
 
       // Only validate stock for non-zero-price products
       if (!isZeroPrice && product.stockQuantity < item.quantity) {
+        this.logger.warn(`Insufficient stock during order creation`, {
+          userId,
+          productId: item.productId,
+          productName: product.nameEn,
+          requestedQuantity: item.quantity,
+          availableStock: product.stockQuantity,
+          email,
+          timestamp: new Date().toISOString(),
+        });
         throw new BadRequestException(
           `Insufficient stock for product ${product.nameEn}. Available: ${product.stockQuantity}`,
         );
@@ -217,76 +307,111 @@ export class OrdersService {
 
     // Create order with transaction to ensure atomicity
     const order = await this.prisma.$transaction(async (tx) => {
-      // Create the order
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber,
-          userId,
-          email,
-          status: orderStatus,
-          subtotal,
-          shippingCost,
-          taxAmount,
-          discountAmount,
-          total,
-          requiresPricing: hasZeroPriceItems,
-          shippingAddressId,
-          billingAddressId,
-          shippingMethod,
-          paymentMethod,
-          paymentStatus: PaymentStatus.PENDING,
-          promotionId,
-          notes,
-          items: {
-            create: orderItems,
-          },
-        },
-        include: {
-          items: {
-            include: {
-              product: true,
+      try {
+        // Create the order
+        const newOrder = await tx.order.create({
+          data: {
+            orderNumber,
+            userId,
+            email,
+            status: orderStatus,
+            subtotal,
+            shippingCost,
+            taxAmount,
+            discountAmount,
+            total,
+            requiresPricing: hasZeroPriceItems,
+            shippingAddressId,
+            billingAddressId,
+            shippingMethod,
+            paymentMethod,
+            paymentStatus: PaymentStatus.PENDING,
+            promotionId,
+            notes,
+            items: {
+              create: orderItems,
             },
           },
-          shippingAddress: true,
-          billingAddress: true,
-        },
-      });
+          include: {
+            items: {
+              include: {
+                product: true,
+              },
+            },
+            shippingAddress: true,
+            billingAddress: true,
+          },
+        });
 
-      // Deduct inventory for each product (only for non-zero-price products)
-      for (const item of items) {
-        const product = productMap.get(item.productId);
-        if (!product) {
-          continue; // Skip if product not found (should not happen due to earlier validation)
+        this.logger.log(`Order created successfully`, {
+          orderId: newOrder.id,
+          orderNumber: newOrder.orderNumber,
+          userId,
+          userType: 'authenticated',
+          email,
+          total: newOrder.total,
+          itemCount: orderItems.length,
+          hasZeroPriceItems,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Deduct inventory for each product (only for non-zero-price products)
+        for (const item of items) {
+          const product = productMap.get(item.productId);
+          if (!product) {
+            continue; // Skip if product not found (should not happen due to earlier validation)
+          }
+
+          const isZeroPrice = Number(product.price) === 0;
+
+          // Only deduct stock for non-zero-price products
+          if (!isZeroPrice) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stockQuantity: {
+                  decrement: item.quantity,
+                },
+              },
+            });
+          }
         }
 
-        const isZeroPrice = Number(product.price) === 0;
-
-        // Only deduct stock for non-zero-price products
-        if (!isZeroPrice) {
-          await tx.product.update({
-            where: { id: item.productId },
+        // Update promotion usage count if applicable
+        if (promotionId) {
+          await tx.promotion.update({
+            where: { id: promotionId },
             data: {
-              stockQuantity: {
-                decrement: item.quantity,
+              usageCount: {
+                increment: 1,
               },
             },
           });
         }
-      }
 
-      // Update promotion usage count if applicable
-      if (promotionId) {
-        await tx.promotion.update({
-          where: { id: promotionId },
-          data: {
-            usageCount: {
-              increment: 1,
-            },
-          },
+        return newOrder;
+      } catch (error) {
+        this.logger.error(`Order creation transaction failed`, {
+          userId,
+          email,
+          error: error.message,
+          orderNumber,
+          timestamp: new Date().toISOString(),
         });
-      }
 
-      return newOrder;
+        // Handle database constraint violations
+        if (error.code === 'P2002') {
+          const constraintError = UserIdErrorHandler.handleDatabaseConstraintViolation(error, {
+            userId,
+            operation: 'order_creation',
+            resourceType: 'order',
+            additionalData: { orderNumber, email }
+          });
+          throw constraintError;
+        }
+
+        throw error;
+      }
     });
 
     // Send order confirmation email using event publisher
@@ -296,6 +421,19 @@ export class OrdersService {
     await this.sendAdminOrderNotification(order, locale);
 
     return order;
+  } catch (error) {
+    this.logger.error(`Order creation failed`, {
+      userId,
+      userType: 'authenticated',
+      email,
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Re-throw the error to maintain existing error handling
+    throw error;
+  }
   }
 
   /**
@@ -551,9 +689,113 @@ export class OrdersService {
   }
 
   /**
-   * Get a single order by ID
+   * Get a single order by ID with access control for authenticated users
+   * All orders now require authentication, so userId is required for access control
    */
   async findOne(id: string, userId?: string, userRole?: UserRole) {
+    try {
+      // Since all orders now require authentication, userId must be provided
+      if (!userId) {
+        this.logger.warn(`Order access denied: Authentication required`, {
+          orderId: id,
+          userId,
+          userRole,
+          violation: 'unauthenticated_access_attempt',
+          timestamp: new Date().toISOString(),
+        });
+        throw new ForbiddenException('Authentication required to access orders');
+      }
+
+      const order = await this.prisma.order.findUnique({
+        where: { id },
+        include: {
+          items: {
+            include: {
+              product: {
+                include: {
+                  images: {
+                    orderBy: { displayOrder: 'asc' },
+                    take: 1,
+                  },
+                },
+              },
+            },
+          },
+          shippingAddress: true,
+          billingAddress: true,
+          promotion: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        this.logger.warn(`Order not found during access attempt`, {
+          orderId: id,
+          userId,
+          userRole,
+          timestamp: new Date().toISOString(),
+        });
+        throw new NotFoundException('Order not found');
+      }
+
+      // Since all orders now have required userId, we can use direct comparison
+      // Admin users can access any order
+      if (userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN) {
+        this.logger.log(`Admin order access granted`, {
+          orderId: id,
+          userId,
+          userRole,
+          orderUserId: order.userId,
+          timestamp: new Date().toISOString(),
+        });
+        return order;
+      }
+
+      // Regular users can only access their own orders
+      // Both order.userId and userId are guaranteed to be non-null strings
+      if (order.userId !== userId) {
+        this.logger.warn(`Unauthorized order access attempt`, {
+          orderId: id,
+          userId,
+          userRole,
+          orderUserId: order.userId,
+          violation: 'authenticated_user_accessing_different_user_order',
+          timestamp: new Date().toISOString(),
+        });
+        throw new ForbiddenException('You do not have access to this order');
+      }
+
+      this.logger.log(`Order access granted - user accessing own order`, {
+        orderId: id,
+        userId,
+        userRole,
+        timestamp: new Date().toISOString(),
+      });
+
+      return order;
+    } catch (error) {
+      this.logger.error(`Order access failed`, {
+        orderId: id,
+        userId,
+        userRole,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single order by ID without access control (for internal use)
+   */
+  async findOneById(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
@@ -586,32 +828,6 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException('Order not found');
     }
-
-    // Check authorization
-    // - Admins can view any order
-    // - Authenticated users can only view their own orders
-    // - Guest users (no userId) can view guest orders (order.userId is null)
-    if (userRole === CONSTANTS.STATUS.USER_ROLES.ADMIN) {
-      // Admin can view any order
-      return order;
-    }
-
-    if (userId && order.userId && order.userId !== userId) {
-      // Authenticated user trying to view another user's order
-      throw new ForbiddenException('You do not have access to this order');
-    }
-
-    if (userId && !order.userId) {
-      // Authenticated user trying to view a guest order
-      throw new ForbiddenException('You do not have access to this order');
-    }
-
-    if (!userId && order.userId) {
-      // Guest user trying to view an authenticated user's order
-      throw new ForbiddenException('You do not have access to this order');
-    }
-
-    // Allow: authenticated user viewing their own order, or guest viewing guest order
 
     return order;
   }
@@ -936,14 +1152,61 @@ export class OrdersService {
    * @param orderNumber - Order number to resend
    * @param customerEmail - Customer's email address
    * @param locale - Language locale for email content
+   * @param userId - ID of the authenticated user requesting the resend
    * @returns Promise<ResendResult> - Result of resend operation
    */
   async resendOrderConfirmationEmail(
     orderNumber: string,
     customerEmail: string,
-    locale: 'en' | 'vi' = 'vi'
+    locale: 'en' | 'vi' = 'vi',
+    userId: string
   ): Promise<ResendResult> {
     try {
+      // First, validate that the order belongs to the authenticated user
+      const order = await this.prisma.order.findUnique({
+        where: { orderNumber },
+        select: { userId: true, email: true }
+      });
+
+      if (!order) {
+        return {
+          success: false,
+          message: 'Order not found',
+          error: 'ORDER_NOT_FOUND'
+        };
+      }
+
+      // Validate that the order belongs to the authenticated user
+      if (order.userId !== userId) {
+        this.logger.warn(`Unauthorized resend email attempt`, {
+          orderNumber,
+          requestingUserId: userId,
+          orderUserId: order.userId,
+          timestamp: new Date().toISOString(),
+        });
+        return {
+          success: false,
+          message: 'Unauthorized: You can only resend emails for your own orders',
+          error: 'UNAUTHORIZED_ACCESS'
+        };
+      }
+
+      // Validate that the email matches the order's email
+      if (order.email !== customerEmail) {
+        this.logger.warn(`Email mismatch in resend request`, {
+          orderNumber,
+          userId,
+          requestedEmail: customerEmail,
+          orderEmail: order.email,
+          timestamp: new Date().toISOString(),
+        });
+        return {
+          success: false,
+          message: 'Email address does not match the order',
+          error: 'EMAIL_MISMATCH'
+        };
+      }
+
       // Use the ResendEmailHandlerService to handle the request
       const result = await this.resendEmailHandlerService.handleResendRequest(
         orderNumber,

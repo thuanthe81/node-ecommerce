@@ -74,11 +74,18 @@ export default function EditPromotionContent({
             </p>
             <div className="space-y-2">
               <p className="text-sm font-medium text-blue-900">{t('recentOrders')}</p>
-              {promotion.orders.slice(0, 5).map((order) => (
-                <div key={order.id} className="text-sm text-blue-800">
-                  Order #{order.orderNumber} - {formatMoney(order.total, locale)} - {new Date(order.createdAt).toLocaleDateString(locale)}
-                </div>
-              ))}
+              {promotion.orders.slice(0, 5).map((order) => {
+                const orderDate = order.createdAt ? new Date(order.createdAt) : null;
+                const formattedDate = orderDate && !isNaN(orderDate.getTime())
+                  ? orderDate.toLocaleDateString(locale)
+                  : 'Invalid date';
+
+                return (
+                  <div key={order.id} className="text-sm text-blue-800">
+                    Order #{order.orderNumber} - {formatMoney(order.total, locale)} - {formattedDate}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

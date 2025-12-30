@@ -188,7 +188,7 @@ export const orderApi = {
    */
   async getOrder(id: string): Promise<Order> {
     const response = await apiClient.get(`/orders/${id}`);
-    return response.data;
+    return response.data?.order;
   },
 
   /**

@@ -37,6 +37,7 @@ export class AccessControlService {
 
   /**
    * Validate if a user has access to view an order
+   * All orders now require authentication, so userId is required
    *
    * @param orderId - The order ID to validate access for
    * @param context - User context including userId, role, and session information
@@ -48,7 +49,17 @@ export class AccessControlService {
     orderId: string,
     context: OrderAccessContext,
   ): Promise<boolean> {
-    const { userId, userRole, sessionId, ipAddress, userAgent } = context;
+    const { userId, userRole, ipAddress } = context;
+
+    // Since all orders now require authentication, userId must be provided
+    if (!userId) {
+      this.logger.warn(`Order access denied: Authentication required for order ${orderId}`, {
+        orderId,
+        ipAddress,
+        violation: 'unauthenticated_access_attempt',
+      });
+      throw new ForbiddenException('Authentication required to access orders');
+    }
 
     // Fetch the order with minimal data needed for access control
     const order = await this.prisma.order.findUnique({
@@ -83,62 +94,27 @@ export class AccessControlService {
       return true;
     }
 
-    // Authenticated user access validation
-    if (userId) {
-      // User can only access their own orders
-      if (order.userId === userId) {
-        this.logger.log(`Order access granted: User ${userId} accessing own order ${orderId}`, {
-          orderId,
-          userId,
-          userRole,
-        });
-        return true;
-      }
-
-      // Authenticated user trying to access another user's order or guest order
-      this.logger.warn(`Order access denied: User ${userId} attempting to access order ${orderId} belonging to ${order.userId || 'guest'}`, {
+    // Regular authenticated users can only access their own orders
+    // Since all orders now have required userId, we can use direct string comparison
+    if (order.userId !== userId) {
+      this.logger.warn(`Order access denied: User ${userId} attempting to access order ${orderId} belonging to ${order.userId}`, {
         orderId,
         userId,
         userRole,
         orderUserId: order.userId,
         ipAddress,
+        violation: 'authenticated_user_accessing_different_user_order',
       });
       throw new ForbiddenException('You do not have access to this order');
     }
 
-    // Guest user access validation
-    if (!userId) {
-      // Guest users can only access guest orders (orders with null userId)
-      if (!order.userId) {
-        // TODO: In a production system, we would validate session ownership here
-        // For now, we allow guest access to guest orders
-        this.logger.log(`Order access granted: Guest user accessing guest order ${orderId}`, {
-          orderId,
-          sessionId,
-          ipAddress,
-        });
-        return true;
-      }
-
-      // Guest user trying to access authenticated user's order
-      this.logger.warn(`Order access denied: Guest user attempting to access authenticated user's order ${orderId}`, {
-        orderId,
-        orderUserId: order.userId,
-        sessionId,
-        ipAddress,
-      });
-      throw new ForbiddenException('You do not have access to this order');
-    }
-
-    // Default deny
-    this.logger.warn(`Order access denied: Default deny for order ${orderId}`, {
+    // Valid: authenticated user accessing their own order
+    this.logger.log(`Order access granted: User ${userId} accessing own order ${orderId}`, {
       orderId,
       userId,
       userRole,
-      sessionId,
-      ipAddress,
     });
-    throw new ForbiddenException('Access denied');
+    return true;
   }
 
   /**

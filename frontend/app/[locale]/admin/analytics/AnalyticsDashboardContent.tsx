@@ -50,7 +50,10 @@ export default function AnalyticsDashboardContent() {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(
+    if (!dateStr) return 'Invalid date';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString(
       locale === 'vi' ? 'vi-VN' : 'en-US',
     );
   };

@@ -73,7 +73,10 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -249,16 +252,21 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('orders.total')}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('orders.actions')}
-                  </th>
+                  {/*<th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">*/}
+                  {/*  {t('orders.actions')}*/}
+                  {/*</th>*/}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
+                      <Link
+                        href={`/${locale}/admin/orders/${order.id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{order.email}</div>
@@ -287,14 +295,14 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{formatMoney(order.total, locale)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/${locale}/admin/orders/${order.id}`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        {t('orders.viewDetails')}
-                      </Link>
-                    </td>
+                    {/*<td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">*/}
+                    {/*  <Link*/}
+                    {/*    href={`/${locale}/admin/orders/${order.id}`}*/}
+                    {/*    className="text-blue-600 hover:text-blue-900"*/}
+                    {/*  >*/}
+                    {/*    {t('orders.viewDetails')}*/}
+                    {/*  </Link>*/}
+                    {/*</td>*/}
                   </tr>
                 ))}
               </tbody>

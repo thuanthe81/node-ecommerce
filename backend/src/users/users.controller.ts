@@ -19,6 +19,7 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
@@ -53,6 +54,14 @@ export class UsersController {
     return this.usersService.updatePassword(user.id, updatePasswordDto);
   }
 
+  @Put('email')
+  updateEmail(
+    @CurrentUser() user: any,
+    @Body() updateEmailDto: UpdateEmailDto,
+  ) {
+    return this.usersService.updateEmail(user.id, updateEmailDto.email);
+  }
+
   @Get('addresses')
   getAddresses(@CurrentUser() user: any) {
     // Diagnostic logging to verify JWT token and user extraction
@@ -76,13 +85,12 @@ export class UsersController {
   }
 
   @Post('addresses')
-  @Public()
   createAddress(
     @CurrentUser() user: any,
     @Body() createAddressDto: CreateAddressDto,
   ) {
-    // Support both authenticated and guest users
-    return this.usersService.createAddress(user?.id || null, createAddressDto);
+    // Only authenticated users can create addresses now
+    return this.usersService.createAddress(user.id, createAddressDto);
   }
 
   @Put('addresses/:id')

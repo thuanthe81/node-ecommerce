@@ -7,7 +7,7 @@
  */
 
 import { useTranslations } from 'next-intl';
-import { formatMoney } from '@/app/utils';
+import { formatMoney, formatDateSafe } from '@/app/utils';
 import { Order } from '@/lib/order-api';
 import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText } from '../utils/statusTranslations';
 
@@ -19,15 +19,6 @@ interface OrderSummaryProps {
 export function OrderSummary({ order, locale }: OrderSummaryProps) {
   const t = useTranslations('orders');
   const tEmail = useTranslations('email');
-  const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(dateString));
-  };
 
   return (
     <section
@@ -45,7 +36,7 @@ export function OrderSummary({ order, locale }: OrderSummaryProps) {
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">
           <dt className="text-sm text-gray-600 mb-1 font-medium">{t('orderDate')}</dt>
           <dd className="text-base font-semibold text-gray-900">
-            {formatDate(order.createdAt)}
+            {formatDateSafe(order.createdAt, locale)}
           </dd>
         </div>
         <div className="bg-gray-50 rounded-lg p-4 print:bg-white print:border print:border-gray-300">

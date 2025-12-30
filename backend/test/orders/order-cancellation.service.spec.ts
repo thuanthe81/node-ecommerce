@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OrderCancellationService } from '../../src/orders/services/order-cancellation.service';
 import { AccessControlService } from '../../src/orders/services/access-control.service';
 import { EmailEventPublisher } from '../../src/email-queue/services/email-event-publisher.service';
+import { ErrorHandlingService } from '../../src/common/services/error-handling.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { OrderStatus } from '@prisma/client';
 import { CONSTANTS } from '@alacraft/shared';
@@ -11,6 +12,7 @@ describe('OrderCancellationService', () => {
   let prismaService: PrismaService;
   let accessControlService: AccessControlService;
   let emailEventPublisher: EmailEventPublisher;
+  let errorHandlingService: ErrorHandlingService;
 
   const mockPrismaService = {
     order: {
@@ -33,6 +35,11 @@ describe('OrderCancellationService', () => {
     sendAdminCancellationNotification: jest.fn(),
   };
 
+  const mockErrorHandlingService = {
+    handleEmailServiceFailure: jest.fn(),
+    logError: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -40,6 +47,7 @@ describe('OrderCancellationService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: AccessControlService, useValue: mockAccessControlService },
         { provide: EmailEventPublisher, useValue: mockEmailEventPublisher },
+        { provide: ErrorHandlingService, useValue: mockErrorHandlingService },
       ],
     }).compile();
 
@@ -47,6 +55,7 @@ describe('OrderCancellationService', () => {
     prismaService = module.get<PrismaService>(PrismaService);
     accessControlService = module.get<AccessControlService>(AccessControlService);
     emailEventPublisher = module.get<EmailEventPublisher>(EmailEventPublisher);
+    errorHandlingService = module.get<ErrorHandlingService>(ErrorHandlingService);
   });
 
   afterEach(() => {

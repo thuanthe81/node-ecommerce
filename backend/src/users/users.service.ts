@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -11,12 +12,15 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { CustomerFiltersDto } from './dto/customer-filters.dto';
 import { AddressDeduplicationUtil, NormalizedAddress } from './utils/address-deduplication.util';
+import { EmailValidationErrorHandler } from '../common/utils/email-validation-error-handler.util';
 import { Address } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CONSTANTS } from '@alacraft/shared';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async getProfile(userId: string) {
@@ -61,6 +65,90 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  async updateEmail(userId: string, newEmail: string) {
+    this.logger.log(`Email update requested`, {
+      userId,
+      newEmail: EmailValidationErrorHandler['redactEmail'](newEmail),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Validate email uniqueness before updating
+    const validationResult = await EmailValidationErrorHandler.validateEmailUniqueness(
+      newEmail,
+      async (email) => {
+        return this.prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true },
+        });
+      },
+      {
+        email: newEmail,
+        operation: 'email_update',
+        userId,
+        excludeUserId: userId,
+      }
+    );
+
+    if (!validationResult.isValid) {
+      throw EmailValidationErrorHandler.createExceptionFromValidation(validationResult);
+    }
+
+    try {
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: { email: newEmail },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          isEmailVerified: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      EmailValidationErrorHandler.logEmailValidationSuccess({
+        email: newEmail,
+        operation: 'email_update',
+        userId,
+      });
+
+      return user;
+    } catch (error) {
+      const handledException = EmailValidationErrorHandler.handleEmailConstraintViolation(error, {
+        email: newEmail,
+        operation: 'email_update',
+        userId,
+      });
+      throw handledException;
+    }
+  }
+
+  async validateEmailUniqueness(email: string, excludeUserId?: string) {
+    const validationResult = await EmailValidationErrorHandler.validateEmailUniqueness(
+      email,
+      async (email) => {
+        return this.prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true },
+        });
+      },
+      {
+        email,
+        operation: 'email_uniqueness_check',
+        excludeUserId,
+      }
+    );
+
+    if (!validationResult.isValid) {
+      throw EmailValidationErrorHandler.createExceptionFromValidation(validationResult);
+    }
+
+    return true;
   }
 
   async updatePassword(userId: string, updatePasswordDto: UpdatePasswordDto) {
@@ -161,9 +249,16 @@ export class UsersService {
     return address;
   }
 
-  async createAddress(userId: string | null, createAddressDto: CreateAddressDto) {
-    // For authenticated users, check for duplicate addresses
-    if (userId) {
+  async createAddress(userId: string, createAddressDto: CreateAddressDto) {
+    this.logger.log(`Address creation requested`, {
+      userId,
+      userType: 'authenticated',
+      isDefault: createAddressDto.isDefault,
+      timestamp: new Date().toISOString(),
+    });
+
+    try {
+      // Check for duplicate addresses for authenticated users
       const normalizedAddress = AddressDeduplicationUtil.normalizeAddress({
         addressLine1: createAddressDto.addressLine1,
         addressLine2: createAddressDto.addressLine2,
@@ -176,6 +271,11 @@ export class UsersService {
       const existingAddress = await this.findDuplicateAddress(userId, normalizedAddress);
 
       if (existingAddress) {
+        this.logger.log(`Duplicate address found, updating existing address`, {
+          userId,
+          existingAddressId: existingAddress.id,
+          timestamp: new Date().toISOString(),
+        });
         // Update existing address with new contact info and default status
         return this.updateExistingAddress(
           existingAddress.id,
@@ -185,34 +285,48 @@ export class UsersService {
           createAddressDto.isDefault ?? false,
         );
       }
-    }
 
-    // No duplicate found or guest user - create new address
-    // If this is set as default and user is authenticated, unset other default addresses
-    if (createAddressDto.isDefault && userId) {
-      await this.prisma.address.updateMany({
-        where: { userId, isDefault: true },
-        data: { isDefault: false },
-      });
-    }
+      // No duplicate found - create new address
+      // If this is set as default, unset other default addresses
+      if (createAddressDto.isDefault) {
+        await this.prisma.address.updateMany({
+          where: { userId, isDefault: true },
+          data: { isDefault: false },
+        });
+      }
 
-    // If this is the first address for authenticated user, make it default
-    // For guest users (null userId), never set as default
-    let isDefault = false;
-    if (userId) {
+      // If this is the first address for the user, make it default
       const addressCount = await this.prisma.address.count({
         where: { userId },
       });
-      isDefault = createAddressDto.isDefault ?? addressCount === 0;
-    }
+      const isDefault = createAddressDto.isDefault ?? addressCount === 0;
 
-    return this.prisma.address.create({
-      data: {
-        ...createAddressDto,
-        userId: userId || null,
-        isDefault,
-      },
-    });
+      const newAddress = await this.prisma.address.create({
+        data: {
+          ...createAddressDto,
+          userId,
+          isDefault,
+        },
+      });
+
+      this.logger.log(`Address created successfully`, {
+        addressId: newAddress.id,
+        userId,
+        userType: userId ? 'authenticated' : 'guest',
+        isDefault: newAddress.isDefault,
+        timestamp: new Date().toISOString(),
+      });
+
+      return newAddress;
+    } catch (error) {
+      this.logger.error(`Address creation failed`, {
+        userId,
+        userType: userId ? 'authenticated' : 'guest',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+      throw error;
+    }
   }
 
   /**

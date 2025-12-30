@@ -88,7 +88,10 @@ export default function CustomerDetailContent({ customerId, locale }: CustomerDe
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -96,7 +99,10 @@ export default function CustomerDetailContent({ customerId, locale }: CustomerDe
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

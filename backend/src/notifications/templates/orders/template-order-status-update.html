@@ -119,236 +119,165 @@
     {{translations.subject}}
   </div>
 
-  <!-- Main email wrapper -->
-  <div role="document" aria-label="{{translations.emailLabel}}">
-    <table class="email-wrapper" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
+  {{> email-header companyName=(companyName locale) tagline=translations.tagline}}
+
+  <!-- Status Update Header -->
+  <div style="text-align: center; margin-bottom: 32px;">
+    <div style="
+      display: inline-block;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+      border-radius: 50%;
+      margin-bottom: 16px;
+      position: relative;
+      ">
+      <div style="
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 10px;
+        ">📋</div>
+      <h2 style="
+        color: #2c3e50;
+        margin: 32px 0 8px 0;
+        font-size: 18px;
+        font-weight: 600;
+        ">{{translations.title}}</h2>
+    </div>
+  </div>>
+
+  <p style="
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 16px;
+  ">{{translations.greeting}} {{data.customerName}},</p>
+
+  <p style="
+    color: #7f8c8d;
+    margin-bottom: 24px;
+    font-size: 14px;
+  ">{{translations.intro}}</p>
+
+  <!-- Order Overview -->
+  <div style="
+    background-color: #ffffff;
+    padding: 24px;
+    margin: 16px 0;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  ">
+    <h3 style="
+      margin: 0 0 12px 0;
+      color: #2c3e50;
+      font-size: 16px;
+      font-weight: 600;
+    ">{{translations.orderOverview}}</h3>
+
+    <table style="width: 100%; border-collapse: collapse;">
       <tr>
-        <td class="email-wrapper-cell">
-          <table class="email-container" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
-
-            <!-- Email Header -->
-            <tr>
-              <td class="email-header" role="banner">
-                {{> email-header companyName=translations.companyName tagline=translations.tagline}}
-              </td>
-            </tr>
-
-            <!-- Main Email Content -->
-            <tr>
-              <td class="email-content" role="main">
-                <!-- Status Update Header -->
-                <div style="text-align: center; margin-bottom: 32px;">
-                  <div style="
-                    display: inline-block;
-                    width: 64px;
-                    height: 64px;
-                    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-                    border-radius: 50%;
-                    margin-bottom: 16px;
-                    position: relative;
-                  ">
-                    <div style="
-                      color: white;
-                      font-size: 24px;
-                      font-weight: bold;
-                      margin-top: 10px;
-                    ">📋</div>
-                  </div>
-                <!-- Order Status Update Header -->
-                <div style="text-align: center; margin-bottom: 24px;">
-                  <h2 style="
-                    color: #2c3e50;
-                    margin: 0 0 8px 0;
-                    font-size: 18px;
-                    font-weight: 600;
-                  ">{{translations.title}}</h2>
-                </div>
-
-                <p style="
-                  font-size: 14px;
-                  color: #2c3e50;
-                  margin-bottom: 16px;
-                ">{{translations.greeting}} {{data.customerName}},</p>
-
-                <p style="
-                  color: #7f8c8d;
-                  margin-bottom: 24px;
-                  font-size: 14px;
-                ">{{translations.intro}}</p>
-
-                <!-- Order Status Badge -->
-                <div style="
-                  text-align: center;
-                  margin: 24px 0;
-                  padding: 16px;
-                  background-color: #f8f9fa;
-                  border-radius: 6px;
-                ">
-                  <p style="
-                    margin: 0 0 8px 0;
-                    font-size: 12px;
-                    color: #7f8c8d;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                  ">{{translations.newStatus}}</p>
-                  <span style="
-                    display: inline-block;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    {{#if (eq data.status 'pending')}}background-color: #f39c12; color: white;{{/if}}
-                    {{#if (eq data.status 'confirmed')}}background-color: #27ae60; color: white;{{/if}}
-                    {{#if (eq data.status 'processing')}}background-color: #3498db; color: white;{{/if}}
-                    {{#if (eq data.status 'shipped')}}background-color: #3498db; color: white;{{/if}}
-                    {{#if (eq data.status 'delivered')}}background-color: #27ae60; color: white;{{/if}}
-                    {{#if (eq data.status 'cancelled')}}background-color: #e74c3c; color: white;{{/if}}
-                  ">{{> status-badge status=data.status statusText=(getStatusText data.status locale)}}</span>
-                </div>
-
-                <!-- Status Message -->
-                {{#if data.statusMessage}}
-                <div style="
-                  background-color: #ecf0f1;
-                  padding: 16px;
-                  border-radius: 6px;
-                  margin: 16px 0;
-                ">
-                  <p style="
-                    margin: 0;
-                    color: #2c3e50;
-                    font-size: 14px;
-                    font-style: italic;
-                  ">{{data.statusMessage}}</p>
-                </div>
-                {{/if}}
-
-                <!-- Order Overview -->
-                <div style="
-                  background-color: #ffffff;
-                  border: 1px solid #ecf0f1;
-                  border-radius: 6px;
-                  padding: 16px;
-                  margin: 24px 0;
-                ">
-                  <h3 style="
-                    margin: 0 0 12px 0;
-                    color: #2c3e50;
-                    font-size: 16px;
-                    font-weight: 600;
-                  ">{{translations.orderOverview}}</h3>
-
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #7f8c8d;
-                        width: 40%;
-                      ">{{translations.orderNumber}}:</td>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #2c3e50;
-                        font-weight: 600;
-                      ">#{{data.orderNumber}}</td>
-                    </tr>
-                    <tr>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #7f8c8d;
-                      ">{{translations.orderDate}}:</td>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #2c3e50;
-                      ">{{formatDate data.orderDate locale}}</td>
-                    </tr>
-                    <tr>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #7f8c8d;
-                      ">{{translations.orderTotal}}:</td>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 16px;
-                        color: #2c3e50;
-                        font-weight: 600;
-                      ">{{formatCurrency data.total locale}}</td>
-                    </tr>
-                    {{#if data.trackingNumber}}
-                    <tr>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #7f8c8d;
-                      ">{{translations.trackingNumber}}:</td>
-                      <td style="
-                        padding: 4px 0;
-                        font-size: 14px;
-                        color: #27ae60;
-                        font-weight: 600;
-                        font-family: monospace;
-                      ">{{data.trackingNumber}}</td>
-                    </tr>
-                    {{/if}}
-                    <tr>
-                      <td>{{translations.orderStatus}}:</td>
-                      <td>
-                        <span class="status-badge status-{{data.status}}">
-                          {{getStatusText data.status locale}}
-                        </span>
-                      </td>
-                    </tr>
-                    {{#if data.paymentStatus}}
-                    <tr>
-                      <td>{{translations.paymentStatus}}:</td>
-                      <td>
-                        <span class="status-badge payment-{{data.paymentStatus}}">
-                          {{getStatusText data.paymentStatus locale}}
-                        </span>
-                      </td>
-                    </tr>
-                    {{/if}}
-                  </table>
-                </div>
-
-                <!-- Track Order Button -->
-                <div style="
-                  text-align: center;
-                  margin: 32px 0;
-                ">
-                  <a href="{{concat frontendUrl '/' locale '/orders/' data.orderId}}" style="
-                    display: inline-block;
-                    background-color: #3498db;
-                    color: white;
-                    text-decoration: none;
-                    padding: 12px 24px;
-                    border-radius: 6px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    text-align: center;
-                    min-width: 120px;
-                  ">{{translations.viewOrderDetails}}</a>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Email Footer -->
-            <tr>
-              <td class="email-footer" role="contentinfo">
-                <p style="margin: 0;">
-                  {{translations.copyright}}
-                </p>
-              </td>
-            </tr>
-
-          </table>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+          width: 40%;
+        ">{{translations.orderNumber}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #2c3e50;
+          font-weight: 600;
+        ">#{{data.orderNumber}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.orderDate}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #2c3e50;
+        ">{{formatDate data.orderDate locale}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.orderTotal}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 16px;
+          color: #2c3e50;
+          font-weight: 600;
+        ">{{formatCurrency data.total locale}}</td>
+      </tr>
+      {{#if data.trackingNumber}}
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.trackingNumber}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #27ae60;
+          font-weight: 600;
+          font-family: monospace;
+        ">{{data.trackingNumber}}</td>
+      </tr>
+      {{/if}}
+      <tr>
+        <td>{{translations.orderStatus}}:</td>
+        <td>
+          <span class="status-badge status-{{data.status}}">
+            {{getStatusText data.status locale}}
+          </span>
         </td>
       </tr>
+      {{#if data.paymentStatus}}
+      <tr>
+        <td>{{translations.paymentStatus}}:</td>
+        <td>
+          <span class="status-badge payment-{{data.paymentStatus}}">
+            {{getStatusText data.paymentStatus locale}}
+          </span>
+        </td>
+      </tr>
+      {{/if}}
     </table>
+
+    <!-- Track Order Button -->
+    <div style="
+      text-align: center;
+      margin: 32px 0;
+    ">
+      <a href="{{concat frontendUrl '/' locale '/orders/' data.orderId}}" style="
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 120px;
+      ">{{translations.viewOrderDetails}}</a>
+    </div>
   </div>
+
+  <p style="font-size: 16px; margin: 20px 0;">{{translations.contactUs}}</p>
+
+  {{> email-footer
+      currentYear=currentYear
+      companyName=(companyName locale)
+      supportEmail=(supportEmail)
+      websiteUrl=(frontendUrl)
+      disclaimer=translations.disclaimer}}
 </body>
 </html>

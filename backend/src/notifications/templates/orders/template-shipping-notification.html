@@ -159,354 +159,203 @@
     {{translations.subject}}
   </div>
 
-  <!-- Main email wrapper -->
-  <div role="document" aria-label="{{translations.emailLabel}}">
-    <table class="email-wrapper" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
+  {{> email-header companyName=(companyName locale) tagline=translations.tagline}}
+
+  <!-- Status Update Header -->
+  <div style="text-align: center; margin-bottom: 32px;">
+    <div style="
+      display: inline-block;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+      border-radius: 50%;
+      margin-bottom: 16px;
+      position: relative;
+      ">
+      <div style="
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 10px;
+      ">🚚</div>
+      <h2 style="
+        color: #2c3e50;
+        margin: 32px 0 8px 0;
+        font-size: 18px;
+        font-weight: 600;
+        ">{{translations.title}}</h2>
+    </div>
+  </div>>
+
+  <p style="
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 16px;
+  ">{{translations.greeting}} {{data.customerName}},</p>
+
+  <p style="
+    color: #7f8c8d;
+    margin-bottom: 24px;
+    font-size: 14px;
+  ">{{translations.intro}}</p>
+
+  <!-- Order Overview -->
+  <div style="
+    background-color: #ffffff;
+    padding: 24px;
+    margin: 16px 0;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  ">
+    <h3 style="
+      margin: 0 0 12px 0;
+      color: #2c3e50;
+      font-size: 16px;
+      font-weight: 600;
+    ">{{translations.orderOverview}}</h3>
+
+    <table style="width: 100%; border-collapse: collapse;">
       <tr>
-        <td class="email-wrapper-cell">
-          <table class="email-container" cellpadding="0" cellspacing="0" border="0" role="presentation" aria-hidden="true">
-
-            <!-- Email Header -->
-            <tr>
-              <td class="email-header" role="banner">
-                {{> email-header companyName=translations.companyName tagline=translations.tagline}}
-              </td>
-            </tr>
-
-            <!-- Main Email Content -->
-            <tr>
-              <td class="email-content" role="main" id="main-content">
-
-                <!-- Shipping Success Header -->
-                <div style="text-align: center; margin-bottom: 32px;">
-                  <div style="
-                    display: inline-block;
-                    width: 64px;
-                    height: 64px;
-                    background: linear-gradient(135deg, #27ae60 0%, #27ae60 100%);
-                    border-radius: 50%;
-                    margin-bottom: 16px;
-                    position: relative;
-                  ">
-                    <div style="
-                      color: white;
-                      font-size: 24px;
-                      font-weight: bold;
-                      margin-top: 10px;
-                    ">🚚</div>
-                  </div>
-                  <h2 style="
-                    color: #2c3e50;
-                    margin: 0;
-                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-                    font-size: 24px;
-                  ">{{translations.title}}</h2>
-                </div>
-
-                <p style="
-                  font-size: 16px;
-                  color: #2c3e50;
-                  margin-bottom: 24px;
-                ">{{translations.greeting}}</p>
-
-                <p style="
-                  color: #7f8c8d;
-                  margin-bottom: 32px;
-                ">{{translations.message}}</p>
-
-                <!-- Order Details Card -->
-                <div class="card-section" style="
-                  background-color: #ffffff;
-                  padding: 24px;
-                  margin: 16px 0;
-                  border-radius: 8px;
-                  border-left: 4px solid #27ae60;
-                  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                ">
-                  <h3 style="
-                    margin-top: 0;
-                    color: #2c3e50;
-                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-                  ">{{translations.shippingDetails}}</h3>
-
-                  <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                      <td style="
-                        padding: 8px 0;
-                        font-weight: 600;
-                        color: #7f8c8d;
-                        width: 40%;
-                      ">{{translations.orderNumber}}:</td>
-                      <td style="
-                        padding: 8px 0;
-                        color: #2c3e50;
-                        font-weight: 600;
-                      ">#{{data.orderNumber}}</td>
-                    </tr>
-                    {{#if data.trackingNumber}}
-                    <tr>
-                      <td style="
-                        padding: 8px 0;
-                        font-weight: 600;
-                        color: #7f8c8d;
-                      ">{{translations.trackingNumber}}:</td>
-                      <td style="
-                        padding: 8px 0;
-                        color: #27ae60;
-                        font-weight: 600;
-                        font-family: monospace;
-                      ">{{data.trackingNumber}}</td>
-                    </tr>
-                    {{/if}}
-                    <tr>
-                      <td style="
-                        padding: 8px 0;
-                        font-weight: 600;
-                        color: #7f8c8d;
-                      ">{{translations.shippedDate}}:</td>
-                      <td style="
-                        padding: 8px 0;
-                        color: #2c3e50;
-                      ">{{formatDate data.shippedDate locale}}</td>
-                    </tr>
-                    {{#if data.estimatedDelivery}}
-                    <tr>
-                      <td style="
-                        padding: 8px 0;
-                        font-weight: 600;
-                        color: #7f8c8d;
-                      ">{{translations.estimatedDelivery}}:</td>
-                      <td style="
-                        padding: 8px 0;
-                        color: #2c3e50;
-                      ">{{formatDate data.estimatedDelivery locale}}</td>
-                    </tr>
-                    {{/if}}
-                  </table>
-                </div>
-
-                <!-- Tracking Information (if available) -->
-                {{#if data.trackingNumber}}
-                <div style="
-                  text-align: center;
-                  margin: 32px 0;
-                  padding: 32px;
-                  background: linear-gradient(135deg, #27ae6015 0%, #2c3e5015 100%);
-                  border-radius: 8px;
-                  border: 2px solid #27ae6030;
-                ">
-                  <h3 style="
-                    color: #27ae60;
-                    margin: 0 0 16px 0;
-                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-                    font-size: 16px;
-                  ">📦 {{translations.trackingInfo}}</h3>
-                  <p style="
-                    margin: 0 0 24px 0;
-                    color: #2c3e50;
-                  ">{{translations.trackingInstructions}}</p>
-                  <div style="
-                    background-color: #ffffff;
-                    padding: 16px;
-                    border-radius: 4px;
-                    border: 1px solid #ecf0f1;
-                    margin: 16px 0;
-                  ">
-                    <span style="
-                      font-family: monospace;
-                      font-size: 16px;
-                      font-weight: 600;
-                      color: #2c3e50;
-                      letter-spacing: 1px;
-                    ">{{data.trackingNumber}}</span>
-                  </div>
-                  <div style="margin: 24px 0;">
-                    {{> button text=translations.trackPackage url=(concat trackingUrl data.trackingNumber) style="primary"}}
-                  </div>
-                </div>
-                {{/if}}
-
-                <div style="margin: 32px 0;">
-                  {{#if data.shippingAddress}}
-                    {{> address-card
-                        title=translations.shippingAddress
-                        fullName=data.shippingAddress.fullName
-                        phone=data.shippingAddress.phone
-                        addressLine1=data.shippingAddress.addressLine1
-                        addressLine2=data.shippingAddress.addressLine2
-                        city=data.shippingAddress.city
-                        state=data.shippingAddress.state
-                        postalCode=data.shippingAddress.postalCode
-                        country=data.shippingAddress.country}}
-                  {{/if}}
-                </div>
-
-                <!-- Order Items Summary -->
-                <h3 style="
-                  color: #2c3e50;
-                  font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-                  font-size: 20px;
-                  margin: 32px 0 24px 0;
-                ">{{translations.itemsShipped}}</h3>
-
-                <!-- Product Items -->
-                <div style="margin: 24px 0;">
-                  {{#each data.items}}
-                    <div style="
-                      background-color: #ffffff;
-                      border: 1px solid #e9ecef;
-                      border-radius: 8px;
-                      padding: 16px;
-                      margin: 12px 0;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                    ">
-                      <div style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: flex-start;
-                        flex-wrap: wrap;
-                      ">
-                        <div style="flex: 1; min-width: 200px;">
-                          <h4 style="
-                            margin: 0 0 8px 0;
-                            color: #2c3e50;
-                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                            font-size: 16px;
-                            font-weight: 600;
-                          ">{{#if (eq ../locale 'vi')}}{{this.nameVi}}{{else}}{{this.nameEn}}{{/if}}</h4>
-                          {{#if this.sku}}
-                            <p style="
-                              margin: 0 0 8px 0;
-                              color: #6c757d;
-                              font-size: 12px;
-                            ">SKU: {{this.sku}}</p>
-                          {{/if}}
-                          <p style="
-                            margin: 0;
-                            color: #495057;
-                            font-size: 14px;
-                          ">
-                            {{#if (eq ../locale 'vi')}}Số lượng{{else}}Quantity{{/if}}: {{this.quantity}}
-                          </p>
-                        </div>
-                        <div style="
-                          text-align: right;
-                          min-width: 100px;
-                        ">
-                          <p style="
-                            margin: 0 0 4px 0;
-                            color: #495057;
-                            font-size: 14px;
-                          ">
-                            {{formatCurrency this.price ../locale}}
-                          </p>
-                          <p style="
-                            margin: 0;
-                            color: #2c3e50;
-                            font-size: 16px;
-                            font-weight: 600;
-                          ">
-                            {{formatCurrency this.total ../locale}}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  {{/each}}
-                </div>
-
-                <!-- Delivery Instructions -->
-                <div class="card-section" style="
-                  background-color: #ffffff;
-                  padding: 24px;
-                  margin: 32px 0;
-                  border-radius: 8px;
-                  border-left: 4px solid #3498db;
-                  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                ">
-                  <h3 style="
-                    margin-top: 0;
-                    color: #3498db;
-                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
-                  ">📋 {{translations.deliveryInstructions}}</h3>
-                  <ul style="
-                    margin: 0;
-                    padding-left: 24px;
-                    color: #2c3e50;
-                    line-height: 1.7;
-                  ">
-                    <li style="margin-bottom: 8px;">{{translations.instruction1}}</li>
-                    <li style="margin-bottom: 8px;">{{translations.instruction2}}</li>
-                    <li style="margin-bottom: 8px;">{{translations.instruction3}}</li>
-                    {{#if data.trackingNumber}}
-                    <li style="margin-bottom: 8px;">{{translations.instruction4}}</li>
-                    {{/if}}
-                  </ul>
-                </div>
-
-                <!-- Call-to-Action Buttons -->
-                <div style="
-                  text-align: center;
-                  margin: 48px 0;
-                  padding: 32px 0;
-                  border-top: 1px solid #ecf0f1;
-                  border-bottom: 1px solid #ecf0f1;
-                ">
-                  {{#if data.trackingNumber}}
-                  <div style="margin-bottom: 16px;">
-                    {{> button text=translations.trackPackage url=(concat trackingUrl data.trackingNumber) style="primary"}}
-                  </div>
-                  {{/if}}
-                  <div style="margin-bottom: 16px;">
-                    {{> button text=translations.viewOrder url=(concat frontendUrl "/orders/" data.orderNumber) style="secondary"}}
-                  </div>
-                  <div>
-                    {{> button text=translations.shopMore url=(concat frontendUrl "/products") style="secondary"}}
-                  </div>
-                </div>
-
-                <!-- Closing Message -->
-                <div style="
-                  text-align: center;
-                  margin: 32px 0;
-                  padding: 24px;
-                  background-color: #f8f9fa;
-                  border-radius: 8px;
-                  border-left: 4px solid #27ae60;
-                ">
-                  <p style="
-                    color: #2c3e50;
-                    margin: 0 0 8px 0;
-                    font-weight: 500;
-                  ">{{translations.thankYou}}</p>
-                  <p style="
-                    color: #7f8c8d;
-                    margin: 0;
-                    font-size: 12px;
-                  ">{{{translations.signature}}}</p>
-                </div>
-
-              </td>
-            </tr>
-
-            <!-- Email Footer -->
-            <tr>
-              <td class="email-footer" role="contentinfo">
-                {{> email-footer
-                    currentYear=currentYear
-                    companyName=translations.companyName
-                    supportEmail=supportEmail
-                    websiteUrl=websiteUrl
-                    disclaimer=translations.disclaimer}}
-              </td>
-            </tr>
-
-          </table>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+          width: 40%;
+        ">{{translations.orderNumber}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #2c3e50;
+          font-weight: 600;
+        ">#{{data.orderNumber}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.orderDate}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #2c3e50;
+        ">{{formatDate data.orderDate locale}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.orderTotal}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 16px;
+          color: #2c3e50;
+          font-weight: 600;
+        ">{{formatCurrency data.total locale}}</td>
+      </tr>
+      <tr>
+        <td>{{translations.orderStatus}}:</td>
+        <td>
+          <span class="status-badge status-{{data.status}}">
+            {{getStatusText data.status locale}}
+          </span>
         </td>
       </tr>
+      {{#if data.paymentStatus}}
+      <tr>
+        <td>{{translations.paymentStatus}}:</td>
+        <td>
+          <span class="status-badge payment-{{data.paymentStatus}}">
+            {{getStatusText data.paymentStatus locale}}
+          </span>
+        </td>
+      </tr>
+      {{/if}}
+      {{#if data.trackingNumber}}
+      <tr>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #7f8c8d;
+        ">{{translations.trackingNumber}}:</td>
+        <td style="
+          padding: 4px 0;
+          font-size: 14px;
+          color: #27ae60;
+          font-weight: 600;
+          font-family: monospace;
+        ">{{data.trackingNumber}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 8px 0;
+          font-weight: 600;
+          color: #7f8c8d;
+        ">{{translations.shippedDate}}:</td>
+        <td style="
+          padding: 8px 0;
+          color: #2c3e50;
+        ">{{formatDate data.shippedDate locale}}</td>
+      </tr>
+      <tr>
+        <td style="
+          padding: 8px 0;
+          font-weight: 600;
+          color: #7f8c8d;
+        ">{{translations.estimatedDelivery}}:</td>
+        <td style="
+          padding: 8px 0;
+          color: #2c3e50;
+        ">{{formatDate data.estimatedDelivery locale}}</td>
+      </tr>
+      {{/if}}
     </table>
+
+    <!-- Tracking Information (if available) -->
+    {{#if data.shippingAddress}}
+    <div style="margin: 32px 0;">
+      {{> address-card
+      title=translations.shippingAddress
+      fullName=data.shippingAddress.fullName
+      phone=data.shippingAddress.phone
+      addressLine1=data.shippingAddress.addressLine1
+      addressLine2=data.shippingAddress.addressLine2
+      city=data.shippingAddress.city
+      state=data.shippingAddress.state
+      postalCode=data.shippingAddress.postalCode
+      country=data.shippingAddress.country}}
+    </div>
+    {{/if}}
+
+    <!-- Track Order Button -->
+    <div style="
+      text-align: center;
+      margin: 32px 0;
+    ">
+      <a href="{{concat frontendUrl '/' locale '/orders/' data.orderId}}" style="
+        display: inline-block;
+        background-color: #3498db;
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        min-width: 120px;
+      ">{{translations.viewOrderDetails}}</a>
+    </div>
   </div>
 
-  <!-- Screen reader announcements -->
-  <div aria-live="polite" aria-atomic="true" class="sr-only" id="announcements"></div>
+  <p style="font-size: 16px; margin: 20px 0;">{{translations.contactUs}}</p>
+
+  {{> email-footer
+      currentYear=currentYear
+      companyName=(companyName locale)
+      supportEmail=(supportEmail)
+      websiteUrl=(frontendUrl)
+      disclaimer=translations.disclaimer}}
 </body>
 </html>

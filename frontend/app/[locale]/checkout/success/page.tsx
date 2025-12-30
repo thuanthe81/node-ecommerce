@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { orderApi, Order } from '@/lib/order-api';
-import { formatMoney } from '@/app/utils';
+import { formatMoney, formatDateSafe } from '@/app/utils';
 
 function SuccessContent() {
   const tCheckout = useTranslations('checkout');
@@ -121,7 +121,11 @@ function SuccessContent() {
             <div>
               <span className="text-gray-600">Order Date:</span>
               <span className="ml-2 font-medium">
-                {new Date(order.createdAt).toLocaleDateString()}
+                {formatDateSafe(order.createdAt, locale, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
               </span>
             </div>
             <div>

@@ -144,7 +144,10 @@ export default function CustomerListContent({ locale }: CustomerListContentProps
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleDateString(isVietnamese ? 'vi-VN' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

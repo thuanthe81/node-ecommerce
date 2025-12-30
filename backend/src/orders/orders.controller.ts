@@ -28,11 +28,13 @@ import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import { CONSTANTS } from '@alacraft/shared';
 import type { Request } from 'express';
 
 @Controller('orders')
+@UseGuards(JwtAuthGuard)
 export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
 
@@ -44,19 +46,18 @@ export class OrdersController {
   ) {}
 
   @Post()
-  @Public()
   create(
     @Body() createOrderDto: CreateOrderDto,
-    @CurrentUser() user?: { userId: string },
+    @CurrentUser() user: { id: string },
   ) {
-    return this.ordersService.create(createOrderDto, user?.userId);
+    return this.ordersService.create(createOrderDto, user.id);
   }
 
   @Get()
-  findAll(@CurrentUser() user: { userId: string; role: UserRole }) {
+  findAll(@CurrentUser() user: { id: string; role: UserRole }) {
     // Regular users get their own orders
     if (user.role === CONSTANTS.STATUS.USER_ROLES.CUSTOMER) {
-      return this.ordersService.findAllByUser(user.userId);
+      return this.ordersService.findAllByUser(user.id);
     }
 
     // Admins can see all orders
@@ -98,51 +99,36 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Public()
   async findOne(
     @Param('id') id: string,
-    @CurrentUser() user?: { userId: string; role: UserRole },
-    @Req() request?: Request,
+    @CurrentUser() user: { id: string; role: UserRole },
   ) {
     try {
-      // Build access context from request
-      const accessContext = {
-        userId: user?.userId,
-        userRole: user?.role,
-        sessionId: (request as any)?.sessionID || (request as any)?.session?.id,
-        ipAddress: request?.ip || (request?.connection as any)?.remoteAddress,
-        userAgent: request?.get('User-Agent'),
-      };
-
-      // Validate access using the access control service
-      await this.accessControlService.validateOrderAccess(id, accessContext);
-
-      // If access is granted, fetch the order using the existing service method
-      const order = await this.ordersService.findOne(id, user?.userId, user?.role);
+      // Use the service's findOne method which includes proper access control for authenticated users
+      const order = await this.ordersService.findOne(id, user.id, user.role);
 
       // Get additional permissions for the response
+      const accessContext = {
+        userId: user.id,
+        userRole: user.role,
+      };
       const permissions = await this.accessControlService.getOrderPermissions(id, accessContext);
 
       return {
-        ...order,
+        order,
         permissions,
       };
 
     } catch (error) {
       // Log security violations
       if (error.status === HttpStatus.FORBIDDEN) {
-        this.accessControlService.logSecurityViolation(
-          'UNAUTHORIZED_ORDER_ACCESS',
-          id,
-          {
-            userId: user?.userId,
-            userRole: user?.role,
-            sessionId: (request as any)?.sessionID || (request as any)?.session?.id,
-            ipAddress: request?.ip || (request?.connection as any)?.remoteAddress,
-            userAgent: request?.get('User-Agent'),
-          },
-          { errorMessage: error.message }
-        );
+        this.logger.warn(`Unauthorized order access attempt`, {
+          orderId: id,
+          userId: user.id,
+          userRole: user.role,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        });
       }
 
       // Re-throw the error to maintain existing error handling
@@ -151,7 +137,6 @@ export class OrdersController {
   }
 
   @Patch(':id/cancel')
-  @Public()
   @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 cancellation attempts per minute (NestJS throttler)
   @UseGuards(EnhancedRateLimitGuard) // Additional enhanced rate limiting
   @EnhancedRateLimit({
@@ -161,14 +146,14 @@ export class OrdersController {
   async cancelOrder(
     @Param('id') id: string,
     @Body() cancelOrderDto: CancelOrderDto,
-    @CurrentUser() user?: { userId: string; role: UserRole },
-    @Req() request?: Request,
+    @CurrentUser() user: { id: string; role: UserRole },
+    @Req() request: Request,
   ) {
     try {
       // Build access context from request
       const accessContext = {
-        userId: user?.userId,
-        userRole: user?.role,
+        userId: user.id,
+        userRole: user.role,
         sessionId: (request as any)?.sessionID || (request as any)?.session?.id,
         ipAddress: request?.ip || (request?.connection as any)?.remoteAddress,
         userAgent: request?.get('User-Agent'),
@@ -203,8 +188,8 @@ export class OrdersController {
     } catch (error) {
       // Build error context for comprehensive logging
       const errorContext = {
-        userId: user?.userId,
-        userRole: user?.role,
+        userId: user.id,
+        userRole: user.role,
         orderId: id,
         ipAddress: request?.ip || (request?.connection as any)?.remoteAddress,
         userAgent: request?.get('User-Agent'),
@@ -219,8 +204,8 @@ export class OrdersController {
           'UNAUTHORIZED_ORDER_CANCELLATION',
           id,
           {
-            userId: user?.userId,
-            userRole: user?.role,
+            userId: user.id,
+            userRole: user.role,
             sessionId: (request as any)?.sessionID || (request as any)?.session?.id,
             ipAddress: request?.ip || (request?.connection as any)?.remoteAddress,
             userAgent: request?.get('User-Agent'),
@@ -249,8 +234,8 @@ export class OrdersController {
       // Log cancellation attempt failures with enhanced details
       this.logger.error(`Order cancellation failed for order ${id}:`, {
         orderId: id,
-        userId: user?.userId,
-        userRole: user?.role,
+        userId: user.id,
+        userRole: user.role,
         reason: cancelOrderDto.reason,
         errorCode: errorDetails.code,
         errorMessage: errorDetails.message,
@@ -297,7 +282,6 @@ export class OrdersController {
   }
 
   @Post(':orderNumber/resend-email')
-  @Public()
   @UseGuards(EnhancedRateLimitGuard)
   @EnhancedRateLimit({
     windowMs: 300000, // 5 minute window
@@ -306,12 +290,14 @@ export class OrdersController {
   async resendEmail(
     @Param('orderNumber') orderNumber: string,
     @Body() resendEmailDto: ResendEmailDto,
+    @CurrentUser() user: { id: string },
   ) {
     try {
       const result = await this.ordersService.resendOrderConfirmationEmail(
         orderNumber,
         resendEmailDto.email,
-        resendEmailDto.locale || 'vi'
+        resendEmailDto.locale || 'vi',
+        user.id
       );
 
       if (!result.success) {
@@ -347,6 +333,7 @@ export class OrdersController {
       // Enhanced error handling for email resend
       const errorContext = {
         orderNumber,
+        userId: user.id,
         endpoint: `/orders/${orderNumber}/resend-email`,
         method: 'POST',
         timestamp: new Date(),

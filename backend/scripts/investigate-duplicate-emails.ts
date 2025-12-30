@@ -64,10 +64,54 @@ class DuplicateEmailInvestigator {
       throw new Error('No active products found for testing');
     }
 
+    // Create or find a test user for the order (required since userId is now mandatory)
+    let testUser = await prisma.user.findFirst({
+      where: { email: 'test-duplicate-investigation@example.com' }
+    });
+
+    if (!testUser) {
+      testUser = await prisma.user.create({
+        data: {
+          email: 'test-duplicate-investigation@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'CUSTOMER',
+        }
+      });
+    }
+
+    // Create addresses first
+    const shippingAddress = await prisma.address.create({
+      data: {
+        userId: testUser.id,
+        fullName: 'Test Customer',
+        addressLine1: '123 Test Street',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'US',
+        phone: '+1234567890',
+      }
+    });
+
+    const billingAddress = await prisma.address.create({
+      data: {
+        userId: testUser.id,
+        fullName: 'Test Customer',
+        addressLine1: '123 Test Street',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'US',
+        phone: '+1234567890',
+      }
+    });
+
     // Create test order
     const testOrder = await prisma.order.create({
       data: {
         orderNumber: `TEST-${Date.now()}`,
+        userId: testUser.id, // Required field
         email: 'test-duplicate-investigation@example.com',
         status: 'PENDING',
         paymentStatus: 'PENDING',
@@ -77,6 +121,8 @@ class DuplicateEmailInvestigator {
         taxAmount: 0.00,
         shippingMethod: 'standard',
         paymentMethod: 'credit_card',
+        shippingAddressId: shippingAddress.id,
+        billingAddressId: billingAddress.id,
         items: {
           create: [
             {
@@ -89,34 +135,13 @@ class DuplicateEmailInvestigator {
               total: 24.99,
             }
           ]
-        },
-        shippingAddress: {
-          create: {
-            fullName: 'Test Customer',
-            addressLine1: '123 Test Street',
-            city: 'Test City',
-            state: 'Test State',
-            postalCode: '12345',
-            country: 'US',
-            phone: '+1234567890',
-          }
-        },
-        billingAddress: {
-          create: {
-            fullName: 'Test Customer',
-            addressLine1: '123 Test Street',
-            city: 'Test City',
-            state: 'Test State',
-            postalCode: '12345',
-            country: 'US',
-            phone: '+1234567890',
-          }
         }
       },
       include: {
         items: true,
         shippingAddress: true,
         billingAddress: true,
+        user: true,
       }
     });
 

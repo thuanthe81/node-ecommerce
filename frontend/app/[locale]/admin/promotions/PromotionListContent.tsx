@@ -45,7 +45,10 @@ export default function PromotionListContent({ locale }: { locale: string }) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString(locale, {
+    if (!dateString) return 'Invalid date';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return date.toLocaleString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
