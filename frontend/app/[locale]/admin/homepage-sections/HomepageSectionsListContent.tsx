@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SvgMenu } from '@/components/Svgs';
 
 // Sortable row component
 function SortableRow({
@@ -60,19 +61,9 @@ function SortableRow({
             className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
             aria-label="Drag to reorder"
           >
-            <svg
+            <SvgMenu
               className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8h16M4 16h16"
-              />
-            </svg>
+            />
           </button>
           <span className="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
             {section.displayOrder}

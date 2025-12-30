@@ -4,7 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings, SvgImage, SvgTruck } from '@/components/Svgs';
+import { SvgHome, SvgBoxes, SvgGrid, SvgClipboard, SvgUsers, SvgTag, SvgDocument, SvgChart, SvgCurrency, SvgSettings, SvgImage, SvgTruck, SvgChevronRight } from '@/components/Svgs';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -236,22 +236,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             {item.icon}
                             <span className="font-medium">{item.name}</span>
                           </div>
-                          <svg
+                          <SvgChevronRight
                             className={`w-4 h-4 transition-transform duration-200 ease-in-out ${
                               isExpanded ? 'transform rotate-90' : ''
                             }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
                             aria-hidden="true"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
+                          />
                         </button>
 
                         {/* Sub-items */}

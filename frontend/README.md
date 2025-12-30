@@ -38,6 +38,22 @@ The frontend uses OAuth-only authentication. Users can sign in with Google or Fa
 
 See the [OAuth Setup Guide](../OAUTH_SETUP.md) for complete setup instructions.
 
+## SVG Management
+
+This project uses a centralized SVG management system to ensure consistency and maintainability:
+
+- **All SVG icons are centralized** in `components/Svgs.tsx`
+- **No inline SVG elements** should be used in components
+- **Import SVG components** using `import { SvgIconName } from '@/components/Svgs'`
+
+### Adding New SVG Icons
+
+1. Add the SVG component to `components/Svgs.tsx` following the naming convention
+2. Import and use the component in your React components
+3. Run `npm run svg:check` to ensure compliance
+
+See [SVG_COMPONENT_GUIDE.md](./SVG_COMPONENT_GUIDE.md) for detailed instructions and [SVG_DEVELOPMENT_GUIDELINES.md](./SVG_DEVELOPMENT_GUIDELINES.md) for best practices.
+
 ### Run Development Server
 
 ```bash
@@ -52,8 +68,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 frontend/
 ├── app/              # Next.js App Router pages
 ├── components/       # React components
+│   └── Svgs.tsx      # Centralized SVG components
 ├── lib/              # Utility functions and configurations
 ├── public/           # Static assets
+├── scripts/          # Development and build scripts
 └── styles/           # Global styles
 ```
 
@@ -64,6 +82,8 @@ frontend/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+- `npm run svg:check` - Check for inline SVG violations
+- `npm run svg:audit` - Run comprehensive SVG audit
 
 ## Learn More
 

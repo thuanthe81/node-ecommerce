@@ -115,6 +115,10 @@ This will start both frontend (http://localhost:3000) and backend (http://localh
 - `npm run lint` - Lint all workspaces
 - `npm run format` - Format code with Prettier
 
+### SVG Management
+- `npm run svg:check` - Check for inline SVG violations (frontend)
+- `npm run svg:audit` - Run comprehensive SVG audit (frontend)
+
 ### Deployment
 - `npm run deploy` - Deploy to staging environment
 - `npm run deploy:staging` - Deploy to staging with full checks
@@ -131,6 +135,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 - **Cache**: Redis 7+
 - **ORM**: Prisma
 - **Authentication**: OAuth 2.0 (Google, Facebook)
+- **SVG Management**: Centralized component system
 
 ## Authentication
 
