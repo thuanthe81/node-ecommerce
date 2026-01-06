@@ -137,6 +137,12 @@ This implementation plan converts the shared constants and translations library 
     - ✅ Replaced getEmailTemplateTranslations calls with shared library
     - ✅ Verified all email templates render correctly with shared translations
     - ✅ Updated all test files to remove EmailTranslationService dependencies
+    - ✅ Added shipping notification and payment status update translations
+    - ✅ Added contact form email translations
+    - ✅ Added PDF metadata and error handling translations
+    - ✅ Migrated all hardcoded email subjects to use shared translations
+    - ✅ Updated email worker service to use shared translations
+    - ✅ Updated PDF services to use shared translations
     - _Requirements: 4.3, 4.5_
 
   - [ ]* 7.4 Write integration tests for backend migration

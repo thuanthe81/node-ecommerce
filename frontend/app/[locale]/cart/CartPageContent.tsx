@@ -8,6 +8,7 @@ import CartSummary from '@/components/CartSummary';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { isContactForPrice, getCartQuoteMessage } from '@/app/utils';
+import { SvgCart, SvgInfo } from '@/components/Svgs';
 
 export default function CartPageContent() {
   const locale = useLocale();
@@ -56,19 +57,9 @@ export default function CartPageContent() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto text-center">
-          <svg
+          <SvgCart
             className="w-24 h-24 mx-auto mb-6 text-gray-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
+          />
           <h1 className="text-2xl font-bold mb-4">{t('emptyCart')}</h1>
           <p className="text-gray-600 mb-8">{t('emptyCartMessage')}</p>
           <Link
@@ -106,19 +97,9 @@ export default function CartPageContent() {
           {hasZeroPriceItems && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <div className="flex items-start">
-                <svg
+                <SvgInfo
                   className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                />
                 <p className="text-sm text-blue-800">
                   {getCartQuoteMessage(locale)}
                 </p>

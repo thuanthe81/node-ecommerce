@@ -19,6 +19,13 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: [
+      `${SITE_URL}/sitemap.xml`,
+      `${SITE_URL}/sitemap-index.xml`,
+      `${SITE_URL}/sitemap-products.xml`,
+      `${SITE_URL}/sitemap-categories.xml`,
+      `${SITE_URL}/sitemap-blog.xml`,
+      `${SITE_URL}/sitemap-static.xml`,
+    ],
   };
 }

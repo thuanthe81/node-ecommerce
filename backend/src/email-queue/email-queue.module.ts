@@ -11,6 +11,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { FooterSettingsModule } from '../footer-settings/footer-settings.module';
 import { PDFGeneratorModule } from '../pdf-generator/pdf-generator.module';
 import { CommonModule } from '../common/common.module';
+import { OrdersModule } from '../orders/orders.module';
 
 /**
  * Email Queue Module
@@ -28,6 +29,7 @@ import { CommonModule } from '../common/common.module';
     FooterSettingsModule, // Footer settings for admin emails
     forwardRef(() => PDFGeneratorModule),  // Provides EmailAttachmentService for PDF generation
     CommonModule,        // Provides BusinessInfoService
+    forwardRef(() => OrdersModule), // Provides OrdersService - using forwardRef to resolve circular dependency
   ],
   controllers: [
     EmailQueueHealthController, // Health check and monitoring endpoints

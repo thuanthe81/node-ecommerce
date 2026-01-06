@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { SvgXCircle, SvgCheckCircle, SvgExclamationCircle } from './Svgs';
 import { userApi } from '@/lib/user-api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -324,18 +325,14 @@ export default function ShippingAddressForm({
 
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start" role="alert">
-              <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
+              <SvgXCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {isFormValid() && !error && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
-              <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
+              <SvgCheckCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
               <span>{t('form.addressReady')}</span>
             </div>
           )}
@@ -358,17 +355,13 @@ export default function ShippingAddressForm({
               />
               {touchedFields.fullName && fieldErrors.fullName && (
                 <p id="fullName-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                  <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                   {fieldErrors.fullName}
                 </p>
               )}
               {touchedFields.fullName && !fieldErrors.fullName && formData.fullName.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <SvgCheckCircle className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -391,17 +384,13 @@ export default function ShippingAddressForm({
               />
               {touchedFields.phone && fieldErrors.phone && (
                 <p id="phone-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                  <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                   {fieldErrors.phone}
                 </p>
               )}
               {touchedFields.phone && !fieldErrors.phone && formData.phone.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <SvgCheckCircle className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -425,17 +414,13 @@ export default function ShippingAddressForm({
             />
             {touchedFields.addressLine1 && fieldErrors.addressLine1 && (
               <p id="addressLine1-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+                <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                 {fieldErrors.addressLine1}
               </p>
             )}
             {touchedFields.addressLine1 && !fieldErrors.addressLine1 && formData.addressLine1.trim() && (
               <p className="mt-1 text-sm text-green-600 flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+                <SvgCheckCircle className="w-4 h-4 mr-1" />
                 {t('validation.valid')}
               </p>
             )}
@@ -473,17 +458,13 @@ export default function ShippingAddressForm({
               />
               {touchedFields.city && fieldErrors.city && (
                 <p id="city-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                  <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                   {fieldErrors.city}
                 </p>
               )}
               {touchedFields.city && !fieldErrors.city && formData.city.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <SvgCheckCircle className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -506,17 +487,13 @@ export default function ShippingAddressForm({
               />
               {touchedFields.state && fieldErrors.state && (
                 <p id="state-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                  <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                   {fieldErrors.state}
                 </p>
               )}
               {touchedFields.state && !fieldErrors.state && formData.state.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <SvgCheckCircle className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -539,17 +516,13 @@ export default function ShippingAddressForm({
               />
               {touchedFields.postalCode && fieldErrors.postalCode && (
                 <p id="postalCode-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                  <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                   {fieldErrors.postalCode}
                 </p>
               )}
               {touchedFields.postalCode && !fieldErrors.postalCode && formData.postalCode.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <SvgCheckCircle className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -579,17 +552,13 @@ export default function ShippingAddressForm({
             </p>
             {touchedFields.country && fieldErrors.country && (
               <p id="country-error" className="mt-1 text-sm text-red-600 flex items-start" role="alert">
-                <svg className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+                <SvgExclamationCircle className="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" />
                 {fieldErrors.country}
               </p>
             )}
             {touchedFields.country && !fieldErrors.country && formData.country.trim() && (
               <p className="mt-1 text-sm text-green-600 flex items-center">
-                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+                <SvgCheckCircle className="w-4 h-4 mr-1" />
                 {t('validation.valid')}
               </p>
             )}

@@ -4,4 +4,12 @@
 export * from './status-translations';
 export * from './email-translations';
 export * from './types';
-export { getOrderStatusMessage, getPaymentStatusMessage } from './email-translations';
+export {
+  getOrderStatusMessage,
+  getPaymentStatusMessage,
+  getShippingNotificationTranslations,
+  getPaymentStatusUpdateTranslations,
+  getContactFormTranslations,
+  getPdfMetadataTranslations,
+  getPdfErrorHandlingTranslations
+} from './email-translations';

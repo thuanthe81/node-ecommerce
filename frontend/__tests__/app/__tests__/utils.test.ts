@@ -7,7 +7,7 @@ import {
   getCartQuoteMessage,
   getAdminOrderPricingMessage,
   getAdminProductZeroPriceMessage,
-} from '../utils';
+} from '../../../app/utils';
 
 describe('Zero-Price Product Utilities', () => {
   describe('isContactForPrice', () => {

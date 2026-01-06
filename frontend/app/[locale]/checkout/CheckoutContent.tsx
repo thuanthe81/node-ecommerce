@@ -11,7 +11,7 @@ import { promotionApi } from '@/lib/promotion-api';
 import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
-import { SvgCheck } from '@/components/Svgs';
+import { SvgCheck, SvgWarning, SvgCheckCircleLarge, SvgInfo } from '@/components/Svgs';
 import { formatMoney, isContactForPrice, getPriceTBDText, getCartQuoteMessage } from '@/app/utils';
 
 export default function CheckoutContent() {
@@ -434,19 +434,9 @@ export default function CheckoutContent() {
           {syncResults.some(r => !r.success) ? (
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-start">
-                <svg
+                <SvgWarning
                   className="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
+                />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-yellow-800 mb-2">
                     {tCart('syncPartialSuccess', {
@@ -474,19 +464,9 @@ export default function CheckoutContent() {
           ) : (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-start">
-                <svg
+                <SvgCheckCircleLarge
                   className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                />
                 <p className="text-sm text-green-800">{tCart('syncSuccess')}</p>
               </div>
             </div>
@@ -616,19 +596,9 @@ export default function CheckoutContent() {
               {hasZeroPriceItems && (
                 <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start">
-                    <svg
+                    <SvgInfo
                       className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    />
                     <div className="text-sm text-blue-800">
                       {getCartQuoteMessage(locale)}
                     </div>
@@ -639,19 +609,10 @@ export default function CheckoutContent() {
               {/* Bank Transfer Information */}
               <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start">
-                  <svg
+                  <SvgInfo
                     className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                    aria-hidden="true"
+                  />
                   <div>
                     <div className="font-medium text-blue-900 mb-1">
                       {tCheckout('paymentMethodLabel')}: {tCheckout('bankTransfer')}
@@ -771,19 +732,10 @@ export default function CheckoutContent() {
             <div className="border-t pt-4 mt-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                 <div className="flex items-start">
-                  <svg
+                  <SvgInfo
                     className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                    aria-hidden="true"
+                  />
                   <div className="text-sm">
                     <div className="font-medium text-blue-900 mb-1">
                       {tCheckout('paymentMethodLabel')}: {tCheckout('bankTransfer')}

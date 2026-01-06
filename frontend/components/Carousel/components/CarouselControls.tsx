@@ -8,6 +8,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { CarouselControlsProps } from '../types';
+import { SvgChevronLeft, SvgChevronRight } from '../../Svgs';
 
 /**
  * CarouselControls sub-component
@@ -34,20 +35,7 @@ const CarouselControls: React.FC<CarouselControlsProps> = ({
         aria-label={t('previousButton')}
         className="carousel-control-prev pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+        <SvgChevronLeft className="w-6 h-6" aria-hidden="true" />
       </button>
 
       {/* Next button */}
@@ -57,20 +45,7 @@ const CarouselControls: React.FC<CarouselControlsProps> = ({
         aria-label={t('nextButton')}
         className="carousel-control-next pointer-events-auto bg-white/80 hover:bg-white rounded-full p-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
+        <SvgChevronRight className="w-6 h-6" aria-hidden="true" />
       </button>
     </div>
   );

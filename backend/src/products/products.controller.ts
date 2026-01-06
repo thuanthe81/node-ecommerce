@@ -83,6 +83,18 @@ export class ProductsController {
     return this.productsService.getCount();
   }
 
+  @Get('popular-slugs')
+  @Public()
+  getPopularSlugs(@Query('limit') limit?: number) {
+    return this.productsService.getPopularSlugs(limit);
+  }
+
+  @Get('featured')
+  @Public()
+  getFeatured(@Query('limit') limit?: number) {
+    return this.productsService.getFeatured(limit);
+  }
+
   @Get()
   @Public()
   findAll(@Query() query: QueryProductsDto) {
@@ -99,6 +111,12 @@ export class ProductsController {
   @Public()
   findBySlug(@Param('slug') slug: string) {
     return this.productsService.findBySlug(slug);
+  }
+
+  @Get('slug/:slug')
+  @Public()
+  findBySlugEnhanced(@Param('slug') slug: string) {
+    return this.productsService.findBySlugEnhanced(slug);
   }
 
   @Patch(':id')

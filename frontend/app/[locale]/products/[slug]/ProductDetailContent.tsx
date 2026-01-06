@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { productApi, Product } from '@/lib/product-api';
+import { EnhancedProduct } from '@/lib/ssr-types';
 import ProductImageGallery from './ProductImageGallery';
 import ProductInfo from './ProductInfo';
 import RelatedProducts from './RelatedProducts';
@@ -13,18 +14,45 @@ import { generateProductSchema, generateBreadcrumbList } from '@/lib/seo';
 interface ProductDetailContentProps {
   slug: string;
   locale: string;
+  initialProduct?: EnhancedProduct; // SSR-provided initial data
+  ssrMode?: boolean; // Flag to indicate SSR mode
 }
 
 export default function ProductDetailContent({
   slug,
   locale,
+  initialProduct,
+  ssrMode = false,
 }: ProductDetailContentProps) {
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<Product | EnhancedProduct | null>(initialProduct || null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialProduct);
   const currentLocale = useLocale();
 
   useEffect(() => {
+    // If we have initial product data from SSR, use it and fetch related products
+    if (initialProduct && ssrMode) {
+      setProduct(initialProduct);
+
+      // Fetch related products client-side for better performance
+      const fetchRelatedProducts = async () => {
+        try {
+          const response = await fetch(`/api/products/${initialProduct.id}/related?limit=4`);
+          if (response.ok) {
+            const related = await response.json();
+            setRelatedProducts(related);
+          }
+        } catch (error) {
+          console.error('Error fetching related products:', error);
+        }
+      };
+
+      fetchRelatedProducts();
+      setLoading(false);
+      return;
+    }
+
+    // Fallback to client-side fetching if no initial data
     const fetchProduct = async () => {
       try {
         const data = await productApi.getProductBySlug(slug);
@@ -39,8 +67,10 @@ export default function ProductDetailContent({
       }
     };
 
-    fetchProduct();
-  }, [slug]);
+    if (!initialProduct) {
+      fetchProduct();
+    }
+  }, [slug, initialProduct, ssrMode]);
 
   if (loading) {
     return (
@@ -61,37 +91,53 @@ export default function ProductDetailContent({
     notFound();
   }
 
-  const productName = currentLocale === 'vi' ? product.nameVi : product.nameEn;
-  const productDescription = currentLocale === 'vi' ? product.descriptionVi : product.descriptionEn;
+  // Handle both Product and EnhancedProduct types
+  const productName = currentLocale === 'vi'
+    ? (product as any).nameVi
+    : (product as any).nameEn;
+
+  const productDescription = currentLocale === 'vi'
+    ? (product as any).descriptionVi
+    : (product as any).descriptionEn;
+
   const categoryName = currentLocale === 'vi' ? product.category.nameVi : product.category.nameEn;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const localePrefix = currentLocale === 'vi' ? '' : `/${currentLocale}`;
   const productUrl = `${siteUrl}${localePrefix}/products/${product.slug}`;
 
-  const productSchema = generateProductSchema({
-    name: productName,
-    description: productDescription,
-    image: product.images[0]?.url || '',
-    price: product.price,
-    currency: 'VND',
-    availability: product.stockQuantity > 0 ? 'in stock' : 'pre-order',
-    sku: product.sku,
-    rating: product.averageRating,
-    reviewCount: product._count?.reviews,
-    url: productUrl,
-  });
+  // Only generate structured data if not in SSR mode (to avoid duplication)
+  let productSchema = null;
+  let breadcrumbSchema = null;
 
-  const breadcrumbSchema = generateBreadcrumbList([
-    { name: 'Home', url: `${siteUrl}${localePrefix}` },
-    { name: 'Products', url: `${siteUrl}${localePrefix}/products` },
-    { name: categoryName, url: `${siteUrl}${localePrefix}/categories/${product.category.slug}` },
-    { name: productName, url: productUrl },
-  ]);
+  if (!ssrMode) {
+    productSchema = generateProductSchema({
+      name: productName,
+      description: productDescription,
+      image: product.images[0]?.url || '',
+      price: product.price,
+      currency: 'VND',
+      availability: product.stockQuantity > 0 ? 'in stock' : 'pre-order',
+      sku: product.sku,
+      rating: product.averageRating,
+      reviewCount: product._count?.reviews,
+      url: productUrl,
+    });
+
+    breadcrumbSchema = generateBreadcrumbList([
+      { name: 'Home', url: `${siteUrl}${localePrefix}` },
+      { name: 'Products', url: `${siteUrl}${localePrefix}/products` },
+      { name: categoryName, url: `${siteUrl}${localePrefix}/categories/${product.category.slug}` },
+      { name: productName, url: productUrl },
+    ]);
+  }
 
   return (
     <>
-      <StructuredData data={[productSchema, breadcrumbSchema]} />
+      {!ssrMode && productSchema && breadcrumbSchema && (
+        <StructuredData data={[productSchema, breadcrumbSchema]} />
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <ProductImageGallery images={product.images} productName={productName} />
         <ProductInfo product={product} />

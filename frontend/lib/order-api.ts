@@ -106,6 +106,18 @@ export interface ResendEmailResponse {
   rateLimited?: boolean;
 }
 
+export interface InvoiceEmailData {
+  email: string;
+  locale?: 'en' | 'vi';
+}
+
+export interface InvoiceEmailResponse {
+  success: boolean;
+  message: string;
+  rateLimited?: boolean;
+  pdfGenerated?: boolean;
+}
+
 export interface CancelOrderData {
   reason?: string;
 }
@@ -245,6 +257,17 @@ export const orderApi = {
     data: ResendEmailData
   ): Promise<ResendEmailResponse> {
     const response = await apiClient.post(`/orders/${orderNumber}/resend-email`, data);
+    return response.data;
+  },
+
+  /**
+   * Send invoice email with PDF attachment (admin only)
+   */
+  async sendInvoiceEmail(
+    orderNumber: string,
+    data: InvoiceEmailData
+  ): Promise<InvoiceEmailResponse> {
+    const response = await apiClient.post(`/orders/${orderNumber}/send-invoice-email`, data);
     return response.data;
   },
 

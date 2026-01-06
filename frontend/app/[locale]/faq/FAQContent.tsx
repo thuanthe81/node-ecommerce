@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { getPublishedContents, Content } from '@/lib/content-api';
+import { SvgChevronDown } from '@/components/Svgs';
 
 export default function FAQContent() {
   const params = useParams();
@@ -86,21 +87,12 @@ export default function FAQContent() {
                     className="w-full px-6 py-4 text-left bg-white hover:bg-gray-50 flex justify-between items-center transition-colors"
                   >
                     <span className="font-semibold text-gray-900">{title}</span>
-                    <svg
+                    <SvgChevronDown
                       className={`w-5 h-5 text-gray-500 transition-transform ${
                         isOpen ? 'transform rotate-180' : ''
                       }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                      aria-hidden="true"
+                    />
                   </button>
                   {isOpen && (
                     <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">

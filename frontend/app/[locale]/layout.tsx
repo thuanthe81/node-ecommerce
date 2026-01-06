@@ -9,6 +9,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import PerformanceTracker from '@/components/PerformanceTracker';
 import { FloatingMessagingButton } from '@/components/FloatingMessagingButton';
 import CartSyncNotification from '@/components/CartSyncNotification';
 import '../globals.css';
@@ -148,6 +149,7 @@ export default async function LocaleLayout({
               </div>
               <FloatingMessagingButton />
               <CartSyncNotification />
+              <PerformanceTracker />
             </CartProvider>
           </AuthProvider>
         </NextIntlClientProvider>

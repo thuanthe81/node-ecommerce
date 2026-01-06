@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminCategoryApi, ProductImage } from '@/lib/admin-category-api';
+import { SvgImagePlaceholder, SvgCheckCircle } from './Svgs';
 
 interface ProductImageSelectorProps {
   selectedImageUrl: string | null;
@@ -84,19 +85,7 @@ export default function ProductImageSelector({
 
       {!loading && !error && images.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
+          <SvgImagePlaceholder className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-4 text-sm text-gray-600">
             {locale === 'vi'
               ? 'Không có hình ảnh sản phẩm nào. Vui lòng thêm hình ảnh vào sản phẩm trước.'
@@ -125,17 +114,7 @@ export default function ProductImageSelector({
                 />
                 {selectedImageUrl === image.url && (
                   <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8 text-blue-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <SvgCheckCircle className="w-8 h-8 text-blue-600" />
                   </div>
                 )}
               </div>

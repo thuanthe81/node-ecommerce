@@ -476,6 +476,14 @@
       "en": "Welcome to your admin dashboard",
       "vi": "Chào mừng đến với bảng điều khiển quản trị"
     },
+    "ssrMonitoring": {
+      "en": "SSR Monitoring",
+      "vi": "Giám sát SSR"
+    },
+    "ssrMonitoringDescription": {
+      "en": "Monitor server-side rendering performance, errors, and alerts in real-time",
+      "vi": "Giám sát hiệu suất, lỗi và cảnh báo của server-side rendering theo thời gian thực"
+    },
     "descriptionEnglish": {
       "en": "Description (English)",
       "vi": "Mô tả (Tiếng Anh)"
@@ -1806,6 +1814,10 @@
     }
   },
   "auth": {
+    "adminLogin": {
+      "en": "Admin Login",
+      "vi": "Đăng nhập quản trị"
+    },
     "authenticationCancelled": {
       "en": "Authentication was cancelled",
       "vi": "Xác thực đã bị hủy"
@@ -1913,6 +1925,34 @@
     "signInWithGoogle": {
       "en": "Sign in with Google",
       "vi": "Đăng nhập bằng Google"
+    },
+    "adminLoginTitle": {
+      "en": "Admin Login",
+      "vi": "Đăng nhập quản trị"
+    },
+    "adminLoginSubtitle": {
+      "en": "Sign in to access the admin panel",
+      "vi": "Đăng nhập để truy cập bảng điều khiển quản trị"
+    },
+    "customerLogin": {
+      "en": "Customer Login",
+      "vi": "Đăng nhập khách hàng"
+    },
+    "backToCustomerLogin": {
+      "en": "Back to Customer Login",
+      "vi": "Quay lại đăng nhập khách hàng"
+    },
+    "signingIn": {
+      "en": "Signing in...",
+      "vi": "Đang đăng nhập..."
+    },
+    "adminLoginError": {
+      "en": "Invalid email or password. Please check your credentials.",
+      "vi": "Email hoặc mật khẩu không đúng. Vui lòng kiểm tra thông tin đăng nhập."
+    },
+    "accessDenied": {
+      "en": "Access denied. Admin privileges required.",
+      "vi": "Truy cập bị từ chối. Cần quyền quản trị."
     }
   },
   "carousel": {
@@ -2507,6 +2547,10 @@
     "products": {
       "en": "Products",
       "vi": "Sản phẩm"
+    },
+    "noProductsFound": {
+      "en": "No products found",
+      "vi": "Không tìm thấy sản phẩm"
     },
     "register": {
       "en": "Register",
@@ -3389,6 +3433,10 @@
     "statusShipped": {
       "en": "Shipped",
       "vi": "Đã gửi hàng"
+    },
+    "sku": {
+      "en": "SKU",
+      "vi": "Mã SP"
     },
     "subtotal": {
       "en": "Subtotal",
@@ -4616,6 +4664,30 @@
       "resendRateLimit": {
         "en": "You have exceeded the email resend limit. Please try again later.",
         "vi": "Bạn đã vượt quá giới hạn gửi lại email. Vui lòng thử lại sau."
+      },
+      "sendInvoiceSuccess": {
+        "en": "Invoice email has been queued for sending",
+        "vi": "Email hóa đơn đã được xếp hàng để gửi"
+      },
+      "sendInvoiceError": {
+        "en": "Failed to send invoice email. Please try again later.",
+        "vi": "Không thể gửi email hóa đơn. Vui lòng thử lại sau."
+      },
+      "sendInvoiceEmail": {
+        "en": "Send Invoice Email",
+        "vi": "Gửi Email Hóa Đơn"
+      },
+      "sendInvoiceEmailDescription": {
+        "en": "Queue invoice email with PDF attachment containing current pricing",
+        "vi": "Xếp hàng email hóa đơn với file PDF đính kèm chứa thông tin giá hiện tại"
+      },
+      "sendingInvoice": {
+        "en": "Queueing invoice...",
+        "vi": "Đang xếp hàng hóa đơn..."
+      },
+      "sendInvoiceRateLimit": {
+        "en": "You have exceeded the invoice email limit. Please try again later.",
+        "vi": "Bạn đã vượt quá giới hạn gửi email hóa đơn. Vui lòng thử lại sau."
       },
       "rateLimitExceeded": {
         "en": "Rate limit exceeded. Please try again after {resetTime}",

@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailAttachmentService } from './email-attachment.service';
 import { ResendResult, RateLimitResult, ValidationResult } from '../types/pdf.types';
@@ -22,6 +22,7 @@ export class ResendEmailHandlerService {
 
   constructor(
     private prisma: PrismaService,
+    @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
   ) {}
 

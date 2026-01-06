@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getContents, deleteContent, updateContent, Content } from '@/lib/content-api';
+import { SvgDragHandle } from '@/components/Svgs';
 import {
   DndContext,
   closestCenter,
@@ -60,19 +61,10 @@ function SortableRow({
             className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
             aria-label="Drag to reorder"
           >
-            <svg
+            <SvgDragHandle
               className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 8h16M4 16h16"
-              />
-            </svg>
+              aria-hidden="true"
+            />
           </button>
           <span className="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
             {section.displayOrder}

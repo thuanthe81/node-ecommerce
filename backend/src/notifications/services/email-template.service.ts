@@ -1,5 +1,23 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { CONSTANTS, OrderStatus, PaymentStatus } from '@alacraft/shared';
+import {
+  CONSTANTS,
+  OrderStatus,
+  PaymentStatus,
+  getWelcomeEmailTranslations,
+  getPasswordResetEmailTranslations,
+  getOrderConfirmationTranslations,
+  getInvoiceEmailTranslations,
+  getAdminOrderNotificationTranslations,
+  getOrderStatusUpdateTranslations,
+  getOrderCancellationTranslations,
+  getAdminOrderCancellationTranslations,
+  getShippingNotificationTranslations,
+  getPaymentStatusUpdateTranslations,
+  hasQuoteItems as utilsHasQuoteItems,
+  validateAllItemsPriced,
+  canGeneratePDF,
+  canChangeOrderStatus
+} from '@alacraft/shared';
 import { TemplateLoaderService } from './template-loader.service';
 import { VariableReplacerService } from './variable-replacer.service';
 import { DesignSystemInjector } from './design-system-injector.service';
@@ -155,23 +173,12 @@ export class EmailTemplateService implements OnModuleInit {
   private sanitizeOrderData(data: any): any {
     const sanitized = { ...data };
 
-    // Check for quote items (items with undefined/null/zero prices)
-    let hasQuoteItems = false;
+    // Use the shared utility function to check for quote items
+    const hasQuoteItemsFlag = utilsHasQuoteItems(sanitized);
 
     // Sanitize order items
     if (sanitized.items && Array.isArray(sanitized.items)) {
       sanitized.items = sanitized.items.map((item: any) => {
-        const originalPrice = item.price;
-        const originalTotal = item.total;
-
-        // Check if this item has undefined/null prices (quote item)
-        if (originalPrice === undefined || originalPrice === null ||
-            originalTotal === undefined || originalTotal === null ||
-            (typeof originalPrice === 'number' && originalPrice === 0) ||
-            (typeof originalTotal === 'number' && originalTotal === 0)) {
-          hasQuoteItems = true;
-        }
-
         return {
           ...item,
           price: this.sanitizePrice(item.price),
@@ -187,8 +194,8 @@ export class EmailTemplateService implements OnModuleInit {
     sanitized.taxAmount = this.sanitizePrice(sanitized.taxAmount);
     sanitized.discountAmount = this.sanitizePrice(sanitized.discountAmount);
 
-    // Add flag for quote items
-    sanitized.hasQuoteItems = hasQuoteItems;
+    // Add flag for quote items using the shared utility
+    sanitized.hasQuoteItems = hasQuoteItemsFlag;
 
     return sanitized;
   }
@@ -222,6 +229,9 @@ export class EmailTemplateService implements OnModuleInit {
     // Use the new template system
     const templateName = 'orders/template-admin-order-notification';
 
+    // Get translations from shared library
+    const translations = getAdminOrderNotificationTranslations(locale);
+
     // Load and process template
     const templateContent = await this.templateLoader.loadTemplate(templateName);
     const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
@@ -229,9 +239,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `🔔 Đơn hàng mới #${sanitizedData.orderNumber}`
-        : `🔔 New Order #${sanitizedData.orderNumber}`,
+      subject: `${translations.subject} #${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -282,9 +290,58 @@ export class EmailTemplateService implements OnModuleInit {
     }
 
     return {
-      subject: locale === 'vi'
-        ? `Xác nhận đơn hàng #${sanitizedData.orderNumber}`
-        : `Order Confirmation #${sanitizedData.orderNumber}`,
+      subject: `${getOrderConfirmationTranslations(locale).subject} #${sanitizedData.orderNumber}`,
+      html: finalHtml
+    };
+  }
+
+  /**
+   * Invoice email template
+   */
+  async getInvoiceEmailTemplate(
+    data: OrderEmailData,
+    locale: 'en' | 'vi' = 'en',
+  ): Promise<{ subject: string; html: string }> {
+    // Sanitize data before processing
+    const sanitizedData = this.sanitizeOrderData(data);
+
+    // Use the new template system
+    const templateName = 'orders/template-invoice';
+
+    // Add debug logging to ensure correct template is being used
+    console.log(`[EmailTemplateService] Loading invoice template: ${templateName}`);
+
+    // Load and process template
+    const templateContent = await this.templateLoader.loadTemplate(templateName);
+
+    // Check if template was loaded successfully
+    if (!templateContent) {
+      throw new Error(`Failed to load template content for '${templateName}'`);
+    }
+
+    // Verify we're loading the correct template by checking for distinctive content
+    if (!templateContent.includes('{{> email-header')) {
+      console.error(`[EmailTemplateService] WARNING: Invoice template does not contain expected partial template content. Template may be incorrect.`);
+    } else {
+      console.log(`[EmailTemplateService] Invoice template verified - contains expected partial templates`);
+    }
+
+    const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, sanitizedData, locale);
+
+    // Check if template processing was successful
+    if (!processedTemplate) {
+      throw new Error(`Failed to process template variables for '${templateName}'`);
+    }
+
+    const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
+
+    // Check if design system injection was successful
+    if (!finalHtml) {
+      throw new Error(`Failed to inject design system for '${templateName}'`);
+    }
+
+    return {
+      subject: `${getInvoiceEmailTranslations(locale).subject} #${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -322,9 +379,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `🚚 Đơn hàng #${sanitizedData.orderNumber} đã được giao`
-        : `🚚 Order #${sanitizedData.orderNumber} has been shipped`,
+      subject: `${getShippingNotificationTranslations(locale).subject} #${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -351,9 +406,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `Cập nhật trạng thái đơn hàng #${sanitizedData.orderNumber}`
-        : `Order Status Update #${sanitizedData.orderNumber}`,
+      subject: `${getOrderStatusUpdateTranslations(locale).subject} #${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -368,6 +421,9 @@ export class EmailTemplateService implements OnModuleInit {
     // Use the new template system
     const templateName = 'auth/template-welcome-email';
 
+    // Get translations from shared library
+    const translations = getWelcomeEmailTranslations(locale);
+
     // Load and process template
     const templateContent = await this.templateLoader.loadTemplate(templateName);
     const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, data, locale);
@@ -375,9 +431,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `Chào mừng đến với ${CONSTANTS.BUSINESS.COMPANY.NAME.VI}!`
-        : `Welcome to ${CONSTANTS.BUSINESS.COMPANY.NAME.EN}!`,
+      subject: translations.subject,
       html: finalHtml
     };
   }
@@ -392,6 +446,9 @@ export class EmailTemplateService implements OnModuleInit {
     // Use the new template system
     const templateName = 'auth/template-password-reset';
 
+    // Get translations from shared library
+    const translations = getPasswordResetEmailTranslations(locale);
+
     // Load and process template
     const templateContent = await this.templateLoader.loadTemplate(templateName);
     const processedTemplate = await this.variableReplacer.replaceVariables(templateName, templateContent, data, locale);
@@ -399,9 +456,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? 'Đặt lại mật khẩu'
-        : 'Password Reset',
+      subject: translations.subject,
       html: finalHtml
     };
   }
@@ -426,9 +481,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `Đơn hàng đã hủy - Đơn hàng #${sanitizedData.orderNumber}`
-        : `Order Cancelled - Order #${sanitizedData.orderNumber}`,
+      subject: `${getOrderCancellationTranslations(locale).subject} - ${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -453,9 +506,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `Đơn hàng bị hủy bởi khách hàng - Đơn hàng #${sanitizedData.orderNumber}`
-        : `Order Cancelled by Customer - Order #${sanitizedData.orderNumber}`,
+      subject: `${getAdminOrderCancellationTranslations(locale).subject} - ${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }
@@ -480,9 +531,7 @@ export class EmailTemplateService implements OnModuleInit {
     const finalHtml = this.designSystemInjector.injectDesignSystem(processedTemplate);
 
     return {
-      subject: locale === 'vi'
-        ? `Cập nhật trạng thái thanh toán - Đơn hàng #${sanitizedData.orderNumber}`
-        : `Payment Status Update - Order #${sanitizedData.orderNumber}`,
+      subject: `${getPaymentStatusUpdateTranslations(locale).subject} - ${sanitizedData.orderNumber}`,
       html: finalHtml
     };
   }

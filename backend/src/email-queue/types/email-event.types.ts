@@ -11,6 +11,7 @@
 export enum EmailEventType {
   ORDER_CONFIRMATION = 'ORDER_CONFIRMATION',
   ORDER_CONFIRMATION_RESEND = 'ORDER_CONFIRMATION_RESEND',
+  INVOICE_EMAIL = 'INVOICE_EMAIL',
   ADMIN_ORDER_NOTIFICATION = 'ADMIN_ORDER_NOTIFICATION',
   SHIPPING_NOTIFICATION = 'SHIPPING_NOTIFICATION',
   ORDER_STATUS_UPDATE = 'ORDER_STATUS_UPDATE',
@@ -54,6 +55,19 @@ export interface OrderConfirmationResendEvent extends BaseEmailEvent {
   orderNumber: string;
   customerEmail: string;
   customerName: string;
+}
+
+/**
+ * Invoice email event
+ * Sent to customers with PDF invoice attachment for fully-priced orders
+ */
+export interface InvoiceEmailEvent extends BaseEmailEvent {
+  type: EmailEventType.INVOICE_EMAIL;
+  orderId: string;
+  orderNumber: string;
+  customerEmail: string;
+  customerName: string;
+  adminUserId?: string; // ID of admin who triggered the invoice
 }
 
 /**
@@ -166,6 +180,7 @@ export interface PaymentStatusUpdateEvent extends BaseEmailEvent {
 export type EmailEvent =
   | OrderConfirmationEvent
   | OrderConfirmationResendEvent
+  | InvoiceEmailEvent
   | AdminOrderNotificationEvent
   | ShippingNotificationEvent
   | OrderStatusUpdateEvent

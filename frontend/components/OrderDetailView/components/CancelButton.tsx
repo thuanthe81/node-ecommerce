@@ -10,6 +10,7 @@
 import { useTranslations } from 'next-intl';
 import { ConstantUtils } from '@alacraft/shared';
 import { Order } from '@/lib/order-api';
+import { SvgX } from '../../Svgs';
 
 interface CancelButtonProps {
   /** The order to potentially cancel */
@@ -44,20 +45,7 @@ export function CancelButton({ order, onCancel, disabled = false, locale }: Canc
       className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
       aria-label={t('cancelOrderButton')}
     >
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
+      <SvgX className="w-5 h-5" aria-hidden="true" />
       {t('cancelOrderButton')}
     </button>
   );

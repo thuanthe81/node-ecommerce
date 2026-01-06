@@ -3,3 +3,4 @@
 
 export * from './validation';
 export * from './translation-helpers';
+export * from './quote-item-utils';

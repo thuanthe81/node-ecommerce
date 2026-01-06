@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PDFStyling, OrderPDFData } from '../types/pdf.types';
-import { CONSTANTS } from '@alacraft/shared';
+import { CONSTANTS, getPdfMetadataTranslations } from '@alacraft/shared';
 
 /**
  * PDF Accessibility Service
@@ -149,23 +149,25 @@ export class PDFAccessibilityService {
     const isVietnamese = locale === 'vi';
     const companyName = orderData.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
 
+    // Get translations from shared library
+    const translations = getPdfMetadataTranslations(locale);
+
     return {
       // PDF/UA compliance metadata
       'pdfuaid:part': '1',
       'pdfuaid:conformance': 'A',
 
       // Document structure metadata
-      'dc:title': isVietnamese
-        ? `Đơn hàng ${orderData.orderNumber} - ${companyName}`
-        : `Order ${orderData.orderNumber} - ${companyName}`,
+      'dc:title': translations.orderConfirmationTitle
+        .replace('{orderNumber}', orderData.orderNumber)
+        .replace('{companyName}', companyName),
 
-      'dc:description': isVietnamese
-        ? `Chi tiết đơn hàng số ${orderData.orderNumber} bao gồm thông tin khách hàng, sản phẩm, thanh toán và giao hàng`
-        : `Order details for order number ${orderData.orderNumber} including customer information, products, payment and shipping details`,
+      'dc:description': translations.orderConfirmationDescription
+        .replace('{orderNumber}', orderData.orderNumber),
 
       'dc:language': locale,
       'dc:creator': companyName,
-      'dc:subject': isVietnamese ? 'Xác nhận đơn hàng' : 'Order confirmation',
+      'dc:subject': translations.orderConfirmationSubject,
 
       // Accessibility metadata
       'accessibility:accessMode': 'textual, visual',
@@ -177,9 +179,7 @@ export class PDFAccessibilityService {
         'tableHeaders'
       ],
       'accessibility:accessibilityHazard': 'none',
-      'accessibility:accessibilitySummary': isVietnamese
-        ? 'Tài liệu có cấu trúc rõ ràng với tiêu đề phân cấp, văn bản thay thế cho hình ảnh và bảng có tiêu đề phù hợp'
-        : 'Document has clear structure with hierarchical headings, alternative text for images, and properly labeled tables'
+      'accessibility:accessibilitySummary': translations.accessibilitySummary
     };
   }
 

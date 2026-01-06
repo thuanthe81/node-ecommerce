@@ -14,12 +14,15 @@ import { PDFAccessibilityService } from './services/pdf-accessibility.service';
 import { PDFDeviceOptimizationService } from './services/pdf-device-optimization.service';
 import { PDFImageConverterService } from './services/pdf-image-converter.service';
 import { PDFImageOptimizationMetricsService } from './services/pdf-image-optimization-metrics.service';
-import { CONSTANTS } from '@alacraft/shared';
+import { PDFTemplateLoaderService } from './services/pdf-template-loader.service';
+import { TemplateVariableProcessorService } from './services/template-variable-processor.service';
+import { CONSTANTS, getPdfMetadataTranslations } from '@alacraft/shared';
 import { PDFCompressionService } from './services/pdf-compression.service';
 
 @Injectable()
 export class PDFTemplateEngine {
   private readonly logger = new Logger(PDFTemplateEngine.name);
+  private useFileBasedTemplates = true; // Configuration option to switch between programmatic and file-based templates
 
   constructor(
     private documentStructure: PDFDocumentStructureService,
@@ -29,7 +32,9 @@ export class PDFTemplateEngine {
     private imageConverter: PDFImageConverterService,
     @Inject(forwardRef(() => PDFCompressionService))
     private compressionService: PDFCompressionService,
-    private metricsService: PDFImageOptimizationMetricsService
+    private metricsService: PDFImageOptimizationMetricsService,
+    private templateLoader: PDFTemplateLoaderService,
+    private variableProcessor: TemplateVariableProcessorService
   ) {}
 
   /**
@@ -44,13 +49,54 @@ export class PDFTemplateEngine {
     // Convert images to base64 before creating template
     const dataWithBase64Images = await this.convertImagesToBase64(data);
 
+    if (this.useFileBasedTemplates) {
+      // Use new file-based template system
+      return this.createOrderTemplateFromFile(dataWithBase64Images, locale);
+    } else {
+      // Use legacy programmatic template system for backward compatibility
+      return this.createOrderTemplateProgrammatic(dataWithBase64Images, locale);
+    }
+  }
+
+  /**
+   * Create order template using file-based template system
+   * @param data - Order data for template generation
+   * @param locale - Language locale for the template
+   * @returns Complete PDF template with styling and content
+   */
+  private async createOrderTemplateFromFile(data: OrderPDFData, locale: 'en' | 'vi'): Promise<PDFTemplate> {
     const styling = this.getDefaultStyling();
-    const metadata = this.createMetadata(dataWithBase64Images, locale);
+    const metadata = this.createMetadata(data, locale);
+
+    // Load template file and process variables
+    const htmlContent = await this.generateHTMLFromTemplateFile('order-confirmation', data, locale);
 
     const template: PDFTemplate = {
-      header: this.createHeaderSection(dataWithBase64Images, locale),
-      content: this.createContentSections(dataWithBase64Images, locale),
-      footer: this.createFooterSection(dataWithBase64Images, locale),
+      header: { type: 'header', content: '' }, // Content is now in the full HTML
+      content: [{ type: 'content', content: htmlContent }],
+      footer: { type: 'footer', content: '' }, // Content is now in the full HTML
+      styling,
+      metadata,
+      templateFile: 'order-confirmation.html'
+    };
+
+    return this.applyBranding(template);
+  }
+
+  /**
+   * Create order template using legacy programmatic system
+   * @param data - Order data for template generation
+   * @param locale - Language locale for the template
+   * @returns Complete PDF template with styling and content
+   */
+  private async createOrderTemplateProgrammatic(data: OrderPDFData, locale: 'en' | 'vi'): Promise<PDFTemplate> {
+    const styling = this.getDefaultStyling();
+    const metadata = this.createMetadata(data, locale);
+
+    const template: PDFTemplate = {
+      header: this.createHeaderSection(data, locale),
+      content: this.createContentSections(data, locale),
+      footer: this.createFooterSection(data, locale),
       styling,
       metadata,
     };
@@ -67,16 +113,36 @@ export class PDFTemplateEngine {
   async createInvoiceTemplate(data: OrderPDFData, locale: 'en' | 'vi' = 'en'): Promise<PDFTemplate> {
     this.logger.log(`Creating invoice template for order ${data.orderNumber} in locale ${locale}`);
 
-    const orderTemplate = await this.createOrderTemplate(data, locale);
+    // Convert images to base64 before creating template
+    const dataWithBase64Images = await this.convertImagesToBase64(data);
 
-    // Modify template for invoice format
-    orderTemplate.metadata.title = locale === 'vi' ? `Hóa đơn ${data.orderNumber}` : `Invoice ${data.orderNumber}`;
-    orderTemplate.metadata.subject = locale === 'vi' ? 'Hóa đơn đơn hàng' : 'Order Invoice';
+    // Use file-based template system
+    return this.createInvoiceTemplateFromFile(dataWithBase64Images, locale);
+  }
 
-    // Update header for invoice
-    orderTemplate.header.content = this.generateInvoiceHeaderHTML(data, locale);
+  /**
+   * Create invoice template using file-based template system
+   * @param data - Order data for invoice generation
+   * @param locale - Language locale for the template
+   * @returns Complete PDF template formatted as invoice
+   */
+  private async createInvoiceTemplateFromFile(data: OrderPDFData, locale: 'en' | 'vi'): Promise<PDFTemplate> {
+    const styling = this.getDefaultStyling();
+    const metadata = this.createInvoiceMetadata(data, locale);
 
-    return orderTemplate;
+    // Load template file and process variables
+    const htmlContent = await this.generateHTMLFromTemplateFile('invoice', data, locale);
+
+    const template: PDFTemplate = {
+      header: { type: 'header', content: '' }, // Content is now in the full HTML
+      content: [{ type: 'content', content: htmlContent }],
+      footer: { type: 'footer', content: '' }, // Content is now in the full HTML
+      styling,
+      metadata,
+      templateFile: 'invoice.html'
+    };
+
+    return this.applyBranding(template);
   }
 
   /**
@@ -145,6 +211,11 @@ export class PDFTemplateEngine {
    * @returns Complete HTML string ready for PDF generation
    */
   generateHTML(template: PDFTemplate): string {
+    // If template was created from file, use the content directly
+    if (template.templateFile && template.content.length === 1 && template.content[0].content) {
+      return this.validateBase64ImageEmbedding(template.content[0].content);
+    }
+
     // For backward compatibility, use the original template-based approach
     const { styling } = template;
 
@@ -185,17 +256,133 @@ export class PDFTemplateEngine {
    * Generate complete HTML from order data directly using document structure service
    * @param orderData - Order data for document generation
    * @param locale - Language locale
+   * @param templateType - Type of template to use ('order-confirmation' or 'invoice')
    * @returns Complete HTML string ready for PDF generation
    */
-  async generateHTMLFromOrderData(orderData: OrderPDFData, locale: 'en' | 'vi'): Promise<string> {
+  async generateHTMLFromOrderData(orderData: OrderPDFData, locale: 'en' | 'vi', templateType: 'order-confirmation' | 'invoice' = 'order-confirmation'): Promise<string> {
     // Convert images to base64 before generating HTML
     const dataWithBase64Images = await this.convertImagesToBase64(orderData);
 
-    const styling = this.getDefaultStyling();
-    const htmlContent = await this.documentStructure.generateDocumentStructure(dataWithBase64Images, locale, styling);
+    // Use file-based template system with specified template type
+    return this.generateHTMLFromTemplateFile(templateType, dataWithBase64Images, locale);
+  }
 
-    // Validate and ensure proper base64 image embedding
-    return this.validateBase64ImageEmbedding(htmlContent);
+  /**
+   * Generate HTML from template file
+   * @param templateName - Name of the template file
+   * @param data - Order data for variable replacement
+   * @param locale - Language locale
+   * @returns Complete HTML string ready for PDF generation
+   */
+  async generateHTMLFromTemplateFile(templateName: 'order-confirmation' | 'invoice', data: OrderPDFData, locale: 'en' | 'vi'): Promise<string> {
+    try {
+      const enhanceData = {...data,
+        formattedShippingAddress: this.localization.formatAddress(data.shippingAddress, locale),
+        formattedBillingAddress: this.localization.formatAddress(data.billingAddress, locale),
+        items: data.items.map((i)=> {
+          return {
+            ...i,
+            formattedUnitPrice: this.localization.formatCurrency(i.unitPrice, locale),
+            formattedTotalPrice: this.localization.formatCurrency(i.totalPrice, locale)
+          }
+        })
+      }
+      // Load template file
+      const template = await this.templateLoader.loadTemplate(templateName);
+
+      // Load CSS stylesheet
+      const stylesheet = await this.templateLoader.loadStylesheet();
+
+      // Create partials map for CSS inclusion
+      const partials = new Map<string, string>();
+      partials.set('pdf-styles', stylesheet);
+
+      // Process partials first (CSS inclusion)
+      let processedTemplate = this.variableProcessor.processPartials(template, partials);
+
+      // Process template variables
+      processedTemplate = this.variableProcessor.processVariables(processedTemplate, enhanceData, locale);
+
+      // Validate and ensure proper base64 image embedding
+      // return this.validateBase64ImageEmbedding(processedTemplate);
+      return processedTemplate;
+    } catch (error) {
+      this.logger.error(`Failed to generate HTML from template file ${templateName}: ${error.message}`, {
+        templateName,
+        orderNumber: data.orderNumber,
+        locale,
+        error: error.message,
+        stack: error.stack
+      });
+      throw new Error(`Template file processing failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Load template file from filesystem
+   * @param templateName - Name of the template file
+   * @returns Template content
+   */
+  async loadTemplateFile(templateName: string): Promise<string> {
+    return this.templateLoader.loadTemplate(templateName as 'order-confirmation' | 'invoice');
+  }
+
+  /**
+   * Process template variables in a template string
+   * @param template - Template content with placeholders
+   * @param data - Order data for variable replacement
+   * @param locale - Language locale
+   * @returns Processed template with variables replaced
+   */
+  processTemplateVariables(template: string, data: OrderPDFData, locale: 'en' | 'vi'): string {
+    return this.variableProcessor.processVariables(template, data, locale);
+  }
+
+  /**
+   * Create invoice metadata
+   * @param data - Order data
+   * @param locale - Language locale
+   * @returns PDF metadata for invoice
+   */
+  private createInvoiceMetadata(data: OrderPDFData, locale: 'en' | 'vi'): PDFMetadata {
+    const translations = getPdfMetadataTranslations(locale);
+    const companyName = data.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
+
+    return {
+      title: translations.orderInvoiceTitle.replace('{orderNumber}', data.orderNumber),
+      author: companyName,
+      subject: translations.orderInvoiceSubject,
+      creator: `${CONSTANTS.BUSINESS.COMPANY.NAME.EN} PDF Generator`,
+      producer: `${CONSTANTS.BUSINESS.COMPANY.NAME.EN} E-commerce System`,
+      creationDate: new Date(),
+      keywords: [
+        'invoice',
+        'order',
+        data.orderNumber,
+        companyName,
+        locale === 'vi' ? 'vietnamese' : 'english',
+      ],
+    };
+  }
+
+  /**
+   * Set template generation mode
+   * @param useFileBasedTemplates - Whether to use file-based templates
+   */
+  setTemplateMode(useFileBasedTemplates: boolean): void {
+    this.useFileBasedTemplates = useFileBasedTemplates;
+    // Safety check for logger initialization
+    if (this.logger) {
+      this.logger.log(`Template mode set to: ${useFileBasedTemplates ? 'file-based' : 'programmatic'}`);
+    }
+  }
+
+  /**
+   * Get current template generation mode
+   * @returns Whether file-based templates are enabled
+   */
+  getTemplateMode(): boolean {
+    return this.useFileBasedTemplates;
   }
 
   /**
@@ -267,30 +454,6 @@ export class PDFTemplateEngine {
           <h1>${this.localization.translate('orderConfirmation', locale)}</h1>
           <p class="order-number">${this.localization.translate('orderNumber', locale)}: <strong>${data.orderNumber}</strong></p>
           <p class="order-date">${this.localization.translate('orderDate', locale)}: <strong>${formattedDate}</strong></p>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Generate invoice header HTML
-   */
-  private generateInvoiceHeaderHTML(data: OrderPDFData, locale: 'en' | 'vi'): string {
-    const formattedDate = this.localization.formatDate(data.orderDate, locale);
-    const companyName = data.businessInfo?.companyName || CONSTANTS.BUSINESS.COMPANY.NAME[locale.toUpperCase() as 'EN' | 'VI'];
-
-    return `
-      <div class="header-container">
-        <div class="logo-section">
-          ${data.businessInfo.logoUrl ?
-            `<img src="${data.businessInfo.logoUrl}" alt="${companyName}" class="company-logo">` :
-            `<h1 class="company-name">${companyName}</h1>`
-          }
-        </div>
-        <div class="document-title">
-          <h1>${this.localization.translate('invoice', locale)}</h1>
-          <p class="order-number">${this.localization.translate('invoiceNumber', locale)}: <strong>${data.orderNumber}</strong></p>
-          <p class="order-date">${this.localization.translate('issueDate', locale)}: <strong>${formattedDate}</strong></p>
         </div>
       </div>
     `;

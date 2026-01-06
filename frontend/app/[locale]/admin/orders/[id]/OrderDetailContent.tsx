@@ -7,9 +7,13 @@ import { orderApi, Order } from '@/lib/order-api';
 import { paymentApi, RefundInfo } from '@/lib/payment-api';
 import { shippingApi, ShippingLabel } from '@/lib/shipping-api';
 import PaymentStatusUpdateModal from '@/components/PaymentStatusUpdateModal';
+import { QuoteItemPricingForm } from '@/components/OrderDetailView/components/QuoteItemPricingForm';
+import { AdminSendInvoiceButton } from '@/components/OrderDetailView/components/AdminSendInvoiceButton';
 import { isContactForPrice, getAdminOrderPricingMessage, formatMoney } from '@/app/utils';
 import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText, getShippingMethodText } from '@/components/OrderDetailView/utils/statusTranslations';
+import { hasQuoteItems, canChangeOrderStatus } from '@/lib/quote-item-utils';
 import translations from '@/locales/translations.json';
+import { OrderStatus } from '@alacraft/shared';
 
 interface OrderDetailContentProps {
   locale: string;
@@ -169,6 +173,28 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  const handlePriceUpdate = async (itemId: string, price: number) => {
+    if (!order) return;
+
+    try {
+      const updatedOrder = await orderApi.setOrderItemPrice(order.id, itemId, {
+        price,
+      });
+      setOrder(updatedOrder);
+      showToast(
+        locale === 'vi' ? 'Đã cập nhật giá thành công' : 'Price updated successfully',
+        'success'
+      );
+    } catch (err: any) {
+      showToast(
+        err.response?.data?.message ||
+          (locale === 'vi' ? 'Không thể cập nhật giá' : 'Failed to update price'),
+        'error'
+      );
+      throw err; // Re-throw to let the component handle loading states
+    }
+  };
+
   const handlePriceChange = (itemId: string, value: string) => {
     setItemPrices((prev) => ({
       ...prev,
@@ -304,14 +330,55 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         </div>
       )}
 
+      {/* Quote Item Pricing Form - Show for all orders with items to allow multiple price edits */}
+      {order.items && order.items.length > 0 && (
+        <QuoteItemPricingForm
+          items={order.items}
+          locale={locale}
+          onPriceUpdate={handlePriceUpdate}
+          disabled={updating}
+        />
+      )}
+
       {/* Status Update */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.updateStatus')}</h2>
+
+        {/* Warning when quote items prevent status changes - only show if there are actual unpriced items */}
+        {order.items && hasQuoteItems({
+          orderNumber: order.orderNumber,
+          items: order.items.map(item => ({
+            id: item.id,
+            name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+            quantity: item.quantity,
+            price: item.price,
+            total: item.total,
+          }))
+        }) && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              {locale === 'vi'
+                ? 'Không thể thay đổi trạng thái đơn hàng khi còn sản phẩm chưa có giá. Vui lòng đặt giá cho tất cả sản phẩm trước.'
+                : 'Cannot change order status while quote items exist without prices. Please set prices for all items first.'}
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-4">
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            disabled={order.items && hasQuoteItems({
+              orderNumber: order.orderNumber,
+              items: order.items.map(item => ({
+                id: item.id,
+                name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.total,
+              }))
+            })}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="PENDING">{getOrderStatusText('PENDING', t, locale as 'en' | 'vi')}</option>
             <option value="PENDING_QUOTE">{getOrderStatusText('PENDING_QUOTE', t, locale as 'en' | 'vi')}</option>
@@ -323,7 +390,16 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           </select>
           <button
             onClick={handleStatusUpdate}
-            disabled={updating || selectedStatus === order.status}
+            disabled={updating || selectedStatus === order.status || (order.items && hasQuoteItems({
+              orderNumber: order.orderNumber,
+              items: order.items.map(item => ({
+                id: item.id,
+                name: locale === 'vi' ? item.productNameVi : item.productNameEn,
+                quantity: item.quantity,
+                price: item.price,
+                total: item.total,
+              }))
+            }))}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {updating ? t('common.loading') : t('common.save')}
@@ -370,39 +446,39 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
         </div>
       )}
 
-      {/* Shipping Label Section */}
-      {canGenerateLabel && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.generateLabel')}</h2>
-          {shippingLabel ? (
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-gray-700">{t('orders.trackingNumber')}: </span>
-                <span className="text-sm text-gray-900">{shippingLabel.trackingNumber}</span>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-700">{t('orders.carrier')}: </span>
-                <span className="text-sm text-gray-900">{shippingLabel.carrier}</span>
-              </div>
-              <a
-                href={shippingLabel.labelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {t('orders.downloadLabel')}
-              </a>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowLabelModal(true)}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              {t('orders.generateLabel')}
-            </button>
-          )}
-        </div>
-      )}
+      {/*/!* Shipping Label Section *!/*/}
+      {/*{canGenerateLabel && (*/}
+      {/*  <div className="bg-white rounded-lg shadow p-6">*/}
+      {/*    <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('orders.generateLabel')}</h2>*/}
+      {/*    {shippingLabel ? (*/}
+      {/*      <div className="space-y-3">*/}
+      {/*        <div>*/}
+      {/*          <span className="text-sm font-medium text-gray-700">{t('orders.trackingNumber')}: </span>*/}
+      {/*          <span className="text-sm text-gray-900">{shippingLabel.trackingNumber}</span>*/}
+      {/*        </div>*/}
+      {/*        <div>*/}
+      {/*          <span className="text-sm font-medium text-gray-700">{t('orders.carrier')}: </span>*/}
+      {/*          <span className="text-sm text-gray-900">{shippingLabel.carrier}</span>*/}
+      {/*        </div>*/}
+      {/*        <a*/}
+      {/*          href={shippingLabel.labelUrl}*/}
+      {/*          target="_blank"*/}
+      {/*          rel="noopener noreferrer"*/}
+      {/*          className="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"*/}
+      {/*        >*/}
+      {/*          {t('orders.downloadLabel')}*/}
+      {/*        </a>*/}
+      {/*      </div>*/}
+      {/*    ) : (*/}
+      {/*      <button*/}
+      {/*        onClick={() => setShowLabelModal(true)}*/}
+      {/*        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"*/}
+      {/*      >*/}
+      {/*        {t('orders.generateLabel')}*/}
+      {/*      </button>*/}
+      {/*    )}*/}
+      {/*  </div>*/}
+      {/*)}*/}
 
       {/* Refund Modal */}
       {showRefundModal && (
@@ -765,6 +841,27 @@ export default function OrderDetailContent({ locale, orderId }: OrderDetailConte
           </dl>
         </div>
       </div>
+
+      {/* Admin Send Invoice Email Section */}
+      {order.status == OrderStatus.PENDING_QUOTE &&
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            {locale === 'vi' ? 'Gửi Email Hóa Đơn' : 'Send Invoice Email'}
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {locale === 'vi'
+              ? 'Xếp hàng email hóa đơn với PDF đính kèm cho khách hàng. PDF sẽ chứa thông tin giá hiện tại của tất cả sản phẩm.'
+              : 'Queue invoice email with PDF attachment for the customer. The PDF will contain current pricing information for all items.'}
+          </p>
+          <AdminSendInvoiceButton
+            key={`admin-invoice-${order.id}`}
+            order={order}
+            locale={locale as 'en' | 'vi'}
+            onSuccess={(message) => showToast(message, 'success')}
+            onError={(message) => showToast(message, 'error')}
+          />
+        </div>
+      }
 
       {/* Payment Status Update Modal */}
       <PaymentStatusUpdateModal

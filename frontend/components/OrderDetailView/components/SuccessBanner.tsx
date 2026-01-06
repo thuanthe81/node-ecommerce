@@ -6,6 +6,7 @@
  */
 
 import { useTranslations } from 'next-intl';
+import { SvgCheckCircleLarge } from '../../Svgs';
 
 interface SuccessBannerProps {
   orderNumber: string;
@@ -23,19 +24,9 @@ export function SuccessBanner({ orderNumber }: SuccessBannerProps) {
         className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-500 rounded-full mb-4 shadow-md"
         aria-hidden="true"
       >
-        <svg
+        <SvgCheckCircleLarge
           className="w-10 h-10 sm:w-12 sm:h-12 text-white"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2.5}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+        />
       </div>
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 print:text-3xl">
         {t('successTitle')}

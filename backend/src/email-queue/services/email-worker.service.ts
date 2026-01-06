@@ -1,6 +1,6 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Worker, Job, ConnectionOptions } from 'bullmq';
+import { ConnectionOptions, Job, Worker } from 'bullmq';
 import { EmailEvent, EmailEventType } from '../types/email-event.types';
 import { EmailService } from '../../notifications/services/email.service';
 import { EmailTemplateService } from '../../notifications/services/email-template.service';
@@ -9,8 +9,11 @@ import { FooterSettingsService } from '../../footer-settings/footer-settings.ser
 import { EmailQueueConfigService } from './email-queue-config.service';
 import { EmailAttachmentService } from '../../pdf-generator/services/email-attachment.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
-import { CONSTANTS, OrderStatus, PaymentStatus, getOrderStatusMessage, getPaymentStatusMessage } from '@alacraft/shared';
+import { OrdersService } from '../../orders/orders.service';
+import { CONSTANTS, getOrderStatusMessage, getPaymentStatusMessage, getContactFormTranslations } from '@alacraft/shared';
+import { hasQuoteItems } from '@alacraft/shared';
 import Redis from 'ioredis';
+import { Prisma } from '@prisma/client';
 
 /**
  * Email Worker Service
@@ -44,6 +47,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
     private businessInfoService: BusinessInfoService,
+    private ordersService: OrdersService,
   ) {
     // Get configuration from centralized config service
     const resilienceConfig = this.queueConfigService.getResilienceConfig();
@@ -470,6 +474,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
           await this.sendOrderConfirmationResend(event);
           break;
 
+        case EmailEventType.INVOICE_EMAIL:
+          await this.sendInvoiceEmail(event);
+          break;
+
         case EmailEventType.ADMIN_ORDER_NOTIFICATION:
           await this.sendAdminOrderNotification(event);
           break;
@@ -631,59 +639,108 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
 
   /**
-   * Send order confirmation email with PDF attachment
+   * Send order confirmation email with conditional PDF attachment
+   *
+   * Enhanced to check for quote items and conditionally include PDF attachment:
+   * - Orders with only priced items: Send email with PDF attachment (standard flow)
+   * - Orders with quote items: Send email without PDF attachment
    */
   private async sendOrderConfirmation(event: any): Promise<void> {
     this.logger.log(`[sendOrderConfirmation] Starting for order: ${event.orderId}`);
 
-    // Fetch full order data from database
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: {
-              include: {
-                images: true,
-                category: true,
-              }
-            },
-          },
-        },
-        shippingAddress: true,
-        billingAddress: true,
-      },
-    });
-
-    if (!order) {
-      this.logger.error(`[sendOrderConfirmation] Order not found: ${event.orderId}`);
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    // Fetch full order data using OrdersService
+    const order = await this.ordersService.findOneById(event.orderId);
 
     this.logger.log(`[sendOrderConfirmation] Order found: ${order.orderNumber}, email: ${order.email}`);
 
-    // Convert order to PDF data format
-    const orderPDFData = await this.mapOrderToPDFData(order, event.locale);
+    // Transform order data to format expected by quote item utilities
+    const orderData = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      items: order.items.map((item: any) => ({
+        id: item.id,
+        name: item.productNameEn,
+        description: item.productNameVi,
+        sku: item.sku,
+        quantity: item.quantity,
+        price: Number(item.price),
+        total: Number(item.total),
+        unitPrice: Number(item.price),
+      })),
+      subtotal: Number(order.subtotal),
+      total: Number(order.total),
+      shippingCost: Number(order.shippingCost),
+      taxAmount: Number(order.taxAmount),
+      discountAmount: Number(order.discountAmount),
+    };
 
-    // Use EmailAttachmentService to send order confirmation with PDF attachment
-    this.logger.log(`[sendOrderConfirmation] Using EmailAttachmentService to send email with PDF attachment`);
+    // Check if order contains quote items (items without prices)
+    const containsQuoteItems = hasQuoteItems(orderData);
 
-    const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
-      order.email,
-      orderPDFData,
-      event.locale
-    );
+    this.logger.log(`[sendOrderConfirmation] Quote item analysis for order ${order.orderNumber}`, {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      containsQuoteItems,
+      itemCount: order.items.length,
+      unpricedItemCount: orderData.items.filter((item: any) => item.price === 0).length,
+      willIncludePDF: !containsQuoteItems,
+      locale: event.locale,
+      timestamp: new Date().toISOString(),
+    });
 
-    if (!result.success) {
-      this.logger.error(`[sendOrderConfirmation] EmailAttachmentService failed: ${result.error}`);
-      throw new Error(`Failed to send order confirmation with PDF: ${result.error}`);
+    if (containsQuoteItems) {
+      // Send email without PDF attachment for orders with quote items
+      this.logger.log(`[sendOrderConfirmation] Sending email WITHOUT PDF attachment for quote order: ${order.orderNumber}`);
+
+      // Convert order to email data format for template generation
+      const orderEmailData = await this.mapOrderToEmailData(order, event.locale);
+
+      // Generate email template without PDF context
+      const emailTemplate = await this.emailTemplateService.getOrderConfirmationTemplate(
+        orderEmailData,
+        event.locale
+      );
+
+      // Send simple email without attachment
+      const emailSent = await this.emailService.sendEmail({
+        to: order.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      });
+
+      if (!emailSent) {
+        this.logger.error(`[sendOrderConfirmation] Failed to send email without PDF for quote order: ${order.orderNumber}`);
+        throw new Error(`Failed to send order confirmation email without PDF for quote order: ${order.orderNumber}`);
+      }
+
+      // Mark email as delivered to prevent duplicates
+      this.markEmailAsDelivered(event, 'no-message-id-simple-email');
+
+      this.logger.log(`[sendOrderConfirmation] Completed successfully WITHOUT PDF for quote order: ${event.orderId}`);
+    } else {
+      // Send email with PDF attachment for orders with all items priced (standard flow)
+      this.logger.log(`[sendOrderConfirmation] Sending email WITH PDF attachment for standard order: ${order.orderNumber}`);
+
+      // Convert order to PDF data format
+      const orderPDFData = await this.mapOrderToPDFData(order, event.locale);
+
+      // Use EmailAttachmentService to send order confirmation with PDF attachment
+      const result = await this.emailAttachmentService.sendOrderConfirmationWithPDF(
+        order.email,
+        orderPDFData,
+        event.locale
+      );
+
+      if (!result.success) {
+        this.logger.error(`[sendOrderConfirmation] EmailAttachmentService failed: ${result.error}`);
+        throw new Error(`Failed to send order confirmation with PDF: ${result.error}`);
+      }
+
+      // Mark email as delivered to prevent duplicates
+      this.markEmailAsDelivered(event, result.messageId);
+
+      this.logger.log(`[sendOrderConfirmation] Completed successfully WITH PDF for standard order: ${event.orderId} | MessageId: ${result.messageId || 'none'}`);
     }
-
-    // Mark email as delivered to prevent duplicates
-    this.markEmailAsDelivered(event, result.messageId);
-
-    this.logger.log(`[sendOrderConfirmation] Completed successfully with PDF for order: ${event.orderId} | MessageId: ${result.messageId || 'none'}`);
   }
 
   /**
@@ -692,30 +749,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private async sendOrderConfirmationResend(event: any): Promise<void> {
     this.logger.log(`[sendOrderConfirmationResend] Starting for order: ${event.orderId}`);
 
-    // Fetch full order data from database including all necessary relations for PDF generation
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: {
-              include: {
-                images: true,
-                category: true,
-              }
-            },
-          },
-        },
-        shippingAddress: true,
-        billingAddress: true,
-      },
-    });
-
-    if (!order) {
-      this.logger.error(`[sendOrderConfirmationResend] Order not found: ${event.orderId}`);
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    // Fetch full order data using OrdersService
+    const order = await this.ordersService.findOneById(event.orderId);
 
     this.logger.log(`[sendOrderConfirmationResend] Order found: ${order.orderNumber}, email: ${order.email}`);
 
@@ -744,6 +779,38 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Send invoice email with PDF attachment
+   */
+  private async sendInvoiceEmail(event: any): Promise<void> {
+    this.logger.log(`[sendInvoiceEmail] Starting for order: ${event.orderId} | Admin: ${event.adminUserId || 'N/A'}`);
+
+    // Fetch full order data using OrdersService
+    // const order = await this.ordersService.findOneById(event.orderId);
+
+    this.logger.log(`[sendInvoiceEmail] Order found: ${event.orderNumber}, email: ${event.customerEmail}`);
+
+    // Use EmailAttachmentService to send invoice email with PDF attachment
+    // This uses the dedicated invoice email method for proper formatting
+    this.logger.log(`[sendInvoiceEmail] Using EmailAttachmentService to send invoice email with PDF attachment`);
+
+    const result = await this.emailAttachmentService.sendInvoiceEmailWithPDF(
+      event.orderNumber,
+      event.customerEmail,
+      event.locale
+    );
+
+    if (!result.success) {
+      this.logger.error(`[sendInvoiceEmail] EmailAttachmentService failed: ${result.error}`);
+      throw new Error(`Failed to send invoice email with PDF: ${result.error}`);
+    }
+
+    // Mark email as delivered to prevent duplicates
+    this.markEmailAsDelivered(event, result.messageId);
+
+    this.logger.log(`[sendInvoiceEmail] Completed successfully with PDF for order: ${event.orderId} | MessageId: ${result.messageId || 'none'} | Admin: ${event.adminUserId || 'N/A'}`);
+  }
+
+  /**
    * Send admin order notification
    */
   private async sendAdminOrderNotification(event: any): Promise<void> {
@@ -757,29 +824,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       return; // Don't fail the job
     }
 
-    // Fetch full order data
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: {
-              include: {
-                images: true,
-                category: true,
-              }
-            },
-          },
-        },
-        shippingAddress: true,
-        billingAddress: true,
-      },
-    });
-
-    if (!order) {
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    // Fetch full order data using OrdersService
+    const order = await this.ordersService.findOneById(event.orderId);
 
     // Generate email template
     const template = await this.emailTemplateService.getAdminOrderNotificationTemplate(
@@ -809,22 +855,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
    * Send shipping notification
    */
   private async sendShippingNotification(event: any): Promise<void> {
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        shippingAddress: true,
-      },
-    });
-
-    if (!order) {
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    const order = await this.ordersService.findOneById(event.orderId);
 
     const template = await this.emailTemplateService.getShippingNotificationTemplate(
       {
@@ -855,23 +886,10 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
    * Send order status update
    */
   private async sendOrderStatusUpdate(event: any): Promise<void> {
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        user: true,
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        shippingAddress: true,
-      },
-    });
+    const order = await this.ordersService.findOneById(event.orderId);
 
-    if (!order) {
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
-    this.logger.debug("Loaded order ", order.user);
+    this.logger.debug("Loaded order ", order?.id, order?.total);
+    console.warn("Loaded order ", JSON.stringify(order));
     const template = await this.emailTemplateService.getOrderStatusUpdateTemplate(
       this.mapOrderToEmailData(order, event.locale),
       event.locale
@@ -981,16 +999,15 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    // Create a simple contact form email template
-    const subject = event.locale === 'vi'
-      ? `Liên hệ mới từ ${event.senderName}`
-      : `New Contact Form Submission from ${event.senderName}`;
+    // Create a simple contact form email template using shared translations
+    const translations = getContactFormTranslations(event.locale as 'en' | 'vi');
+    const subject = translations.subjectWithName.replace('{name}', event.senderName);
 
     const html = `
-      <h2>${event.locale === 'vi' ? 'Liên hệ mới' : 'New Contact Form Submission'}</h2>
-      <p><strong>${event.locale === 'vi' ? 'Tên' : 'Name'}:</strong> ${event.senderName}</p>
-      <p><strong>Email:</strong> ${event.senderEmail}</p>
-      <p><strong>${event.locale === 'vi' ? 'Tin nhắn' : 'Message'}:</strong></p>
+      <h2>${translations.title}</h2>
+      <p><strong>${translations.name}:</strong> ${event.senderName}</p>
+      <p><strong>${translations.email}:</strong> ${event.senderEmail}</p>
+      <p><strong>${translations.message}:</strong></p>
       <p>${event.message}</p>
     `;
 
@@ -1019,31 +1036,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private async sendOrderCancellation(event: any): Promise<void> {
     this.logger.log(`[sendOrderCancellation] Starting for order: ${event.orderId}`);
 
-    // Fetch order details
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        shippingAddress: true,
-        billingAddress: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    if (!order) {
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    // Fetch order details using OrdersService
+    const order = await this.ordersService.findOneById(event.orderId);
 
     // Prepare cancellation email data
     const cancellationData = {
@@ -1109,31 +1103,8 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    // Fetch order details
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-        shippingAddress: true,
-        billingAddress: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    if (!order) {
-      throw new Error(`Order not found: ${event.orderId}`);
-    }
+    // Fetch order details using OrdersService
+    const order = await this.ordersService.findOneById(event.orderId);
 
     // Prepare admin cancellation email data
     const cancellationData = {
@@ -1192,27 +1163,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`[sendPaymentStatusUpdate] Starting for order: ${event.orderId}`);
 
     // Fetch order details
-    const order = await this.prisma.order.findUnique({
-      where: { id: event.orderId },
-      select: {
-        id: true,
-        orderNumber: true,
-        createdAt: true,
-        total: true,
-        paymentStatus: true,
-        email: true,
-        shippingAddress: {
-          select: {
-            fullName: true,
-          },
-        },
-        billingAddress: {
-          select: {
-            fullName: true,
-          },
-        },
-      },
-    });
+    const order = await this.ordersService.findOneById(event.orderId);
 
     if (!order) {
       throw new Error(`Order not found: ${event.orderId}`);
@@ -1231,7 +1182,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
 
     // Generate email template
     const template = await this.emailTemplateService.getPaymentStatusUpdateTemplate(
-      paymentData,
+      this.mapOrderToEmailData(order, event.locale),
       event.locale,
     );
 
@@ -1665,16 +1616,16 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
         productName: item.product.name,
         productNameVi: item.product.nameVi,
         quantity: item.quantity,
-        price: item.price,
-        total: item.total || (item.quantity * item.price), // Use item.total if available, otherwise calculate
+        price: Number(item.price),
+        total: Number(item.total || (item.quantity * item.price)), // Use item.total if available, otherwise calculate
       })),
-      subtotal: order.subtotal,
-      shippingCost: order.shippingCost,
-      tax: order.taxAmount || order.tax, // Support both field names
-      taxAmount: order.taxAmount || order.tax,
-      discount: order.discountAmount || order.discount, // Support both field names
-      discountAmount: order.discountAmount || order.discount,
-      total: order.total, // Keep for backward compatibility, but template will use calculated total
+      subtotal: Number(order.subtotal),
+      shippingCost: Number(order.shippingCost),
+      tax: Number(order.taxAmount || order.tax), // Support both field names
+      taxAmount: Number(order.taxAmount || order.tax),
+      discount: Number(order.discountAmount || order.discount), // Support both field names
+      discountAmount: Number(order.discountAmount || order.discount),
+      total: Number(order.total), // Keep for backward compatibility, but template will use calculated total
       shippingAddress: order.shippingAddress,
       status: order.status,
       paymentStatus: order.paymentStatus,
@@ -2049,6 +2000,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
     switch (event.type) {
       case EmailEventType.ORDER_CONFIRMATION:
       case EmailEventType.ORDER_CONFIRMATION_RESEND:
+      case EmailEventType.INVOICE_EMAIL:
         keyParts.push(event.orderId, event.customerEmail);
         break;
       case EmailEventType.ADMIN_ORDER_NOTIFICATION:

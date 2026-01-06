@@ -18,7 +18,6 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/lib/auth-api', () => ({
   authApi: {
     login: jest.fn(),
-    register: jest.fn(),
     logout: jest.fn(),
   },
 }));

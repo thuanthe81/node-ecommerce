@@ -2,13 +2,18 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ProductQueryParams } from '@/lib/product-api';
+import { ProductQueryParams, ProductsResponse } from '@/lib/product-api';
 import { useProducts } from '@/hooks/useProducts';
 import ProductGrid from '@/components/ProductGrid';
 import ProductGridSkeleton from '@/components/ProductGridSkeleton';
 import Pagination from '@/components/Pagination';
 
-export default function ProductsContent() {
+interface ProductsContentProps {
+  initialData?: ProductsResponse | null;
+  initialParams?: ProductQueryParams;
+}
+
+export default function ProductsContent({ initialData, initialParams }: ProductsContentProps) {
   const searchParams = useSearchParams();
 
   const params: ProductQueryParams = useMemo(() => ({
@@ -27,9 +32,10 @@ export default function ProductsContent() {
     sortOrder: (searchParams.get('sortOrder') as never) || 'desc',
   }), [searchParams]);
 
-  const { products, meta, isLoading } = useProducts(params);
+  const { products, meta, isLoading } = useProducts(params, initialData);
 
-  if (isLoading) {
+  // Show loading only if we don't have any data (neither initial nor from SWR)
+  if (isLoading && products.length === 0) {
     return <ProductGridSkeleton count={12} />;
   }
 

@@ -47,6 +47,40 @@ export const EMAIL_TRANSLATIONS = {
     trackOrder: { en: 'Track Order', vi: 'Theo dõi đơn hàng' },
   },
 
+  // Order Invoice Email
+  orderInvoice: {
+    subject: { en: 'Invoice for Order', vi: 'Hóa đơn cho Đơn hàng' },
+    title: { en: 'Invoice', vi: 'Hóa đơn' },
+    greeting: { en: 'Dear', vi: 'Kính chào' },
+    invoiceMessage: {
+      en: 'Please find attached the invoice for your order. This document contains all the details of your purchase including final pricing.',
+      vi: 'Vui lòng xem hóa đơn đính kèm cho đơn hàng của bạn. Tài liệu này chứa tất cả chi tiết về giao dịch mua hàng bao gồm giá cuối cùng.',
+    },
+    orderDetails: { en: 'Order Details', vi: 'Chi tiết đơn hàng' },
+    orderNumber: { en: 'Order Number', vi: 'Mã đơn hàng' },
+    orderDate: { en: 'Order Date', vi: 'Ngày đặt hàng' },
+    totalAmount: { en: 'Total Amount', vi: 'Tổng tiền' },
+    orderItems: { en: 'Order Items', vi: 'Sản phẩm đặt hàng' },
+    product: { en: 'Product', vi: 'Sản phẩm' },
+    quantity: { en: 'Quantity', vi: 'Số lượng' },
+    price: { en: 'Price', vi: 'Giá' },
+    total: { en: 'Total', vi: 'Tổng' },
+    attachmentNote: {
+      en: 'The attached PDF contains your complete invoice with all order details.',
+      vi: 'File PDF đính kèm chứa hóa đơn đầy đủ với tất cả chi tiết đơn hàng.',
+    },
+    contactInfo: {
+      en: 'If you have any questions, please contact us.',
+      vi: 'Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi.',
+    },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    viewOrderDetails: { en: 'View Order Details', vi: 'Xem chi tiết đơn hàng' },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
+  },
+
   // Admin Order Notification Email
   adminOrderNotification: {
     subject: { en: 'New Order', vi: 'Đơn hàng mới' },
@@ -202,6 +236,263 @@ export const EMAIL_TRANSLATIONS = {
       en: 'This is an automated message. Please do not reply to this email.',
       vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
     },
+  },
+
+  // Welcome Email
+  welcomeEmail: {
+    subject: { en: 'Welcome to AlaCraft!', vi: 'Chào mừng đến với AlaCraft!' },
+    title: { en: 'Welcome to AlaCraft!', vi: 'Chào mừng đến với AlaCraft!' },
+    greeting: { en: 'Hello and welcome!', vi: 'Xin chào và chào mừng!' },
+    intro: {
+      en: 'Thank you for joining AlaCraft! We\'re excited to have you as part of our community of handmade craft lovers.',
+      vi: 'Cảm ơn bạn đã tham gia AlaCraft! Chúng tôi rất vui mừng khi có bạn là một phần của cộng đồng những người yêu thích đồ thủ công.',
+    },
+    shopNow: {
+      en: 'Start exploring our unique collection of handmade items crafted with love and attention to detail.',
+      vi: 'Bắt đầu khám phá bộ sưu tập độc đáo của chúng tôi với những món đồ thủ công được chế tác với tình yêu và sự chú ý đến từng chi tiết.',
+    },
+    verifyEmail: { en: 'Verify Your Email', vi: 'Xác minh Email của bạn' },
+    verifyButton: { en: 'Verify Email Address', vi: 'Xác minh địa chỉ Email' },
+    whatNext: { en: 'What\'s Next?', vi: 'Tiếp theo là gì?' },
+    features: {
+      en: [
+        'Browse our curated collection of handmade items',
+        'Save your favorite products to your wishlist',
+        'Enjoy secure and easy checkout process',
+        'Track your orders in real-time',
+        'Get exclusive offers and updates'
+      ],
+      vi: [
+        'Duyệt bộ sưu tập được tuyển chọn của chúng tôi',
+        'Lưu các sản phẩm yêu thích vào danh sách mong muốn',
+        'Tận hưởng quy trình thanh toán an toàn và dễ dàng',
+        'Theo dõi đơn hàng của bạn theo thời gian thực',
+        'Nhận ưu đãi độc quyền và cập nhật'
+      ],
+    },
+    exploreProducts: { en: 'Explore Products', vi: 'Khám phá sản phẩm' },
+    supportNote: {
+      en: 'If you have any questions, our support team is here to help.',
+      vi: 'Nếu bạn có bất kỳ câu hỏi nào, đội ngũ hỗ trợ của chúng tôi sẵn sàng giúp đỡ.',
+    },
+    skipToContent: { en: 'Skip to main content', vi: 'Chuyển đến nội dung chính' },
+    emailLabel: { en: 'Welcome email from AlaCraft', vi: 'Email chào mừng từ AlaCraft' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    signature: {
+      en: 'Best regards,<br>AlaCraft Team',
+      vi: 'Trân trọng,<br>Đội ngũ AlaCraft',
+    },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
+  },
+
+  // Shipping Notification Email
+  shippingNotification: {
+    subject: { en: 'Your Order is on the Way!', vi: 'Đơn hàng của bạn đang được giao!' },
+    title: { en: 'Shipping Update', vi: 'Cập nhật vận chuyển' },
+    greeting: { en: 'Hello', vi: 'Xin chào' },
+    intro: {
+      en: 'Great news! Your order has been shipped and is on its way to you.',
+      vi: 'Tin tuyệt vời! Đơn hàng của bạn đã được gửi và đang trên đường đến với bạn.',
+    },
+    orderNumber: { en: 'Order Number', vi: 'Số đơn hàng' },
+    trackingNumber: { en: 'Tracking Number', vi: 'Mã theo dõi' },
+    trackingInfo: {
+      en: 'You can track your package using the tracking number below:',
+      vi: 'Bạn có thể theo dõi gói hàng của mình bằng mã theo dõi bên dưới:',
+    },
+    trackPackage: { en: 'Track Your Package', vi: 'Theo dõi gói hàng' },
+    estimatedDelivery: { en: 'Estimated Delivery', vi: 'Dự kiến giao hàng' },
+    shippingAddress: { en: 'Shipping Address', vi: 'Địa chỉ giao hàng' },
+    shippingMethod: { en: 'Shipping Method', vi: 'Phương thức vận chuyển' },
+    carrier: { en: 'Carrier', vi: 'Đơn vị vận chuyển' },
+    deliveryInstructions: {
+      en: 'Delivery Instructions',
+      vi: 'Hướng dẫn giao hàng',
+    },
+    contactCarrier: {
+      en: 'If you have any questions about your delivery, please contact the carrier directly.',
+      vi: 'Nếu bạn có bất kỳ câu hỏi nào về việc giao hàng, vui lòng liên hệ trực tiếp với đơn vị vận chuyển.',
+    },
+    orderSummary: { en: 'Order Summary', vi: 'Tóm tắt đơn hàng' },
+    needHelp: {
+      en: 'Need help? Contact our customer support team.',
+      vi: 'Cần trợ giúp? Liên hệ với đội ngũ hỗ trợ khách hàng của chúng tôi.',
+    },
+    contactSupport: { en: 'Contact Support', vi: 'Liên hệ hỗ trợ' },
+    thankYou: {
+      en: 'Thank you for choosing AlaCraft!',
+      vi: 'Cảm ơn bạn đã chọn AlaCraft!',
+    },
+    skipToContent: { en: 'Skip to main content', vi: 'Chuyển đến nội dung chính' },
+    emailLabel: { en: 'Shipping notification from AlaCraft', vi: 'Thông báo vận chuyển từ AlaCraft' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    signature: {
+      en: 'Best regards,<br>AlaCraft Shipping Team',
+      vi: 'Trân trọng,<br>Đội ngũ vận chuyển AlaCraft',
+    },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
+  },
+
+  // Payment Status Update Email
+  paymentStatusUpdate: {
+    subject: { en: 'Payment Status Update', vi: 'Cập nhật trạng thái thanh toán' },
+    title: { en: 'Payment Update', vi: 'Cập nhật thanh toán' },
+    greeting: { en: 'Hello', vi: 'Xin chào' },
+    intro: {
+      en: 'We have an update regarding the payment for your order.',
+      vi: 'Chúng tôi có cập nhật về thanh toán cho đơn hàng của bạn.',
+    },
+    orderNumber: { en: 'Order Number', vi: 'Số đơn hàng' },
+    paymentStatus: { en: 'Payment Status', vi: 'Trạng thái thanh toán' },
+    paymentMethod: { en: 'Payment Method', vi: 'Phương thức thanh toán' },
+    amount: { en: 'Amount', vi: 'Số tiền' },
+    transactionId: { en: 'Transaction ID', vi: 'Mã giao dịch' },
+    paymentDate: { en: 'Payment Date', vi: 'Ngày thanh toán' },
+    // Payment status messages
+    paymentSuccessful: {
+      en: 'Your payment has been successfully processed.',
+      vi: 'Thanh toán của bạn đã được xử lý thành công.',
+    },
+    paymentPending: {
+      en: 'Your payment is currently being processed.',
+      vi: 'Thanh toán của bạn hiện đang được xử lý.',
+    },
+    paymentFailed: {
+      en: 'Unfortunately, your payment could not be processed.',
+      vi: 'Rất tiếc, thanh toán của bạn không thể được xử lý.',
+    },
+    paymentRefunded: {
+      en: 'Your payment has been refunded.',
+      vi: 'Thanh toán của bạn đã được hoàn lại.',
+    },
+    nextSteps: { en: 'Next Steps', vi: 'Các bước tiếp theo' },
+    nextStepsSuccessful: {
+      en: 'Your order is now being prepared for shipment.',
+      vi: 'Đơn hàng của bạn hiện đang được chuẩn bị để gửi.',
+    },
+    nextStepsPending: {
+      en: 'We will notify you once the payment is confirmed.',
+      vi: 'Chúng tôi sẽ thông báo cho bạn khi thanh toán được xác nhận.',
+    },
+    nextStepsFailed: {
+      en: 'Please try again or contact our support team for assistance.',
+      vi: 'Vui lòng thử lại hoặc liên hệ với đội ngũ hỗ trợ của chúng tôi để được trợ giúp.',
+    },
+    nextStepsRefunded: {
+      en: 'The refund will appear in your account within 3-5 business days.',
+      vi: 'Khoản hoàn tiền sẽ xuất hiện trong tài khoản của bạn trong vòng 3-5 ngày làm việc.',
+    },
+    orderSummary: { en: 'Order Summary', vi: 'Tóm tắt đơn hàng' },
+    needHelp: {
+      en: 'Need help? Contact our customer support team.',
+      vi: 'Cần trợ giúp? Liên hệ với đội ngũ hỗ trợ khách hàng của chúng tôi.',
+    },
+    contactSupport: { en: 'Contact Support', vi: 'Liên hệ hỗ trợ' },
+    viewOrder: { en: 'View Order Details', vi: 'Xem chi tiết đơn hàng' },
+    skipToContent: { en: 'Skip to main content', vi: 'Chuyển đến nội dung chính' },
+    emailLabel: { en: 'Payment status update from AlaCraft', vi: 'Cập nhật trạng thái thanh toán từ AlaCraft' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    signature: {
+      en: 'Best regards,<br>AlaCraft Payment Team',
+      vi: 'Trân trọng,<br>Đội ngũ thanh toán AlaCraft',
+    },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
+  },
+
+  // Password Reset Email
+  passwordReset: {
+    subject: { en: 'Password Reset Request', vi: 'Yêu cầu đặt lại mật khẩu' },
+    title: { en: 'Password Reset Request', vi: 'Yêu cầu đặt lại mật khẩu' },
+    greeting: { en: 'Hello', vi: 'Xin chào' },
+    intro: {
+      en: 'We received a request to reset your password for your AlaCraft account.',
+      vi: 'Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản AlaCraft của bạn.',
+    },
+    resetInstructions: {
+      en: 'Click the button below to reset your password. This link will expire in 1 hour for security reasons.',
+      vi: 'Nhấp vào nút bên dưới để đặt lại mật khẩu của bạn. Liên kết này sẽ hết hạn sau 1 giờ vì lý do bảo mật.',
+    },
+    resetButton: { en: 'Reset Password', vi: 'Đặt lại mật khẩu' },
+    expiry: {
+      en: 'This link will expire in 1 hour',
+      vi: 'Liên kết này sẽ hết hạn sau 1 giờ',
+    },
+    importantNote: { en: 'Important Security Note', vi: 'Lưu ý bảo mật quan trọng' },
+    ignore: {
+      en: 'If you did not request a password reset, please ignore this email. Your password will remain unchanged.',
+      vi: 'Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Mật khẩu của bạn sẽ không thay đổi.',
+    },
+    securityTip: { en: 'Security Tip', vi: 'Mẹo bảo mật' },
+    securityNote: {
+      en: 'For your security, always use a strong, unique password and never share your login credentials with anyone.',
+      vi: 'Để bảo mật, hãy luôn sử dụng mật khẩu mạnh, duy nhất và không bao giờ chia sẻ thông tin đăng nhập của bạn với bất kỳ ai.',
+    },
+    needHelp: {
+      en: 'Need help? Contact our support team.',
+      vi: 'Cần trợ giúp? Liên hệ với đội ngũ hỗ trợ của chúng tôi.',
+    },
+    contactSupport: { en: 'Contact Support', vi: 'Liên hệ hỗ trợ' },
+    skipToContent: { en: 'Skip to main content', vi: 'Chuyển đến nội dung chính' },
+    emailLabel: { en: 'Password reset email from AlaCraft', vi: 'Email đặt lại mật khẩu từ AlaCraft' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
+    signature: {
+      en: 'Best regards,<br>AlaCraft Security Team',
+      vi: 'Trân trọng,<br>Đội ngũ bảo mật AlaCraft',
+    },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
+  },
+
+  // PDF Error Handling Translations
+  pdfErrorHandling: {
+    orderConfirmationSubject: { en: 'Order Confirmation - {orderNumber}', vi: 'Xác nhận đơn hàng - {orderNumber}' },
+    technicalIssueMessage: {
+      en: 'We encountered a technical issue generating your order PDF. Detailed order information is included below.',
+      vi: 'Chúng tôi gặp sự cố kỹ thuật khi tạo file PDF đơn hàng. Thông tin chi tiết đơn hàng được bao gồm bên dưới.'
+    },
+  },
+
+  // PDF Metadata Translations
+  pdfMetadata: {
+    orderConfirmationSubject: { en: 'Order confirmation', vi: 'Xác nhận đơn hàng' },
+    orderInvoiceSubject: { en: 'Order Invoice', vi: 'Hóa đơn đơn hàng' },
+    orderConfirmationTitle: { en: 'Order {orderNumber} - {companyName}', vi: 'Đơn hàng {orderNumber} - {companyName}' },
+    orderInvoiceTitle: { en: 'Invoice {orderNumber}', vi: 'Hóa đơn {orderNumber}' },
+    orderConfirmationDescription: {
+      en: 'Order details for order number {orderNumber} including customer information, products, payment and shipping details',
+      vi: 'Chi tiết đơn hàng số {orderNumber} bao gồm thông tin khách hàng, sản phẩm, thanh toán và giao hàng'
+    },
+    accessibilitySummary: {
+      en: 'This PDF contains order confirmation details with structured headings, tables with proper headers, and alternative text for images. Content is organized in logical reading order.',
+      vi: 'PDF này chứa chi tiết xác nhận đơn hàng với tiêu đề có cấu trúc, bảng có tiêu đề phù hợp và văn bản thay thế cho hình ảnh. Nội dung được tổ chức theo thứ tự đọc logic.'
+    },
+  },
+
+  // Contact Form Email
+  contactForm: {
+    subject: { en: 'New Contact Form Submission', vi: 'Liên hệ mới' },
+    subjectWithName: { en: 'New Contact Form Submission from {name}', vi: 'Liên hệ mới từ {name}' },
+    title: { en: 'New Contact Form Submission', vi: 'Liên hệ mới' },
+    name: { en: 'Name', vi: 'Tên' },
+    email: { en: 'Email', vi: 'Email' },
+    message: { en: 'Message', vi: 'Tin nhắn' },
+    companyName: { en: 'AlaCraft', vi: 'AlaCraft' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
   },
 
   // Common Email Elements
@@ -420,6 +711,39 @@ export function getOrderConfirmationTranslations(
 }
 
 /**
+ * Get Invoice Email Translations
+ *
+ * Retrieves all translations specific to invoice emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing invoice email translations
+ */
+export function getInvoiceEmailTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get invoice email translations
+  Object.entries(EMAIL_TRANSLATIONS.orderInvoice).forEach(
+    ([key, translation]) => {
+      translations[key] = translation[locale] || translation.en;
+    }
+  );
+
+  // Include common translations
+  Object.entries(EMAIL_TRANSLATIONS.common).forEach(([key, translation]) => {
+    translations[`common.${key}`] = translation[locale] || translation.en;
+  });
+
+  // Include payment translations
+  Object.entries(EMAIL_TRANSLATIONS.payment).forEach(([key, translation]) => {
+    translations[`payment.${key}`] = translation[locale] || translation.en;
+  });
+
+  return translations;
+}
+
+/**
  * Get Admin Order Notification Translations
  *
  * Retrieves all translations specific to admin order notification emails.
@@ -475,6 +799,210 @@ export function getOrderStatusUpdateTranslations(
   // Include shipping translations
   Object.entries(EMAIL_TRANSLATIONS.shipping).forEach(([key, translation]) => {
     translations[`shipping.${key}`] = translation[locale] || translation.en;
+  });
+
+  return translations;
+}
+
+/**
+ * Get Welcome Email Translations
+ *
+ * Retrieves all translations specific to welcome emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing welcome email translations
+ */
+export function getWelcomeEmailTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get welcome email translations
+  Object.entries(EMAIL_TRANSLATIONS.welcomeEmail).forEach(
+    ([key, translation]) => {
+      if (key === 'features' && typeof translation === 'object' && 'en' in translation) {
+        // Handle array translations specially
+        const features = translation as unknown as { en: string[]; vi: string[] };
+        const featureList = features[locale] || features.en;
+        translations[key] = JSON.stringify(featureList);
+      } else if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  // Include common translations
+  Object.entries(EMAIL_TRANSLATIONS.common).forEach(([key, translation]) => {
+    translations[`common.${key}`] = translation[locale] || translation.en;
+  });
+
+  return translations;
+}
+
+/**
+ * Get Shipping Notification Email Translations
+ *
+ * Retrieves all translations specific to shipping notification emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing shipping notification email translations
+ */
+export function getShippingNotificationTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get shipping notification email translations
+  Object.entries(EMAIL_TRANSLATIONS.shippingNotification).forEach(
+    ([key, translation]) => {
+      if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  // Include common translations
+  Object.entries(EMAIL_TRANSLATIONS.common).forEach(([key, translation]) => {
+    translations[`common.${key}`] = translation[locale] || translation.en;
+  });
+
+  return translations;
+}
+
+/**
+ * Get Payment Status Update Email Translations
+ *
+ * Retrieves all translations specific to payment status update emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing payment status update email translations
+ */
+export function getPaymentStatusUpdateTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get payment status update email translations
+  Object.entries(EMAIL_TRANSLATIONS.paymentStatusUpdate).forEach(
+    ([key, translation]) => {
+      if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  // Include common translations
+  Object.entries(EMAIL_TRANSLATIONS.common).forEach(([key, translation]) => {
+    translations[`common.${key}`] = translation[locale] || translation.en;
+  });
+
+  return translations;
+}
+
+/**
+ * Get PDF Error Handling Translations
+ *
+ * Retrieves all translations specific to PDF error handling.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing PDF error handling translations
+ */
+export function getPdfErrorHandlingTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get PDF error handling translations
+  Object.entries(EMAIL_TRANSLATIONS.pdfErrorHandling).forEach(
+    ([key, translation]) => {
+      if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  return translations;
+}
+
+/**
+ * Get PDF Metadata Translations
+ *
+ * Retrieves all translations specific to PDF metadata.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing PDF metadata translations
+ */
+export function getPdfMetadataTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get PDF metadata translations
+  Object.entries(EMAIL_TRANSLATIONS.pdfMetadata).forEach(
+    ([key, translation]) => {
+      if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  return translations;
+}
+
+/**
+ * Get Contact Form Email Translations
+ *
+ * Retrieves all translations specific to contact form emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing contact form email translations
+ */
+export function getContactFormTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get contact form email translations
+  Object.entries(EMAIL_TRANSLATIONS.contactForm).forEach(
+    ([key, translation]) => {
+      if (typeof translation === 'object' && 'en' in translation) {
+        const translationObj = translation as { en: string; vi: string };
+        translations[key] = translationObj[locale] || translationObj.en;
+      }
+    }
+  );
+
+  return translations;
+}
+
+/**
+ * Get Password Reset Email Translations
+ *
+ * Retrieves all translations specific to password reset emails.
+ *
+ * @param locale - The target locale (defaults to 'en')
+ * @returns Record containing password reset email translations
+ */
+export function getPasswordResetEmailTranslations(
+  locale: SupportedLocale = 'en'
+): Record<string, string> {
+  const translations: Record<string, string> = {};
+
+  // Get password reset email translations
+  Object.entries(EMAIL_TRANSLATIONS.passwordReset).forEach(
+    ([key, translation]) => {
+      translations[key] = translation[locale] || translation.en;
+    }
+  );
+
+  // Include common translations
+  Object.entries(EMAIL_TRANSLATIONS.common).forEach(([key, translation]) => {
+    translations[`common.${key}`] = translation[locale] || translation.en;
   });
 
   return translations;

@@ -1,0 +1,323 @@
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
+import { SSRFallbackData, SSRError } from '@/lib/ssr-error-handling';
+import { retryWithBackoff, EnhancedError } from '@/lib/error-handling';
+
+interface ClientSideFallbackProps<T> {
+  ssrResult: SSRFallbackData<T>;
+  fallbackFetch: () => Promise<T>;
+  children: (data: T, loading: boolean, error: Error | null) => React.ReactNode;
+  loadingComponent?: React.ReactNode;
+  errorComponent?: React.ReactNode | ((props: { error: Error; onRetry?: () => void }) => React.ReactNode);
+  enableAutoRetry?: boolean;
+  retryDelay?: number;
+  maxRetries?: number;
+  locale?: string;
+}
+
+/**
+ * Client-side fallback component for failed SSR operations
+ * Automatically attempts to fetch data on the client when SSR fails
+ */
+export function ClientSideFallback<T>({
+  ssrResult,
+  fallbackFetch,
+  children,
+  loadingComponent,
+  errorComponent,
+  enableAutoRetry = true,
+  retryDelay = 2000,
+  maxRetries = 3,
+  locale = 'en',
+}: ClientSideFallbackProps<T>) {
+  const [data, setData] = useState<T | null>(ssrResult.data);
+  const [loading, setLoading] = useState(ssrResult.fallbackToCSR && !ssrResult.data);
+  const [error, setError] = useState<Error | null>(
+    ssrResult.error ? new Error(ssrResult.error.message) : null
+  );
+  const [retryCount, setRetryCount] = useState(0);
+
+  const fetchData = useCallback(async () => {
+    if (!ssrResult.fallbackToCSR && ssrResult.data) {
+      return; // SSR was successful, no need to fetch
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await retryWithBackoff(fallbackFetch, {
+        maxAttempts: maxRetries,
+        baseDelay: retryDelay,
+        maxDelay: 30000,
+        backoffMultiplier: 2,
+      });
+
+      setData(result);
+      setError(null);
+    } catch (err) {
+      const enhancedError = err instanceof EnhancedError ? err : new EnhancedError({
+        code: 'CLIENT_FETCH_ERROR',
+        message: err instanceof Error ? err.message : 'Unknown error',
+        isRetryable: true,
+        userMessage: locale === 'vi'
+          ? 'Không thể tải dữ liệu. Vui lòng thử lại.'
+          : 'Unable to load data. Please try again.',
+      });
+
+      setError(enhancedError);
+    } finally {
+      setLoading(false);
+    }
+  }, [fallbackFetch, ssrResult, retryDelay, maxRetries, locale]);
+
+  const handleRetry = useCallback(() => {
+    if (retryCount < maxRetries) {
+      setRetryCount(prev => prev + 1);
+      fetchData();
+    }
+  }, [fetchData, retryCount, maxRetries]);
+
+  // Auto-fetch on mount if SSR failed
+  useEffect(() => {
+    if (ssrResult.fallbackToCSR && !ssrResult.data && enableAutoRetry) {
+      fetchData();
+    }
+  }, [ssrResult, fetchData, enableAutoRetry]);
+
+  // Show loading state
+  if (loading) {
+    if (loadingComponent) {
+      return <>{loadingComponent}</>;
+    }
+
+    return <DefaultLoadingComponent locale={locale} />;
+  }
+
+  // Show error state
+  if (error && !data) {
+    if (errorComponent) {
+      if (typeof errorComponent === 'function') {
+        return <>{errorComponent({ error, onRetry: retryCount < maxRetries ? handleRetry : undefined })}</>;
+      } else {
+        return <>{errorComponent}</>;
+      }
+    }
+
+    return (
+      <DefaultErrorComponent
+        error={error}
+        onRetry={retryCount < maxRetries ? handleRetry : undefined}
+        locale={locale}
+      />
+    );
+  }
+
+  // Render children with data (only if data is not null)
+  if (data !== null) {
+    return <>{children(data, loading, error)}</>;
+  }
+
+  // If data is null and we're loading, show loading component
+  if (loading) {
+    if (loadingComponent) {
+      return <>{loadingComponent}</>;
+    }
+    return <DefaultLoadingComponent locale={locale} />;
+  }
+
+  // If data is null and not loading, this shouldn't happen but handle gracefully
+  return null;
+
+/**
+ * Default loading component
+ */
+function DefaultLoadingComponent({ locale }: { locale: string }) {
+  return (
+    <div className="flex items-center justify-center p-8">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">
+          {locale === 'vi' ? 'Đang tải...' : 'Loading...'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Default error component
+ */
+function DefaultErrorComponent({
+  error,
+  onRetry,
+  locale,
+}: {
+  error: Error;
+  onRetry?: () => void;
+  locale: string;
+}) {
+  const userMessage = error instanceof EnhancedError
+    ? error.userMessage
+    : (locale === 'vi'
+        ? 'Đã xảy ra lỗi khi tải dữ liệu.'
+        : 'An error occurred while loading data.');
+
+  return (
+    <div className="flex items-center justify-center p-8">
+      <div className="text-center max-w-md">
+        <div className="mb-4">
+          <svg
+            className="mx-auto h-12 w-12 text-red-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          {locale === 'vi' ? 'Không thể tải dữ liệu' : 'Unable to load data'}
+        </h3>
+
+        <p className="text-gray-600 mb-4">{userMessage}</p>
+
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          >
+            {locale === 'vi' ? 'Thử lại' : 'Try Again'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Hook for managing client-side fallback state
+ */
+export function useClientSideFallback<T>(
+  ssrResult: SSRFallbackData<T>,
+  fallbackFetch: () => Promise<T>,
+  options: {
+    enableAutoRetry?: boolean;
+    retryDelay?: number;
+    maxRetries?: number;
+  } = {}
+) {
+  const [data, setData] = useState<T | null>(ssrResult.data);
+  const [loading, setLoading] = useState(ssrResult.fallbackToCSR && !ssrResult.data);
+  const [error, setError] = useState<Error | null>(
+    ssrResult.error ? new Error(ssrResult.error.message) : null
+  );
+  const [retryCount, setRetryCount] = useState(0);
+
+  const {
+    enableAutoRetry = true,
+    retryDelay = 2000,
+    maxRetries = 3,
+  } = options;
+
+  const fetchData = useCallback(async () => {
+    if (!ssrResult.fallbackToCSR && ssrResult.data) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await retryWithBackoff(fallbackFetch, {
+        maxAttempts: maxRetries,
+        baseDelay: retryDelay,
+        maxDelay: 30000,
+        backoffMultiplier: 2,
+      });
+
+      setData(result);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  }, [fallbackFetch, ssrResult, retryDelay, maxRetries]);
+
+  const retry = useCallback(() => {
+    if (retryCount < maxRetries) {
+      setRetryCount(prev => prev + 1);
+      fetchData();
+    }
+  }, [fetchData, retryCount, maxRetries]);
+
+  useEffect(() => {
+    if (ssrResult.fallbackToCSR && !ssrResult.data && enableAutoRetry) {
+      fetchData();
+    }
+  }, [ssrResult, fetchData, enableAutoRetry]);
+
+  return {
+    data,
+    loading,
+    error,
+    retry: retryCount < maxRetries ? retry : undefined,
+    retryCount,
+    maxRetries,
+  };
+}
+
+/**
+ * Higher-order component for wrapping components with client-side fallback
+ */
+export function withClientSideFallback<P extends object, T>(
+  Component: React.ComponentType<P & { data: T }>,
+  fallbackFetch: (props: P) => Promise<T>,
+  options?: {
+    loadingComponent?: React.ComponentType;
+    errorComponent?: React.ComponentType<{ error: Error; onRetry?: () => void }>;
+    enableAutoRetry?: boolean;
+    retryDelay?: number;
+    maxRetries?: number;
+  }
+) {
+  const WrappedComponent = (props: P & { ssrResult: SSRFallbackData<T>; locale?: string }) => {
+    const { ssrResult, locale = 'en', ...componentProps } = props;
+
+    return (
+      <ClientSideFallback
+        ssrResult={ssrResult}
+        fallbackFetch={() => fallbackFetch(componentProps as P)}
+        loadingComponent={options?.loadingComponent ? <options.loadingComponent /> : undefined}
+        errorComponent={options?.errorComponent ?
+          <options.errorComponent error={new Error('Placeholder')} onRetry={() => {}} /> :
+          undefined
+        }
+        enableAutoRetry={options?.enableAutoRetry}
+        retryDelay={options?.retryDelay}
+        maxRetries={options?.maxRetries}
+        locale={locale}
+      >
+        {(data, loading, error) => {
+          if (!data) return null;
+          return <Component {...(componentProps as P)} data={data} />;
+        }}
+      </ClientSideFallback>
+    );
+  };
+
+  WrappedComponent.displayName = `withClientSideFallback(${Component.displayName || Component.name})`;
+
+  return WrappedComponent;
+}
+
+export default ClientSideFallback;

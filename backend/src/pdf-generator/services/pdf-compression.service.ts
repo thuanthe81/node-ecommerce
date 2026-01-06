@@ -26,7 +26,7 @@ export class PDFCompressionService {
     private readonly configService: PDFImageOptimizationConfigService,
     private readonly metricsService: PDFImageOptimizationMetricsService
   ) {
-    this.logger.log('PDF Compression Service initialized with compressed image storage integration');
+    this.logger.log('PDF Compression Service initialized with compressed image storage integration and template support');
   }
 
   /**
@@ -693,6 +693,275 @@ export class PDFCompressionService {
       // Quality verification failure should not fail the image reuse
       this.logger.warn(`Quality verification failed for reused image ${imageUrl}: ${error.message}`);
       this.logger.warn(`  - Continuing with reused image despite verification failure`);
+    }
+  }
+
+  /**
+   * Optimize images for template-based generation
+   * @param templateData - Template data containing image references
+   * @param templateType - Type of template (order-confirmation, invoice)
+   * @returns Promise with template optimization result
+   */
+  async optimizeTemplateImages(
+    templateData: any,
+    templateType: 'order-confirmation' | 'invoice'
+  ): Promise<{
+    optimizedData: any;
+    optimizations: any[];
+    sizeSavings: number;
+    templateCacheKey?: string;
+  }> {
+    this.logger.log(`Optimizing images for template-based generation: ${templateType}`);
+
+    try {
+      const optimizations: any[] = [];
+      let totalSizeSavings = 0;
+      const optimizedData = { ...templateData };
+
+      // Generate template cache key for optimization reuse
+      const templateCacheKey = this.generateTemplateCacheKey(templateData, templateType);
+
+      // Optimize images based on template type
+      if (templateType === 'order-confirmation' || templateType === 'invoice') {
+        // Optimize product images
+        if (templateData.items && Array.isArray(templateData.items)) {
+          for (let i = 0; i < templateData.items.length; i++) {
+            const item = templateData.items[i];
+
+            if (item.imageUrl && typeof item.imageUrl === 'string' && !item.imageUrl.startsWith('data:')) {
+              try {
+                const optimizationResult = await this.optimizeImageForPDF(item.imageUrl, 'photo');
+
+                if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+                  const base64Image = `data:image/jpeg;base64,${optimizationResult.optimizedBuffer.toString('base64')}`;
+                  optimizedData.items[i].imageUrl = base64Image;
+
+                  const sizeSaving = optimizationResult.originalSize - optimizationResult.optimizedSize;
+                  totalSizeSavings += sizeSaving;
+
+                  optimizations.push({
+                    type: 'template_product_image',
+                    templateType,
+                    originalUrl: item.imageUrl,
+                    originalSize: optimizationResult.originalSize,
+                    optimizedSize: optimizationResult.optimizedSize,
+                    sizeSaving,
+                    compressionRatio: optimizationResult.compressionRatio
+                  });
+
+                  this.logger.log(`Optimized template product image: ${item.imageUrl} (saved ${this.formatFileSize(sizeSaving)})`);
+                }
+              } catch (error) {
+                this.logger.warn(`Failed to optimize template product image for item ${i}: ${error.message}`);
+              }
+            }
+          }
+        }
+
+        // Optimize business logo
+        if (templateData.businessInfo?.logoUrl && typeof templateData.businessInfo.logoUrl === 'string' && !templateData.businessInfo.logoUrl.startsWith('data:')) {
+          try {
+            const optimizationResult = await this.optimizeImageForPDF(templateData.businessInfo.logoUrl, 'logo');
+
+            if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+              const base64Logo = `data:image/jpeg;base64,${optimizationResult.optimizedBuffer.toString('base64')}`;
+              optimizedData.businessInfo.logoUrl = base64Logo;
+
+              const sizeSaving = optimizationResult.originalSize - optimizationResult.optimizedSize;
+              totalSizeSavings += sizeSaving;
+
+              optimizations.push({
+                type: 'template_business_logo',
+                templateType,
+                originalUrl: templateData.businessInfo.logoUrl,
+                originalSize: optimizationResult.originalSize,
+                optimizedSize: optimizationResult.optimizedSize,
+                sizeSaving,
+                compressionRatio: optimizationResult.compressionRatio
+              });
+
+              this.logger.log(`Optimized template business logo: ${templateData.businessInfo.logoUrl} (saved ${this.formatFileSize(sizeSaving)})`);
+            }
+          } catch (error) {
+            this.logger.warn(`Failed to optimize template business logo: ${error.message}`);
+          }
+        }
+
+        // Optimize QR code image
+        if (templateData.paymentMethod?.qrCodeUrl && typeof templateData.paymentMethod.qrCodeUrl === 'string' && !templateData.paymentMethod.qrCodeUrl.startsWith('data:')) {
+          try {
+            const optimizationResult = await this.optimizeImageForPDF(templateData.paymentMethod.qrCodeUrl, 'graphics');
+
+            if (optimizationResult.optimizedBuffer && !optimizationResult.error) {
+              const base64QR = `data:image/jpeg;base64,${optimizationResult.optimizedBuffer.toString('base64')}`;
+              optimizedData.paymentMethod.qrCodeUrl = base64QR;
+
+              const sizeSaving = optimizationResult.originalSize - optimizationResult.optimizedSize;
+              totalSizeSavings += sizeSaving;
+
+              optimizations.push({
+                type: 'template_qr_code',
+                templateType,
+                originalUrl: templateData.paymentMethod.qrCodeUrl,
+                originalSize: optimizationResult.originalSize,
+                optimizedSize: optimizationResult.optimizedSize,
+                sizeSaving,
+                compressionRatio: optimizationResult.compressionRatio
+              });
+
+              this.logger.log(`Optimized template QR code: ${templateData.paymentMethod.qrCodeUrl} (saved ${this.formatFileSize(sizeSaving)})`);
+            }
+          } catch (error) {
+            this.logger.warn(`Failed to optimize template QR code: ${error.message}`);
+          }
+        }
+      }
+
+      this.logger.log(`Template image optimization completed for ${templateType}. Total size savings: ${this.formatFileSize(totalSizeSavings)}, Optimizations: ${optimizations.length}`);
+
+      return {
+        optimizedData,
+        optimizations,
+        sizeSavings: totalSizeSavings,
+        templateCacheKey,
+      };
+
+    } catch (error) {
+      this.logger.error(`Failed to optimize template images for ${templateType}: ${error.message}`);
+      return {
+        optimizedData: templateData,
+        optimizations: [],
+        sizeSavings: 0,
+      };
+    }
+  }
+
+  /**
+   * Generate cache key for template optimization
+   * @param templateData - Template data
+   * @param templateType - Type of template
+   * @returns Cache key string
+   */
+  private generateTemplateCacheKey(templateData: any, templateType: string): string {
+    // Create a simple cache key based on template type and image URLs
+    const imageUrls: string[] = [];
+
+    // Collect all image URLs
+    if (templateData.items) {
+      templateData.items.forEach((item: any) => {
+        if (item.imageUrl && typeof item.imageUrl === 'string') {
+          imageUrls.push(item.imageUrl);
+        }
+      });
+    }
+
+    if (templateData.businessInfo?.logoUrl) {
+      imageUrls.push(templateData.businessInfo.logoUrl);
+    }
+
+    if (templateData.paymentMethod?.qrCodeUrl) {
+      imageUrls.push(templateData.paymentMethod.qrCodeUrl);
+    }
+
+    // Create hash-like key
+    const urlsString = imageUrls.sort().join('|');
+    const keyData = `${templateType}:${urlsString}`;
+
+    // Simple hash function (in production, consider using crypto.createHash)
+    let hash = 0;
+    for (let i = 0; i < keyData.length; i++) {
+      const char = keyData.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    return `template_${templateType}_${Math.abs(hash).toString(16)}`;
+  }
+
+  /**
+   * Validate template caching works with compression services
+   * @param templateType - Type of template to validate
+   * @returns Promise with validation result
+   */
+  async validateTemplateCaching(templateType: 'order-confirmation' | 'invoice'): Promise<{
+    isValid: boolean;
+    errors: string[];
+    cacheHitRate?: number;
+  }> {
+    const errors: string[] = [];
+
+    try {
+      // Test template cache key generation
+      const testData = {
+        items: [{ imageUrl: 'test-image.jpg' }],
+        businessInfo: { logoUrl: 'test-logo.jpg' },
+        paymentMethod: { qrCodeUrl: 'test-qr.jpg' }
+      };
+
+      const cacheKey = this.generateTemplateCacheKey(testData, templateType);
+      if (!cacheKey || cacheKey.length === 0) {
+        errors.push('Template cache key generation failed');
+      }
+
+      // Test optimization with template data
+      const optimizationResult = await this.optimizeTemplateImages(testData, templateType);
+      if (!optimizationResult) {
+        errors.push('Template image optimization failed');
+      }
+
+    } catch (error) {
+      errors.push(`Template caching validation failed: ${error.message}`);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Record template-specific performance metrics
+   * @param templateType - Type of template
+   * @param optimizationResult - Optimization result
+   * @param processingTime - Processing time in milliseconds
+   */
+  recordTemplatePerformanceMetrics(
+    templateType: 'order-confirmation' | 'invoice',
+    optimizationResult: any,
+    processingTime: number
+  ): void {
+    try {
+      const metrics = {
+        templateType,
+        optimizationCount: optimizationResult.optimizations?.length || 0,
+        sizeSavings: optimizationResult.sizeSavings || 0,
+        processingTime,
+        cacheKey: optimizationResult.templateCacheKey,
+        timestamp: new Date(),
+      };
+
+      // Record metrics using the existing metrics service
+      this.metricsService.recordImageOptimization({
+        optimizedBuffer: Buffer.alloc(0), // Placeholder
+        originalSize: 0,
+        optimizedSize: 0,
+        compressionRatio: 0,
+        dimensions: { original: { width: 0, height: 0 }, optimized: { width: 0, height: 0 } },
+        format: 'template',
+        processingTime,
+        metadata: {
+          contentType: 'graphics', // Use valid content type
+          qualityUsed: 0,
+          formatConverted: false,
+          originalFormat: 'template',
+          technique: 'comprehensive', // Use valid technique
+        }
+      }, `template-${templateType}-${Date.now()}`);
+
+      this.logger.log(`Template performance metrics recorded for ${templateType}: ${metrics.optimizationCount} optimizations, ${this.formatFileSize(metrics.sizeSavings)} saved, ${processingTime}ms`);
+
+    } catch (error) {
+      this.logger.warn(`Failed to record template performance metrics: ${error.message}`);
     }
   }
 }

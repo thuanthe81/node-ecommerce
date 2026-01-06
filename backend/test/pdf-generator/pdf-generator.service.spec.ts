@@ -12,6 +12,9 @@ import { PDFErrorHandlerService } from '../../src/pdf-generator/services/pdf-err
 import { PDFMonitoringService } from '../../src/pdf-generator/services/pdf-monitoring.service';
 import { PDFAuditService } from '../../src/pdf-generator/services/pdf-audit.service';
 import { PDFImageConverterService } from '../../src/pdf-generator/services/pdf-image-converter.service';
+import { PDFImageOptimizationMetricsService } from '../../src/pdf-generator/services/pdf-image-optimization-metrics.service';
+import { PDFTemplateLoaderService } from '../../src/pdf-generator/services/pdf-template-loader.service';
+import { TemplateVariableProcessorService } from '../../src/pdf-generator/services/template-variable-processor.service';
 import { OrderPDFData } from '../../src/pdf-generator/types/pdf.types';
 import { ShippingService } from '../../src/shipping/shipping.service';
 
@@ -33,6 +36,10 @@ describe('PDFGeneratorService', () => {
             formatCurrency: jest.fn().mockReturnValue('10 ₫'),
             formatDate: jest.fn().mockReturnValue('Dec 15, 2023'),
             translate: jest.fn().mockReturnValue('Translated Text'),
+            formatAddress: jest.fn().mockReturnValue('123 Main St\nAnytown, CA 12345\nUSA'),
+            formatPhoneNumber: jest.fn().mockReturnValue('+1234567890'),
+            getPaymentStatusText: jest.fn().mockReturnValue('Pending'),
+            generateBankTransferInstructions: jest.fn().mockReturnValue('Please transfer to account...'),
           },
         },
         {
@@ -42,6 +49,7 @@ describe('PDFGeneratorService', () => {
             enhanceHTMLAccessibility: jest.fn().mockReturnValue('<html>Enhanced Accessible HTML</html>'),
             enhanceImageAltText: jest.fn().mockReturnValue('<html>Enhanced Image Alt Text</html>'),
             generateAccessibilityMetadata: jest.fn().mockReturnValue({ title: 'Test PDF', author: 'Test' }),
+            generateAccessibilityCSS: jest.fn().mockReturnValue('/* accessibility css */'),
           },
         },
         {
@@ -49,12 +57,49 @@ describe('PDFGeneratorService', () => {
           useValue: {
             optimizeForDevice: jest.fn().mockReturnValue('<html>Optimized HTML</html>'),
             addNavigationAnchors: jest.fn().mockReturnValue('<html>Navigation HTML</html>'),
+            generateCompleteDeviceCSS: jest.fn().mockReturnValue('/* device css */'),
+            getDeviceOptimizedPDFOptions: jest.fn().mockReturnValue({
+              format: 'A4',
+              printBackground: true,
+              margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' },
+            }),
           },
         },
         {
           provide: PDFCompressionService,
           useValue: {
             compressPDF: jest.fn().mockResolvedValue(Buffer.from('compressed pdf')),
+            optimizeOrderDataForPDF: jest.fn().mockResolvedValue({
+              optimizedData: {},
+              optimizations: [],
+              sizeSavings: 0,
+            }),
+            optimizeImageForPDF: jest.fn().mockResolvedValue({
+              optimizedBuffer: Buffer.from('optimized-image-data'),
+              originalSize: 1000,
+              optimizedSize: 500,
+              compressionRatio: 0.5,
+              dimensions: {
+                original: { width: 800, height: 600 },
+                optimized: { width: 300, height: 225 },
+              },
+              format: 'jpeg',
+              processingTime: 100,
+              metadata: {
+                contentType: 'photo',
+                qualityUsed: 60,
+                formatConverted: false,
+                originalFormat: 'jpeg',
+                technique: 'comprehensive',
+              },
+            }),
+            getCompressionOptimizedPDFOptions: jest.fn().mockReturnValue({
+              format: 'A4',
+              printBackground: true,
+              margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' },
+            }),
+            validatePDFSize: jest.fn().mockReturnValue({ isValid: true, warnings: [] }),
+            generateAlternativeDeliveryMethods: jest.fn().mockReturnValue({ methods: [] }),
           },
         },
         {
@@ -89,6 +134,34 @@ describe('PDFGeneratorService', () => {
             clearCache: jest.fn(),
             getCacheStats: jest.fn().mockReturnValue({ size: 0, maxSize: 100 }),
             preloadImages: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: PDFImageOptimizationMetricsService,
+          useValue: {
+            recordPerformanceData: jest.fn(),
+            getOptimizationMetrics: jest.fn().mockReturnValue({
+              totalOptimizations: 0,
+              successfulOptimizations: 0,
+              failedOptimizations: 0,
+              averageProcessingTime: 0,
+              averageCompressionRatio: 0,
+              totalSizeSaved: 0,
+            }),
+          },
+        },
+        {
+          provide: PDFTemplateLoaderService,
+          useValue: {
+            loadTemplate: jest.fn().mockResolvedValue('<html>{{orderNumber}}</html>'),
+            loadStylesheet: jest.fn().mockResolvedValue('/* CSS styles */'),
+          },
+        },
+        {
+          provide: TemplateVariableProcessorService,
+          useValue: {
+            processVariables: jest.fn().mockReturnValue('<html>ORDER CONFIRMATION ORD-123 John Doe Test Product 30 ₫</html>'),
+            processPartials: jest.fn().mockImplementation((template, partials) => template),
           },
         },
         {

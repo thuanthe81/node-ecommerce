@@ -21,6 +21,7 @@ import { DesignSystemInjector } from './design-system-injector.service';
 import {
   getEmailTemplateTranslations,
   getOrderConfirmationTranslations,
+  getInvoiceEmailTranslations,
   getAdminOrderNotificationTranslations,
   getOrderCancellationTranslations,
   getAdminOrderCancellationTranslations,
@@ -407,6 +408,11 @@ export class VariableReplacerService implements IVariableReplacer {
       return this.getStatusText(status, locale as 'en' | 'vi');
     });
 
+    // Payment status text translation helper
+    this.registerHelper('getPaymentStatusText', (status: string, locale: string) => {
+      return this.getPaymentStatusText(status, locale as 'en' | 'vi');
+    });
+
     // Concat helper for URL building
     this.registerHelper('concat', (...args: any[]) => {
       // Remove the options object (last argument)
@@ -552,6 +558,8 @@ export class VariableReplacerService implements IVariableReplacer {
         return getOrderStatusUpdateTranslations(locale);
       case 'orders/template-order-status-update':
         return getOrderStatusUpdateTranslations(locale);
+      case 'orders/template-invoice':
+        return getInvoiceEmailTranslations(locale);
       default:
         return getOrderConfirmationTranslations(locale);
     }
@@ -609,10 +617,6 @@ export class VariableReplacerService implements IVariableReplacer {
     };
   }
 
-
-
-
-
   /**
    * Get localized status text
    */
@@ -621,11 +625,19 @@ export class VariableReplacerService implements IVariableReplacer {
     try {
       return translateOrderStatus(status as any, locale);
     } catch {
-      try {
-        return translatePaymentStatus(status as any, locale);
-      } catch {
-        return status; // Fallback to original status
-      }
+      return status;
+    }
+  }
+
+  /**
+   * Get localized status text
+   */
+  private getPaymentStatusText(status: string, locale: 'en' | 'vi'): string {
+    // Try to translate as order status first, then payment status
+    try {
+      return translatePaymentStatus(status as any, locale);
+    } catch {
+      return status;
     }
   }
 

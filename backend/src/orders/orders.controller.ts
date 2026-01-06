@@ -24,6 +24,7 @@ import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { SetOrderItemPriceDto } from './dto/set-order-item-price.dto';
 import { ResendEmailDto } from './dto/resend-email.dto';
+import { InvoiceEmailDto } from './dto/invoice-email.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
@@ -343,6 +344,90 @@ export class OrdersController {
         operation: 'resendEmail',
         email: resendEmailDto.email,
         locale: resendEmailDto.locale,
+      });
+
+      // Handle email service failures gracefully
+      if (error.message?.includes('email') || error.code === 'EMAIL_SERVICE_UNAVAILABLE') {
+        const emailErrorDetails = this.errorHandlingService.handleEmailServiceFailure(error, errorContext);
+        const httpException = this.errorHandlingService.createHttpException(emailErrorDetails);
+        throw httpException;
+      }
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Classify and handle other errors
+      const errorDetails = this.errorHandlingService.classifyError(error, errorContext);
+      const httpException = this.errorHandlingService.createHttpException(errorDetails);
+      throw httpException;
+    }
+  }
+
+  @Post(':orderNumber/send-invoice-email')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(EnhancedRateLimitGuard)
+  @EnhancedRateLimit({
+    windowMs: 300000, // 5 minute window
+    maxRequests: 5, // 5 invoice email requests per 5 minutes
+  })
+  async sendInvoiceEmail(
+    @Param('orderNumber') orderNumber: string,
+    @Body() invoiceEmailDto: InvoiceEmailDto,
+    @CurrentUser() user: { id: string; role: UserRole },
+  ) {
+    try {
+      const result = await this.ordersService.sendInvoiceEmail(
+        orderNumber,
+        invoiceEmailDto.email,
+        invoiceEmailDto.locale || 'vi',
+        user.id
+      );
+
+      if (!result.success) {
+        if (result.rateLimited) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.TOO_MANY_REQUESTS,
+              message: result.message,
+              error: 'Too Many Requests',
+              rateLimited: true,
+            },
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: result.message,
+            error: result.error || 'Bad Request',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: result.message,
+        success: true,
+        pdfGenerated: result.pdfGenerated,
+      };
+
+    } catch (error) {
+      // Enhanced error handling for invoice email
+      const errorContext = {
+        orderNumber,
+        adminUserId: user.id,
+        endpoint: `/orders/${orderNumber}/send-invoice-email`,
+        method: 'POST',
+        timestamp: new Date(),
+      };
+
+      this.errorHandlingService.logError(error, errorContext, {
+        operation: 'sendInvoiceEmail',
+        email: invoiceEmailDto.email,
+        locale: invoiceEmailDto.locale,
       });
 
       // Handle email service failures gracefully

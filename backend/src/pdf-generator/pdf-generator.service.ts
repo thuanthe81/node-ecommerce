@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, OnModuleInit } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -15,7 +15,7 @@ import { PDFImageConverterService } from './services/pdf-image-converter.service
 import { PaymentSettingsService } from '../payment-settings/payment-settings.service';
 
 @Injectable()
-export class PDFGeneratorService {
+export class PDFGeneratorService implements OnModuleInit {
   private readonly logger = new Logger(PDFGeneratorService.name);
   private browser: puppeteer.Browser | null = null;
 
@@ -32,7 +32,23 @@ export class PDFGeneratorService {
     private auditService: PDFAuditService,
     private imageConverter: PDFImageConverterService,
     private paymentSettingsService: PaymentSettingsService
-  ) {}
+  ) {
+    this.logger.log('PDFGeneratorService constructor completed');
+  }
+
+  /**
+   * Initialize the service after all dependencies are injected
+   */
+  onModuleInit() {
+    try {
+      // Configure template engine to use file-based templates by default
+      this.templateEngine.setTemplateMode(true);
+      this.logger.log('PDFGeneratorService initialized with file-based template system');
+    } catch (error) {
+      this.logger.error('Failed to initialize PDFGeneratorService', error);
+      throw error;
+    }
+  }
 
   /**
    * Initialize Puppeteer browser instance
@@ -185,57 +201,6 @@ export class PDFGeneratorService {
     try {
       this.logger.log(`Generating PDF for order ${orderData.orderNumber} in locale ${locale}`);
 
-      // Start audit logging
-      auditId = await this.auditService.logPDFGeneration(
-        orderData.orderNumber,
-        orderData.customerInfo?.email || 'unknown',
-        locale,
-        'order',
-        'started',
-        {
-          itemCount: orderData.items?.length || 0,
-          totalAmount: orderData.pricing?.total || 0,
-          paymentMethod: orderData.paymentMethod?.type || 'unknown',
-        }
-      );
-
-      // Validate order data before generation
-      const validationResult = this.validateOrderData(orderData);
-      if (!validationResult.isValid) {
-        const error = `Invalid order data: ${validationResult.errors.join(', ')}`;
-        const duration = Date.now() - startTime;
-
-        // Log validation failure
-        if (auditId) {
-          await this.auditService.logPDFGeneration(
-            orderData.orderNumber,
-            orderData.customerInfo.email,
-            locale,
-            'order',
-            'failed',
-            {},
-            duration,
-            error
-          );
-        }
-
-        // Record performance metric
-        this.monitoringService.recordPerformanceMetric('pdf_generation', duration, false, {
-          error: 'validation_failed',
-          orderNumber: orderData.orderNumber,
-        });
-
-        return {
-          success: false,
-          error,
-          metadata: {
-            generatedAt: new Date(),
-            locale,
-            orderNumber: orderData.orderNumber,
-          },
-        };
-      }
-
       // Optimize order data for smaller PDF size using enhanced image optimization with compressed storage
       const optimizationStartTime = Date.now();
       let optimizedData = orderData;
@@ -268,7 +233,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -423,6 +388,20 @@ export class PDFGeneratorService {
     try {
       this.logger.log(`Generating invoice PDF for order ${orderData.orderNumber} in locale ${locale}`);
 
+      // Validate template system before generation
+      const templateValidation = await this.validateTemplateSystem();
+      if (!templateValidation.isValid) {
+        return {
+          success: false,
+          error: `Template system validation failed: ${templateValidation.errors.join(', ')}`,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      }
+
       // Validate order data before generation
       const validationResult = this.validateOrderData(orderData);
       if (!validationResult.isValid) {
@@ -453,7 +432,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine for invoice with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'invoice');
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -635,6 +614,20 @@ export class PDFGeneratorService {
     try {
       this.logger.log(`Generating compressed PDF (${compressionLevel}) for order ${orderData.orderNumber} in locale ${locale}`);
 
+      // Validate template system before generation
+      const templateValidation = await this.validateTemplateSystem();
+      if (!templateValidation.isValid) {
+        return {
+          success: false,
+          error: `Template system validation failed: ${templateValidation.errors.join(', ')}`,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      }
+
       // Validate order data before generation
       const validationResult = this.validateOrderData(orderData);
       if (!validationResult.isValid) {
@@ -665,7 +658,7 @@ export class PDFGeneratorService {
       await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -753,6 +746,20 @@ export class PDFGeneratorService {
     try {
       this.logger.log(`Generating ${deviceType}-optimized PDF for order ${orderData.orderNumber} in locale ${locale}`);
 
+      // Validate template system before generation
+      const templateValidation = await this.validateTemplateSystem();
+      if (!templateValidation.isValid) {
+        return {
+          success: false,
+          error: `Template system validation failed: ${templateValidation.errors.join(', ')}`,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      }
+
       // Validate order data before generation
       const validationResult = this.validateOrderData(orderData);
       if (!validationResult.isValid) {
@@ -784,7 +791,7 @@ export class PDFGeneratorService {
       await page.setViewport(viewportSettings);
 
       // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale);
+      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
       // Enhance HTML with accessibility features
       htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
@@ -891,6 +898,118 @@ export class PDFGeneratorService {
       generatedAt: new Date(),
       locale,
       orderNumber: orderData.orderNumber,
+    };
+  }
+
+  /**
+   * Set template generation mode
+   * @param useFileBasedTemplates - Whether to use file-based templates
+   */
+  setTemplateMode(useFileBasedTemplates: boolean): void {
+    this.templateEngine.setTemplateMode(useFileBasedTemplates);
+    this.logger.log(`Template mode set to: ${useFileBasedTemplates ? 'file-based' : 'programmatic'}`);
+  }
+
+  /**
+   * Get current template generation mode
+   * @returns Whether file-based templates are enabled
+   */
+  getTemplateMode(): boolean {
+    return this.templateEngine.getTemplateMode();
+  }
+
+  /**
+   * Validate template system availability
+   * @returns Promise<ValidationResult> - Template system validation result
+   */
+  async validateTemplateSystem(): Promise<{ isValid: boolean; errors: string[] }> {
+    const errors: string[] = [];
+
+    try {
+      // Test template loading
+      await this.templateEngine.loadTemplateFile('order-confirmation');
+      await this.templateEngine.loadTemplateFile('invoice');
+    } catch (error) {
+      errors.push(`Template file loading failed: ${error.message}`);
+    }
+
+    try {
+      // Test template processing with minimal data
+      const testData = this.createMinimalTestData();
+      await this.templateEngine.generateHTMLFromTemplateFile('order-confirmation', testData, 'en');
+    } catch (error) {
+      errors.push(`Template processing failed: ${error.message}`);
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  /**
+   * Create minimal test data for template validation
+   * @returns Minimal OrderPDFData for testing
+   */
+  private createMinimalTestData(): any {
+    return {
+      orderNumber: 'TEST-001',
+      orderDate: new Date().toISOString(),
+      customerInfo: {
+        name: 'Test Customer',
+        email: 'test@example.com',
+      },
+      billingAddress: {
+        fullName: 'Test Customer',
+        addressLine1: 'Test Address',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'Test Country',
+      },
+      shippingAddress: {
+        fullName: 'Test Customer',
+        addressLine1: 'Test Address',
+        city: 'Test City',
+        state: 'Test State',
+        postalCode: '12345',
+        country: 'Test Country',
+      },
+      items: [
+        {
+          id: '1',
+          name: 'Test Product',
+          quantity: 1,
+          unitPrice: 100,
+          totalPrice: 100,
+        },
+      ],
+      pricing: {
+        subtotal: 100,
+        shippingCost: 10,
+        total: 110,
+      },
+      paymentMethod: {
+        type: 'bank_transfer',
+        displayName: 'Bank Transfer',
+        status: 'pending',
+      },
+      shippingMethod: {
+        name: 'Standard Shipping',
+      },
+      businessInfo: {
+        companyName: 'Test Company',
+        contactEmail: 'contact@example.com',
+        address: {
+          fullName: 'Test Company',
+          addressLine1: 'Test Address',
+          city: 'Test City',
+          state: 'Test State',
+          postalCode: '12345',
+          country: 'Test Country',
+        },
+      },
+      locale: 'en' as const,
     };
   }
 

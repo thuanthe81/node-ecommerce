@@ -2,16 +2,20 @@
 
 ## Overview
 
-This design implements a PDF order attachment system that addresses HTML syntax errors with the swaks email command by generating professional PDF documents containing complete order information and attaching them to simplified email notifications. The solution eliminates complex HTML formatting issues while providing customers with comprehensive, printable order records.
+This design implements a two-step email system with PDF order attachments that addresses HTML syntax errors with the swaks email command. The solution separates order confirmation from invoice delivery, ensuring customers always receive immediate confirmation while providing professional PDF documentation when pricing is finalized.
 
-The design builds upon the existing email infrastructure and order management system, introducing a new PDF generation service that creates branded, professional documents. The system uses simplified HTML email templates to avoid swaks syntax errors while ensuring customers receive complete order information through PDF attachments.
+The design builds upon the existing email infrastructure and order management system, introducing:
+1. **Confirmation emails** (always sent without PDF) to acknowledge order receipt
+2. **Invoice emails** (sent with PDF attachment) containing complete pricing and order details
+3. **Automatic invoice delivery** for orders with set prices
+4. **Admin-controlled invoice delivery** for quote orders after pricing
 
 Key improvements include:
+- Two-step email process for clear customer communication
 - Professional PDF generation with consistent branding
 - Simplified HTML email templates that avoid swaks syntax errors
 - Comprehensive order information in printable format
 - Temporary file storage with automatic cleanup
-- Resend email functionality from order confirmation pages
 - Multi-language support for both English and Vietnamese
 - Cross-platform compatibility for viewing and printing
 
@@ -123,24 +127,30 @@ interface PaymentMethodData {
 
 ### 2. Email Attachment System
 
-**Purpose**: Send simplified emails with PDF attachments using swaks
+**Purpose**: Send confirmation emails without attachments and invoice emails with PDF attachments
 
 **Interface**:
 ```typescript
 interface EmailAttachmentSystem {
-  sendOrderConfirmationWithPDF(
+  sendOrderConfirmation(
+    customerEmail: string,
+    orderData: OrderPDFData,
+    locale: 'en' | 'vi'
+  ): Promise<EmailSendResult>;
+
+  sendInvoiceEmailWithPDF(
     customerEmail: string,
     pdfFilePath: string,
     orderData: OrderPDFData,
     locale: 'en' | 'vi'
   ): Promise<EmailSendResult>;
 
-  resendOrderConfirmation(
-    orderNumber: string,
-    customerEmail: string
-  ): Promise<EmailSendResult>;
+  generateConfirmationEmailTemplate(
+    orderData: OrderPDFData,
+    locale: 'en' | 'vi'
+  ): SimplifiedEmailTemplate;
 
-  generateSimplifiedEmailTemplate(
+  generateInvoiceEmailTemplate(
     orderData: OrderPDFData,
     locale: 'en' | 'vi'
   ): SimplifiedEmailTemplate;
@@ -153,6 +163,7 @@ interface EmailSendResult {
   attachmentSize?: number;
   deliveryStatus: 'sent' | 'failed' | 'queued';
   timestamp: Date;
+  emailType: 'confirmation' | 'invoice';
 }
 
 interface SimplifiedEmailTemplate {
@@ -193,7 +204,7 @@ interface CleanupResult {
 
 ### 4. PDF Template Engine
 
-**Purpose**: Generate consistent, branded PDF layouts
+**Purpose**: Generate consistent, branded PDF layouts using file-based HTML templates
 
 **Interface**:
 ```typescript
@@ -202,6 +213,17 @@ interface PDFTemplateEngine {
   createInvoiceTemplate(data: OrderPDFData, locale: 'en' | 'vi'): PDFTemplate;
   applyBranding(template: PDFTemplate): PDFTemplate;
   validateTemplate(template: PDFTemplate): ValidationResult;
+  generateHTMLFromOrderData(orderData: OrderPDFData, locale: 'en' | 'vi'): Promise<string>;
+  loadTemplateFile(templateName: string): Promise<string>;
+  processTemplateVariables(template: string, data: OrderPDFData, locale: 'en' | 'vi'): string;
+}
+
+interface PDFTemplateLoaderService {
+  loadTemplate(templateName: 'order-confirmation' | 'invoice'): Promise<string>;
+  loadStylesheet(): Promise<string>;
+  validateTemplate(template: string): ValidationResult;
+  cacheTemplate(templateName: string, content: string): void;
+  invalidateCache(templateName?: string): void;
 }
 
 interface PDFTemplate {
@@ -210,6 +232,8 @@ interface PDFTemplate {
   footer: PDFSection;
   styling: PDFStyling;
   metadata: PDFMetadata;
+  templateFile?: string; // Path to template file
+  variables?: Record<string, any>; // Template variables
 }
 
 interface PDFStyling {
@@ -240,23 +264,78 @@ interface PDFStyling {
       left: number;
     };
   };
+  cssFile?: string; // Path to CSS file
 }
+
+interface TemplateVariableProcessor {
+  processVariables(template: string, data: OrderPDFData, locale: 'en' | 'vi'): string;
+  processConditionals(template: string, data: any): string;
+  processLoops(template: string, data: any): string;
+  escapeHtml(value: string): string;
+  formatValue(value: any, type: 'currency' | 'date' | 'text', locale: 'en' | 'vi'): string;
+}
+
+**Template Processing Order**:
+1. `processLoops` - Processes `{{#each}}` blocks and calls `processConditionals` for content within each iteration
+2. `processConditionals` - Processes `{{#if}}` blocks (both standalone and within loops)
+3. `processVariables` - Replaces variable placeholders with actual values
+4. `formatValue` and `escapeHtml` - Applied during variable replacement
 ```
 
-### 5. Resend Email Handler
+**Template File Structure**:
+- `backend/src/pdf-generator/templates/order-confirmation.html` - Order confirmation template
+- `backend/src/pdf-generator/templates/invoice.html` - Invoice template
+- `backend/src/pdf-generator/templates/pdf-styles.css` - Shared CSS styles
 
-**Purpose**: Handle resend email requests from order confirmation pages
+**Template Syntax**:
+- Variable placeholders: `{{variableName}}`
+- Nested objects: `{{customer.name}}`
+- Conditionals: `{{#if condition}}...{{/if}}`
+- Conditionals with else: `{{#if condition}}...{{else}}...{{/if}}`
+- Loops: `{{#each items}}...{{/each}}`
+- Localized text: `{{t 'translationKey'}}`
+
+### 6. Quote Item Utilities
+
+**Purpose**: Utility functions for handling quote item detection and validation (extracted from existing sanitizeOrderData logic)
 
 **Interface**:
 ```typescript
-interface ResendEmailHandler {
-  handleResendRequest(
+interface QuoteItemUtils {
+  hasQuoteItems(orderData: OrderPDFData): boolean;
+  validateAllItemsPriced(orderData: OrderPDFData): boolean;
+  canGeneratePDF(orderData: OrderPDFData): boolean;
+  canChangeOrderStatus(orderData: OrderPDFData): boolean;
+}
+```
+
+### 7. Admin Pricing Interface (Frontend Only)
+
+**Purpose**: Frontend interface logic for managing quote item pricing using existing backend APIs
+
+**Interface**:
+```typescript
+interface AdminPricingInterface {
+  shouldShowPricingForm(order: OrderData): boolean;
+  shouldShowResendButton(order: OrderData): boolean;
+  canEditOrderStatus(order: OrderData): boolean;
+}
+```
+
+### 5. Invoice Email Handler
+
+**Purpose**: Handle invoice email requests for orders with finalized pricing
+
+**Interface**:
+```typescript
+interface InvoiceEmailHandler {
+  handleInvoiceRequest(
     orderNumber: string,
     customerEmail: string,
     locale: 'en' | 'vi'
-  ): Promise<ResendResult>;
+  ): Promise<InvoiceResult>;
 
-  validateResendRequest(
+  validateInvoiceRequest(
     orderNumber: string,
     customerEmail: string
   ): Promise<ValidationResult>;
@@ -264,11 +343,12 @@ interface ResendEmailHandler {
   checkRateLimit(customerEmail: string): Promise<RateLimitResult>;
 }
 
-interface ResendResult {
+interface InvoiceResult {
   success: boolean;
   message: string;
   rateLimited?: boolean;
   error?: string;
+  pdfGenerated?: boolean;
 }
 
 interface RateLimitResult {
@@ -293,6 +373,10 @@ interface OrderItemData {
   totalPrice: number;
   imageUrl?: string;
   category?: string;
+  isQuoteItem?: boolean;
+  hasPrice?: boolean;
+  priceSetBy?: string;
+  priceSetAt?: Date;
 }
 
 interface AddressData {
@@ -515,6 +599,146 @@ interface PDFMetadata {
 ### Property 44: Resend rate limiting
 *For any* multiple resend email button clicks, the system should implement rate limiting to prevent spam and system abuse
 **Validates: Requirements 8.6**
+
+### Property 45: Standard order email with PDF
+*For any* order containing only priced items, the email system should send order confirmation email with PDF attachment using the standard flow
+**Validates: Requirements 9.1**
+
+### Property 46: Quote order email without PDF
+*For any* order containing any quote items (items without prices), the email system should send order confirmation email without PDF attachment
+**Validates: Requirements 9.2**
+
+### Property 47: Order status restriction for quote items
+*For any* order containing quote items, the order management system should prevent admin users from changing order status until all items have prices set
+**Validates: Requirements 9.3**
+
+### Property 48: Quote item price updates
+*For any* admin price setting operation for quote items, the order management system should update the item prices in the order
+**Validates: Requirements 9.4**
+
+### Property 49: Resend button visibility for priced orders
+*For any* order where all items have prices set, the admin interface should display a "Resend Order Confirmation Email" button
+**Validates: Requirements 9.5**
+
+### Property 50: Admin resend with PDF attachment
+*For any* admin resend confirmation button click for a fully-priced order, the email system should send order confirmation email with PDF attachment containing current pricing information
+**Validates: Requirements 9.6**
+
+### Property 51: Price input fields for quote items
+*For any* order with quote items being viewed in admin interface, the interface should display price input fields for items without prices
+**Validates: Requirements 10.1**
+
+### Property 52: Price validation for quote items
+*For any* admin price entry for quote items, the order management system should validate that prices are positive numbers
+**Validates: Requirements 10.2**
+
+### Property 53: Order total recalculation
+*For any* admin price saving operation for quote items, the order management system should update the order total calculations including taxes and shipping
+**Validates: Requirements 10.3**
+
+### Property 54: Admin controls enablement for priced orders
+*For any* order where all quote items have prices set, the admin interface should enable order status changes and display the resend email button
+**Validates: Requirements 10.4**
+
+### Property 55: PDF generation with current pricing
+*For any* admin resend email click for a fully-priced order, the PDF generator service should create a PDF with all current pricing information
+**Validates: Requirements 10.5**
+
+### Property 56: Admin resend success confirmation
+*For any* successful resend email operation, the admin interface should display confirmation that the customer has been notified with updated pricing
+**Validates: Requirements 10.6**
+
+### Property 57: Multiple price updates allowed
+*For any* quote item with previously set prices, the admin interface should allow editing and updating the prices multiple times
+**Validates: Requirements 10.7**
+
+### Property 59: Universal confirmation email without attachment
+*For any* order placed, the email system should send a confirmation email without PDF attachment to acknowledge receipt
+**Validates: Requirements 9.1, 11.1**
+
+### Property 60: Automatic invoice email for priced orders
+*For any* order containing only priced items, the email system should automatically send an invoice email with PDF attachment after the confirmation email
+**Validates: Requirements 9.2, 11.2**
+
+### Property 61: Single confirmation email for quote orders
+*For any* order containing quote items, the email system should send only the confirmation email without PDF attachment
+**Validates: Requirements 9.3, 11.3**
+
+### Property 62: Order status restriction for quote items
+*For any* order containing quote items, the order management system should prevent admin users from changing order status until all items have prices set
+**Validates: Requirements 9.4**
+
+### Property 63: Quote item price updates
+*For any* admin price setting operation for quote items, the order management system should update the item prices in the order
+**Validates: Requirements 9.5**
+
+### Property 64: Send invoice email button visibility
+*For any* order where all items have prices set, the admin interface should display a "Send Invoice Email" button instead of a resend button
+**Validates: Requirements 9.6**
+
+### Property 65: Price input fields for quote items
+*For any* order with quote items being viewed in admin interface, the interface should display price input fields for items without prices
+**Validates: Requirements 10.1**
+
+### Property 66: Price validation for quote items
+*For any* admin price entry for quote items, the order management system should validate that prices are positive numbers
+**Validates: Requirements 10.2**
+
+### Property 67: Order total recalculation after pricing
+*For any* admin price saving operation for quote items, the order management system should update the order total calculations including taxes and shipping
+**Validates: Requirements 10.3**
+
+### Property 68: Admin controls enablement for fully priced orders
+*For any* order where all quote items have prices set, the admin interface should enable order status changes and display the send invoice email button
+**Validates: Requirements 10.4**
+
+### Property 69: PDF generation for invoice emails
+*For any* admin "Send Invoice Email" click for a fully-priced order, the PDF generator service should create a PDF with all current pricing information
+**Validates: Requirements 10.5**
+
+### Property 70: Admin invoice email success confirmation
+*For any* successful invoice email operation, the admin interface should display confirmation that the customer has been notified with updated pricing
+**Validates: Requirements 10.6**
+
+### Property 71: Multiple price updates capability
+*For any* quote item with previously set prices, the admin interface should allow editing and updating the prices multiple times
+**Validates: Requirements 10.7**
+
+### Property 72: Price history maintenance
+*For any* quote item price update operation, the order management system should recalculate totals and maintain price history for audit purposes
+**Validates: Requirements 10.8**
+
+### Property 73: Invoice email after admin pricing
+*For any* admin price setting completion for quote items, the email system should send an invoice email with PDF attachment containing the final pricing
+**Validates: Requirements 11.4**
+
+### Property 74: Complete order details in invoice PDF
+*For any* invoice email sent, the PDF attachment should contain complete order details including all pricing information
+**Validates: Requirements 11.5**
+
+### Property 75: Current pricing accuracy in multiple PDFs
+*For any* multiple invoice emails for the same order, each PDF should reflect the current pricing at the time it was generated
+**Validates: Requirements 11.6**
+
+### Property 76: Template variable replacement completeness
+*For any* template file and order data, all template variables should be replaced with appropriate values and no placeholder variables should remain in the final HTML
+**Validates: Requirements 1.1, 6.1, 6.2**
+
+### Property 77: Template file loading reliability
+*For any* template file request, the system should either successfully load the template or provide a clear error message with fallback handling
+**Validates: Requirements 4.5, 4.6**
+
+### Property 78: Template conditional rendering accuracy
+*For any* template with conditional sections, the conditions should be evaluated correctly based on the order data and only appropriate sections should be rendered
+**Validates: Requirements 4.4, 6.1**
+
+### Property 79: Template loop processing correctness
+*For any* template with loop sections (like order items), all items should be rendered with correct data and formatting
+**Validates: Requirements 6.1, 6.5**
+
+### Property 80: Template localization consistency
+*For any* template rendered in a specific locale, all text elements should be in the correct language and formatting should follow locale conventions
+**Validates: Requirements 2.6**
 
 ## Error Handling
 

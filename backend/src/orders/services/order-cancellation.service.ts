@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AccessControlService, OrderAccessContext } from './access-control.service';
@@ -45,6 +47,7 @@ export class OrderCancellationService {
   constructor(
     private prisma: PrismaService,
     private accessControlService: AccessControlService,
+    @Inject(forwardRef(() => EmailEventPublisher))
     private emailEventPublisher: EmailEventPublisher,
     private errorHandlingService: ErrorHandlingService,
   ) {}

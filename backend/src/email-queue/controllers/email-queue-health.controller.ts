@@ -1,5 +1,6 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
+import { Public } from '../../auth/decorators/public.decorator';
 import { EmailQueueMonitoringService, QueueMetrics, HealthCheckResult } from '../services/email-queue-monitoring.service';
 import { EmailQueueConfigService } from '../services/email-queue-config.service';
 
@@ -11,7 +12,8 @@ import { EmailQueueConfigService } from '../services/email-queue-config.service'
  *
  * Requirements: 5.4, 5.5 - Health check endpoints and queue metrics
  */
-@Controller('api/email-queue/health')
+@Controller('email-queue/health')
+@Public()
 export class EmailQueueHealthController {
   constructor(
     private monitoringService: EmailQueueMonitoringService,

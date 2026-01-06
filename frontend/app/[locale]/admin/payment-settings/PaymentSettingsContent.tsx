@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
+import { SvgCheck, SvgX, SvgInfo } from '@/components/Svgs';
 import {
   paymentSettingsApi,
   BankTransferSettings,
@@ -209,19 +210,10 @@ export default function PaymentSettingsContent() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg
+                  <SvgCheck
                     className="h-5 w-5 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                    aria-hidden="true"
+                  />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-800">
@@ -237,19 +229,10 @@ export default function PaymentSettingsContent() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg
+                  <SvgX
                     className="h-5 w-5 text-red-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                    aria-hidden="true"
+                  />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-red-800">{error}</p>
@@ -368,19 +351,10 @@ export default function PaymentSettingsContent() {
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                         aria-label="Remove QR code"
                       >
-                        <svg
+                        <SvgX
                           className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
+                          aria-hidden="true"
+                        />
                       </button>
                     )}
                   </div>
@@ -437,19 +411,10 @@ export default function PaymentSettingsContent() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg
+                <SvgInfo
                   className="h-5 w-5 text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                  aria-hidden="true"
+                />
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-blue-800">

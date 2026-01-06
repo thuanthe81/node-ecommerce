@@ -12,6 +12,9 @@ import { PDFErrorHandlerService } from '../../src/pdf-generator/services/pdf-err
 import { PDFMonitoringService } from '../../src/pdf-generator/services/pdf-monitoring.service';
 import { PDFAuditService } from '../../src/pdf-generator/services/pdf-audit.service';
 import { PDFImageConverterService } from '../../src/pdf-generator/services/pdf-image-converter.service';
+import { PDFImageOptimizationMetricsService } from '../../src/pdf-generator/services/pdf-image-optimization-metrics.service';
+import { PDFTemplateLoaderService } from '../../src/pdf-generator/services/pdf-template-loader.service';
+import { TemplateVariableProcessorService } from '../../src/pdf-generator/services/template-variable-processor.service';
 import { ShippingService } from '../../src/shipping/shipping.service';
 import { OrderPDFData } from '../../src/pdf-generator/types/pdf.types';
 import * as fs from 'fs';
@@ -24,7 +27,40 @@ describe('PDF Generation Integration', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PDFGeneratorService,
-        PDFTemplateEngine,
+        {
+          provide: PDFTemplateEngine,
+          useValue: {
+            createOrderTemplate: jest.fn().mockResolvedValue({
+              header: { content: 'Header', styling: {} },
+              content: [{ content: 'Content', styling: {} }],
+              footer: { content: 'Footer', styling: {} },
+              styling: {
+                fonts: { primary: 'Arial', heading: 'Arial', monospace: 'Courier' },
+                colors: { primary: '#000', secondary: '#666', text: '#333', background: '#fff', border: '#ccc' },
+                spacing: { small: 8, medium: 16, large: 24 },
+                pageFormat: { size: 'A4', orientation: 'portrait', margins: { top: 20, right: 20, bottom: 20, left: 20 } }
+              },
+              metadata: { title: 'Order', author: 'AlaCraft', subject: 'Order Confirmation', creator: 'PDF Generator', producer: 'AlaCraft', creationDate: new Date(), keywords: ['order'] }
+            }),
+            createInvoiceTemplate: jest.fn().mockResolvedValue({
+              header: { content: 'Header', styling: {} },
+              content: [{ content: 'Content', styling: {} }],
+              footer: { content: 'Footer', styling: {} },
+              styling: {
+                fonts: { primary: 'Arial', heading: 'Arial', monospace: 'Courier' },
+                colors: { primary: '#000', secondary: '#666', text: '#333', background: '#fff', border: '#ccc' },
+                spacing: { small: 8, medium: 16, large: 24 },
+                pageFormat: { size: 'A4', orientation: 'portrait', margins: { top: 20, right: 20, bottom: 20, left: 20 } }
+              },
+              metadata: { title: 'Invoice', author: 'AlaCraft', subject: 'Invoice', creator: 'PDF Generator', producer: 'AlaCraft', creationDate: new Date(), keywords: ['invoice'] }
+            }),
+            generateHTMLFromTemplateFile: jest.fn().mockResolvedValue('<html><body>Test PDF Content</body></html>'),
+            generateHTMLFromOrderData: jest.fn().mockResolvedValue('<html><body>Test PDF Content</body></html>'),
+            loadTemplateFile: jest.fn().mockResolvedValue('<html><body>{{orderNumber}}</body></html>'),
+            setTemplateMode: jest.fn(),
+            validateTemplate: jest.fn().mockReturnValue({ isValid: true, errors: [], warnings: [] }),
+          },
+        },
         PDFDocumentStructureService,
         {
           provide: PDFLocalizationService,
@@ -106,6 +142,40 @@ describe('PDF Generation Integration', () => {
             getCacheStats: jest.fn().mockReturnValue({ size: 0, maxSize: 100 }),
             clearCache: jest.fn(),
             preloadImages: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: PDFImageOptimizationMetricsService,
+          useValue: {
+            recordImageOptimization: jest.fn(),
+            getOptimizationMetrics: jest.fn().mockReturnValue({
+              totalOptimizations: 0,
+              averageCompressionRatio: 0.5,
+              totalSizeSaved: 0,
+            }),
+            recordPerformanceMetric: jest.fn(),
+          },
+        },
+        {
+          provide: PDFTemplateLoaderService,
+          useValue: {
+            loadTemplate: jest.fn().mockResolvedValue('<html><body>{{orderNumber}}</body></html>'),
+            loadStylesheet: jest.fn().mockResolvedValue('body { font-family: Arial; }'),
+            validateTemplate: jest.fn().mockReturnValue({ isValid: true, errors: [], warnings: [] }),
+            cacheTemplate: jest.fn(),
+            invalidateCache: jest.fn(),
+          },
+        },
+        {
+          provide: TemplateVariableProcessorService,
+          useValue: {
+            processVariables: jest.fn().mockImplementation((template, data) =>
+              template.replace('{{orderNumber}}', data.orderNumber || 'TEST-ORDER')
+            ),
+            processConditionals: jest.fn().mockImplementation((template) => template),
+            processLoops: jest.fn().mockImplementation((template) => template),
+            escapeHtml: jest.fn().mockImplementation((value) => value),
+            formatValue: jest.fn().mockImplementation((value) => String(value)),
           },
         },
         {

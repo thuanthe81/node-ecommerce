@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { BlogPost } from '@/lib/blog-api';
+import { SvgUser, SvgCalendar, SvgChevronRight } from './Svgs';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -75,37 +76,11 @@ export default function BlogCard({ post }: BlogCardProps) {
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
+                <SvgUser className="w-4 h-4" aria-hidden="true" />
                 <span>{post.authorName}</span>
               </span>
               <span className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <SvgCalendar className="w-4 h-4" aria-hidden="true" />
                 <time dateTime={post.publishedAt || ''}>{formattedDate}</time>
               </span>
             </div>
@@ -115,20 +90,7 @@ export default function BlogCard({ post }: BlogCardProps) {
           <div className="mt-4">
             <span className="inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700">
               {t('readMore')}
-              <svg
-                className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              <SvgChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </span>
           </div>
         </div>

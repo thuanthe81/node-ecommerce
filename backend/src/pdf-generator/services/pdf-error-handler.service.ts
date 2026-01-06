@@ -2,6 +2,7 @@ import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { EmailAttachmentService } from './email-attachment.service';
 import { DocumentStorageService } from './document-storage.service';
 import { OrderPDFData } from '../types/pdf.types';
+import { getPdfErrorHandlingTranslations } from '@alacraft/shared';
 
 export interface ErrorContext {
   orderNumber?: string;
@@ -467,14 +468,13 @@ export class PDFErrorHandlerService {
     locale: 'en' | 'vi',
     context: ErrorContext
   ): any {
-    const errorMessage = locale === 'vi'
-      ? 'Chúng tôi gặp sự cố kỹ thuật khi tạo file PDF đơn hàng. Thông tin chi tiết đơn hàng được bao gồm bên dưới.'
-      : 'We encountered a technical issue generating your order PDF. Detailed order information is included below.';
+    // Get translations from shared library
+    const translations = getPdfErrorHandlingTranslations(locale);
+
+    const errorMessage = translations.technicalIssueMessage;
 
     return {
-      subject: locale === 'vi'
-        ? `Xác nhận đơn hàng - ${orderData.orderNumber}`
-        : `Order Confirmation - ${orderData.orderNumber}`,
+      subject: translations.orderConfirmationSubject.replace('{orderNumber}', orderData.orderNumber),
       errorMessage,
       orderData,
       context,

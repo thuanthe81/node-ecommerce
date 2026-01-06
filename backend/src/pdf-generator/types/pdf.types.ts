@@ -136,6 +136,8 @@ export interface PDFTemplate {
   footer: PDFSection;
   styling: PDFStyling;
   metadata: PDFMetadata;
+  templateFile?: string; // Path to template file when using file-based templates
+  variables?: Record<string, any>; // Template variables for file-based templates
 }
 
 export interface PDFSection {
@@ -190,6 +192,44 @@ export interface ValidationResult {
   errors: string[];
 }
 
+// Template validation types
+export interface TemplateValidationOptions {
+  checkSyntax?: boolean;
+  checkPlaceholders?: boolean;
+  checkStructure?: boolean;
+  checkCSS?: boolean;
+  checkCompatibility?: boolean;
+  templateVersion?: string;
+}
+
+export interface TemplateValidationReport {
+  templateName: string;
+  isValid: boolean;
+  errors: TemplateValidationError[];
+  warnings: TemplateValidationWarning[];
+  validationTime: number;
+  templateSize: number;
+  lastModified: Date;
+  version?: string;
+}
+
+export interface TemplateValidationError {
+  type: 'syntax' | 'structure' | 'placeholder' | 'css' | 'compatibility';
+  severity: 'error' | 'warning';
+  message: string;
+  line?: number;
+  column?: number;
+  context?: string;
+}
+
+export interface TemplateValidationWarning {
+  type: 'performance' | 'accessibility' | 'compatibility' | 'best-practice';
+  message: string;
+  suggestion?: string;
+  line?: number;
+  context?: string;
+}
+
 export interface SimplifiedEmailTemplate {
   subject: string;
   textContent: string;
@@ -234,6 +274,14 @@ export interface ResendResult {
   rateLimited?: boolean;
   error?: string;
   jobId?: string; // Job ID for tracking async email queue processing
+}
+
+export interface InvoiceResult {
+  success: boolean;
+  message: string;
+  rateLimited?: boolean;
+  error?: string;
+  pdfGenerated?: boolean;
 }
 
 export interface RateLimitResult {

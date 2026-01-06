@@ -84,59 +84,7 @@ export class TranslationService {
     },
   };
 
-  /**
-   * Shipping method translations
-   */
-  private readonly shippingMethodTranslations: Record<SupportedLocale, Record<string, string>> = {
-    en: {
-      'standard': 'Standard Shipping',
-      'standard_shipping': 'Standard Shipping',
-      'standardshipping': 'Standard Shipping',
-      'express': 'Express Shipping',
-      'express_shipping': 'Express Shipping',
-      'expressshipping': 'Express Shipping',
-      'overnight': 'Overnight Shipping',
-      'overnight_shipping': 'Overnight Shipping',
-      'overnightshipping': 'Overnight Shipping',
-      'international': 'International Shipping',
-      'international_shipping': 'International Shipping',
-      'internationalshipping': 'International Shipping',
-      'free': 'Free Shipping',
-      'free_shipping': 'Free Shipping',
-      'freeshipping': 'Free Shipping',
-      'pickup': 'Store Pickup',
-      'store_pickup': 'Store Pickup',
-      'storepickup': 'Store Pickup',
-      'same_day': 'Same Day Delivery',
-      'sameday': 'Same Day Delivery',
-      'same_day_delivery': 'Same Day Delivery',
-      'samedaydelivery': 'Same Day Delivery',
-    },
-    vi: {
-      'standard': 'Vận chuyển tiêu chuẩn',
-      'standard_shipping': 'Vận chuyển tiêu chuẩn',
-      'standardshipping': 'Vận chuyển tiêu chuẩn',
-      'express': 'Vận chuyển nhanh',
-      'express_shipping': 'Vận chuyển nhanh',
-      'expressshipping': 'Vận chuyển nhanh',
-      'overnight': 'Vận chuyển qua đêm',
-      'overnight_shipping': 'Vận chuyển qua đêm',
-      'overnightshipping': 'Vận chuyển qua đêm',
-      'international': 'Vận chuyển quốc tế',
-      'international_shipping': 'Vận chuyển quốc tế',
-      'internationalshipping': 'Vận chuyển quốc tế',
-      'free': 'Miễn phí vận chuyển',
-      'free_shipping': 'Miễn phí vận chuyển',
-      'freeshipping': 'Miễn phí vận chuyển',
-      'pickup': 'Nhận tại cửa hàng',
-      'store_pickup': 'Nhận tại cửa hàng',
-      'storepickup': 'Nhận tại cửa hàng',
-      'same_day': 'Giao hàng trong ngày',
-      'sameday': 'Giao hàng trong ngày',
-      'same_day_delivery': 'Giao hàng trong ngày',
-      'samedaydelivery': 'Giao hàng trong ngày',
-    },
-  };
+
 
   /**
    * Translate order status to localized text
@@ -209,34 +157,18 @@ export class TranslationService {
 
   /**
    * Translate shipping method to localized text
+   * @deprecated Use ShippingService.getShippingMethodDetails() or database shipping_methods table instead
    * @param method - Shipping method value
    * @param locale - Target locale
    * @returns Translated method text
    */
   translateShippingMethod(method: string, locale: SupportedLocale = 'en'): string {
+    console.warn('TranslationService.translateShippingMethod is deprecated. Use ShippingService.getShippingMethodDetails() or query the shipping_methods database table instead.');
+
     if (!method) return method;
 
-    // Normalize the method string to match translation keys
-    const normalizedMethod = method.toLowerCase().replace(/\s+/g, '').replace(/[-_]/g, '');
-    const translations = this.shippingMethodTranslations[locale] || this.shippingMethodTranslations.en;
-
-    // Try exact match first
-    if (translations[normalizedMethod]) {
-      return translations[normalizedMethod];
-    }
-
-    // Try with original method
-    if (translations[method.toLowerCase()]) {
-      return translations[method.toLowerCase()];
-    }
-
-    // Try with underscores
-    const underscoreMethod = method.toLowerCase().replace(/\s+/g, '_');
-    if (translations[underscoreMethod]) {
-      return translations[underscoreMethod];
-    }
-
-    // Return original if no translation found (allows for custom shipping methods)
+    // Return original method name as fallback
+    // Applications should use ShippingService.getShippingMethodDetails() for proper localization
     return method;
   }
 
@@ -280,44 +212,18 @@ export class TranslationService {
 
   /**
    * Get shipping method description with estimated delivery time
+   * @deprecated Use ShippingService.getShippingMethodDetails() or database shipping_methods table instead
    * @param method - Shipping method value
    * @param locale - Target locale
    * @returns Localized description with delivery estimate
    */
   getShippingMethodDescription(method: string, locale: SupportedLocale = 'en'): string {
+    console.warn('TranslationService.getShippingMethodDescription is deprecated. Use ShippingService.getShippingMethodDetails() or query the shipping_methods database table instead.');
+
     if (!method) return '';
 
-    const normalizedMethod = method.toLowerCase().replace(/\s+/g, '').replace(/[-_]/g, '');
-
-    if (normalizedMethod.includes('standard')) {
-      return locale === 'vi' ? 'Giao hàng tiêu chuẩn (3-5 ngày làm việc)' : 'Standard delivery (3-5 business days)';
-    }
-
-    if (normalizedMethod.includes('express')) {
-      return locale === 'vi' ? 'Giao hàng nhanh (1-2 ngày làm việc)' : 'Express delivery (1-2 business days)';
-    }
-
-    if (normalizedMethod.includes('overnight')) {
-      return locale === 'vi' ? 'Giao hàng qua đêm (trong ngày)' : 'Overnight delivery (same day)';
-    }
-
-    if (normalizedMethod.includes('international')) {
-      return locale === 'vi' ? 'Giao hàng quốc tế (7-14 ngày làm việc)' : 'International delivery (7-14 business days)';
-    }
-
-    if (normalizedMethod.includes('free')) {
-      return locale === 'vi' ? 'Miễn phí vận chuyển (3-7 ngày làm việc)' : 'Free shipping (3-7 business days)';
-    }
-
-    if (normalizedMethod.includes('pickup')) {
-      return locale === 'vi' ? 'Nhận tại cửa hàng (sẵn sàng trong 1-2 ngày)' : 'Store pickup (ready in 1-2 days)';
-    }
-
-    if (normalizedMethod.includes('sameday')) {
-      return locale === 'vi' ? 'Giao hàng trong ngày' : 'Same day delivery';
-    }
-
-    // Default description
+    // Return basic fallback description
+    // Applications should use ShippingService.getShippingMethodDetails() for proper localization
     return locale === 'vi' ? 'Giao hàng tiêu chuẩn (3-7 ngày làm việc)' : 'Standard delivery (3-7 business days)';
   }
 

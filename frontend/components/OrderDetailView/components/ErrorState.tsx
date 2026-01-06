@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { SvgRefresh, SvgClipboard, SvgShoppingBag } from '../../Svgs';
+import { SvgRefresh, SvgClipboard, SvgShoppingBag, SvgExclamationCircleLarge } from '../../Svgs';
 
 interface ErrorStateProps {
   error: string;
@@ -51,20 +51,10 @@ export function ErrorState({ error, locale, isAuthenticated, onRetry }: ErrorSta
           role="alert"
           aria-live="assertive"
         >
-          <svg
+          <SvgExclamationCircleLarge
             className="w-20 h-20 text-red-500 mx-auto mb-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
             aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          />
           <h1 className="text-3xl font-bold text-gray-900 mb-3">
             {errorTitle}
           </h1>

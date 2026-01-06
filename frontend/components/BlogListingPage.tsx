@@ -6,46 +6,56 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import BlogCard from './BlogCard';
 import Pagination from './Pagination';
 import { getBlogPosts, BlogPost } from '@/lib/blog-api';
-import { getBlogCategories } from '@/lib/blog-category-api';
+import { BlogCategory } from '@/lib/blog-category-api';
+import { SvgDocument } from '@/components/Svgs';
 
-interface BlogCategory {
-  id: string;
-  slug: string;
-  nameEn: string;
-  nameVi: string;
+interface BlogListingPageProps {
+  initialPosts?: BlogPost[];
+  initialCategories?: BlogCategory[];
+  initialTotalPages?: number;
+  initialCurrentPage?: number;
+  initialCategorySlug?: string;
 }
 
-export default function BlogListingPage() {
+export default function BlogListingPage({
+  initialPosts = [],
+  initialCategories = [],
+  initialTotalPages = 1,
+  initialCurrentPage = 1,
+  initialCategorySlug,
+}: BlogListingPageProps) {
   const locale = useLocale();
   const t = useTranslations('blog');
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<BlogCategory[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
+  const [categories] = useState<BlogCategory[]>(initialCategories);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const categorySlug = searchParams.get('category') || undefined;
+  const currentPage = parseInt(searchParams.get('page') || initialCurrentPage.toString(), 10);
+  const categorySlug = searchParams.get('category') || initialCategorySlug || undefined;
 
   useEffect(() => {
+    // Only fetch data if parameters have changed from initial values
+    const needsRefetch =
+      currentPage !== initialCurrentPage ||
+      categorySlug !== initialCategorySlug;
+
+    if (!needsRefetch) {
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Fetch blog posts
         const postsData = await getBlogPosts(currentPage, 10, categorySlug, locale);
         setPosts(postsData.posts);
         setTotalPages(postsData.totalPages);
-
-        // Fetch categories (only once)
-        if (categories.length === 0) {
-          const categoriesData = await getBlogCategories(locale);
-          setCategories(categoriesData);
-        }
       } catch (err) {
         console.error('Error fetching blog data:', err);
         setError(locale === 'vi' ? 'Không thể tải bài viết' : 'Failed to load blog posts');
@@ -55,7 +65,7 @@ export default function BlogListingPage() {
     };
 
     fetchData();
-  }, [currentPage, categorySlug, locale]);
+  }, [currentPage, categorySlug, locale, initialCurrentPage, initialCategorySlug]);
 
   const handleCategoryChange = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -124,20 +134,10 @@ export default function BlogListingPage() {
       {/* Blog Posts Grid */}
       {posts.length === 0 ? (
         <div className="text-center py-16">
-          <svg
+          <SvgDocument
             className="mx-auto h-12 w-12 text-gray-400 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
             aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+          />
           <p className="text-xl text-gray-600">{t('noPostsFound')}</p>
         </div>
       ) : (

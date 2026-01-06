@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminProtectedRouteProps {
@@ -12,16 +12,18 @@ interface AdminProtectedRouteProps {
 export default function AdminProtectedRoute({ children, locale }: AdminProtectedRouteProps) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        router.push(`/${locale}/login?redirect=/${locale}/admin`);
+        // Redirect to admin login with current path as redirect parameter
+        router.push(`/${locale}/admin/login?redirect=${encodeURIComponent(pathname)}`);
       } else if (user?.role !== 'ADMIN') {
         router.push(`/${locale}`);
       }
     }
-  }, [isAuthenticated, isLoading, user, locale, router]);
+  }, [isAuthenticated, isLoading, user, locale, router, pathname]);
 
   if (isLoading) {
     return (

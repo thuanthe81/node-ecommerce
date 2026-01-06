@@ -1,17 +1,18 @@
-# Design Document: Hybrid Authentication System
+# Design Document: OAuth-Only Customer Authentication with Admin Login Separation
 
 ## Overview
 
-This design document outlines the implementation of a hybrid authentication system that supports both OAuth authentication (Google and Facebook) and traditional email/password authentication. The solution integrates Passport.js OAuth strategies in the NestJS backend, maintains email/password authentication endpoints, updates the React frontend to support both authentication methods, protects the checkout route with authentication, and ensures seamless user experience across all authentication providers.
+This design document outlines the implementation of a dual authentication system that provides OAuth-only authentication (Google and Facebook) for customers and traditional email/password authentication for administrators. The solution separates customer and admin authentication flows, with customers using OAuth providers exclusively on the main login page, while administrators access a dedicated admin login page with email/password authentication.
 
 The key architectural changes include:
-- Adding OAuth provider strategies (Google and Facebook) to the backend
-- Maintaining email/password authentication endpoints and logic
-- Updating the database schema to support OAuth provider information
-- Modifying the frontend login page to display both OAuth buttons and email/password form
-- Adding registration page for email/password sign-up
-- Protecting the checkout route with authentication middleware
-- Implementing email-based account linking for users with the same email across all authentication methods
+- Removing email/password authentication from the main customer login page
+- Creating a dedicated `/admin/login` page for administrator authentication
+- Maintaining OAuth provider strategies (Google and Facebook) for customer authentication
+- Preserving email/password authentication endpoints specifically for admin users
+- Updating admin route protection to redirect to the admin login page
+- Ensuring seamless user experience for both customer and admin authentication flows
+
+The system enforces authentication for the checkout process for customers and provides administrators with secure access to the admin panel using traditional credentials.
 
 ## Architecture
 
@@ -63,17 +64,18 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant U as User
+    participant C as Customer
     participant F as Frontend
     participant B as Backend
     participant O as OAuth Provider
     participant DB as Database
 
-    U->>F: Click OAuth Button
+    Note over C,DB: Customer OAuth Flow
+    C->>F: Click OAuth Button on /login
     F->>B: GET /auth/google or /auth/facebook
     B->>O: Redirect to OAuth Consent
-    O->>U: Show Consent Screen
-    U->>O: Grant Permission
+    O->>C: Show Consent Screen
+    C->>O: Grant Permission
     O->>B: Callback with Auth Code
     B->>O: Exchange Code for Token
     O->>B: Return Access Token & Profile
@@ -86,27 +88,72 @@ sequenceDiagram
     B->>B: Generate JWT Tokens
     B->>F: Redirect with Tokens
     F->>F: Store Tokens in Context
-    F->>U: Redirect to Home/Checkout
+    F->>C: Redirect to Home/Checkout
+```
+
+### Admin Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant A as Admin
+    participant AF as Admin Frontend
+    participant B as Backend
+    participant DB as Database
+
+    Note over A,DB: Admin Email/Password Flow
+    A->>AF: Navigate to /admin/login
+    AF->>AF: Show Email/Password Form
+    A->>AF: Submit Credentials
+    AF->>B: POST /auth/admin/login
+    B->>DB: Validate Credentials
+    B->>B: Check User Role = ADMIN
+    B->>B: Generate JWT Tokens
+    B->>AF: Return Tokens
+    AF->>AF: Store Tokens in Context
+    AF->>A: Redirect to Admin Dashboard
 ```
 
 ### Checkout Protection Flow
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant C as Checkout Page
+    participant C as Customer
+    participant CP as Checkout Page
     participant A as Auth Context
     participant L as Login Page
 
-    U->>C: Navigate to /checkout
-    C->>A: Check isAuthenticated
+    C->>CP: Navigate to /checkout
+    CP->>A: Check isAuthenticated
     alt Not Authenticated
         A->>L: Redirect to /login?redirect=/checkout
-        U->>L: Complete OAuth Login
+        C->>L: Complete OAuth Login
         L->>A: Store Tokens
-        A->>C: Redirect to /checkout
+        A->>CP: Redirect to /checkout
     else Authenticated
-        C->>U: Show Checkout Form
+        CP->>C: Show Checkout Form
+    end
+```
+
+### Admin Route Protection Flow
+
+```mermaid
+sequenceDiagram
+    participant A as Admin
+    participant AP as Admin Page
+    participant AC as Auth Context
+    participant AL as Admin Login Page
+
+    A->>AP: Navigate to /admin/*
+    AP->>AC: Check isAuthenticated & role
+    alt Not Authenticated
+        AC->>AL: Redirect to /admin/login?redirect=/admin/*
+        A->>AL: Complete Email/Password Login
+        AL->>AC: Store Tokens
+        AC->>AP: Redirect to /admin/*
+    else Authenticated but not ADMIN
+        AC->>A: Redirect to Homepage
+    else Authenticated ADMIN
+        AP->>A: Show Admin Content
     end
 ```
 
@@ -201,13 +248,6 @@ class AuthService {
 
 **Authentication Endpoints (`backend/src/auth/auth.controller.ts`)**
 ```typescript
-interface RegisterDto {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
 interface LoginDto {
   email: string;
   password: string;
@@ -215,14 +255,11 @@ interface LoginDto {
 
 @Controller('auth')
 class AuthController {
-  // Email/Password Authentication
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto): Promise<AuthResponse>;
-
+  // Email/Password Authentication (Admin Only)
   @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<AuthResponse>;
 
-  // Google OAuth
+  // Google OAuth (Customer Only)
   @Get('google')
   @UseGuards(AuthGuard('google'))
   googleAuth(): void;
@@ -231,7 +268,7 @@ class AuthController {
   @UseGuards(AuthGuard('google'))
   googleAuthCallback(@Req() req, @Res() res): Promise<void>;
 
-  // Facebook OAuth
+  // Facebook OAuth (Customer Only)
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
   facebookAuth(): void;
@@ -244,43 +281,16 @@ class AuthController {
 
 ### Frontend Components
 
-#### 1. Updated Login Page
+#### 1. Updated Customer Login Page
 
-**Login Page (`frontend/app/[locale]/login/page.tsx`)**
+**Customer Login Page (`frontend/app/[locale]/login/page.tsx`)**
 ```typescript
 interface LoginPageProps {
   searchParams: { redirect?: string };
 }
 
-interface LoginFormData {
-  email: string;
-  password: string;
-}
-
 function LoginPage({ searchParams }: LoginPageProps) {
-  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleEmailPasswordLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const response = await authApi.login(formData.email, formData.password);
-      // Store tokens and redirect
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-
-      const redirectUrl = searchParams.redirect || '/';
-      router.push(redirectUrl);
-    } catch (err) {
-      setError('Invalid email or password');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleGoogleLogin = () => {
     const redirectUrl = searchParams.redirect || '/';
@@ -292,10 +302,77 @@ function LoginPage({ searchParams }: LoginPageProps) {
     window.location.href = `${API_URL}/auth/facebook?redirect=${redirectUrl}`;
   };
 
+  const handleRetry = () => {
+    setError('');
+  };
+
   return (
     <div>
-      {/* Email/Password Form */}
-      <form onSubmit={handleEmailPasswordLogin}>
+      {/* OAuth Buttons Only */}
+      <button onClick={handleGoogleLogin}>Sign in with Google</button>
+      <button onClick={handleFacebookLogin}>Sign in with Facebook</button>
+
+      {/* Admin Login Link */}
+      <Link href="/admin/login">Admin Login</Link>
+
+      {/* Error Display */}
+      {error && <div className="error">{error}</div>}
+    </div>
+  );
+}
+```
+
+#### 2. New Admin Login Page
+
+**Admin Login Page (`frontend/app/[locale]/admin/login/page.tsx`)**
+```typescript
+interface AdminLoginPageProps {
+  searchParams: { redirect?: string };
+}
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
+  const [formData, setFormData] = useState<LoginFormData>({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await authApi.login(formData.email, formData.password);
+      // Store tokens and redirect
+      localStorage.setItem('accessToken', response.accessToken);
+      localStorage.setItem('refreshToken', response.refreshToken);
+
+      // Check if user is admin
+      if (response.user.role !== 'ADMIN') {
+        // Redirect non-admin users to homepage
+        router.push('/');
+        return;
+      }
+
+      const redirectUrl = searchParams.redirect || '/admin';
+      router.push(redirectUrl);
+    } catch (err) {
+      setError('Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h2>Admin Login</h2>
+
+      {/* Email/Password Form Only */}
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
           value={formData.email}
@@ -316,183 +393,14 @@ function LoginPage({ searchParams }: LoginPageProps) {
         {error && <div className="error">{error}</div>}
       </form>
 
-      {/* Divider */}
-      <div className="divider">OR</div>
-
-      {/* OAuth Buttons */}
-      <button onClick={handleGoogleLogin}>Sign in with Google</button>
-      <button onClick={handleFacebookLogin}>Sign in with Facebook</button>
-
-      {/* Register Link */}
-      <Link href="/register">Don't have an account? Register</Link>
+      {/* Back to Customer Login */}
+      <Link href="/login">Customer Login</Link>
     </div>
   );
 }
 ```
 
-#### 1a. Registration Page
-
-**Registration Page (`frontend/app/[locale]/register/page.tsx`)**
-```typescript
-interface RegisterFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface PasswordValidation {
-  minLength: boolean;
-  hasUpperCase: boolean;
-  hasLowerCase: boolean;
-  hasNumber: boolean;
-}
-
-function RegisterPage() {
-  const [formData, setFormData] = useState<RegisterFormData>({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
-    minLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasNumber: false,
-  });
-
-  const validatePassword = (password: string): PasswordValidation => {
-    return {
-      minLength: password.length >= 8,
-      hasUpperCase: /[A-Z]/.test(password),
-      hasLowerCase: /[a-z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-    };
-  };
-
-  const handlePasswordChange = (password: string) => {
-    setFormData({ ...formData, password });
-    setPasswordValidation(validatePassword(password));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: 'Passwords do not match' });
-      return;
-    }
-
-    // Validate password requirements
-    const validation = validatePassword(formData.password);
-    if (!Object.values(validation).every(Boolean)) {
-      setErrors({ password: 'Password does not meet requirements' });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await authApi.register({
-        email: formData.email,
-        password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-      });
-
-      // Store tokens and redirect
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
-      router.push('/');
-    } catch (err: any) {
-      if (err.response?.status === 409) {
-        setErrors({ email: 'Email already registered' });
-      } else {
-        setErrors({ general: 'Registration failed. Please try again.' });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={formData.firstName}
-          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-          placeholder="First Name"
-          required
-        />
-        <input
-          type="text"
-          value={formData.lastName}
-          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-          placeholder="Last Name"
-          required
-        />
-        <input
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="Email"
-          required
-        />
-        {errors.email && <div className="error">{errors.email}</div>}
-
-        <input
-          type="password"
-          value={formData.password}
-          onChange={(e) => handlePasswordChange(e.target.value)}
-          placeholder="Password"
-          required
-        />
-        {/* Password validation indicators */}
-        <div className="password-requirements">
-          <div className={passwordValidation.minLength ? 'valid' : 'invalid'}>
-            At least 8 characters
-          </div>
-          <div className={passwordValidation.hasUpperCase ? 'valid' : 'invalid'}>
-            One uppercase letter
-          </div>
-          <div className={passwordValidation.hasLowerCase ? 'valid' : 'invalid'}>
-            One lowercase letter
-          </div>
-          <div className={passwordValidation.hasNumber ? 'valid' : 'invalid'}>
-            One number
-          </div>
-        </div>
-
-        <input
-          type="password"
-          value={formData.confirmPassword}
-          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-          placeholder="Confirm Password"
-          required
-        />
-        {errors.confirmPassword && <div className="error">{errors.confirmPassword}</div>}
-
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Register'}
-        </button>
-        {errors.general && <div className="error">{errors.general}</div>}
-      </form>
-
-      <Link href="/login">Already have an account? Sign in</Link>
-    </div>
-  );
-}
-```
-
-#### 2. Updated Auth Context
+#### 3. Updated Auth Context
 
 **Auth Context (`frontend/contexts/AuthContext.tsx`)**
 ```typescript
@@ -501,7 +409,6 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -534,13 +441,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
     await fetchUser();
   };
 
-  const register = async (data: RegisterData) => {
-    const response = await authApi.register(data);
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    await fetchUser();
-  };
-
   const logout = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
     if (refreshToken) {
@@ -564,51 +464,49 @@ function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout, refreshUser: fetchUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, logout, refreshUser: fetchUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 ```
 
-#### 3. Protected Checkout Route
+#### 4. Updated Admin Protected Route
 
-**Checkout Protection (`frontend/app/[locale]/checkout/page.tsx`)**
+**Admin Route Protection (`frontend/components/AdminProtectedRoute.tsx`)**
 ```typescript
-function CheckoutPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+function AdminProtectedRoute({ children, locale }: AdminProtectedRouteProps) {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        // Redirect to admin login instead of main login
+        router.push(`/${locale}/admin/login?redirect=${encodeURIComponent(pathname)}`);
+      } else if (user?.role !== 'ADMIN') {
+        router.push(`/${locale}`);
+      }
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
+  }, [isAuthenticated, isLoading, user, locale, router, pathname]);
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
     return null;
   }
 
-  return <CheckoutContent />;
+  return <>{children}</>;
 }
 ```
 
-#### 4. Updated Auth API
+#### 5. Updated Auth API
 
 **Auth API Client (`frontend/lib/auth-api.ts`)**
 ```typescript
-interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-}
-
 interface AuthResponse {
   accessToken: string;
   refreshToken: string;
@@ -616,11 +514,6 @@ interface AuthResponse {
 }
 
 export const authApi = {
-  register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await apiClient.post('/auth/register', data);
-    return response.data;
-  },
-
   login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/login', { email, password });
     return response.data;
@@ -743,97 +636,85 @@ model User {
 
 *A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-### Property 1: OAuth Callback Profile Processing
+### Property 1: OAuth Flow Initiation
+*For any* OAuth provider (Google or Facebook), when a user clicks the OAuth button on the main login page, the system should redirect to the provider's OAuth consent screen with correct parameters.
+**Validates: Requirements 1.1, 2.1, 7.5**
+
+### Property 2: OAuth Profile Processing
 *For any* valid OAuth callback from Google or Facebook, the system should receive and correctly extract the user's profile information including email, first name, and last name.
 **Validates: Requirements 1.2, 2.2, 5.4**
 
-### Property 2: OAuth Token Generation
+### Property 3: OAuth Token Generation
 *For any* successful OAuth authentication (Google or Facebook), the system should create or retrieve the user account and issue both an access token and a refresh token.
 **Validates: Requirements 1.3, 2.3, 5.5**
 
-### Property 3: OAuth Post-Authentication Redirect
+### Property 4: OAuth Post-Authentication Redirect
 *For any* successful OAuth authentication, the system should redirect the user to the homepage (or specified redirect URL) with authenticated session state.
 **Validates: Requirements 1.4, 2.4**
 
-### Property 4: OAuth Error Handling
+### Property 5: OAuth Error Handling
 *For any* failed OAuth authentication attempt, the system should display an appropriate error message and remain on the login page.
 **Validates: Requirements 1.5, 2.5**
 
-### Property 5: Checkout Authentication Requirement
-*For any* unauthenticated user attempting to access the checkout page, the system should redirect to the login page with the checkout URL as the redirect parameter.
+### Property 6: OAuth User Creation with Defaults
+*For any* first-time OAuth user, the system should create a new user account with email verification set to true, role set to CUSTOMER, and all profile information from the OAuth provider.
+**Validates: Requirements 3.3, 3.4, 3.5, 3.6**
+
+### Property 7: OAuth Provider Information Storage
+*For any* OAuth user creation, the system should store the OAuth provider name, provider user ID, and username (if available) in the user record.
+**Validates: Requirements 3.1, 3.6**
+
+### Property 8: Returning OAuth User Handling
+*For any* user authenticating via OAuth with an existing OAuth account, the system should retrieve the existing user account and issue new tokens without creating a duplicate.
+**Validates: Requirements 3.2**
+
+### Property 9: Checkout Authentication Requirement
+*For any* unauthenticated user attempting to access the checkout page, the system should redirect to the main login page with the checkout URL as the redirect parameter.
 **Validates: Requirements 4.1**
 
-### Property 6: Post-Login Checkout Redirect
+### Property 10: Post-Login Checkout Redirect
 *For any* user who authenticates from a checkout redirect, the system should redirect back to the checkout page after successful authentication.
-**Validates: Requirements 4.2, 14.1**
+**Validates: Requirements 4.2**
 
-### Property 7: Session Expiration Handling
+### Property 11: Authenticated Checkout Access
+*For any* authenticated user, the system should allow access to the checkout page and display the checkout form.
+**Validates: Requirements 4.3**
+
+### Property 12: Session Expiration Handling
 *For any* authenticated user whose session expires during checkout, the system should redirect to the login page with a session expiration message.
 **Validates: Requirements 4.4**
 
-### Property 8: OAuth Token Validation
+### Property 13: OAuth Token Validation
 *For any* OAuth callback received by the Auth Controller, the Auth Service should validate the OAuth token with the provider.
 **Validates: Requirements 5.3**
 
-### Property 9: OAuth User Creation with Defaults
-*For any* first-time OAuth user, the system should create a new user account with email verification set to true, role set to CUSTOMER, and all profile information from the OAuth provider.
-**Validates: Requirements 6.1, 6.4, 6.5**
+### Property 14: Admin Login Authentication
+*For any* valid admin credentials submitted on the admin login page, the system should authenticate the user and redirect to the admin dashboard.
+**Validates: Requirements 8.2**
 
-### Property 10: OAuth Provider Information Storage
-*For any* OAuth user creation, the system should store the OAuth provider name, provider user ID, and username (if available) in the user record.
-**Validates: Requirements 6.2, 6.6, 6.7**
+### Property 15: Admin Login Error Handling
+*For any* invalid credentials submitted on the admin login page, the system should display an error message and remain on the admin login page.
+**Validates: Requirements 8.3**
 
-### Property 11: Returning OAuth User Handling
-*For any* user authenticating via OAuth with an existing OAuth account, the system should retrieve the existing user account and issue new tokens without creating a duplicate.
-**Validates: Requirements 6.3**
-
-### Property 12: Email-Based Account Linking
-*For any* OAuth authentication where the email matches an existing user account, the system should link the OAuth provider credentials to the existing account rather than creating a duplicate.
-**Validates: Requirements 12.1, 12.2, 12.4**
-
-### Property 13: Multi-Provider Account Consistency
-*For any* user with multiple OAuth providers linked (Google and Facebook), authenticating via either provider should return the same user account and maintain both provider IDs in the user record.
-**Validates: Requirements 12.3, 12.5**
-
-### Property 14: Cart Preservation During Authentication
-*For any* user's cart, when the user authenticates via OAuth after being redirected from checkout, the cart contents should remain unchanged.
-**Validates: Requirements 14.2**
-
-### Property 15: Order Association with User Account
-*For any* authenticated user completing checkout, the system should associate the created order with the user's account.
-**Validates: Requirements 14.3**
-
-### Property 16: Email/Password Registration
-*For any* valid registration data (email, password, first name, last name), the system should create a new user account with hashed password and issue authentication tokens.
-**Validates: Requirements 15.3**
-
-### Property 17: Password Hashing Security
-*For any* password stored in the database, the password should be hashed using bcrypt and never stored in plain text.
+### Property 16: Admin Route Protection
+*For any* unauthenticated user attempting to access admin pages, the system should redirect to `/admin/login` instead of the main login page.
 **Validates: Requirements 8.5**
 
-### Property 18: Email/Password Login Validation
-*For any* login attempt with valid credentials, the system should authenticate the user and issue tokens; for invalid credentials, the system should reject authentication.
-**Validates: Requirements 3.2, 3.3**
+### Property 17: Non-Admin User Redirect
+*For any* non-admin user who successfully authenticates on the admin login page, the system should redirect them to the main homepage.
+**Validates: Requirements 8.6**
 
-### Property 19: Password Validation Requirements
-*For any* password during registration, if it does not meet minimum requirements (8 characters, uppercase, lowercase, number), the system should reject the registration.
-**Validates: Requirements 16.1, 16.2, 16.3**
+### Property 18: Admin Credential Validation
+*For any* admin login request, the system should validate credentials using secure password hashing and return tokens only for valid credentials.
+**Validates: Requirements 9.1, 9.2**
 
-### Property 20: Password Confirmation Matching
-*For any* registration attempt, if the password and confirm password fields do not match, the system should reject the registration.
-**Validates: Requirements 16.4**
+### Property 19: Admin Role Verification
+*For any* user attempting to access admin features, the system should verify the user has ADMIN role before allowing access.
+**Validates: Requirements 9.5**
 
-### Property 21: Duplicate Email Prevention
-*For any* registration attempt with an email that already exists, the system should reject the registration and display an appropriate error message.
-**Validates: Requirements 15.4**
-
-### Property 22: Hybrid Account Linking
-*For any* user who registers with email/password using an email that exists via OAuth, or vice versa, the system should link the credentials to the existing account.
-**Validates: Requirements 18.1, 18.2, 18.3**
-
-### Property 23: Multi-Method Authentication
-*For any* user with both OAuth and email/password credentials linked, the user should be able to authenticate using any of the linked methods.
-**Validates: Requirements 18.3, 18.4**
+### Property 20: Admin API Functionality
+*For any* admin authentication request, the API client should include the admin login function and the Auth Context should provide the admin login method.
+**Validates: Requirements 9.3, 9.4**
 
 ## Error Handling
 

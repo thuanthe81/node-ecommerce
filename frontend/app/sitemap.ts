@@ -1,157 +1,41 @@
 import { MetadataRoute } from 'next';
+import { generateSitemapData, convertToMetadataRoute } from '@/lib/sitemap-utils';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
+/**
+ * Main sitemap that includes all content types
+ * This serves as the primary sitemap.xml file
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Static pages
-  const staticPages = [
-    '',
-    '/products',
-    '/about',
-    '/contact',
-    '/faq',
-    '/privacy',
-    '/terms',
-    '/shipping-policy',
-    '/returns',
-  ];
+  try {
+    const sitemapData = await generateSitemapData();
 
-  const staticRoutes: MetadataRoute.Sitemap = [];
+    // Combine all sitemap entries
+    const allEntries = [
+      ...sitemapData.staticPages,
+      ...sitemapData.products,
+      ...sitemapData.categories,
+      ...sitemapData.blogPosts,
+    ];
 
-  // Add both locales for each static page
-  for (const page of staticPages) {
-    // Vietnamese (default)
-    staticRoutes.push({
-      url: `${SITE_URL}${page}`,
-      lastModified: new Date(),
-      changeFrequency: page === '' ? 'daily' : 'weekly',
-      priority: page === '' ? 1.0 : 0.8,
-      alternates: {
-        languages: {
-          vi: `${SITE_URL}${page}`,
-          en: `${SITE_URL}/en${page}`,
+    return convertToMetadataRoute(allEntries);
+  } catch (error) {
+    console.error('Error generating main sitemap:', error);
+
+    // Return minimal sitemap on error
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    return [
+      {
+        url: SITE_URL,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1.0,
+        alternates: {
+          languages: {
+            vi: SITE_URL,
+            en: `${SITE_URL}/en`,
+          },
         },
       },
-    });
+    ];
   }
-
-  // Fetch dynamic product pages
-  try {
-    const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?limit=1000`);
-    if (productsResponse.ok) {
-      const productsData = await productsResponse.json();
-      const products = productsData.data || [];
-
-      for (const product of products) {
-        staticRoutes.push({
-          url: `${SITE_URL}/products/${product.slug}`,
-          lastModified: new Date(product.updatedAt || product.createdAt),
-          changeFrequency: 'weekly',
-          priority: 0.7,
-          alternates: {
-            languages: {
-              vi: `${SITE_URL}/products/${product.slug}`,
-              en: `${SITE_URL}/en/products/${product.slug}`,
-            },
-          },
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching products for sitemap:', error);
-  }
-
-  // Fetch dynamic category pages
-  try {
-    const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
-    if (categoriesResponse.ok) {
-      const categories = await categoriesResponse.json();
-
-      for (const category of categories) {
-        staticRoutes.push({
-          url: `${SITE_URL}/categories/${category.slug}`,
-          lastModified: new Date(),
-          changeFrequency: 'weekly',
-          priority: 0.6,
-          alternates: {
-            languages: {
-              vi: `${SITE_URL}/categories/${category.slug}`,
-              en: `${SITE_URL}/en/categories/${category.slug}`,
-            },
-          },
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching categories for sitemap:', error);
-  }
-
-  // Fetch dynamic content pages
-  try {
-    const contentResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/content/pages`);
-    if (contentResponse.ok) {
-      const pages = await contentResponse.json();
-
-      for (const page of pages) {
-        if (page.isPublished) {
-          staticRoutes.push({
-            url: `${SITE_URL}/pages/${page.slug}`,
-            lastModified: new Date(page.updatedAt),
-            changeFrequency: 'monthly',
-            priority: 0.5,
-            alternates: {
-              languages: {
-                vi: `${SITE_URL}/pages/${page.slug}`,
-                en: `${SITE_URL}/en/pages/${page.slug}`,
-              },
-            },
-          });
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching content pages for sitemap:', error);
-  }
-
-  // Add blog listing page
-  staticRoutes.push({
-    url: `${SITE_URL}/blog`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.7,
-    alternates: {
-      languages: {
-        vi: `${SITE_URL}/blog`,
-        en: `${SITE_URL}/en/blog`,
-      },
-    },
-  });
-
-  // Fetch dynamic blog posts
-  try {
-    const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/content/blog?limit=1000`);
-    if (blogResponse.ok) {
-      const blogData = await blogResponse.json();
-      const posts = blogData.posts || [];
-
-      for (const post of posts) {
-        staticRoutes.push({
-          url: `${SITE_URL}/blog/${post.slug}`,
-          lastModified: new Date(post.updatedAt || post.publishedAt),
-          changeFrequency: 'weekly',
-          priority: 0.7,
-          alternates: {
-            languages: {
-              vi: `${SITE_URL}/blog/${post.slug}`,
-              en: `${SITE_URL}/en/blog/${post.slug}`,
-            },
-          },
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching blog posts for sitemap:', error);
-  }
-
-  return staticRoutes;
 }

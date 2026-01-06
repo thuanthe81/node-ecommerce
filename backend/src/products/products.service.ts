@@ -394,6 +394,82 @@ export class ProductsService {
     return result;
   }
 
+  async findBySlugEnhanced(slug: string) {
+    // Enhanced version for SSR with additional metadata
+    const cacheKey = `${CONSTANTS.CACHE_KEYS.PRODUCTS.BY_SLUG(slug)}:enhanced`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const product = await this.prisma.product.findUnique({
+      where: { slug },
+      include: {
+        category: {
+          include: {
+            parent: true,
+          },
+        },
+        images: {
+          orderBy: { displayOrder: 'asc' },
+        },
+        reviews: {
+          where: { isApproved: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        _count: {
+          select: { reviews: true },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // Calculate average rating
+    const avgRating = await this.prisma.review.aggregate({
+      where: {
+        productId: product.id,
+        isApproved: true,
+      },
+      _avg: {
+        rating: true,
+      },
+    });
+
+    // Enhanced product data with SSR-specific fields
+    const result = {
+      ...product,
+      averageRating: avgRating._avg.rating || 0,
+      reviewCount: product._count.reviews,
+      availability: product.stockQuantity > 0 ? 'InStock' as const : 'OutOfStock' as const,
+      brand: 'Handmade Ecommerce', // Default brand
+      // Add enhanced image data
+      images: product.images.map(img => ({
+        ...img,
+        width: 800, // Default width
+        height: 800, // Default height
+        isPrimary: img.displayOrder === 0,
+      })),
+    };
+
+    // Cache for 10 minutes (600 seconds for ISR)
+    await this.cacheManager.set(cacheKey, result, 600000);
+
+    return result;
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     // Check if product exists
     const product = await this.prisma.product.findUnique({
@@ -529,6 +605,63 @@ export class ProductsService {
   async getCount() {
     const count = await this.prisma.product.count();
     return { count };
+  }
+
+  async getPopularSlugs(limit: number = 50) {
+    // Get popular products based on featured status and recent creation
+    // In a real implementation, this could be based on view counts, sales, etc.
+    const products = await this.prisma.product.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { isFeatured: true },
+          { stockQuantity: { gt: 0 } }, // In stock products
+        ],
+      },
+      select: {
+        slug: true,
+      },
+      orderBy: [
+        { isFeatured: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: limit,
+    });
+
+    return products.map(product => product.slug);
+  }
+
+  async getFeatured(limit: number = 10) {
+    // Try to get from cache
+    const cacheKey = `${CONSTANTS.CACHE_KEYS.PRODUCTS.LIST}:featured:${limit}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        isActive: true,
+        isFeatured: true,
+      },
+      include: {
+        category: true,
+        images: {
+          orderBy: { displayOrder: 'asc' },
+          take: 1,
+        },
+        _count: {
+          select: { reviews: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    // Cache for 5 minutes
+    await this.cacheManager.set(cacheKey, products, 300000);
+
+    return products;
   }
 
   /**

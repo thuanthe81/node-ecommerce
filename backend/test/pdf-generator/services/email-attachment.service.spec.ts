@@ -11,6 +11,7 @@ import { PDFAuditService } from '../../../src/pdf-generator/services/pdf-audit.s
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { FooterSettingsService } from '../../../src/footer-settings/footer-settings.service';
 import { BusinessInfoService } from '../../../src/common/services/business-info.service';
+import { OrdersService } from '../../../src/orders/orders.service';
 import { OrderPDFData } from '../../../src/pdf-generator/types/pdf.types';
 
 // Mock fs module
@@ -98,6 +99,11 @@ describe('EmailAttachmentService', () => {
     }),
   };
 
+  const mockOrdersService = {
+    findOneByNumber: jest.fn(),
+    findOne: jest.fn(),
+  };
+
   beforeEach(async () => {
     // Mock fs operations
     const fs = require('fs');
@@ -116,6 +122,7 @@ describe('EmailAttachmentService', () => {
         { provide: PDFMonitoringService, useValue: mockPDFMonitoringService },
         { provide: PDFAuditService, useValue: mockPDFAuditService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: OrdersService, useValue: mockOrdersService },
         { provide: FooterSettingsService, useValue: mockFooterSettingsService },
         { provide: BusinessInfoService, useValue: mockBusinessInfoService },
       ],
@@ -218,7 +225,7 @@ describe('EmailAttachmentService', () => {
 
   describe('resendOrderConfirmation', () => {
     it('should handle order not found', async () => {
-      mockPrismaService.order.findUnique.mockResolvedValue(null);
+      mockOrdersService.findOneByNumber.mockResolvedValue(null);
 
       const result = await service.resendOrderConfirmation(
         'ORD-999',
@@ -237,7 +244,7 @@ describe('EmailAttachmentService', () => {
         createdAt: new Date(),
       };
 
-      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
+      mockOrdersService.findOneByNumber.mockResolvedValue(mockOrder);
 
       const result = await service.resendOrderConfirmation(
         'ORD-123',

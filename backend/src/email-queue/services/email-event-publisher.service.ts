@@ -527,6 +527,7 @@ export class EmailEventPublisher implements OnModuleDestroy {
   private getDeduplicationWindowSize(eventType: EmailEventType): number {
     const windowSizes = {
       [EmailEventType.ORDER_CONFIRMATION_RESEND]: 15 * 60 * 1000, // 15 minutes
+      [EmailEventType.INVOICE_EMAIL]: 10 * 60 * 1000, // 10 minutes
       [EmailEventType.ORDER_CONFIRMATION]: 5 * 60 * 1000, // 5 minutes
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 3 * 60 * 1000, // 3 minutes
       [EmailEventType.SHIPPING_NOTIFICATION]: 2 * 60 * 1000, // 2 minutes
@@ -592,6 +593,10 @@ export class EmailEventPublisher implements OnModuleDestroy {
 
       case EmailEventType.ORDER_CONFIRMATION_RESEND:
         this.validateOrderConfirmationResendEvent(event);
+        break;
+
+      case EmailEventType.INVOICE_EMAIL:
+        this.validateInvoiceEmailEvent(event);
         break;
 
       case EmailEventType.ADMIN_ORDER_NOTIFICATION:
@@ -668,6 +673,28 @@ export class EmailEventPublisher implements OnModuleDestroy {
     }
     if (!event.customerName || typeof event.customerName !== 'string') {
       throw new Error('Order confirmation resend events require valid customerName');
+    }
+  }
+
+  /**
+   * Validate invoice email event fields
+   */
+  private validateInvoiceEmailEvent(event: any): void {
+    if (!event.orderId || typeof event.orderId !== 'string') {
+      throw new Error('Invoice email events require valid orderId');
+    }
+    if (!event.orderNumber || typeof event.orderNumber !== 'string') {
+      throw new Error('Invoice email events require valid orderNumber');
+    }
+    if (!event.customerEmail || !this.isValidEmail(event.customerEmail)) {
+      throw new Error('Invoice email events require valid customerEmail');
+    }
+    if (!event.customerName || typeof event.customerName !== 'string') {
+      throw new Error('Invoice email events require valid customerName');
+    }
+    // adminUserId is optional
+    if (event.adminUserId && typeof event.adminUserId !== 'string') {
+      throw new Error('Invoice email events require valid adminUserId if provided');
     }
   }
 
@@ -835,6 +862,7 @@ export class EmailEventPublisher implements OnModuleDestroy {
       [EmailEventType.PASSWORD_RESET]: 1, // Highest priority
       [EmailEventType.ORDER_CONFIRMATION]: 2,
       [EmailEventType.ORDER_CONFIRMATION_RESEND]: 2, // Same priority as original confirmation
+      [EmailEventType.INVOICE_EMAIL]: 2, // Same priority as order confirmation
       [EmailEventType.ADMIN_ORDER_NOTIFICATION]: 2,
       [EmailEventType.ORDER_CANCELLATION]: 3, // High priority for cancellations
       [EmailEventType.ADMIN_CANCELLATION_NOTIFICATION]: 3, // High priority for admin notifications
@@ -1456,6 +1484,60 @@ export class EmailEventPublisher implements OnModuleDestroy {
       orderNumber,
       customerEmail,
       customerName,
+    };
+
+    // Log email event publication for flow tracking
+    EmailFlowLogger.logEmailEventPublication(
+      event.type,
+      orderId,
+      orderNumber,
+      customerEmail,
+      'pending', // Will be updated after publishing
+      locale
+    );
+
+    const publishedJobId = await this.publishEvent(event);
+
+    // Update the log with actual job ID
+    EmailFlowLogger.logEmailEventPublication(
+      event.type,
+      orderId,
+      orderNumber,
+      customerEmail,
+      publishedJobId,
+      locale
+    );
+
+    return publishedJobId;
+  }
+
+  /**
+   * Send invoice email with PDF attachment
+   * @param orderId - Order ID
+   * @param orderNumber - Order number
+   * @param customerEmail - Customer email
+   * @param customerName - Customer name
+   * @param locale - Email locale
+   * @param adminUserId - Optional admin user ID who triggered the invoice
+   * @returns Job ID for tracking
+   */
+  async sendInvoiceEmail(
+    orderId: string,
+    orderNumber: string,
+    customerEmail: string,
+    customerName: string,
+    locale: 'en' | 'vi' = 'en',
+    adminUserId?: string
+  ): Promise<string> {
+    const event: EmailEvent = {
+      type: EmailEventType.INVOICE_EMAIL,
+      locale,
+      timestamp: new Date(),
+      orderId,
+      orderNumber,
+      customerEmail,
+      customerName,
+      adminUserId,
     };
 
     // Log email event publication for flow tracking

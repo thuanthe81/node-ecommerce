@@ -625,6 +625,7 @@ describe('OrdersService - Zero Price Products', () => {
         data: {
           price: newPrice,
           total: newPrice * 2,
+          updatedAt: expect.any(Date),
         },
       });
 
@@ -709,8 +710,24 @@ describe('OrdersService - Zero Price Products', () => {
           total: 280.0,
           status: OrderStatus.PENDING,
           requiresPricing: false,
+          updatedAt: expect.any(Date),
         },
-        include: expect.any(Object),
+        include: {
+          items: {
+            include: {
+              product: {
+                include: {
+                  images: {
+                    orderBy: { displayOrder: 'asc' },
+                    take: 1,
+                  },
+                },
+              },
+            },
+          },
+          shippingAddress: true,
+          billingAddress: true,
+        },
       });
 
       expect(result.status).toBe(OrderStatus.PENDING);
@@ -758,8 +775,24 @@ describe('OrdersService - Zero Price Products', () => {
           total: 115.0,
           status: OrderStatus.PENDING_QUOTE,
           requiresPricing: true,
+          updatedAt: expect.any(Date),
         },
-        include: expect.any(Object),
+        include: {
+          items: {
+            include: {
+              product: {
+                include: {
+                  images: {
+                    orderBy: { displayOrder: 'asc' },
+                    take: 1,
+                  },
+                },
+              },
+            },
+          },
+          shippingAddress: true,
+          billingAddress: true,
+        },
       });
     });
   });

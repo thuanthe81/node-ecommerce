@@ -1,14 +1,12 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { EmailService } from '../../notifications/services/email.service';
 import { EmailTemplateService } from '../../notifications/services/email-template.service';
-import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
-import { EmailEventType } from '../../email-queue/types/email-event.types';
 import { PDFGeneratorService } from '../pdf-generator.service';
 import { DocumentStorageService } from './document-storage.service';
 import { PDFErrorHandlerService } from './pdf-error-handler.service';
 import { PDFMonitoringService } from './pdf-monitoring.service';
 import { PDFAuditService } from './pdf-audit.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { OrdersService } from '../../orders/orders.service';
 import { FooterSettingsService } from '../../footer-settings/footer-settings.service';
 import { BusinessInfoService } from '../../common/services/business-info.service';
 import { EmailTestingUtils } from '../../common/utils/email-testing.utils';
@@ -53,15 +51,14 @@ export class EmailAttachmentService {
   constructor(
     private emailService: EmailService,
     private emailTemplateService: EmailTemplateService,
-    @Inject(forwardRef(() => EmailEventPublisher))
-    private emailEventPublisher: EmailEventPublisher,
     private pdfGeneratorService: PDFGeneratorService,
     private documentStorageService: DocumentStorageService,
     @Inject(forwardRef(() => PDFErrorHandlerService))
     private errorHandlerService: PDFErrorHandlerService,
     private monitoringService: PDFMonitoringService,
     private auditService: PDFAuditService,
-    private prismaService: PrismaService,
+    @Inject(forwardRef(() => OrdersService))
+    private ordersService: OrdersService,
     private footerSettingsService: FooterSettingsService,
     private businessInfoService: BusinessInfoService,
   ) {}
@@ -277,21 +274,7 @@ export class EmailAttachmentService {
       );
 
       // Validate order exists and email matches
-      const order = await this.prismaService.order.findUnique({
-        where: { orderNumber },
-        select: {
-          id: true,
-          email: true,
-          orderNumber: true,
-          status: true,
-          createdAt: true,
-          shippingAddress: {
-            select: {
-              fullName: true,
-            },
-          },
-        },
-      });
+      const order = await this.ordersService.findOneByNumber(orderNumber);
 
       if (!order) {
         const error = 'Order not found';
@@ -382,23 +365,24 @@ export class EmailAttachmentService {
         };
       }
 
-      // Instead of sending PDF directly, queue an ORDER_CONFIRMATION_RESEND event
-      // This will be processed asynchronously by the EmailWorker with PDF attachment
-      this.logger.log(`[resendOrderConfirmation] Queuing ORDER_CONFIRMATION_RESEND event for order: ${orderNumber}`);
+      // Send order confirmation email directly with PDF attachment
+      this.logger.log(`[resendOrderConfirmation] Sending order confirmation directly for order: ${orderNumber}`);
 
-      const customerName = order.shippingAddress?.fullName || 'Customer';
+      // Convert order to PDF data format
+      const orderPDFData = await this.mapOrderToPDFData(order, locale);
 
-      const jobId = await this.emailEventPublisher.publishEvent({
-        type: EmailEventType.ORDER_CONFIRMATION_RESEND,
-        locale,
-        timestamp: new Date(),
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        customerEmail: order.email,
-        customerName,
-      });
+      // Send email with PDF attachment
+      const result = await this.sendOrderConfirmationWithPDF(
+        order.email,
+        orderPDFData,
+        locale
+      );
 
-      // Log successful queuing
+      if (!result.success) {
+        throw new Error(`Failed to send order confirmation: ${result.error}`);
+      }
+
+      // Log successful sending
       if (auditId) {
         await this.auditService.logEmailSending(
           orderNumber,
@@ -406,24 +390,25 @@ export class EmailAttachmentService {
           locale,
           'completed',
           {
-            emailTemplate: 'async_queue',
+            emailTemplate: 'direct_send',
             deliveryAttempts: 1,
-            finalDeliveryStatus: 'queued',
+            finalDeliveryStatus: 'sent',
+            messageId: result.messageId,
           },
           Date.now() - startTime,
         );
       }
 
       this.logger.log(
-        `Resend email event queued successfully for order ${orderNumber} to ${customerEmail} (Job ID: ${jobId})`,
+        `Resend email sent successfully for order ${orderNumber} to ${customerEmail} (MessageId: ${result.messageId || 'none'})`,
       );
 
       return {
         success: true,
         message:
           locale === 'vi'
-            ? 'Email xác nhận đã được đưa vào hàng đợi và sẽ được gửi sớm'
-            : 'Order confirmation email has been queued and will be sent shortly',
+            ? 'Email xác nhận đã được gửi lại thành công'
+            : 'Order confirmation email has been resent successfully',
       };
 
     } catch (error) {
@@ -452,8 +437,8 @@ export class EmailAttachmentService {
         success: false,
         message:
           locale === 'vi'
-            ? 'Đã xảy ra lỗi khi đưa email vào hàng đợi. Vui lòng thử lại sau.'
-            : 'An error occurred while queuing the email. Please try again later.',
+            ? 'Đã xảy ra lỗi khi gửi lại email. Vui lòng thử lại sau.'
+            : 'An error occurred while resending the email. Please try again later.',
         error: error.message,
       };
     }
@@ -949,42 +934,7 @@ export class EmailAttachmentService {
     locale: 'en' | 'vi',
   ): Promise<OrderPDFData | null> {
     try {
-      const order = await this.prismaService.order.findUnique({
-        where: { orderNumber },
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  nameEn: true,
-                  nameVi: true,
-                  descriptionEn: true,
-                  descriptionVi: true,
-                  sku: true,
-                  price: true,
-                  images: true,
-                  category: {
-                    select: {
-                      nameEn: true,
-                      nameVi: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          shippingAddress: true,
-          billingAddress: true,
-          promotion: {
-            select: {
-              code: true,
-              type: true,
-              value: true,
-            },
-          },
-        },
-      });
+      const order = await this.ordersService.findOneByNumber(orderNumber);
 
       if (!order) {
         this.logger.warn(`Order not found for resend: ${orderNumber}`);
@@ -1017,9 +967,7 @@ export class EmailAttachmentService {
         orderDate: order.createdAt.toISOString().split('T')[0],
         customerInfo: {
           name:
-            order.shippingAddress?.fullName ||
-            order.billingAddress?.fullName ||
-            'Customer',
+            `${order.user.firstName} ${order.user.lastName}`,
           email: order.email,
           phone: order.shippingAddress?.phone || order.billingAddress?.phone,
         },
@@ -1074,14 +1022,20 @@ export class EmailAttachmentService {
 
           return {
             id: item.product.id,
-            name: item.product.nameEn, // Will be localized in PDF generation
-            description: item.product.descriptionEn,
+            name: locale == 'vi' ? item.product.nameVi : item.product.nameEn, // Will be localized in PDF generation
+            description:
+              locale == 'vi'
+                ? item.product.descriptionVi
+                : item.product.descriptionEn,
             sku: item.product.sku,
             quantity: item.quantity,
             unitPrice: Number(item.price),
             totalPrice: Number(item.total),
             imageUrl,
-            category: item.product.category?.nameEn,
+            category:
+              locale == 'vi'
+                ? item.product.category?.nameVi
+                : item.product.category?.nameEn,
           };
         }),
         pricing: {
@@ -1291,6 +1245,89 @@ export class EmailAttachmentService {
       businessInfo,
       locale,
     };
+  }
+
+  /**
+   * Send invoice email with PDF attachment for admin-triggered requests
+   * @param orderNumber - Order number to send invoice for
+   * @param customerEmail - Customer's email address
+   * @param locale - Language locale for email content
+   * @returns Promise<EmailSendResult> - Result of email sending operation
+   */
+  async sendInvoiceEmailWithPDF(
+    orderNumber: string,
+    customerEmail: string,
+    locale: 'en' | 'vi' = 'vi'
+  ): Promise<EmailSendResult> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.log(`Sending invoice email with PDF for order ${orderNumber} to ${customerEmail}`);
+
+      // Fetch order data for invoice
+      const orderData = await this.fetchOrderDataForResend(orderNumber, customerEmail, locale);
+      if (!orderData) {
+        return {
+          success: false,
+          error: 'Order not found or invalid',
+          deliveryStatus: 'failed',
+          timestamp: new Date(),
+        };
+      }
+
+      // Generate PDF for the order using invoice template
+      const pdfResult = await this.pdfGeneratorService.generateInvoicePDF(orderData, locale);
+      if (!pdfResult.success || !pdfResult.filePath) {
+        this.logger.error(`PDF generation failed for order ${orderNumber}:`, pdfResult.error);
+        return {
+          success: false,
+          error: `PDF generation failed: ${pdfResult.error}`,
+          deliveryStatus: 'failed',
+          timestamp: new Date(),
+        };
+      }
+
+      // Generate invoice email template using the proper template service
+      const orderEmailData = this.mapOrderPDFDataToEmailData(orderData);
+      const emailTemplate = await this.emailTemplateService.getInvoiceEmailTemplate(
+        orderEmailData,
+        locale,
+      );
+
+      // Convert to SimplifiedEmailTemplate format for compatibility
+      const simplifiedTemplate: SimplifiedEmailTemplate = {
+        subject: emailTemplate.subject,
+        htmlContent: emailTemplate.html,
+        textContent: this.extractTextFromHtml(emailTemplate.html), // Extract text version from HTML
+      };
+
+      // Send email with PDF attachment
+      const emailResult = await this.sendEmailWithAttachment(
+        customerEmail,
+        simplifiedTemplate,
+        pdfResult.filePath,
+        pdfResult.fileName || `invoice-${orderNumber}.pdf`
+      );
+
+      // Schedule PDF cleanup after successful sending
+      if (emailResult.success) {
+        await this.documentStorageService.schedulePDFCleanup(pdfResult.filePath, 24); // 24 hours retention
+      }
+
+      const processingTime = Date.now() - startTime;
+      this.logger.log(`Invoice email processed in ${processingTime}ms for order ${orderNumber}`);
+
+      return emailResult;
+
+    } catch (error) {
+      this.logger.error(`Failed to send invoice email for order ${orderNumber}:`, error);
+      return {
+        success: false,
+        error: error.message,
+        deliveryStatus: 'failed',
+        timestamp: new Date(),
+      };
+    }
   }
 
   /**

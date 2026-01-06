@@ -1,10 +1,11 @@
 'use client';
 
 import { Product } from '@/lib/product-api';
+import { EnhancedProduct } from '@/lib/ssr-types';
 import ProductCard from './ProductCard';
 
 interface ProductGridProps {
-  products: Product[];
+  products: Product[] | EnhancedProduct[];
 }
 
 export default function ProductGrid({ products }: ProductGridProps) {

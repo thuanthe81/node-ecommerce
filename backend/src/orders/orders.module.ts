@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { AccessControlService } from './services/access-control.service';
@@ -10,7 +10,7 @@ import { ShippingModule } from '../shipping/shipping.module';
 import { EmailQueueModule } from '../email-queue/email-queue.module';
 
 @Module({
-  imports: [PrismaModule, FooterSettingsModule, PDFGeneratorModule, ShippingModule, EmailQueueModule],
+  imports: [PrismaModule, FooterSettingsModule, forwardRef(() => PDFGeneratorModule), ShippingModule, forwardRef(() => EmailQueueModule)],
   controllers: [OrdersController],
   providers: [OrdersService, AccessControlService, OrderCancellationService],
   exports: [OrdersService, AccessControlService, OrderCancellationService],

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="{{#if isVietnamese}}vi{{else}}en{{/if}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{documentTitle}}</title>
+  <style>
+    {{> pdf-styles}}
+  </style>
+</head>
+<body>
+  <div class="pdf-container">
+    <!-- Header Section -->
+    <header class="pdf-header">
+      <div class="header-container">
+        <div class="logo-section">
+          <img src="{{businessInfo.logoUrl}}" alt="{{companyName}}" class="company-logo" onerror="this.style.display='none';" onload="this.style.display='block';">
+          <h1 class="company-name">{{companyName}}</h1>
+        </div>
+        <div class="document-title">
+          <h1>{{invoiceTitle}}</h1>
+          <p class="order-number">{{invoiceNumberLabel}}: <strong>{{orderNumber}}</strong></p>
+          <p class="order-date">{{issueDateLabel}}: <strong>{{formattedOrderDate}}</strong></p>
+          {{#if dueDate}}
+            <p class="due-date">{{dueDateLabel}}: <strong>{{formattedDueDate}}</strong></p>
+          {{/if}}
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pdf-content">
+      <!-- Customer Information Section -->
+      <div class="order-info-section">
+        <div class="customer-info">
+          <h3>{{customerInformationTitle}}</h3>
+          <p><strong>{{nameLabel}}:</strong> {{customerInfo.name}}</p>
+          <p><strong>{{emailLabel}}:</strong> {{customerInfo.email}}</p>
+          {{#if customerInfo.phone}}
+            <p><strong>{{phoneLabel}}:</strong> {{formattedPhone}}</p>
+          {{/if}}
+        </div>
+
+        <!-- Addresses Section -->
+        <div class="addresses-section">
+          <div class="shipping-address">
+            <h4>{{shippingAddressTitle}}</h4>
+            <div class="address-content">
+              {{formattedShippingAddressLines}}
+            </div>
+          </div>
+
+          <div class="billing-address">
+            <h4>{{billingAddressTitle}}</h4>
+            <div class="address-content">
+              {{formattedBillingAddressLines}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Items Section -->
+      <div class="items-section">
+        <h3>{{invoiceItemsTitle}}</h3>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>{{productLabel}}</th>
+              <th>{{skuLabel}}</th>
+              <th>{{quantityLabel}}</th>
+              <th>{{unitPriceLabel}}</th>
+              <th>{{totalLabel}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each items}}
+              <tr>
+                <td>
+                  <div class="product-info">
+                    <img src="{{this.imageUrl}}" alt="{{this.name}}" class="product-image" onerror="this.style.display='none';" onload="this.style.display='block';">
+                    <div class="product-details">
+                      <strong>{{this.name}}</strong>
+                      {{#if this.description}}
+                        <br><small>{{this.description}}</small>
+                      {{/if}}
+                    </div>
+                  </div>
+                </td>
+                <td>{{#if this.sku}}{{this.sku}}{{else}}-{{/if}}</td>
+                <td class="text-center">{{this.quantity}}</td>
+                <td class="text-right">{{this.formattedUnitPrice}}</td>
+                <td class="text-right"><strong>{{this.formattedTotalPrice}}</strong></td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Invoice Summary Section -->
+      <div class="order-summary">
+        <h3>{{invoiceSummaryTitle}}</h3>
+        <table class="summary-table">
+          <tr>
+            <td>{{subtotalLabel}}:</td>
+            <td class="text-right">{{formattedSubtotal}}</td>
+          </tr>
+          <tr>
+            <td>{{shippingLabel}}:</td>
+            <td class="text-right">{{formattedShippingCost}}</td>
+          </tr>
+          {{#if pricing.taxAmount}}
+            <tr>
+              <td>{{taxLabel}}:</td>
+              <td class="text-right">{{formattedTaxAmount}}</td>
+            </tr>
+          {{/if}}
+          {{#if pricing.discountAmount}}
+            <tr>
+              <td>{{discountLabel}}:</td>
+              <td class="text-right">-{{formattedDiscountAmount}}</td>
+            </tr>
+          {{/if}}
+          <tr class="total-row">
+            <td><strong>{{totalAmountDueLabel}}:</strong></td>
+            <td class="text-right"><strong>{{formattedTotal}}</strong></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Payment Information Section -->
+      <div class="payment-info">
+        <h3>{{paymentInformationTitle}}</h3>
+        <div class="payment-info-content">
+          <div class="payment-details">
+            <p><strong>{{paymentMethodLabel}}:</strong> {{paymentMethod.displayName}}</p>
+            <p><strong>{{paymentStatusLabel}}:</strong> {{formattedPaymentStatus}}</p>
+            {{#if paymentMethod.details}}
+              <p><strong>{{paymentDetailsLabel}}:</strong> {{paymentMethod.details}}</p>
+            {{/if}}
+            {{#if paymentMethod.instructions}}
+              <p><strong>{{paymentInstructionsLabel}}:</strong> {{paymentMethod.instructions}}</p>
+            {{/if}}
+          </div>
+          {{#if paymentMethod.qrCodeUrl}}
+            <div class="payment-qr-section">
+              <p><strong>{{paymentQRCodeLabel}}:</strong></p>
+              <img src="{{paymentMethod.qrCodeUrl}}" alt="Payment QR Code" class="qr-code" onerror="this.style.display='none';" onload="this.style.display='block';">
+            </div>
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Shipping Information Section -->
+      <div class="shipping-info">
+        <h3>{{shippingInformationTitle}}</h3>
+        <p><strong>{{shippingMethodLabel}}:</strong> {{shippingMethod.name}}</p>
+        {{#if shippingMethod.description}}
+          <p><strong>{{descriptionLabel}}:</strong> {{shippingMethod.description}}</p>
+        {{/if}}
+        {{#if formattedEstimatedDelivery}}
+          <p><strong>{{estimatedDeliveryLabel}}:</strong> {{formattedEstimatedDelivery}}</p>
+        {{/if}}
+        {{#if shippingMethod.trackingNumber}}
+          <p><strong>{{trackingNumberLabel}}:</strong> {{shippingMethod.trackingNumber}}</p>
+        {{/if}}
+        {{#if shippingMethod.carrier}}
+          <p><strong>{{carrierLabel}}:</strong> {{shippingMethod.carrier}}</p>
+        {{/if}}
+      </div>
+
+      <!-- Invoice-specific sections -->
+      {{#if termsAndConditions}}
+        <div class="terms-section">
+          <h3>{{termsAndConditionsTitle}}</h3>
+          <p class="small-text">{{termsAndConditions}}</p>
+        </div>
+      {{/if}}
+
+      {{#if returnPolicy}}
+        <div class="return-policy-section">
+          <h3>{{returnPolicyTitle}}</h3>
+          <p class="small-text">{{returnPolicy}}</p>
+        </div>
+      {{/if}}
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="pdf-footer">
+      <div class="footer-content">
+        <div class="footer-note">
+          <p class="small-text">{{thankYouMessage}}</p>
+        </div>
+        {{#if businessInfo.contactEmail}}
+          <div class="contact-info">
+            <p class="small-text">{{contactUsLabel}}: {{businessInfo.contactEmail}}</p>
+            {{#if businessInfo.contactPhone}}
+              <p class="small-text">{{phoneLabel}}: {{businessInfo.contactPhone}}</p>
+            {{/if}}
+            {{#if businessInfo.website}}
+              <p class="small-text">{{websiteLabel}}: {{businessInfo.website}}</p>
+            {{/if}}
+          </div>
+        {{/if}}
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

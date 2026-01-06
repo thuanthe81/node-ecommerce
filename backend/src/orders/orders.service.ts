@@ -4,6 +4,8 @@ import {
   BadRequestException,
   ForbiddenException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccessControlService } from './services/access-control.service';
@@ -17,8 +19,10 @@ import { FooterSettingsService } from '../footer-settings/footer-settings.servic
 import { EmailAttachmentService } from '../pdf-generator/services/email-attachment.service';
 import { EmailFlowLogger } from '../email-queue/utils/email-flow-logger';
 import { ResendEmailHandlerService } from '../pdf-generator/services/resend-email-handler.service';
-import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult } from '../pdf-generator/types/pdf.types';
-import { CONSTANTS } from '@alacraft/shared';
+import { InvoiceEmailHandlerService } from '../pdf-generator/services/invoice-email-handler.service';
+import { OrderPDFData, AddressData, OrderItemData, PaymentMethodData, ShippingMethodData, BusinessInfoData, ResendResult, InvoiceResult } from '../pdf-generator/types/pdf.types';
+import { CONSTANTS, OrderData } from '@alacraft/shared';
+import { hasQuoteItems } from '@alacraft/shared';
 import { ShippingService } from '../shipping/shipping.service';
 import { BusinessInfoService } from '../common/services/business-info.service';
 import { TranslationService } from '../common/services/translation.service';
@@ -31,10 +35,13 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private accessControlService: AccessControlService,
+    @Inject(forwardRef(() => EmailEventPublisher))
     private emailEventPublisher: EmailEventPublisher,
     private footerSettingsService: FooterSettingsService,
+    @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
     private resendEmailHandlerService: ResendEmailHandlerService,
+    private invoiceEmailHandlerService: InvoiceEmailHandlerService,
     private businessInfoService: BusinessInfoService,
     private shippingService: ShippingService,
     private translationService: TranslationService,
@@ -442,6 +449,10 @@ export class OrdersService {
    * Publishes an order confirmation event to the email queue for asynchronous processing.
    * The email worker will handle PDF generation and email delivery.
    *
+   * Enhanced to check for quote items and conditionally include PDF attachment:
+   * - Orders with only priced items: Send email with PDF attachment (standard flow)
+   * - Orders with quote items: Send email without PDF attachment
+   *
    * @param order - The order object with items, addresses, and totals
    * @param locale - Language locale for the email
    * @returns Promise<void> - Resolves when event is published to queue
@@ -457,6 +468,7 @@ export class OrdersService {
    * - Email processing happens asynchronously in background worker
    * - Logs success/failure of event publishing
    * - Actual email delivery is handled by EmailWorker service
+   * - PDF attachment is conditionally included based on quote item status
    */
   private async sendOrderConfirmationEmail(order: any, locale: 'en' | 'vi' = 'en'): Promise<void> {
     const startTime = Date.now();
@@ -464,7 +476,31 @@ export class OrdersService {
     try {
       const customerName = order.shippingAddress?.fullName || order.email || 'Customer';
 
-      // Log the email trigger with comprehensive details
+      // Transform order data to format expected by quote item utilities
+      const orderData = {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        items: order.items.map((item: any) => ({
+          id: item.id,
+          name: item.productNameEn,
+          description: item.productNameVi,
+          sku: item.sku,
+          quantity: item.quantity,
+          price: Number(item.price),
+          total: Number(item.total),
+          unitPrice: Number(item.price),
+        })),
+        subtotal: Number(order.subtotal),
+        total: Number(order.total),
+        shippingCost: Number(order.shippingCost),
+        taxAmount: Number(order.taxAmount),
+        discountAmount: Number(order.discountAmount),
+      };
+
+      // Check if order contains quote items (items without prices)
+      const containsQuoteItems = hasQuoteItems(orderData);
+
+      // Log the email trigger with comprehensive details including quote item status
       EmailFlowLogger.logOrderCreationEmailTrigger(
         order.id,
         order.orderNumber,
@@ -473,7 +509,20 @@ export class OrdersService {
         'OrdersService.sendOrderConfirmationEmail'
       );
 
+      this.logger.log(`Order confirmation email decision for order ${order.orderNumber}`, {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        email: order.email,
+        containsQuoteItems,
+        itemCount: order.items.length,
+        unpricedItemCount: orderData.items.filter((item: any) => item.price === 0).length,
+        willIncludePDF: !containsQuoteItems,
+        locale,
+        timestamp: new Date().toISOString(),
+      });
+
       // Publish order confirmation event to queue
+      // The EmailWorker will handle the actual email sending and PDF generation logic
       const jobId = await this.emailEventPublisher.sendOrderConfirmation(
         order.id,
         order.orderNumber,
@@ -484,7 +533,7 @@ export class OrdersService {
 
       const processingTime = Date.now() - startTime;
 
-      // Log successful event publication
+      // Log successful event publication with quote item context
       EmailFlowLogger.logEmailEventPublication(
         'ORDER_CONFIRMATION',
         order.id,
@@ -494,6 +543,17 @@ export class OrdersService {
         locale,
         false // Not a duplicate at this point
       );
+
+      this.logger.log(`Order confirmation event published for order ${order.orderNumber}`, {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        jobId,
+        containsQuoteItems,
+        willIncludePDF: !containsQuoteItems,
+        processingTime,
+        locale,
+        timestamp: new Date().toISOString(),
+      });
 
       console.log(`Order confirmation event published for order ${order.orderNumber} (Job ID: ${jobId}) in ${processingTime}ms`);
     } catch (error) {
@@ -792,6 +852,26 @@ export class OrdersService {
     }
   }
 
+  transformNumberFieldsInOrder(order: any) {
+    return {
+      ...order,
+      subtotal: Number(order.subtotal),
+      total: Number(order.total),
+      items: order.items.map((item: any)=> {
+        return {
+          ...item,
+          price: Number(item.price),
+          total: Number(item.total),
+          quantity: Number(item.quantity),
+          product: {
+            ...item.product,
+            price: Number(item.product.price),
+          }
+        };
+      }),
+    }
+  }
+
   /**
    * Get a single order by ID without access control (for internal use)
    */
@@ -829,11 +909,52 @@ export class OrdersService {
       throw new NotFoundException('Order not found');
     }
 
-    return order;
+    return this.transformNumberFieldsInOrder(order);
+  }
+
+  /**
+   * Get a single order by orderNumber without access control (for internal use)
+   */
+  async findOneByNumber(orderNumber: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+        shippingAddress: true,
+        billingAddress: true,
+        promotion: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return this.transformNumberFieldsInOrder(order);
   }
 
   /**
    * Set price for an order item (admin only)
+   * Enhanced to support multiple price updates and price history tracking
    */
   async setOrderItemPrice(
     orderId: string,
@@ -859,29 +980,178 @@ export class OrdersService {
       throw new NotFoundException('Order item not found');
     }
 
+    // Validate price is positive number (DTO validation should catch this, but double-check)
+    if (setOrderItemPriceDto.price <= 0) {
+      throw new BadRequestException('Price must be a positive number');
+    }
+
+    // Store previous price for history tracking
+    const previousPrice = Number(orderItem.price);
+    const newPrice = setOrderItemPriceDto.price;
+    const newTotal = newPrice * orderItem.quantity;
+
+    this.logger.log(`Updating order item price`, {
+      orderId,
+      orderItemId,
+      orderNumber: order.orderNumber,
+      productName: orderItem.productNameEn,
+      previousPrice,
+      newPrice,
+      quantity: orderItem.quantity,
+      newTotal,
+      timestamp: new Date().toISOString(),
+    });
+
     // Update the order item price and total
     const updatedOrderItem = await this.prisma.orderItem.update({
       where: { id: orderItemId },
       data: {
-        price: setOrderItemPriceDto.price,
-        total: setOrderItemPriceDto.price * orderItem.quantity,
+        price: newPrice,
+        total: newTotal,
+        updatedAt: new Date(), // Explicitly update timestamp for audit trail
       },
+    });
+
+    // Log price history for audit purposes
+    this.logger.log(`Order item price updated successfully`, {
+      orderId,
+      orderItemId,
+      orderNumber: order.orderNumber,
+      productName: orderItem.productNameEn,
+      priceChange: {
+        from: previousPrice,
+        to: newPrice,
+        difference: newPrice - previousPrice,
+        percentageChange: previousPrice > 0 ? ((newPrice - previousPrice) / previousPrice) * 100 : 0,
+      },
+      totalChange: {
+        from: Number(orderItem.total),
+        to: newTotal,
+      },
+      isFirstPricing: previousPrice === 0,
+      timestamp: new Date().toISOString(),
     });
 
     // Recalculate order total
     const updatedOrder = await this.recalculateOrderTotal(orderId);
-
-    // Verify product base price remains unchanged
-    const product = await this.prisma.product.findUnique({
-      where: { id: orderItem.productId },
-    });
 
     // Return the complete updated order instead of just the order item
     return updatedOrder;
   }
 
   /**
+   * Set prices for multiple order items at once (admin only)
+   * Useful for efficiently pricing multiple quote items in a single operation
+   */
+  async setMultipleOrderItemPrices(
+    orderId: string,
+    priceUpdates: Array<{ orderItemId: string; price: number }>,
+  ) {
+    // Verify order exists
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Validate all order items exist and prices are valid
+    const validationErrors: string[] = [];
+    const updateData: Array<{
+      orderItemId: string;
+      orderItem: any;
+      previousPrice: number;
+      newPrice: number;
+      newTotal: number;
+    }> = [];
+
+    for (const update of priceUpdates) {
+      const orderItem = order.items.find((item) => item.id === update.orderItemId);
+
+      if (!orderItem) {
+        validationErrors.push(`Order item ${update.orderItemId} not found`);
+        continue;
+      }
+
+      if (update.price <= 0) {
+        validationErrors.push(`Price for item ${orderItem.productNameEn} must be a positive number`);
+        continue;
+      }
+
+      updateData.push({
+        orderItemId: update.orderItemId,
+        orderItem,
+        previousPrice: Number(orderItem.price),
+        newPrice: update.price,
+        newTotal: update.price * orderItem.quantity,
+      });
+    }
+
+    if (validationErrors.length > 0) {
+      throw new BadRequestException(`Validation errors: ${validationErrors.join(', ')}`);
+    }
+
+    this.logger.log(`Updating multiple order item prices`, {
+      orderId,
+      orderNumber: order.orderNumber,
+      updateCount: updateData.length,
+      updates: updateData.map(u => ({
+        productName: u.orderItem.productNameEn,
+        priceChange: { from: u.previousPrice, to: u.newPrice },
+      })),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Perform all updates in a transaction
+    await this.prisma.$transaction(async (tx) => {
+      for (const update of updateData) {
+        await tx.orderItem.update({
+          where: { id: update.orderItemId },
+          data: {
+            price: update.newPrice,
+            total: update.newTotal,
+            updatedAt: new Date(),
+          },
+        });
+
+        // Log each price change for audit trail
+        this.logger.log(`Bulk price update - item updated`, {
+          orderId,
+          orderItemId: update.orderItemId,
+          orderNumber: order.orderNumber,
+          productName: update.orderItem.productNameEn,
+          priceChange: {
+            from: update.previousPrice,
+            to: update.newPrice,
+            difference: update.newPrice - update.previousPrice,
+          },
+          isFirstPricing: update.previousPrice === 0,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+
+    // Recalculate order total after all updates
+    const updatedOrder = await this.recalculateOrderTotal(orderId);
+
+    this.logger.log(`Multiple order item prices updated successfully`, {
+      orderId,
+      orderNumber: order.orderNumber,
+      updatedItemCount: updateData.length,
+      newOrderTotal: Number(updatedOrder.total),
+      timestamp: new Date().toISOString(),
+    });
+
+    return updatedOrder;
+  }
+
+  /**
    * Recalculate order total after price updates
+   * Enhanced with better logging and error handling for quote item pricing
    */
   async recalculateOrderTotal(orderId: string) {
     const order = await this.prisma.order.findUnique({
@@ -894,6 +1164,12 @@ export class OrdersService {
     if (!order) {
       throw new NotFoundException('Order not found');
     }
+
+    // Store previous totals for comparison
+    const previousSubtotal = Number(order.subtotal);
+    const previousTotal = Number(order.total);
+    const previousStatus = order.status;
+    const previousRequiresPricing = order.requiresPricing;
 
     // Calculate new subtotal from order items
     const subtotal = order.items.reduce((sum, item) => {
@@ -910,14 +1186,40 @@ export class OrdersService {
       taxAmount -
       Number(order.discountAmount);
 
-    // Check if all items are priced
+    // Check if all items are priced (have positive prices)
     const allItemsPriced = order.items.every((item) => Number(item.price) > 0);
+    const unpricedItems = order.items.filter((item) => Number(item.price) === 0);
 
     // Update order status if all items are now priced
     const newStatus =
       allItemsPriced && order.status === OrderStatus.PENDING_QUOTE
         ? OrderStatus.PENDING
         : order.status;
+
+    this.logger.log(`Recalculating order totals`, {
+      orderId,
+      orderNumber: order.orderNumber,
+      itemCount: order.items.length,
+      pricedItems: order.items.length - unpricedItems.length,
+      unpricedItems: unpricedItems.length,
+      allItemsPriced,
+      totals: {
+        subtotal: { from: previousSubtotal, to: subtotal },
+        taxAmount: { calculated: taxAmount },
+        total: { from: previousTotal, to: total },
+      },
+      status: {
+        from: previousStatus,
+        to: newStatus,
+        changed: previousStatus !== newStatus,
+      },
+      requiresPricing: {
+        from: previousRequiresPricing,
+        to: !allItemsPriced,
+        changed: previousRequiresPricing !== !allItemsPriced,
+      },
+      timestamp: new Date().toISOString(),
+    });
 
     // Update order with new totals
     const updatedOrder = await this.prisma.order.update({
@@ -928,6 +1230,7 @@ export class OrdersService {
         total,
         status: newStatus,
         requiresPricing: !allItemsPriced,
+        updatedAt: new Date(), // Explicitly update timestamp
       },
       include: {
         items: {
@@ -945,6 +1248,17 @@ export class OrdersService {
         shippingAddress: true,
         billingAddress: true,
       },
+    });
+
+    // Log successful recalculation
+    this.logger.log(`Order totals recalculated successfully`, {
+      orderId,
+      orderNumber: order.orderNumber,
+      statusChanged: previousStatus !== newStatus,
+      newStatus,
+      allItemsPriced,
+      finalTotal: total,
+      timestamp: new Date().toISOString(),
     });
 
     return updatedOrder;
@@ -1275,5 +1589,142 @@ export class OrdersService {
         error: error.message,
       };
     }
+  }
+
+  /**
+   * Send invoice email with PDF attachment for admin-triggered requests
+   * @param orderNumber - Order number to send invoice for
+   * @param customerEmail - Customer's email address
+   * @param locale - Language locale for email content
+   * @param adminUserId - ID of the admin user triggering the invoice
+   * @returns Promise<InvoiceResult> - Result of invoice operation
+   */
+  async sendInvoiceEmail(
+    orderNumber: string,
+    customerEmail: string,
+    locale: 'en' | 'vi' = 'vi',
+    adminUserId: string
+  ): Promise<InvoiceResult> {
+    try {
+      this.logger.log(`Admin ${adminUserId} sending invoice email for order ${orderNumber} to ${customerEmail}`);
+
+      const order = await this.findOneByNumber(orderNumber);
+      const orderData: OrderData = {
+        orderNumber: order.orderNumber,
+        items: order.items.map((item: any) => ({
+          id: item.id,
+          name: locale === 'vi' ? item.product.nameVi : item.product.nameEn,
+          quantity: item.quantity,
+          price: Number(item.price),
+          total: Number(item.total),
+        })),
+      }
+      const customerName = `${order.user.firstName} ${order.user.lastName}`.trim();
+
+
+      if (hasQuoteItems(orderData)) {
+        return {
+          success: false,
+          message: locale === 'vi'
+            ? 'Đơn hàng chứa sản phẩm chưa có giá. Vui lòng đặt giá cho tất cả sản phẩm trước khi gửi hóa đơn.'
+            : 'Order contains items without prices set. Please set all item prices before sending invoice.',
+          error: 'Order contains items without prices set',
+        }
+      } else {
+        const jobId = await this.emailEventPublisher.sendInvoiceEmail(
+          order.id,
+          orderNumber,
+          customerEmail,
+          customerName,
+          locale,
+          adminUserId
+        );
+        return {
+          success: true,
+          message: locale === 'vi'
+            ? 'Email hóa đơn đã được xếp hàng để gửi'
+            : 'Invoice email has been queued for sending',
+          pdfGenerated: false, // Will be generated by worker
+        };
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send invoice email for order ${orderNumber}:`, error);
+
+      return {
+        success: false,
+        message: locale === 'vi'
+          ? 'Đã xảy ra lỗi khi gửi email hóa đơn. Vui lòng thử lại sau.'
+          : 'An error occurred while sending the invoice email. Please try again later.',
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * Get quote items (items with zero prices) for an order
+   * Useful for admin interface to identify which items need pricing
+   */
+  async getQuoteItems(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: {
+                  orderBy: { displayOrder: 'asc' },
+                  take: 1,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    // Filter items that need pricing (price is 0 or null)
+    const quoteItems = order.items.filter(item => Number(item.price) === 0);
+    const pricedItems = order.items.filter(item => Number(item.price) > 0);
+
+    return {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      requiresPricing: order.requiresPricing,
+      quoteItems: quoteItems.map(item => ({
+        id: item.id,
+        productId: item.productId,
+        productNameEn: item.productNameEn,
+        productNameVi: item.productNameVi,
+        sku: item.sku,
+        quantity: item.quantity,
+        currentPrice: Number(item.price),
+        needsPricing: true,
+        product: item.product,
+      })),
+      pricedItems: pricedItems.map(item => ({
+        id: item.id,
+        productId: item.productId,
+        productNameEn: item.productNameEn,
+        productNameVi: item.productNameVi,
+        sku: item.sku,
+        quantity: item.quantity,
+        currentPrice: Number(item.price),
+        total: Number(item.total),
+        needsPricing: false,
+        product: item.product,
+      })),
+      summary: {
+        totalItems: order.items.length,
+        quoteItemsCount: quoteItems.length,
+        pricedItemsCount: pricedItems.length,
+        allItemsPriced: quoteItems.length === 0,
+      },
+    };
   }
 }

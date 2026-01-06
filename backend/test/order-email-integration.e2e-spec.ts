@@ -7,15 +7,21 @@ import { CreateOrderDto } from '../src/orders/dto/create-order.dto';
 import { AppModule } from '../src/app.module';
 
 /**
- * Integration Tests for Complete Order Flow with Email Delivery
+ * Integration Tests for Complete Order Flow with Two-Step Email Delivery
  *
  * Tests Requirements:
- * - 2.5: End-to-end single email delivery per order
+ * - 9.1: Universal confirmation email without attachment for all orders
+ * - 9.2: Automatic invoice email for priced orders
+ * - 9.3: Single confirmation email for quote orders
+ * - 11.1: Confirmation emails always sent without attachments
+ * - 11.2: Automatic invoice emails for priced orders
+ * - 11.3: Admin-controlled invoice emails for quote orders
+ * - 2.5: End-to-end single email delivery per order (updated for two-step)
  * - 4.5: HTML formatting verification in multiple email clients
  * - 2.4: Deduplication under concurrent load
  * - 4.4: Deduplication logging and monitoring
  */
-describe('Order Email Integration (e2e)', () => {
+describe('Order Email Integration - Two-Step Flow (e2e)', () => {
   let app: INestApplication;
   let ordersService: OrdersService;
   let prismaService: PrismaService;
@@ -61,9 +67,9 @@ describe('Order Email Integration (e2e)', () => {
     EmailTestingUtils.enableTestMode();
   });
 
-  describe('7.1 Test complete order flow with email delivery', () => {
-    it('should create order and send exactly one confirmation email', async () => {
-      // Create test order with standard customer data
+  describe('7.1 Test complete two-step order flow with email delivery', () => {
+    it('should create priced order and send both confirmation and invoice emails', async () => {
+      // Create test order with standard customer data (priced items)
       const order = await createCompleteTestOrder('standard-test@example.com', 'John Doe');
       testOrderIds.push(order.id);
 
@@ -73,9 +79,46 @@ describe('Order Email Integration (e2e)', () => {
       // Wait for email processing (async)
       await waitForEmailProcessing();
 
-      // Verify exactly one email was sent
+      // Verify exactly two emails were sent (confirmation + invoice)
+      const emailCount = EmailTestingUtils.countEmailsForOrder(order.id);
+      expect(emailCount).toBe(2);
+
+      // Verify confirmation email was sent
+      const confirmationCount = EmailTestingUtils.countEmailsForOrder(order.id, 'order_confirmation');
+      expect(confirmationCount).toBe(1);
+
+      // Verify invoice email was sent automatically
+      const invoiceCount = EmailTestingUtils.countEmailsForOrder(order.id, 'invoice');
+      expect(invoiceCount).toBe(1);
+
+      // Get test report
+      const testReport = EmailTestingUtils.getTestReport(order.id);
+      expect(testReport.status).toBe('SUCCESS');
+      expect(testReport.emailCount).toBe(2);
+    });
+
+    it('should create quote order and send only confirmation email', async () => {
+      // Create test order with quote items (zero-price products)
+      const order = await createQuoteTestOrder('quote-test@example.com', 'Jane Smith');
+      testOrderIds.push(order.id);
+
+      // Add order to test mode tracking
+      EmailTestingUtils.addOrderToTestMode(order.id);
+
+      // Wait for email processing
+      await waitForEmailProcessing();
+
+      // Verify exactly one email was sent (only confirmation)
       const emailCount = EmailTestingUtils.countEmailsForOrder(order.id);
       expect(emailCount).toBe(1);
+
+      // Verify confirmation email was sent
+      const confirmationCount = EmailTestingUtils.countEmailsForOrder(order.id, 'order_confirmation');
+      expect(confirmationCount).toBe(1);
+
+      // Verify no invoice email was sent automatically
+      const invoiceCount = EmailTestingUtils.countEmailsForOrder(order.id, 'invoice');
+      expect(invoiceCount).toBe(0);
 
       // Get test report
       const testReport = EmailTestingUtils.getTestReport(order.id);
@@ -209,15 +252,15 @@ describe('Order Email Integration (e2e)', () => {
     });
   });
 
-  describe('7.2 Test deduplication under concurrent load', () => {
-    it('should prevent duplicate emails when creating multiple concurrent orders', async () => {
+  describe('7.2 Test deduplication under concurrent load with two-step emails', () => {
+    it('should prevent duplicate emails when creating multiple concurrent priced orders', async () => {
       const concurrentOrderCount = 3; // Reduced for stability
       const orderPromises: Promise<any>[] = [];
 
-      // Create multiple concurrent orders for different customers
+      // Create multiple concurrent orders for different customers (priced items)
       for (let i = 0; i < concurrentOrderCount; i++) {
-        const email = `concurrent-test-${i}@example.com`;
-        const customerName = `Concurrent Test Customer ${i + 1}`;
+        const email = `concurrent-priced-${i}@example.com`;
+        const customerName = `Concurrent Priced Customer ${i + 1}`;
         orderPromises.push(createCompleteTestOrder(email, customerName));
       }
 
@@ -233,24 +276,75 @@ describe('Order Email Integration (e2e)', () => {
       // Wait for all email processing to complete
       await waitForEmailProcessing(5000); // Longer wait for concurrent processing
 
-      // Verify each order received exactly one email
+      // Verify each priced order received exactly two emails (confirmation + invoice)
       for (const order of orders) {
-        const emailCount = EmailTestingUtils.countEmailsForOrder(order.id);
-        expect(emailCount).toBe(1);
+        const totalEmailCount = EmailTestingUtils.countEmailsForOrder(order.id);
+        expect(totalEmailCount).toBe(2);
+
+        const confirmationCount = EmailTestingUtils.countEmailsForOrder(order.id, 'order_confirmation');
+        const invoiceCount = EmailTestingUtils.countEmailsForOrder(order.id, 'invoice');
+
+        expect(confirmationCount).toBe(1);
+        expect(invoiceCount).toBe(1);
 
         const testReport = EmailTestingUtils.getTestReport(order.id);
         expect(testReport.status).toBe('SUCCESS');
       }
 
-      // Verify total email count matches order count
+      // Verify total email count matches expected (2 emails per order)
+      const totalEmailCount = orders.reduce((sum, order) => {
+        return sum + EmailTestingUtils.countEmailsForOrder(order.id);
+      }, 0);
+      expect(totalEmailCount).toBe(concurrentOrderCount * 2);
+    });
+
+    it('should prevent duplicate emails when creating multiple concurrent quote orders', async () => {
+      const concurrentOrderCount = 3;
+      const orderPromises: Promise<any>[] = [];
+
+      // Create multiple concurrent orders for different customers (quote items)
+      for (let i = 0; i < concurrentOrderCount; i++) {
+        const email = `concurrent-quote-${i}@example.com`;
+        const customerName = `Concurrent Quote Customer ${i + 1}`;
+        orderPromises.push(createQuoteTestOrder(email, customerName));
+      }
+
+      // Execute all orders concurrently
+      const orders = await Promise.all(orderPromises);
+
+      // Track all test orders for cleanup
+      testOrderIds.push(...orders.map(order => order.id));
+
+      // Add all orders to test mode tracking
+      orders.forEach(order => EmailTestingUtils.addOrderToTestMode(order.id));
+
+      // Wait for all email processing to complete
+      await waitForEmailProcessing(5000);
+
+      // Verify each quote order received exactly one email (only confirmation)
+      for (const order of orders) {
+        const totalEmailCount = EmailTestingUtils.countEmailsForOrder(order.id);
+        expect(totalEmailCount).toBe(1);
+
+        const confirmationCount = EmailTestingUtils.countEmailsForOrder(order.id, 'order_confirmation');
+        const invoiceCount = EmailTestingUtils.countEmailsForOrder(order.id, 'invoice');
+
+        expect(confirmationCount).toBe(1);
+        expect(invoiceCount).toBe(0); // No automatic invoice for quote orders
+
+        const testReport = EmailTestingUtils.getTestReport(order.id);
+        expect(testReport.status).toBe('SUCCESS');
+      }
+
+      // Verify total email count matches expected (1 email per quote order)
       const totalEmailCount = orders.reduce((sum, order) => {
         return sum + EmailTestingUtils.countEmailsForOrder(order.id);
       }, 0);
       expect(totalEmailCount).toBe(concurrentOrderCount);
     });
 
-    it('should test deduplication logging and monitoring', async () => {
-      // Create an order that we'll use to test deduplication scenarios
+    it('should test deduplication logging and monitoring for two-step emails', async () => {
+      // Create a priced order that we'll use to test deduplication scenarios
       const order = await createCompleteTestOrder('dedup-logging-test@example.com', 'Dedup Test Customer');
       testOrderIds.push(order.id);
       EmailTestingUtils.addOrderToTestMode(order.id);
@@ -258,31 +352,38 @@ describe('Order Email Integration (e2e)', () => {
       // Wait for initial email processing
       await waitForEmailProcessing();
 
-      // Verify initial email was sent
-      const initialEmailCount = EmailTestingUtils.countEmailsForOrder(order.id);
-      expect(initialEmailCount).toBe(1);
+      // Verify both confirmation and invoice emails were sent
+      const confirmationEmailCount = EmailTestingUtils.countEmailsForOrder(order.id, 'order_confirmation');
+      const invoiceEmailCount = EmailTestingUtils.countEmailsForOrder(order.id, 'invoice');
+      expect(confirmationEmailCount).toBe(1);
+      expect(invoiceEmailCount).toBe(1);
 
       // Test deduplication evidence in logs
       const testReport = EmailTestingUtils.getTestReport(order.id);
       expect(testReport.status).toBe('SUCCESS');
-      expect(testReport.recommendations).toContain('Email count is correct (1 email sent)');
+      expect(testReport.emailCount).toBe(2); // Updated for two-step flow
+      expect(testReport.recommendations).toContain('Email count is correct (2 emails sent)'); // Updated expectation
 
       // Verify test mode logging is working
       expect(testReport.isInTestMode).toBe(true);
       expect(testReport.testModeEnabled).toBe(true);
     });
 
-    it('should monitor email queue performance under load', async () => {
+    it('should monitor email queue performance under load with two-step emails', async () => {
       const loadTestOrderCount = 5; // Reduced for stability
       const startTime = Date.now();
       const orders: any[] = [];
 
-      // Create multiple orders to test queue performance
+      // Create multiple orders to test queue performance (mix of priced and quote)
       for (let i = 0; i < loadTestOrderCount; i++) {
         const email = `load-test-${i}@example.com`;
         const customerName = `Load Test Customer ${i + 1}`;
 
-        const order = await createCompleteTestOrder(email, customerName);
+        // Alternate between priced and quote orders
+        const order = i % 2 === 0
+          ? await createCompleteTestOrder(email, customerName)
+          : await createQuoteTestOrder(email, customerName);
+
         orders.push(order);
         testOrderIds.push(order.id);
         EmailTestingUtils.addOrderToTestMode(order.id);
@@ -295,21 +396,36 @@ describe('Order Email Integration (e2e)', () => {
       await waitForEmailProcessing(10000); // Longer wait for load test
       const emailProcessingTime = Date.now() - emailProcessingStartTime;
 
-      // Verify all emails were sent correctly
+      // Verify all emails were sent correctly based on order type
       let totalEmailsSent = 0;
-      for (const order of orders) {
+      let expectedTotalEmails = 0;
+
+      for (let i = 0; i < orders.length; i++) {
+        const order = orders[i];
         const emailCount = EmailTestingUtils.countEmailsForOrder(order.id);
-        expect(emailCount).toBe(1);
+
+        if (i % 2 === 0) {
+          // Priced order should have 2 emails (confirmation + invoice)
+          expect(emailCount).toBe(2);
+          expectedTotalEmails += 2;
+        } else {
+          // Quote order should have 1 email (only confirmation)
+          expect(emailCount).toBe(1);
+          expectedTotalEmails += 1;
+        }
+
         totalEmailsSent += emailCount;
       }
 
-      expect(totalEmailsSent).toBe(loadTestOrderCount);
+      expect(totalEmailsSent).toBe(expectedTotalEmails);
 
       // Log performance metrics
-      console.log(`Load Test Performance Metrics:`);
+      console.log(`Two-Step Email Load Test Performance Metrics:`);
       console.log(`- Orders created: ${loadTestOrderCount}`);
       console.log(`- Order creation time: ${orderCreationTime}ms`);
       console.log(`- Email processing time: ${emailProcessingTime}ms`);
+      console.log(`- Total emails sent: ${totalEmailsSent}`);
+      console.log(`- Expected emails: ${expectedTotalEmails}`);
 
       // Performance assertions (reasonable thresholds)
       expect(orderCreationTime).toBeLessThan(30000); // 30 seconds for orders
@@ -338,12 +454,15 @@ describe('Order Email Integration (e2e)', () => {
   }
 
   async function getTestProduct(): Promise<string> {
-    // Try to find an existing active product
+    // Try to find an existing active product with price > 0
     let product = await prismaService.product.findFirst({
-      where: { isActive: true }
+      where: {
+        isActive: true,
+        price: { gt: 0 }
+      }
     });
 
-    // If no product exists, create a test product
+    // If no priced product exists, create a test product
     if (!product) {
       // First, ensure we have a category
       let category = await prismaService.category.findFirst();
@@ -364,8 +483,50 @@ describe('Order Email Integration (e2e)', () => {
           nameVi: 'Sản phẩm thử nghiệm',
           descriptionEn: 'Test product for integration testing',
           descriptionVi: 'Sản phẩm thử nghiệm cho kiểm thử tích hợp',
-          price: 29.99,
+          price: 29.99, // Priced product
           sku: `TEST-${Date.now()}`,
+          categoryId: category.id,
+          isActive: true,
+          stockQuantity: 100
+        }
+      });
+    }
+
+    return product.id;
+  }
+
+  async function getTestQuoteProduct(): Promise<string> {
+    // Try to find an existing active product with price = 0
+    let product = await prismaService.product.findFirst({
+      where: {
+        isActive: true,
+        price: 0
+      }
+    });
+
+    // If no quote product exists, create a test quote product
+    if (!product) {
+      // First, ensure we have a category
+      let category = await prismaService.category.findFirst();
+      if (!category) {
+        category = await prismaService.category.create({
+          data: {
+            nameEn: 'Test Category',
+            nameVi: 'Danh mục thử nghiệm',
+            slug: 'test-category',
+            isActive: true
+          }
+        });
+      }
+
+      product = await prismaService.product.create({
+        data: {
+          nameEn: 'Test Quote Product',
+          nameVi: 'Sản phẩm báo giá thử nghiệm',
+          descriptionEn: 'Test quote product for integration testing',
+          descriptionVi: 'Sản phẩm báo giá thử nghiệm cho kiểm thử tích hợp',
+          price: 0, // Quote product (no price)
+          sku: `QUOTE-${Date.now()}`,
           categoryId: category.id,
           isActive: true,
           stockQuantity: 100
@@ -381,8 +542,35 @@ describe('Order Email Integration (e2e)', () => {
     const shippingAddressId = await createTestAddress(customerName, address);
     const billingAddressId = await createTestAddress(customerName, address);
 
-    // Get test product
+    // Get test product (priced)
     const productId = await getTestProduct();
+
+    // Create order data with proper IDs
+    const orderData: CreateOrderDto = {
+      email,
+      shippingAddressId,
+      billingAddressId,
+      items: [
+        {
+          productId,
+          quantity: 1
+        }
+      ],
+      shippingMethod: 'standard',
+      shippingCost: 5.00,
+      paymentMethod: 'credit_card'
+    };
+
+    return await ordersService.create(orderData, locale);
+  }
+
+  async function createQuoteTestOrder(email: string, customerName: string, address?: string, locale: 'en' | 'vi' = 'en'): Promise<any> {
+    // Create addresses
+    const shippingAddressId = await createTestAddress(customerName, address);
+    const billingAddressId = await createTestAddress(customerName, address);
+
+    // Get test quote product (zero price)
+    const productId = await getTestQuoteProduct();
 
     // Create order data with proper IDs
     const orderData: CreateOrderDto = {

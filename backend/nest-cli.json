@@ -6,7 +6,8 @@
     "deleteOutDir": true,
     "assets": [
       "notifications/templates/**/*",
-      "notifications/styles/**/*"
+      "notifications/styles/**/*",
+      "pdf-generator/templates/**/*"
     ]
   }
 }

@@ -98,30 +98,43 @@ This document outlines the requirements for implementing a hybrid authentication
 
 ### Requirement 7
 
-**User Story:** As a developer, I want to update the frontend login page to show both OAuth buttons and email/password form, so that users can choose their preferred authentication method.
+**User Story:** As a customer, I want to see only OAuth login options on the main login page, so that I can quickly authenticate using my social media accounts without being confused by email/password forms.
 
 #### Acceptance Criteria
 
-1. WHEN the login page renders, THEN the Login Page SHALL display a Google sign-in button with appropriate branding
-2. WHEN the login page renders, THEN the Login Page SHALL display a Facebook sign-in button with appropriate branding
-3. WHEN the login page renders, THEN the Login Page SHALL display email and password input fields
-4. WHEN the login page renders, THEN the Login Page SHALL display a visual separator between OAuth and email/password authentication options
+1. WHEN the main login page renders, THEN the Login Page SHALL display a Google sign-in button with appropriate branding
+2. WHEN the main login page renders, THEN the Login Page SHALL display a Facebook sign-in button with appropriate branding
+3. WHEN the main login page renders, THEN the Login Page SHALL NOT display email and password input fields
+4. WHEN the main login page renders, THEN the Login Page SHALL NOT display a registration link
 5. WHEN a user clicks an OAuth button, THEN the Login Page SHALL initiate the OAuth flow with the selected provider
-6. WHEN a user submits the email/password form, THEN the Login Page SHALL call the email/password authentication endpoint
+6. WHEN the main login page renders, THEN the Login Page SHALL display a link to admin login for administrative access
 
 ### Requirement 8
 
-**User Story:** As a developer, I want to maintain both OAuth and email/password authentication code, so that the codebase supports hybrid authentication.
+**User Story:** As an administrator, I want to access a dedicated admin login page with email/password authentication, so that I can securely access the admin panel using traditional credentials.
 
 #### Acceptance Criteria
 
-1. WHEN the codebase is updated, THEN the Auth Context SHALL include the login method for email/password authentication
-2. WHEN the codebase is updated, THEN the authentication API client SHALL include email/password login functions
-3. WHEN the codebase is updated, THEN the backend Auth Controller SHALL include email/password login endpoints
-4. WHEN the backend receives an email/password login request, THEN the Auth Service SHALL validate credentials and return tokens
-5. WHEN the Auth Service validates email/password credentials, THEN the Auth Service SHALL hash and compare passwords securely using bcrypt
+1. WHEN an administrator navigates to `/admin/login`, THEN the Admin Login Page SHALL display email and password input fields
+2. WHEN an administrator submits valid credentials on the admin login page, THEN the Authentication System SHALL authenticate the user and redirect to the admin dashboard
+3. WHEN an administrator submits invalid credentials on the admin login page, THEN the Authentication System SHALL display an error message and remain on the admin login page
+4. WHEN the admin login page renders, THEN the Admin Login Page SHALL NOT display OAuth authentication buttons
+5. WHEN an unauthenticated user tries to access admin pages, THEN the Authentication System SHALL redirect to `/admin/login` instead of the main login page
+6. WHEN a non-admin user successfully authenticates on the admin login page, THEN the Authentication System SHALL redirect them to the main homepage
 
 ### Requirement 9
+
+**User Story:** As a developer, I want to maintain email/password authentication code for admin users, so that administrators can access the system using traditional credentials.
+
+#### Acceptance Criteria
+
+1. WHEN the backend Auth Controller receives a login request, THEN the Auth Service SHALL validate credentials and return tokens
+2. WHEN the Auth Service validates admin email/password credentials, THEN the Auth Service SHALL hash and compare passwords securely using bcrypt
+3. WHEN the authentication API client is used for admin login, THEN the API client SHALL include the existing email/password login function for admin authentication
+4. WHEN the Auth Context is used for admin authentication, THEN the Auth Context SHALL include the existing login method for email/password authentication
+5. WHEN an admin user authenticates successfully, THEN the Authentication System SHALL verify the user has ADMIN role before allowing access
+
+### Requirement 10
 
 **User Story:** As a user, I want clear error messages when OAuth authentication fails, so that I understand what went wrong and how to proceed.
 
@@ -133,7 +146,7 @@ This document outlines the requirements for implementing a hybrid authentication
 4. WHEN OAuth authentication fails due to invalid credentials, THEN the Authentication System SHALL display a message indicating authentication was unsuccessful
 5. WHEN an error message is displayed, THEN the Authentication System SHALL provide a retry option to attempt authentication again
 
-### Requirement 10
+### Requirement 11
 
 **User Story:** As a developer, I want to update the database schema to support OAuth authentication, so that user accounts can store OAuth provider information.
 
@@ -145,7 +158,7 @@ This document outlines the requirements for implementing a hybrid authentication
 4. WHEN a user authenticates via OAuth, THEN the Auth Service SHALL store the provider name in the oauthProvider field
 5. WHEN a user authenticates via OAuth, THEN the Auth Service SHALL store the provider's user ID in the oauthProviderId field
 
-### Requirement 11
+### Requirement 12
 
 **User Story:** As a system administrator, I want OAuth credentials to be securely configured, so that the application's authentication system is not compromised.
 
@@ -157,7 +170,7 @@ This document outlines the requirements for implementing a hybrid authentication
 4. WHEN OAuth credentials are invalid, THEN the Auth Service SHALL fail authentication attempts and log the error
 5. WHEN OAuth callback URLs are configured, THEN the Auth Service SHALL use HTTPS in production environments
 
-### Requirement 12
+### Requirement 13
 
 **User Story:** As a user with the same email across Google and Facebook, I want to be recognized as the same customer regardless of which provider I use to log in, so that I have a consistent account experience.
 
@@ -169,7 +182,7 @@ This document outlines the requirements for implementing a hybrid authentication
 4. WHEN the Auth Service links a new OAuth provider to an existing account, THEN the Auth Service SHALL update the user record with the new provider information
 5. WHEN a user has multiple OAuth providers linked, THEN the Auth Service SHALL maintain both provider IDs in the user record
 
-### Requirement 13
+### Requirement 14
 
 **User Story:** As an administrator, I want to see which OAuth provider(s) a customer used to register, so that I can contact them through the appropriate channel if needed.
 
@@ -181,60 +194,14 @@ This document outlines the requirements for implementing a hybrid authentication
 4. WHEN an administrator views customer information, THEN the Authentication System SHALL display the OAuth email address associated with each provider
 5. WHEN an administrator views customer information, THEN the Authentication System SHALL display the username extracted from the OAuth provider
 
-### Requirement 14
+### Requirement 15
 
 **User Story:** As a user, I want my checkout experience to be seamless after authentication, so that I can complete my purchase without additional friction.
 
 #### Acceptance Criteria
 
-1. WHEN a user completes authentication (OAuth or email/password) from the checkout redirect, THEN the Checkout Flow SHALL return the user to the checkout page
+1. WHEN a user completes OAuth authentication from the checkout redirect, THEN the Checkout Flow SHALL return the user to the checkout page
 2. WHEN a user returns to checkout after authentication, THEN the Checkout Flow SHALL preserve the cart contents
 3. WHEN an authenticated user completes checkout, THEN the Checkout Flow SHALL associate the order with the user's account
 
-### Requirement 15
 
-**User Story:** As a user, I want to register a new account using email and password, so that I can create an account without using OAuth providers.
-
-#### Acceptance Criteria
-
-1. WHEN the login page renders, THEN the Login Page SHALL display a link to the registration page
-2. WHEN a user navigates to the registration page, THEN the Registration Page SHALL display email, password, first name, and last name input fields
-3. WHEN a user submits valid registration information, THEN the Auth Service SHALL create a new user account with hashed password
-4. WHEN a user submits registration with an email that already exists, THEN the Authentication System SHALL display an error message indicating the email is already registered
-5. WHEN a user successfully registers, THEN the Authentication System SHALL automatically log in the user and redirect to the homepage
-
-### Requirement 16
-
-**User Story:** As a user, I want password validation during registration, so that I create a secure password.
-
-#### Acceptance Criteria
-
-1. WHEN a user enters a password during registration, THEN the Registration Page SHALL validate the password meets minimum requirements
-2. WHEN a password is too short (less than 8 characters), THEN the Registration Page SHALL display an error message
-3. WHEN a password does not contain required character types, THEN the Registration Page SHALL display specific validation errors
-4. WHEN a user enters mismatched passwords in password and confirm password fields, THEN the Registration Page SHALL display an error message
-5. WHEN a user's password meets all requirements, THEN the Registration Page SHALL allow form submission
-
-### Requirement 17
-
-**User Story:** As a user, I want clear error messages when email/password authentication fails, so that I understand what went wrong.
-
-#### Acceptance Criteria
-
-1. WHEN email/password authentication fails due to invalid credentials, THEN the Authentication System SHALL display a message indicating invalid email or password
-2. WHEN email/password authentication fails due to network issues, THEN the Authentication System SHALL display a message indicating a connection problem
-3. WHEN a user attempts to log in with an unverified email, THEN the Authentication System SHALL display a message prompting email verification
-4. WHEN an error message is displayed, THEN the Authentication System SHALL allow the user to retry authentication
-5. WHEN a user forgets their password, THEN the Login Page SHALL display a "Forgot Password" link
-
-### Requirement 18
-
-**User Story:** As a user with both OAuth and email/password credentials, I want my accounts to be linked by email, so that I have a unified account experience.
-
-#### Acceptance Criteria
-
-1. WHEN a user registers with email/password using an email that exists via OAuth, THEN the Auth Service SHALL link the credentials to the existing OAuth account
-2. WHEN a user authenticates via OAuth with an email that has email/password credentials, THEN the Auth Service SHALL link the OAuth provider to the existing account
-3. WHEN a user has both OAuth and email/password credentials, THEN the Auth Service SHALL allow authentication via any linked method
-4. WHEN the Auth Service links credentials, THEN the Auth Service SHALL maintain all authentication methods in the user record
-5. WHEN a user views their account settings, THEN the Authentication System SHALL display all linked authentication methods

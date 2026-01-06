@@ -16,6 +16,11 @@ This document outlines the requirements for implementing PDF order attachment fu
 - **PDF Template Engine**: The system responsible for generating consistent, branded PDF layouts
 - **Document Storage**: Temporary storage system for generated PDF files before email attachment
 - **PDF Cleanup Service**: Service that removes old PDF files to manage storage space
+- **Quote Item**: An order item that does not have a price set initially and requires admin pricing before PDF generation
+- **Priced Item**: An order item that has a defined price and can be included in PDF generation immediately
+- **Quote Order**: An order containing one or more quote items that require admin pricing before final confirmation
+- **Admin Pricing Interface**: The admin interface component for setting prices on quote items
+- **Resend Email Button**: Admin interface button that becomes available after all quote items are priced, allowing resend of order confirmation with PDF
 
 ## Requirements
 
@@ -122,3 +127,44 @@ This document outlines the requirements for implementing PDF order attachment fu
 4. WHEN the resend email process completes successfully THEN the Order Confirmation Interface SHALL display a success message confirming the email was sent
 5. WHEN the resend email process fails THEN the Order Confirmation Interface SHALL display an appropriate error message and suggest alternative contact methods
 6. WHEN the resend email button is clicked multiple times THEN the Email Attachment System SHALL implement rate limiting to prevent spam and system abuse
+
+### Requirement 9
+
+**User Story:** As a business owner handling all types of orders, I want a two-step email process where confirmation emails are always sent without attachments, followed by invoice emails with PDF attachments, so that customers receive clear communication and professional documentation.
+
+#### Acceptance Criteria
+
+1. WHEN any order is placed THEN the Email System SHALL send order confirmation email without PDF attachment to confirm receipt
+2. WHEN an order contains only priced items THEN the Email System SHALL automatically send a second invoice email with PDF attachment after the confirmation email
+3. WHEN an order contains any quote items (items without prices) THEN the Email System SHALL send only the confirmation email without PDF attachment
+4. WHEN an order contains quote items THEN the Order Management System SHALL prevent admin users from changing order status until all items have prices set
+5. WHEN an admin sets prices for quote items THEN the Order Management System SHALL update the item prices in the order
+6. WHEN all items in an order have prices set THEN the Admin Interface SHALL display a "Send Invoice Email" button instead of a resend button
+
+### Requirement 10
+
+**User Story:** As an admin managing quote orders, I want to set prices for quote items and send invoice emails with PDFs, so that customers receive accurate pricing information and professional documentation.
+
+#### Acceptance Criteria
+
+1. WHEN viewing an order with quote items THEN the Admin Interface SHALL display price input fields for items without prices
+2. WHEN an admin enters prices for quote items THEN the Order Management System SHALL validate that prices are positive numbers
+3. WHEN an admin saves prices for quote items THEN the Order Management System SHALL update the order total calculations including taxes and shipping
+4. WHEN all quote items have prices set THEN the Admin Interface SHALL enable order status changes and display the "Send Invoice Email" button
+5. WHEN an admin clicks "Send Invoice Email" for a fully-priced order THEN the PDF Generator Service SHALL create a PDF with all current pricing information
+6. WHEN the invoice email is sent successfully THEN the Admin Interface SHALL display confirmation that the customer has been notified with updated pricing
+7. WHEN an admin needs to modify previously set prices THEN the Admin Interface SHALL allow editing and updating quote item prices multiple times
+8. WHEN quote item prices are updated multiple times THEN the Order Management System SHALL recalculate totals and maintain price history for audit purposes
+
+### Requirement 11
+
+**User Story:** As a customer, I want to receive clear communication about my order through separate confirmation and invoice emails, so that I understand the order process and have professional documentation when pricing is finalized.
+
+#### Acceptance Criteria
+
+1. WHEN I place any order THEN the Email System SHALL send me a confirmation email without PDF attachment to acknowledge my order
+2. WHEN my order contains only items with set prices THEN the Email System SHALL automatically send me an invoice email with PDF attachment after the confirmation email
+3. WHEN my order contains quote items THEN the Email System SHALL send me only the confirmation email until pricing is set by admin
+4. WHEN admin sets prices for my quote items THEN the Email System SHALL send me an invoice email with PDF attachment containing the final pricing
+5. WHEN I receive an invoice email THEN the PDF attachment SHALL contain complete order details including all pricing information
+6. WHEN I receive multiple invoice emails for the same order THEN each PDF SHALL reflect the current pricing at the time it was generated

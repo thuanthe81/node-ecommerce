@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { orderApi, Order, AdminOrderFilters } from '@/lib/order-api';
 import { getOrderStatusText, getPaymentStatusText } from '@/components/OrderDetailView/utils/statusTranslations';
 import { formatMoney } from '@/app/utils';
+import { SvgClipboard } from '@/components/Svgs';
 import translations from '@/locales/translations.json';
 
 interface OrderListContentProps {
@@ -214,19 +215,10 @@ export default function OrderListContent({ locale }: OrderListContentProps) {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {orders.length === 0 ? (
           <div className="text-center py-12">
-            <svg
+            <SvgClipboard
               className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
+              aria-hidden="true"
+            />
             <h3 className="mt-2 text-sm font-medium text-gray-900">{t('orders.noOrders')}</h3>
           </div>
         ) : (

@@ -10,97 +10,74 @@ import { productApi, Product } from '@/lib/product-api';
 import { contentApi, Content } from '@/lib/content-api';
 import ContentSection from '@/components/ContentSection';
 
-export default function HomeContent() {
+interface HomepageData {
+  featuredProducts: any[];
+  promotionalBanners: any[];
+  homepageSections: any[];
+  categories: any[];
+}
+
+interface HomeContentProps {
+  locale: string;
+  initialData: HomepageData;
+}
+
+export default function HomeContent({ locale, initialData }: HomeContentProps) {
   const t = useTranslations('common');
-  const locale = useLocale();
   const { user } = useAuth();
 
-  // State for carousel data
+  // State for carousel data - use server-side data as initial state
   const [carouselImages, setCarouselImages] = useState<CarouselImage[]>([]);
-  const [isLoadingCarousel, setIsLoadingCarousel] = useState(true);
+  const [isLoadingCarousel, setIsLoadingCarousel] = useState(false);
   const [carouselError, setCarouselError] = useState<string | null>(null);
 
-  // State for homepage sections
-  const [homepageSections, setHomepageSections] = useState<Content[]>([]);
-  const [isLoadingSections, setIsLoadingSections] = useState(true);
+  // State for homepage sections - use server-side data as initial state
+  const [homepageSections, setHomepageSections] = useState<Content[]>(initialData.homepageSections);
+  const [isLoadingSections, setIsLoadingSections] = useState(false);
   const [sectionsError, setSectionsError] = useState<string | null>(null);
 
-  // Fetch featured products or banner content for carousel
+  // Process server-side data for carousel on component mount
   useEffect(() => {
-    const fetchCarouselData = async () => {
-      setIsLoadingCarousel(true);
-      setCarouselError(null);
-
+    const processCarouselData = () => {
       try {
-        // Try to fetch featured products first
-        const productsResponse = await productApi.getProducts({
-          isFeatured: true,
-          limit: 8,
-          // inStock: true,
-        });
-
-        if (productsResponse.data && productsResponse.data.length >= 3) {
-          // Transform products to carousel images
-          const images: CarouselImage[] = productsResponse.data.map((product: Product) => ({
+        // Try featured products first
+        if (initialData.featuredProducts && initialData.featuredProducts.length >= 3) {
+          const images: CarouselImage[] = initialData.featuredProducts.map((product: any) => ({
             id: product.id,
             url: product.images?.[0]?.url || '/placeholder-product.jpg',
             altTextEn: product.images?.[0]?.altTextEn || product.nameEn,
             altTextVi: product.images?.[0]?.altTextVi || product.nameVi || product.nameEn,
           }));
-
           setCarouselImages(images);
-        } else {
-          // Fallback to banner content if not enough featured products
-          const banners = await contentApi.getBanners();
-          const publishedBanners = banners.filter((banner: Content) => banner.isPublished);
+        } else if (initialData.promotionalBanners && initialData.promotionalBanners.length >= 3) {
+          // Fallback to banners
+          const publishedBanners = initialData.promotionalBanners.filter((banner: any) => banner.isPublished);
 
           if (publishedBanners.length >= 3) {
             const images: CarouselImage[] = publishedBanners
-              .sort((a: Content, b: Content) => a.displayOrder - b.displayOrder)
-              .slice(0, 12) // Maximum 12 items
-              .map((banner: Content) => ({
+              .sort((a: any, b: any) => a.displayOrder - b.displayOrder)
+              .slice(0, 12)
+              .map((banner: any) => ({
                 id: banner.id,
                 url: banner.imageUrl || '/placeholder-banner.jpg',
                 altTextEn: banner.titleEn,
                 altTextVi: banner.titleVi || banner.titleEn,
               }));
-
             setCarouselImages(images);
           } else {
-            // Not enough items for carousel
             setCarouselError('Not enough items to display carousel');
           }
+        } else {
+          setCarouselError('Not enough items to display carousel');
         }
       } catch (error) {
-        console.error('Error fetching carousel data:', error);
-        setCarouselError('Failed to load carousel content');
-      } finally {
-        setIsLoadingCarousel(false);
+        console.error('Error processing carousel data:', error);
+        setCarouselError('Failed to process carousel content');
       }
     };
 
-    fetchCarouselData();
-  }, []);
-
-  // Fetch homepage sections
-  useEffect(() => {
-    const fetchHomepageSections = async () => {
-      setIsLoadingSections(true);
-      setSectionsError(null);
-
-      try {
-        const sections = await contentApi.getHomepageSections();
-        setHomepageSections(sections);
-      } catch (error) {
-        console.error('Error fetching homepage sections:', error);
-        setSectionsError('Failed to load homepage sections');
-      } finally {
-        setIsLoadingSections(false);
-      }
-    };
-
-    fetchHomepageSections();
-  }, []);
+    processCarouselData();
+  }, [initialData]);
 
   return (
     <div className="flex flex-col items-center bg-zinc-50 font-sans dark:bg-black">
@@ -135,48 +112,6 @@ export default function HomeContent() {
 
       {/* Error state for carousel (silent - just don't show carousel) */}
       {/* We don't show error to users, just log it and continue with the rest of the page */}
-
-      {/* Main Content Section */}
-      {/*<main className="flex w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start mb-[24px]">*/}
-      {/*  <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">*/}
-      {/*    <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">*/}
-      {/*      {t('home')} - {ShopInfo.name}*/}
-      {/*    </h1>*/}
-      {/*    <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">*/}
-      {/*      Welcome to our handmade products store. Browse our unique collection of artisan crafted*/}
-      {/*      items.*/}
-      {/*    </p>*/}
-      {/*    /!*{isAuthenticated && (*!/*/}
-      {/*    /!*  <div className="rounded-lg bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800">*!/*/}
-      {/*    /!*    <p className="text-sm text-green-800 dark:text-green-200">*!/*/}
-      {/*    /!*      {t('loggedInAs')} {user?.email}*!/*/}
-      {/*    /!*    </p>*!/*/}
-      {/*    /!*  </div>*!/*/}
-      {/*    /!*)}*!/*/}
-      {/*  </div>*/}
-      {/*  <div className="flex flex-col gap-4 text-base font-medium sm:flex-row mt-[48px]">*/}
-      {/*    /!*<Link*!/*/}
-      {/*    /!*  href="/login"*!/*/}
-      {/*    /!*  className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"*!/*/}
-      {/*    /!*>*!/*/}
-      {/*    /!*  {t('login').toLocaleUpperCase()}*!/*/}
-      {/*    /!*</Link>*!/*/}
-      {/*    {user*/}
-      {/*      ? <Link*/}
-      {/*        href="/products"*/}
-      {/*        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"*/}
-      {/*      >*/}
-      {/*        {t('shopping').toLocaleUpperCase()}*/}
-      {/*      </Link>*/}
-      {/*      : <Link*/}
-      {/*        href="/register"*/}
-      {/*        className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.4] px-5 transition-colors hover:border-transparent hover:bg-black/[.1] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"*/}
-      {/*      >*/}
-      {/*        {t('signup').toLocaleUpperCase()}*/}
-      {/*      </Link>*/}
-      {/*    }*/}
-      {/*  </div>*/}
-      {/*</main>*/}
 
       {/* Homepage Content Sections - Loading State */}
       {isLoadingSections && (

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { orderApi, Order } from '@/lib/order-api';
 import { formatMoney, formatDateSafe } from '@/app/utils';
+import { SvgX, SvgCheck } from '@/components/Svgs';
 
 function SuccessContent() {
   const tCheckout = useTranslations('checkout');
@@ -56,19 +57,9 @@ function SuccessContent() {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="text-red-600 mb-4">
-          <svg
+          <SvgX
             className="w-16 h-16 mx-auto"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
           {error || 'Order not found'}
@@ -87,19 +78,9 @@ function SuccessContent() {
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-          <svg
+          <SvgCheck
             className="w-8 h-8 text-green-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           {tCheckout('success')}
