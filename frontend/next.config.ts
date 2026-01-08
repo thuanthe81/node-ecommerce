@@ -14,17 +14,16 @@ const nextConfig: NextConfig = {
   // Server external packages (moved from experimental in Next.js 16)
   serverExternalPackages: [],
 
-  // Performance optimizations
+  // Performance optimizations - reduced for lower CPU usage
   experimental: {
-    // Enable optimized package imports
-    optimizePackageImports: ['@/lib', '@/components'],
+    // Disable optimized package imports to reduce build complexity
+    // optimizePackageImports: ['@/lib', '@/components'],
     // Enable partial prerendering for better performance
     ppr: false, // Enable when stable
   },
 
-  // Caching configuration
-  // cacheHandler: process.env.NODE_ENV === 'production' ? require.resolve('./cache-handler.js') : undefined,
-  cacheMaxMemorySize: 50 * 1024 * 1024, // 50MB
+  // Caching configuration - reduced for lower CPU usage
+  cacheMaxMemorySize: 25 * 1024 * 1024, // Reduced to 25MB
 
   async rewrites() {
     return [
@@ -125,21 +124,16 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Webpack optimizations
+  // Webpack optimizations - simplified for lower CPU usage
   webpack: (config, { dev }) => {
-    // Production optimizations
+    // Only apply minimal optimizations to reduce CPU load
     if (!dev) {
+      // Reduce bundle splitting complexity
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-            },
-          },
+          maxSize: 244000, // Smaller chunks to reduce processing
         },
       };
     }
