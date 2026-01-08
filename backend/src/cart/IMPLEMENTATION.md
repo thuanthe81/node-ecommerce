@@ -44,7 +44,7 @@ Successfully implemented a complete shopping cart system with backend API, front
 - ioredis
 - @nestjs/cache-manager
 - cache-manager
-- cache-manager-ioredis-yet
+- cache-manager-redis-store
 - cookie-parser
 - @types/cookie-parser
 

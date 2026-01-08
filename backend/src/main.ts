@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import helmet from 'helmet';
 import { Request, Response, NextFunction } from 'express';
 import { join, isAbsolute } from 'path';
@@ -13,6 +14,21 @@ async function bootstrap() {
 
   // Enable cookie parser (required for CSRF protection)
   app.use(cookieParser());
+
+  // Configure session middleware (required for CSRF protection)
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 3600000, // 1 hour
+        sameSite: 'strict',
+      },
+    }),
+  );
 
   // Security headers with Helmet
   app.use(

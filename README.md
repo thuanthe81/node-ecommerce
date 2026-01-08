@@ -8,8 +8,9 @@ A full-featured e-commerce platform for selling handmade products, built with Ne
 handmade-ecommerce/
 ├── frontend/          # Next.js 14+ frontend application
 ├── backend/           # NestJS backend API
+├── shared/            # Shared TypeScript types and utilities
 ├── docker-compose.yml # Local development services
-└── package.json       # Root workspace configuration
+└── dev.sh             # Development script to run both servers
 ```
 
 ## Prerequisites
@@ -38,8 +39,17 @@ sudo systemctl start redis
 
 ### 1. Install Dependencies
 
+Install dependencies for each workspace separately:
+
 ```bash
-npm install
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
+
+# Install shared dependencies (if any)
+cd ../shared && npm install
 ```
 
 ### 2. Set Up Database
@@ -98,22 +108,35 @@ npm run prisma:migrate
 ### 6. Run Development Servers
 
 ```bash
-npm run dev
+./dev.sh
 ```
 
 This will start both frontend (http://localhost:3000) and backend (http://localhost:3001) servers.
+
+Alternatively, you can run them separately:
+
+```bash
+# Terminal 1 - Backend
+cd backend && npm run start:dev
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
+```
 
 **Note:** The backend will validate OAuth configuration on startup. If credentials are missing, you'll see a detailed error message with setup instructions.
 
 ## Available Scripts
 
 ### Development
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run dev:frontend` - Start only frontend
-- `npm run dev:backend` - Start only backend
-- `npm run build` - Build both applications
-- `npm run lint` - Lint all workspaces
-- `npm run format` - Format code with Prettier
+- `./dev.sh` - Start both frontend and backend in development mode
+- `cd backend && npm run start:dev` - Start only backend
+- `cd frontend && npm run dev` - Start only frontend
+- `cd backend && npm run build` - Build backend
+- `cd frontend && npm run build` - Build frontend
+- `cd backend && npm run lint` - Lint backend code
+- `cd frontend && npm run lint` - Lint frontend code
+- `cd backend && npm run format` - Format backend code with Prettier
+- `cd frontend && npm run format` - Format frontend code with Prettier
 
 ### Deployment
 - `npm run deploy` - Deploy to staging environment

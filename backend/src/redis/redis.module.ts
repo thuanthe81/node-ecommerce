@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-ioredis-yet';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Global()
 @Module({
@@ -14,11 +14,10 @@ import { redisStore } from 'cache-manager-ioredis-yet';
         const redisPort = configService.get('REDIS_PORT', 6379);
 
         return {
-          store: await redisStore({
-            host: redisHost,
-            port: redisPort,
-            ttl: 60 * 60 * 24 * 7, // 7 days default TTL
-          }),
+          store: redisStore,
+          host: redisHost,
+          port: redisPort,
+          ttl: 60 * 60 * 24 * 7, // 7 days default TTL
         };
       },
     }),
