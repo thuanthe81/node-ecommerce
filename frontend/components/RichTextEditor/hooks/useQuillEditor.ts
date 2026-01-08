@@ -1,13 +1,13 @@
 /**
  * useQuillEditor Hook
  *
- * Manages Quill editor instance lifecycle and configuration
+ * Manages Quill editor instance lifecycle and configuration using react-quilljs
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import type Quill from 'quill';
+import { useEffect, useRef } from 'react';
+import { useQuill } from 'react-quilljs';
 import type { UseQuillEditorReturn, QuillEditorOptions } from '../types';
 import { createQuillConfig } from '../utils/quillConfig';
 
@@ -31,9 +31,6 @@ export function useQuillEditor(
   onChange: (html: string) => void,
   options: QuillEditorOptions = {}
 ): UseQuillEditorReturn {
-  const quillRef = useRef<HTMLDivElement>(null);
-  const [editor, setEditor] = useState<Quill | null>(null);
-  const [isReady, setIsReady] = useState(false);
   const onChangeRef = useRef(onChange);
   const isUpdatingRef = useRef(false);
 
@@ -42,62 +39,67 @@ export function useQuillEditor(
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // Initialize Quill editor
+  // Create Quill configuration
+  const config = createQuillConfig({
+    showToolbar: options.showToolbar,
+    placeholder: options.placeholder,
+    readOnly: options.readOnly,
+    imageHandler: options.imageHandler,
+  });
+
+  // Initialize Quill editor using react-quilljs hook
+  const { quill: editor, quillRef, Quill } = useQuill({
+    theme: config.theme,
+    modules: config.modules,
+    formats: config.formats,
+    placeholder: config.placeholder,
+    readOnly: config.readOnly,
+  });
+
+  // Register ImageResize module when Quill is available
   useEffect(() => {
-    if (!quillRef.current || editor) return;
+    if (Quill && typeof window !== 'undefined') {
+      (async () => {
+        try {
+          const { registerImageResize } = await import('../utils/quillConfig');
+          await registerImageResize(Quill);
+        } catch (error) {
+          console.error('Failed to register ImageResize module:', error);
+        }
+      })();
+    }
+  }, [Quill]);
 
-    let isMounted = true;
+  // Set up text-change event listener and initial content
+  useEffect(() => {
+    if (!editor) return;
 
-    // Dynamic import of Quill and register ImageResize module
-    (async () => {
-      // First, register the ImageResize module
-      const { registerImageResize } = await import('../utils/quillConfig');
-      await registerImageResize();
+    // Set initial content
+    if (initialValue && editor.root.innerHTML !== initialValue) {
+      isUpdatingRef.current = true;
+      editor.root.innerHTML = initialValue;
+      isUpdatingRef.current = false;
+    }
 
-      // Then import Quill
-      const { default: Quill } = await import('quill');
+    // Set up text-change event listener
+    const handleTextChange = () => {
+      // Skip if we're updating from props
+      if (isUpdatingRef.current) return;
 
-      if (!isMounted || !quillRef.current) return;
+      const html = editor.root.innerHTML;
+      onChangeRef.current(html);
+    };
 
-      // Create Quill configuration
-      const config = createQuillConfig({
-        showToolbar: options.showToolbar,
-        placeholder: options.placeholder,
-        readOnly: options.readOnly,
-        imageHandler: options.imageHandler,
-      });
-
-      // Initialize Quill instance
-      const quillInstance = new Quill(quillRef.current, config);
-
-      // Set initial content
-      if (initialValue) {
-        isUpdatingRef.current = true;
-        quillInstance.root.innerHTML = initialValue;
-        isUpdatingRef.current = false;
-      }
-
-      // Set up text-change event listener
-      quillInstance.on('text-change', () => {
-        // Skip if we're updating from props
-        if (isUpdatingRef.current) return;
-
-        const html = quillInstance.root.innerHTML;
-        onChangeRef.current(html);
-      });
-
-      setEditor(quillInstance);
-      setIsReady(true);
-    })();
+    editor.on('text-change', handleTextChange);
 
     return () => {
-      isMounted = false;
+      editor.off('text-change', handleTextChange);
     };
-  }, []); // Only run once on mount
+  }, [editor, initialValue]);
 
   // Update content when value prop changes
   useEffect(() => {
-    if (!editor || !isReady) return;
+    if (!editor) return;
 
     const currentContent = editor.root.innerHTML;
 
@@ -107,22 +109,22 @@ export function useQuillEditor(
       editor.root.innerHTML = initialValue;
       isUpdatingRef.current = false;
     }
-  }, [initialValue, editor, isReady]);
+  }, [initialValue, editor]);
 
   // Update read-only state when prop changes
   useEffect(() => {
-    if (!editor || !isReady) return;
+    if (!editor) return;
 
     if (options.readOnly) {
       editor.disable();
     } else {
       editor.enable();
     }
-  }, [options.readOnly, editor, isReady]);
+  }, [options.readOnly, editor]);
 
   return {
     quillRef,
     editor,
-    isReady,
+    isReady: !!editor,
   };
 }

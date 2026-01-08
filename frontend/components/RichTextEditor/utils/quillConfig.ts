@@ -14,13 +14,12 @@ let Quill: any = null;
  * Initialize and register the ImageResize module with Quill
  * This must be called before creating any Quill instances
  */
-export async function registerImageResize() {
+export async function registerImageResize(QuillClass?: any) {
   if (typeof window === 'undefined') return;
 
   try {
-    // Dynamic imports to avoid SSR issues
-    const QuillModule = await import('quill');
-    Quill = QuillModule.default;
+    // Use provided Quill class or import it
+    const Quill = QuillClass || (await import('quill')).default;
 
     const ImageResizeModule = await import('quill-image-resize-module-react');
     ImageResize = ImageResizeModule.default;
@@ -112,12 +111,6 @@ export function createQuillConfig(options: {
     };
   }
 
-  // Configure imageResize module if available
-  const imageResizeConfig = Quill ? {
-    parchment: Quill.import('parchment'),
-    modules: ['Resize', 'DisplaySize', 'Toolbar']
-  } : undefined;
-
   return {
     theme: 'snow',
     modules: {
@@ -130,7 +123,9 @@ export function createQuillConfig(options: {
         maxStack: 50,
         userOnly: true,
       },
-      ...(imageResizeConfig && { imageResize: imageResizeConfig }),
+      imageResize: {
+        modules: ['Resize', 'DisplaySize', 'Toolbar']
+      },
     },
     formats: ALLOWED_FORMATS,
     placeholder,

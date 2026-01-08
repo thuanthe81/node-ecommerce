@@ -35,3 +35,28 @@ jest.mock('next/navigation', () => ({
     return new URLSearchParams();
   },
 }));
+
+// Mock Quill to avoid ES module issues
+const QuillMock = jest.fn().mockImplementation(() => ({
+  root: { innerHTML: '' },
+  getSelection: jest.fn(() => ({ index: 0 })),
+  insertEmbed: jest.fn(),
+  setSelection: jest.fn(),
+  on: jest.fn(),
+  off: jest.fn(),
+  disable: jest.fn(),
+  enable: jest.fn(),
+}));
+
+QuillMock.register = jest.fn();
+
+jest.mock('quill', () => ({
+  __esModule: true,
+  default: QuillMock,
+}));
+
+// Mock quill-image-resize-module-react
+jest.mock('quill-image-resize-module-react', () => ({
+  __esModule: true,
+  default: {},
+}));

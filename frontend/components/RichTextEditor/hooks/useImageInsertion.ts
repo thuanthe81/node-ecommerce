@@ -28,7 +28,7 @@ import type { UseImageInsertionReturn } from '../types';
  * @returns Image insertion state and handlers
  */
 export function useImageInsertion(
-  editor: Quill | null,
+  editor: Quill | null | undefined,
   onImageInsert?: (url: string) => void,
   locale: string = 'en'
 ): UseImageInsertionReturn {

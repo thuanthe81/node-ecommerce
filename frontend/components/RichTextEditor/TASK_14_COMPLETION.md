@@ -209,7 +209,7 @@ Focus returns to editor (automatic)
 - useImageInsertion hook (existing)
 
 ### External Dependencies:
-- react-quill (Quill editor)
+- react-quilljs (Quill editor hook wrapper)
 - next-intl (translations)
 - React hooks (useState, useCallback)
 

@@ -15,15 +15,26 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-// Mock Quill
-jest.mock('react-quill', () => {
-  return function MockQuill() {
-    return <div data-testid="quill-editor">Quill Editor</div>;
-  };
-});
+// Mock react-quilljs
+jest.mock('react-quilljs', () => ({
+  useQuill: () => ({
+    quill: {
+      root: { innerHTML: '' },
+      getSelection: () => ({ index: 0 }),
+      insertEmbed: jest.fn(),
+      setSelection: jest.fn(),
+      on: jest.fn(),
+      off: jest.fn(),
+      disable: jest.fn(),
+      enable: jest.fn(),
+    },
+    quillRef: { current: null },
+    Quill: null,
+  }),
+}));
 
 // Mock ImagePickerModal
-jest.mock('../../../components/ImagePickerModal', () => ({
+jest.mock('../../../../components/ImagePickerModal', () => ({
   __esModule: true,
   default: ({ isOpen, onClose }: any) => {
     if (!isOpen) return null;
@@ -36,7 +47,7 @@ jest.mock('../../../components/ImagePickerModal', () => ({
 }));
 
 // Mock MediaPickerModal
-jest.mock('../MediaPickerModal/MediaPickerModal', () => ({
+jest.mock('../../../../components/MediaPickerModal/MediaPickerModal', () => ({
   MediaPickerModal: ({ isOpen, onClose, onSelectMedia }: any) => {
     if (!isOpen) return null;
     return (

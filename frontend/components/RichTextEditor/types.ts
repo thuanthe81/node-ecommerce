@@ -46,8 +46,8 @@ export interface UseQuillEditorReturn {
   /** Ref to attach to the editor container div */
   quillRef: React.RefObject<HTMLDivElement | null>;
 
-  /** The Quill editor instance (null until initialized) */
-  editor: Quill | null;
+  /** The Quill editor instance (null/undefined until initialized) */
+  editor: Quill | null | undefined;
 
   /** Whether the editor has been initialized and is ready */
   isReady: boolean;
@@ -168,6 +168,7 @@ export interface QuillConfig {
     toolbar: QuillToolbarConfigOrDisabled;
     clipboard?: any;
     history?: any;
+    imageResize?: any;
   };
   formats: string[];
   placeholder?: string;
