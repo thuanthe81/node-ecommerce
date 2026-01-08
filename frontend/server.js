@@ -1,3 +1,8 @@
+// Load environment variables in the same order as Next.js
+require('dotenv').config({ path: '.env.local' })
+require('dotenv').config({ path: '.env.production' })
+require('dotenv').config({ path: '.env' })
+
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
