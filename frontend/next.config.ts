@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 const nextConfig: NextConfig = {
   output: 'standalone',
   /* config options here */
-  reactCompiler: true,
+  reactCompiler: false, // Moved from experimental
 
   // URL structure configuration
   trailingSlash: false, // Consistent no trailing slash policy
@@ -14,16 +14,16 @@ const nextConfig: NextConfig = {
   // Server external packages (moved from experimental in Next.js 16)
   serverExternalPackages: [],
 
-  // Performance optimizations - reduced for lower CPU usage
+  // Performance optimizations - aggressive CPU reduction
   experimental: {
-    // Disable optimized package imports to reduce build complexity
-    // optimizePackageImports: ['@/lib', '@/components'],
-    // Enable partial prerendering for better performance
-    ppr: false, // Enable when stable
+    // Disable all experimental features to reduce CPU load
+    ppr: false,
+    workerThreads: false,
   },
 
-  // Caching configuration - reduced for lower CPU usage
-  cacheMaxMemorySize: 25 * 1024 * 1024, // Reduced to 25MB
+  // Aggressive caching configuration for lower CPU usage
+  cacheMaxMemorySize: 16 * 1024 * 1024, // Reduced to 16MB
+  cacheHandler: process.env.NODE_ENV === 'production' ? './cache-handler-minimal.js' : undefined,
 
   async rewrites() {
     return [
@@ -124,19 +124,68 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Webpack optimizations - simplified for lower CPU usage
-  webpack: (config, { dev }) => {
-    // Only apply minimal optimizations to reduce CPU load
+  // Webpack optimizations - aggressive CPU reduction
+  webpack: (config, { dev, isServer }) => {
+    // Aggressive optimizations for production builds
     if (!dev) {
-      // Reduce bundle splitting complexity
+      // Minimize bundle splitting to reduce processing overhead
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 244000, // Smaller chunks to reduce processing
+          maxSize: 200000, // Smaller chunks (200KB)
+          minSize: 20000,
+          maxAsyncRequests: 5, // Reduce async requests
+          maxInitialRequests: 3, // Reduce initial requests
+          cacheGroups: {
+            default: false, // Disable default cache group
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              enforce: true,
+            },
+          },
         },
+        // Force single-threaded processing
+        minimize: true,
+        // Keep default minimizers to avoid plugin issues
+      };
+
+      // Aggressive parallelism reduction
+      config.parallelism = 1;
+
+      // Disable source maps completely
+      config.devtool = false;
+
+      // Reduce module resolution complexity
+      config.resolve = {
+        ...config.resolve,
+        symlinks: false,
+        cacheWithContext: false,
       };
     }
+
+    // Filesystem cache configuration for better performance
+    config.cache = {
+      type: 'filesystem',
+      maxAge: 300000, // 5 minutes
+      buildDependencies: {
+        config: [__filename],
+      },
+    };
+
+    // Reduce file system watching overhead
+    config.watchOptions = {
+      ignored: /node_modules/,
+      aggregateTimeout: 300,
+      poll: false,
+    };
+
+    // Disable performance hints to reduce processing
+    config.performance = {
+      hints: false,
+    };
 
     return config;
   },
