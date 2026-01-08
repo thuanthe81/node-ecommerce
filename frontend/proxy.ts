@@ -44,7 +44,7 @@ export function proxy(request: NextRequest) {
   const normalizedPath = normalizePath(pathname);
 
   // Redirect if path needs normalization (trailing slash removal, etc.)
-  if (pathname !== normalizedPath && !pathname.startsWith('/api/') && !pathname.startsWith('/_next/')) {
+  if (pathname !== normalizedPath && !pathname.startsWith('/sitemap-api/') && !pathname.startsWith('/_next/')) {
     const redirectUrl = new URL(normalizedPath + search, request.url);
     return NextResponse.redirect(redirectUrl, 301);
   }
@@ -77,7 +77,7 @@ export function proxy(request: NextRequest) {
   response.headers.set('X-Request-Start', startTime.toString());
 
   // Determine content type and apply appropriate cache headers
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/sitemap-api/')) {
     // API routes
     const apiHeaders = getCacheHeaders('apiResponses');
     Object.entries(apiHeaders).forEach(([key, value]) => {

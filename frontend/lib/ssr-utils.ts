@@ -485,7 +485,7 @@ export function generateCacheTags(type: string, identifiers: string[]): string[]
 export async function revalidateSSRCache(tags: string[]): Promise<void> {
   try {
     // Use the new revalidation API endpoint
-    const revalidationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/revalidate`;
+    const revalidationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/sitemap-api/revalidate`;
     const token = process.env.REVALIDATION_TOKEN;
 
     if (!token) {

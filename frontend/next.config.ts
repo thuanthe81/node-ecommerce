@@ -100,7 +100,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/api/(.*)',
+        source: '/sitemap-api/(.*)',
         headers: [
           {
             key: 'Cache-Control',

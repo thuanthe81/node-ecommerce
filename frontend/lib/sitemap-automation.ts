@@ -17,7 +17,7 @@ export interface ContentChangeEvent {
  */
 export async function triggerSitemapUpdate(event: ContentChangeEvent): Promise<boolean> {
   try {
-    const response = await fetch(`${FRONTEND_URL}/api/revalidate-sitemap`, {
+    const response = await fetch(`${FRONTEND_URL}/sitemap-api/revalidate-sitemap`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export async function triggerBatchSitemapUpdate(events: ContentChangeEvent[]): P
  */
 export async function submitSitemapsAfterUpdate(): Promise<boolean> {
   try {
-    const response = await fetch(`${FRONTEND_URL}/api/submit-sitemaps`, {
+    const response = await fetch(`${FRONTEND_URL}/sitemap-api/submit-sitemaps`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

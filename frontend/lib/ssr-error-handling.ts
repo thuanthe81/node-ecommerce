@@ -505,7 +505,7 @@ async function sendToMonitoringService(errorData: any): Promise<void> {
 async function sendToPerformanceMonitoring(performanceData: any): Promise<void> {
   try {
     // Use the existing performance API endpoint
-    const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/api/performance`;
+    const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/sitemap-api/performance`;
 
     await fetch(performanceUrl, {
       method: 'POST',

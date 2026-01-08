@@ -27,7 +27,7 @@ interface CacheInvalidationPayload {
  */
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
-  performanceMonitor.startRequest(requestId, '/api/webhook/cache-invalidation', 'POST');
+  performanceMonitor.startRequest(requestId, '/sitemap-api/webhook/cache-invalidation', 'POST');
 
   try {
     // Verify webhook signature/token

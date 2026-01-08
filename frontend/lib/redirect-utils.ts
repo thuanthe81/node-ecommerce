@@ -292,7 +292,7 @@ export function handleLocaleRedirect(
 
   // Skip API routes and static files
   if (
-    pathname.startsWith('/api/') ||
+    pathname.startsWith('/sitemap-api/') ||
     pathname.startsWith('/_next/') ||
     pathname.includes('.')
   ) {

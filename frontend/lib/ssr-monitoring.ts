@@ -302,7 +302,7 @@ export class SSRMonitoringService {
    */
   private async sendMetricToEndpoint(metric: SSRMetrics): Promise<void> {
     try {
-      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/api/performance`;
+      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/sitemap-api/performance`;
 
       await fetch(performanceUrl, {
         method: 'POST',
@@ -324,7 +324,7 @@ export class SSRMonitoringService {
    */
   private async sendErrorToEndpoint(errorData: any): Promise<void> {
     try {
-      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/api/performance`;
+      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/sitemap-api/performance`;
 
       await fetch(performanceUrl, {
         method: 'POST',
@@ -404,7 +404,7 @@ export class SSRMonitoringService {
     };
 
     try {
-      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/api/performance`;
+      const performanceUrl = `${getSSREnvVar('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000')}/sitemap-api/performance`;
 
       await fetch(performanceUrl, {
         method: 'POST',
