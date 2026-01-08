@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 
 interface ReturnsPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default function ReturnsPage({ params }: ReturnsPageProps) {
-  redirect(`/${params.locale || 'vi'}/pages/return-policy`);
+export default async function ReturnsPage({ params }: ReturnsPageProps) {
+  const { locale } = await params;
+  redirect(`/${locale || 'vi'}/pages/return-policy`);
 }

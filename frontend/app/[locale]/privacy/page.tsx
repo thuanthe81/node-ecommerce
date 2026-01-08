@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 
 interface PrivacyPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default function PrivacyPage({ params }: PrivacyPageProps) {
-  redirect(`/${params.locale || 'vi'}/pages/privacy-policy`);
+export default async function PrivacyPage({ params }: PrivacyPageProps) {
+  const { locale } = await params;
+  redirect(`/${locale || 'vi'}/pages/privacy-policy`);
 }

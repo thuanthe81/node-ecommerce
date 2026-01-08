@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 
 interface TermsPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default function TermsPage({ params }: TermsPageProps) {
-  redirect(`/${params.locale || 'vi'}/pages/terms-of-service`);
+export default async function TermsPage({ params }: TermsPageProps) {
+  const { locale } = await params;
+  redirect(`/${locale || 'vi'}/pages/terms-of-service`);
 }

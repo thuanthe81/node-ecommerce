@@ -18,11 +18,11 @@ echo "Starting backend..."
 cd backend && npm run start:dev &
 BACKEND_PID=$!
 
-# Start frontend in background
-echo "Starting frontend..."
-cd ../frontend && npm run dev &
+# Start frontend in development mode (no build required)
+echo "Starting frontend in development mode..."
+cd ../frontend && NODE_OPTIONS='--max-old-space-size=1024' node server.js &
 FRONTEND_PID=$!
 
 # Wait for both processes
-echo "Both servers started. Press Ctrl+C to stop."
+echo "Both servers started in development mode. Press Ctrl+C to stop."
 wait

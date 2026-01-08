@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --no-turbo",
-    "build:low-cpu": "NODE_OPTIONS='--max-old-space-size=1024' next build",
+    "build": "next build --webpack",
+    "build:low-cpu": "NODE_OPTIONS='--max-old-space-size=1024' next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",

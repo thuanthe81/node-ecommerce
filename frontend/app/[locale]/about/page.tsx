@@ -1,12 +1,13 @@
 import { redirect } from 'next/navigation';
 
 interface AboutPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default function AboutPage({ params }: AboutPageProps) {
+export default async function AboutPage({ params }: AboutPageProps) {
+  const { locale } = await params;
   // Redirect to the dynamic CMS page
-  redirect(`/${params.locale || 'vi'}/pages/about-us`);
+  redirect(`/${locale || 'vi'}/pages/about-us`);
 }

@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 
 interface PurchasingPageProps {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default function PurchasingPage({ params }: PurchasingPageProps) {
-  redirect(`/${params.locale || 'vi'}/pages/purchasing-guide`);
+export default async function PurchasingPage({ params }: PurchasingPageProps) {
+  const { locale } = await params;
+  redirect(`/${locale || 'vi'}/pages/purchasing-guide`);
 }
