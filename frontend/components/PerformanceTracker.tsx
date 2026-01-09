@@ -24,7 +24,7 @@ export default function PerformanceTracker() {
       const loadTime = Date.now() - startTime;
 
       // Send page load metrics to API
-      fetch('/api/performance', {
+      fetch('/sitemap-api/performance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export default function PerformanceTracker() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         // Page is being hidden, good time to send any pending metrics
-        navigator.sendBeacon('/api/performance', JSON.stringify({
+        navigator.sendBeacon('/sitemap-api/performance', JSON.stringify({
           type: 'page-visibility',
           path: pathname,
           timestamp: Date.now()
@@ -78,7 +78,7 @@ export default function PerformanceTracker() {
     const timer = setTimeout(() => {
       const routeChangeTime = Date.now() - startTime;
 
-      fetch('/api/performance', {
+      fetch('/sitemap-api/performance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ export function useAPIPerformanceTracking() {
         const duration = Date.now() - startTime;
 
         // Track successful API call
-        fetch('/api/performance', {
+        fetch('/sitemap-api/performance', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export function useAPIPerformanceTracking() {
         const duration = Date.now() - startTime;
 
         // Track failed API call
-        fetch('/api/performance', {
+        fetch('/sitemap-api/performance', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -37,7 +37,7 @@ export default function ProductDetailContent({
       // Fetch related products client-side for better performance
       const fetchRelatedProducts = async () => {
         try {
-          const response = await fetch(`/api/products/${initialProduct.id}/related?limit=4`);
+          const response = await fetch(`/sitemap-api/products/${initialProduct.id}/related?limit=4`);
           if (response.ok) {
             const related = await response.json();
             setRelatedProducts(related);

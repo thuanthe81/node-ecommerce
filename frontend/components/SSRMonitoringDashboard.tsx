@@ -57,7 +57,7 @@ export function SSRMonitoringDashboard({
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`/api/performance?type=dashboard&timeWindow=${timeWindow}`);
+      const response = await fetch(`/sitemap-api/performance?type=dashboard&timeWindow=${timeWindow}`);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -79,7 +79,7 @@ export function SSRMonitoringDashboard({
 
   const resolveAlert = async (alertId: string) => {
     try {
-      const response = await fetch('/api/performance', {
+      const response = await fetch('/sitemap-api/performance', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
