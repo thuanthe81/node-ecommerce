@@ -290,10 +290,11 @@ export function handleLocaleRedirect(
 ): NextResponse | null {
   const { pathname } = request.nextUrl;
 
-  // Skip API routes and static files
+  // Skip API routes, sitemap-api routes, and static files
   if (
     pathname.startsWith('/sitemap-api/') ||
     pathname.startsWith('/_next/') ||
+    pathname.startsWith('/_vercel/') ||
     pathname.includes('.')
   ) {
     return null;

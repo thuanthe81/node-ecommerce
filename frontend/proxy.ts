@@ -14,16 +14,26 @@ import {
 const handleI18nRouting = createMiddleware(routing);
 
 /**
- * Proxy function to handle internationalization, caching headers, performance monitoring,
+ * Main proxy function to handle internationalization, caching headers, performance monitoring,
  * URL normalization, redirects, and request optimization
  */
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Skip proxy for other API routes and static files
+  if (
+    pathname.startsWith('/sitemap-api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/_vercel/') ||
+    pathname.includes('.') // Static files with extensions
+  ) {
+    return NextResponse.next();
+  }
 
   // Handle specific redirects first (before i18n processing)
   // Redirect /register to /login (with locale support)
   if (pathname === '/register' || pathname.match(/^\/(en|vi)\/register$/)) {
-    const locale = pathname.startsWith('/en') ? 'en' : 'vi';
+    const locale = pathname === '/en' || pathname.startsWith('/en') ? 'en' : 'vi';
     const loginPath = locale === 'en' ? '/en/login' : '/login';
     return NextResponse.redirect(new URL(loginPath, request.url));
   }
@@ -44,7 +54,7 @@ export function proxy(request: NextRequest) {
   const normalizedPath = normalizePath(pathname);
 
   // Redirect if path needs normalization (trailing slash removal, etc.)
-  if (pathname !== normalizedPath && !pathname.startsWith('/sitemap-api/') && !pathname.startsWith('/_next/')) {
+  if (pathname !== normalizedPath) {
     const redirectUrl = new URL(normalizedPath + search, request.url);
     return NextResponse.redirect(redirectUrl, 301);
   }
@@ -77,13 +87,7 @@ export function proxy(request: NextRequest) {
   response.headers.set('X-Request-Start', startTime.toString());
 
   // Determine content type and apply appropriate cache headers
-  if (pathname.startsWith('/sitemap-api/')) {
-    // API routes
-    const apiHeaders = getCacheHeaders('apiResponses');
-    Object.entries(apiHeaders).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
-  } else if (pathname.endsWith('.xml')) {
+  if (pathname.endsWith('.xml')) {
     // Sitemap files
     const sitemapHeaders = getCacheHeaders('sitemaps');
     Object.entries(sitemapHeaders).forEach(([key, value]) => {
@@ -137,8 +141,8 @@ export function proxy(request: NextRequest) {
 }
 
 /**
- * Configure which paths the middleware should run on
- * Combines i18n routing patterns with general middleware patterns
+ * Configure which paths the proxy should run on
+ * Excludes sitemap-api routes to prevent locale redirects
  */
 export const config = {
   matcher: [
@@ -148,11 +152,12 @@ export const config = {
     '/(vi|en)/:path*',
     // Match all request paths except for the ones starting with:
     // - api (API routes)
+    // - sitemap-api (Sitemap API routes - EXCLUDED to prevent locale redirects)
     // - _next/static (static files)
     // - _next/image (image optimization files)
     // - _vercel (Vercel internals)
     // - favicon.ico (favicon file)
     // - files with extensions (static assets)
-    '/((?!api|_next/static|_next/image|_vercel|favicon.ico|.*\\..*).*)',
+    '/((?!api|sitemap-api|_next/static|_next/image|_vercel|favicon.ico|.*\\..*).*)',
   ],
 };

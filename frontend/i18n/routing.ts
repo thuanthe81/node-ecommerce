@@ -10,6 +10,12 @@ export const routing = defineRouting({
 
   // The locale prefix strategy
   localePrefix: 'as-needed', // Vietnamese (default) won't have prefix, English will have /en
+
+  // Paths that should not be localized
+  pathnames: {
+    // Exclude sitemap-api routes from localization
+    '/sitemap-api': '/sitemap-api',
+  }
 });
 
 // Lightweight wrappers around Next.js' navigation APIs
