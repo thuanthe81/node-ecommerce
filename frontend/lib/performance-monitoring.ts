@@ -114,6 +114,33 @@ export class PerformanceMonitor {
   }
 
   /**
+   * Track client-side route change performance
+   */
+  trackRouteChange(path: string, duration: number): void {
+    console.log('Route Change Performance:', { path, duration: `${duration}ms` });
+
+    // Check against route change threshold
+    const routeChangeThreshold = 500; // 500ms threshold for route changes
+    if (duration > routeChangeThreshold) {
+      console.warn(`Slow route change: ${path} took ${duration}ms`);
+      this.sendAlert('slow-route-change', { path, duration });
+    }
+
+    // Send to analytics service
+    this.sendToAnalytics('route-change', { path, duration });
+  }
+
+  /**
+   * Track page visibility changes for analytics
+   */
+  trackPageVisibility(path: string): void {
+    console.log('Page Visibility Change:', { path, timestamp: new Date().toISOString() });
+
+    // Send to analytics service
+    this.sendToAnalytics('page-visibility', { path, timestamp: Date.now() });
+  }
+
+  /**
    * Track Core Web Vitals (client-side)
    */
   trackCoreWebVitals(path: string, vitals: CoreWebVitalsMetrics): void {

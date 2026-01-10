@@ -2,6 +2,7 @@
  * Enhanced TypeScript interfaces for SSR-optimized data models
  * Provides comprehensive type definitions for products, categories, SEO, and SSR operations
  */
+import { EnhancedProduct, Product } from '@/lib/product-api';
 
 // Base interfaces for multilingual content
 export interface MultilingualText {
@@ -12,43 +13,6 @@ export interface MultilingualText {
 export interface MultilingualOptionalText {
   en?: string;
   vi?: string;
-}
-
-// Enhanced Product interfaces
-export interface EnhancedProduct {
-  id: string;
-  slug: string;
-  sku: string;
-  nameEn: string;
-  nameVi: string;
-  descriptionEn: string;
-  descriptionVi: string;
-  shortDescriptionEn?: string;
-  shortDescriptionVi?: string;
-  price: number;
-  compareAtPrice?: number;
-  stockQuantity: number;
-  weight?: number;
-  dimensions?: ProductDimensions;
-  isActive: boolean;
-  isFeatured: boolean;
-  tags: string[];
-  seoTitleEn?: string;
-  seoTitleVi?: string;
-  seoDescriptionEn?: string;
-  seoDescriptionVi?: string;
-  category: EnhancedCategory;
-  images: EnhancedProductImage[];
-  averageRating?: number;
-  reviewCount: number;
-  reviews?: ProductReview[];
-  brand?: string;
-  availability: 'InStock' | 'OutOfStock' | 'PreOrder';
-  createdAt: string;
-  updatedAt: string;
-  _count?: {
-    reviews: number;
-  };
 }
 
 export interface ProductDimensions {

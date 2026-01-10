@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { productApi, Product } from '@/lib/product-api';
-import { EnhancedProduct } from '@/lib/ssr-types';
+import { productApi, Product, EnhancedProduct } from '@/lib/product-api';
 import ProductImageGallery from './ProductImageGallery';
 import ProductInfo from './ProductInfo';
 import RelatedProducts from './RelatedProducts';
@@ -14,7 +13,8 @@ import { generateProductSchema, generateBreadcrumbList } from '@/lib/seo';
 interface ProductDetailContentProps {
   slug: string;
   locale: string;
-  initialProduct?: EnhancedProduct; // SSR-provided initial data
+  initialProduct: EnhancedProduct | null; // SSR-provided initial data
+  initialRelatedProducts: Product[] | null; // SSR-provided related products
   ssrMode?: boolean; // Flag to indicate SSR mode
 }
 
@@ -22,36 +22,15 @@ export default function ProductDetailContent({
   slug,
   locale,
   initialProduct,
+  initialRelatedProducts,
   ssrMode = false,
 }: ProductDetailContentProps) {
   const [product, setProduct] = useState<Product | EnhancedProduct | null>(initialProduct || null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>(initialRelatedProducts || []);
   const [loading, setLoading] = useState(!initialProduct);
   const currentLocale = useLocale();
 
   useEffect(() => {
-    // If we have initial product data from SSR, use it and fetch related products
-    if (initialProduct && ssrMode) {
-      setProduct(initialProduct);
-
-      // Fetch related products client-side for better performance
-      const fetchRelatedProducts = async () => {
-        try {
-          const response = await fetch(`/sitemap-api/products/${initialProduct.id}/related?limit=4`);
-          if (response.ok) {
-            const related = await response.json();
-            setRelatedProducts(related);
-          }
-        } catch (error) {
-          console.error('Error fetching related products:', error);
-        }
-      };
-
-      fetchRelatedProducts();
-      setLoading(false);
-      return;
-    }
-
     // Fallback to client-side fetching if no initial data
     const fetchProduct = async () => {
       try {
@@ -67,7 +46,7 @@ export default function ProductDetailContent({
       }
     };
 
-    if (!initialProduct) {
+    if (!initialProduct || relatedProducts.length == 0) {
       fetchProduct();
     }
   }, [slug, initialProduct, ssrMode]);

@@ -20,7 +20,9 @@ import {
   generateMobileStructuredData,
   generateMobileCSSClasses
 } from '@/lib/mobile-ssr-utils';
-import { CategoryPageData, EnhancedCategory, EnhancedProduct } from '@/lib/ssr-types';
+import { CategoryPageData, EnhancedCategory } from '@/lib/ssr-types';
+import { categoryApi } from '@/lib/category-api';
+import { EnhancedProduct } from '@/lib/product-api';
 
 interface PageProps {
   params: Promise<{
@@ -104,17 +106,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 // Generate static params for popular categories
 export async function generateStaticParams() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
   try {
-    const response = await fetch(`${baseUrl}/categories`, {
-      next: { revalidate: 3600 }, // 1 hour
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const categories: EnhancedCategory[] = await response.json();
+    const categories = await categoryApi.getCategories();
 
     // Generate static params for all active categories
     return categories
@@ -123,7 +116,6 @@ export async function generateStaticParams() {
         slug: category.slug,
       }));
   } catch (error) {
-    console.log('fetch url: ', `${baseUrl}/categories`)
     console.error('Error generating static params for categories:', error);
     return [];
   }

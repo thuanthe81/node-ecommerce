@@ -17,6 +17,7 @@ import {
   generateMobileCSSClasses
 } from '@/lib/mobile-ssr-utils';
 import StructuredData from '@/components/StructuredData';
+import { productApi } from '@/lib/product-api';
 
 interface ProductPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -98,55 +99,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const mobileCSSClasses = generateMobileCSSClasses(deviceConfig);
 
   // Fetch product data server-side with error handling and fallbacks
-  const productResult = await fetchProductSSR(slug, {
-    apiTimeout: 5000,
-    totalTimeout: 10000,
-    retryAttempts: 2,
-  });
-
-  // Handle server-side rendering errors
-  if (!productResult.data) {
-    if (productResult.error?.code === 'NOT_FOUND') {
-      notFound();
-    }
-
-    // Check if we should fallback to client-side rendering
-    if (shouldFallbackToCSR(productResult)) {
-      return (
-        <div className={`container mx-auto px-4 py-8 ${mobileCSSClasses.join(' ')}`}>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-yellow-800">
-              {getSSRErrorMessage(productResult, locale)}
-            </p>
-          </div>
-          <Suspense
-            fallback={
-              <div className="animate-pulse">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="aspect-square bg-gray-200 rounded-lg" />
-                  <div className="space-y-4">
-                    <div className="h-8 bg-gray-200 rounded w-3/4" />
-                    <div className="h-6 bg-gray-200 rounded w-1/2" />
-                    <div className="h-24 bg-gray-200 rounded" />
-                  </div>
-                </div>
-              </div>
-            }
-          >
-            <ProductDetailContent slug={slug} locale={locale} />
-          </Suspense>
-        </div>
-      );
-    }
-
-    // If not fallback to CSR, show error page
-    throw new Error(productResult.error?.message || 'Failed to load product');
-  }
+  const productResult = await fetchProductSSR(slug);
 
   const product = productResult.data;
+  const relatedProducts = product? product.relatedProducts : null;
 
   // Generate structured data for the product with mobile optimizations
-  const baseStructuredData = generateProductStructuredData(product, locale, product.reviews);
+  const baseStructuredData = product? generateProductStructuredData(product, locale, product.reviews) : null;
   const mobileOptimizedStructuredData = generateMobileStructuredData(baseStructuredData, deviceConfig);
 
   return (
@@ -155,19 +114,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       <StructuredData data={mobileOptimizedStructuredData} />
 
       <div className={`container mx-auto px-4 py-8 ${mobileCSSClasses.join(' ')}`}>
-        {/* Show cache performance info in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mb-4 p-2 bg-gray-100 text-xs text-gray-600 rounded">
-            SSR: {productResult.cacheHit ? 'Cache Hit' : 'Fresh Fetch'} |
-            Render Time: {productResult.renderTime}ms
-          </div>
-        )}
 
         {/* Server-rendered product content */}
         <ProductDetailContent
           slug={slug}
           locale={locale}
           initialProduct={product}
+          initialRelatedProducts={relatedProducts}
           ssrMode={true}
         />
       </div>

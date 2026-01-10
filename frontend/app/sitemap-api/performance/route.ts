@@ -152,6 +152,20 @@ export async function POST(request: NextRequest) {
         }
         break;
 
+      case 'route-change':
+        // Track client-side route change performance
+        if (path && metrics?.duration) {
+          performanceMonitor.trackRouteChange(path, metrics.duration);
+        }
+        break;
+
+      case 'page-visibility':
+        // Track page visibility changes for analytics
+        if (path) {
+          performanceMonitor.trackPageVisibility(path);
+        }
+        break;
+
       case 'ssr_metric':
         // Handle SSR metrics from monitoring service
         if (data) {

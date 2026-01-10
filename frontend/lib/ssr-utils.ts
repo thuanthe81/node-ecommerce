@@ -35,7 +35,6 @@ import {
 } from './structured-data';
 import { getFetchOptions, getCacheStrategy } from './cache-config';
 import {
-  EnhancedProduct,
   EnhancedCategory,
   EnhancedBlogPost,
   HomepageData,
@@ -48,6 +47,7 @@ import {
   CategoryQueryParams,
   BlogQueryParams
 } from './ssr-types';
+import { productApi, EnhancedProduct } from '@/lib/product-api';
 
 // Configuration
 const API_BASE_URL = getSSREnvVar('NEXT_PUBLIC_API_URL', 'http://localhost:3001');
@@ -68,18 +68,7 @@ export async function fetchProductSSR(
   config: Partial<SSRTimeoutConfig> = {}
 ): Promise<SSRDataResult<EnhancedProduct>> {
   const fetchOperation = async (): Promise<EnhancedProduct> => {
-    const response = await fetch(`${API_BASE_URL}/products/slug/${slug}`, {
-      ...getFetchOptions('productDetail'),
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error(`Product not found: ${slug}`, { cause: { code: 'NOT_FOUND' } });
-      }
-      throw new Error(`Failed to fetch product: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+    return await productApi.getProductBySlug(`${API_BASE_URL}/products/${slug}`);
   };
 
   return monitorSSRPerformance(

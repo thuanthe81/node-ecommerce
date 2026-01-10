@@ -14,6 +14,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
@@ -111,12 +112,6 @@ export class ProductsController {
   @Public()
   findBySlug(@Param('slug') slug: string) {
     return this.productsService.findBySlug(slug);
-  }
-
-  @Get('slug/:slug')
-  @Public()
-  findBySlugEnhanced(@Param('slug') slug: string) {
-    return this.productsService.findBySlugEnhanced(slug);
   }
 
   @Patch(':id')

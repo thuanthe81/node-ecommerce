@@ -1,4 +1,10 @@
 import apiClient from './api-client';
+import {
+  EnhancedCategory,
+  EnhancedProductImage,
+  ProductDimensions,
+  ProductReview,
+} from '@/lib/ssr-types';
 // For build-time operations, consider using:
 // import { BuildApiClient, withBuildTimeout } from './build-api-client';
 
@@ -26,6 +32,44 @@ export interface Product {
   _count?: {
     reviews: number;
   };
+}
+
+// Enhanced Product interfaces
+export interface EnhancedProduct {
+  id: string;
+  slug: string;
+  sku: string;
+  nameEn: string;
+  nameVi: string;
+  descriptionEn: string;
+  descriptionVi: string;
+  shortDescriptionEn?: string;
+  shortDescriptionVi?: string;
+  price: number;
+  compareAtPrice?: number;
+  stockQuantity: number;
+  weight?: number;
+  dimensions?: ProductDimensions;
+  isActive: boolean;
+  isFeatured: boolean;
+  tags: string[];
+  seoTitleEn?: string;
+  seoTitleVi?: string;
+  seoDescriptionEn?: string;
+  seoDescriptionVi?: string;
+  category: EnhancedCategory;
+  images: EnhancedProductImage[];
+  averageRating?: number;
+  reviewCount: number;
+  reviews?: ProductReview[];
+  brand?: string;
+  availability: 'InStock' | 'OutOfStock' | 'PreOrder';
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    reviews: number;
+  };
+  relatedProducts: Product[] | null;
 }
 
 export interface ProductImage {
@@ -69,7 +113,7 @@ export const productApi = {
     return response.data;
   },
 
-  getProductBySlug: async (slug: string): Promise<Product> => {
+  getProductBySlug: async (slug: string): Promise<EnhancedProduct> => {
     const response = await apiClient.get(`/products/${slug}`);
     return response.data;
   },

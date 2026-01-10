@@ -385,73 +385,6 @@ export class ProductsService {
     const result = {
       ...product,
       averageRating: avgRating._avg.rating || 0,
-      relatedProducts,
-    };
-
-    // Cache for 10 minutes
-    await this.cacheManager.set(cacheKey, result, 600000);
-
-    return result;
-  }
-
-  async findBySlugEnhanced(slug: string) {
-    // Enhanced version for SSR with additional metadata
-    const cacheKey = `${CONSTANTS.CACHE_KEYS.PRODUCTS.BY_SLUG(slug)}:enhanced`;
-    const cached = await this.cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    const product = await this.prisma.product.findUnique({
-      where: { slug },
-      include: {
-        category: {
-          include: {
-            parent: true,
-          },
-        },
-        images: {
-          orderBy: { displayOrder: 'asc' },
-        },
-        reviews: {
-          where: { isApproved: true },
-          include: {
-            user: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-        },
-        _count: {
-          select: { reviews: true },
-        },
-      },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    // Calculate average rating
-    const avgRating = await this.prisma.review.aggregate({
-      where: {
-        productId: product.id,
-        isApproved: true,
-      },
-      _avg: {
-        rating: true,
-      },
-    });
-
-    // Enhanced product data with SSR-specific fields
-    const result = {
-      ...product,
-      averageRating: avgRating._avg.rating || 0,
       reviewCount: product._count.reviews,
       availability: product.stockQuantity > 0 ? 'InStock' as const : 'OutOfStock' as const,
       brand: 'Handmade Ecommerce', // Default brand
@@ -462,9 +395,10 @@ export class ProductsService {
         height: 800, // Default height
         isPrimary: img.displayOrder === 0,
       })),
+      relatedProducts,
     };
 
-    // Cache for 10 minutes (600 seconds for ISR)
+    // Cache for 10 minutes
     await this.cacheManager.set(cacheKey, result, 600000);
 
     return result;

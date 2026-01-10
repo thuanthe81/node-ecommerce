@@ -146,72 +146,12 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Webpack optimizations - aggressive CPU reduction
+  // Minimal webpack configuration to avoid CSS/JS confusion
   webpack: (config, { dev, isServer }) => {
     // Fix for @alacraft/shared module resolution
     config.resolve.alias = {
       ...config.resolve.alias,
       '@alacraft/shared': require.resolve('@alacraft/shared'),
-    };
-    // Aggressive optimizations for production builds
-    if (!dev) {
-      // Minimize bundle splitting to reduce processing overhead
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          maxSize: 200000, // Smaller chunks (200KB)
-          minSize: 20000,
-          maxAsyncRequests: 5, // Reduce async requests
-          maxInitialRequests: 3, // Reduce initial requests
-          cacheGroups: {
-            default: false, // Disable default cache group
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              enforce: true,
-            },
-          },
-        },
-        // Force single-threaded processing
-        minimize: true,
-        // Keep default minimizers to avoid plugin issues
-      };
-
-      // Aggressive parallelism reduction
-      config.parallelism = 1;
-
-      // Disable source maps completely
-      config.devtool = false;
-
-      // Reduce module resolution complexity
-      config.resolve = {
-        ...config.resolve,
-        symlinks: false,
-        cacheWithContext: false,
-      };
-    }
-
-    // Filesystem cache configuration for better performance
-    config.cache = {
-      type: 'filesystem',
-      maxAge: 300000, // 5 minutes
-      buildDependencies: {
-        config: [__filename],
-      },
-    };
-
-    // Reduce file system watching overhead
-    config.watchOptions = {
-      ignored: /node_modules/,
-      aggregateTimeout: 300,
-      poll: false,
-    };
-
-    // Disable performance hints to reduce processing
-    config.performance = {
-      hints: false,
     };
 
     return config;

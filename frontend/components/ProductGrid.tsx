@@ -1,7 +1,6 @@
 'use client';
 
-import { Product } from '@/lib/product-api';
-import { EnhancedProduct } from '@/lib/ssr-types';
+import { EnhancedProduct, Product } from '@/lib/product-api';
 import ProductCard from './ProductCard';
 
 interface ProductGridProps {
