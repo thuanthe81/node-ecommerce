@@ -39,6 +39,8 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Enable cookies for CSRF protection
+  // Add timeout configuration from environment variables
+  timeout: parseInt(process.env.API_TIMEOUT || '10000', 10), // Default 10 seconds
 });
 
 /**

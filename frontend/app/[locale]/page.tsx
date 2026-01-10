@@ -5,6 +5,7 @@ import { generateEnhancedSEOMetadata } from '@/lib/seo-enhanced';
 import { generateOrganizationSchema, generateWebsiteSchema } from '@/lib/structured-data';
 import {
   detectDeviceType,
+  getDefaultDeviceConfig,
   generateMobileViewportMeta,
   generateMobileStructuredData,
   generateMobileCSSClasses,
@@ -23,7 +24,7 @@ interface HomepageData {
 
 // Server-side data fetching function with mobile optimizations
 async function getHomepageData(deviceConfig: any): Promise<HomepageData> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
   const performanceConfig = getMobilePerformanceConfig(deviceConfig);
 
   try {
@@ -71,8 +72,8 @@ export async function generateMetadata({
   const t = await getTranslations({ locale });
 
   try {
-    // Detect device type for mobile-specific optimizations
-    const deviceConfig = await detectDeviceType();
+    // Use default device config for static generation (no headers() call)
+    const deviceConfig = getDefaultDeviceConfig();
 
     // Fetch homepage data to get counts for enhanced SEO
     const homepageData = await getHomepageData(deviceConfig);
@@ -118,8 +119,8 @@ export default async function Home({
 }) {
   const { locale } = await params;
 
-  // Detect device type for mobile optimizations
-  const deviceConfig = await detectDeviceType();
+  // Use default device config for static generation (no headers() call)
+  const deviceConfig = getDefaultDeviceConfig();
   const mobileCSSClasses = generateMobileCSSClasses(deviceConfig);
 
   // Fetch homepage data server-side with mobile optimizations

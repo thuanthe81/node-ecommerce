@@ -88,7 +88,7 @@ export function SSRMonitoringDashboard({
           action: 'resolve-alert',
           alertId,
         }),
-      });
+      }).catch();
 
       if (response.ok) {
         // Refresh data to show resolved alert

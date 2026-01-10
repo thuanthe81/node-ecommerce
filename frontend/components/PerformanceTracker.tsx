@@ -39,7 +39,7 @@ export default function PerformanceTracker() {
             errorCount: 0
           }
         })
-      }).catch(console.error);
+      }).catch();
     };
 
     // Track when page is fully loaded
@@ -90,7 +90,7 @@ export default function PerformanceTracker() {
             duration: routeChangeTime
           }
         })
-      }).catch(console.error);
+      }).catch();
     }, 100); // Small delay to ensure route change is complete
 
     return () => clearTimeout(timer);
@@ -129,7 +129,7 @@ export function useAPIPerformanceTracking() {
               success: response.ok
             }
           })
-        }).catch(console.error);
+        }).catch();
 
         return response;
       } catch (error) {
@@ -151,7 +151,7 @@ export function useAPIPerformanceTracking() {
               success: false
             }
           })
-        }).catch(console.error);
+        }).catch();
 
         throw error;
       }

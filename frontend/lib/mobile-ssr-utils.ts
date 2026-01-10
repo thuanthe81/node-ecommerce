@@ -32,7 +32,8 @@ export interface MobileStructuredData {
 }
 
 /**
- * Detect device type from user agent and headers
+ * Detect device type from user agent and headers (dynamic version)
+ * This function makes the page dynamic and should only be used in server components that don't need static generation
  */
 export async function detectDeviceType(): Promise<MobileOptimizationConfig> {
   const headersList = await headers();
@@ -62,6 +63,21 @@ export async function detectDeviceType(): Promise<MobileOptimizationConfig> {
     deviceType,
     screenWidth,
     userAgent
+  };
+}
+
+/**
+ * Get default device configuration for static generation
+ * This function doesn't use headers() and allows static generation
+ */
+export function getDefaultDeviceConfig(): MobileOptimizationConfig {
+  return {
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+    deviceType: 'desktop',
+    screenWidth: 1024,
+    userAgent: 'static-generation'
   };
 }
 

@@ -52,9 +52,9 @@ export function generateStaticParams() {
 // Fetch footer settings on the server
 async function getFooterSettings() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
     const response = await fetch(`${baseUrl}/footer-settings`, {
-      cache: 'no-store', // Ensure fresh data on each request
+      next: { revalidate: 3600 }, // Cache for 1 hour instead of no-store
     });
 
     if (!response.ok) {

@@ -313,7 +313,7 @@ export class SSRMonitoringService {
           type: 'ssr_metric',
           data: metric,
         }),
-      });
+      }).catch();
     } catch (error) {
       console.error('Failed to send metric to endpoint:', error);
     }
@@ -335,7 +335,7 @@ export class SSRMonitoringService {
           type: 'ssr_error',
           data: errorData,
         }),
-      });
+      }).catch();
     } catch (error) {
       console.error('Failed to send error to endpoint:', error);
     }
@@ -415,7 +415,7 @@ export class SSRMonitoringService {
           type: 'ssr_health_report',
           data: healthReport,
         }),
-      });
+      }).catch();
     } catch (error) {
       console.error('Failed to send health report:', error);
     }

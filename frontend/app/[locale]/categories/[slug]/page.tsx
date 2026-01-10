@@ -15,6 +15,7 @@ import {
 } from '@/lib/ssr-utils';
 import {
   detectDeviceType,
+  getDefaultDeviceConfig,
   generateMobileViewportMeta,
   generateMobileStructuredData,
   generateMobileCSSClasses
@@ -66,14 +67,14 @@ async function getCategoryData(
   return result.data;
 }
 
-// Generate metadata for SEO with mobile optimizations
+// Generate metadata for SEO with static device configuration
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const resolvedSearchParams = await searchParams;
 
   try {
-    // Detect device type for mobile-specific optimizations
-    const deviceConfig = await detectDeviceType();
+    // Use default device config for static generation (no headers() call)
+    const deviceConfig = getDefaultDeviceConfig();
 
     // Generate base metadata
     const baseMetadata = await generateCategoryMetadata(slug, locale, resolvedSearchParams);
@@ -103,8 +104,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 // Generate static params for popular categories
 export async function generateStaticParams() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${baseUrl}/categories`, {
       next: { revalidate: 3600 }, // 1 hour
     });
@@ -122,6 +123,7 @@ export async function generateStaticParams() {
         slug: category.slug,
       }));
   } catch (error) {
+    console.log('fetch url: ', `${baseUrl}/categories`)
     console.error('Error generating static params for categories:', error);
     return [];
   }
@@ -132,8 +134,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const resolvedSearchParams = await searchParams;
   const t = await getTranslations();
 
-  // Detect device type for mobile optimizations
-  const deviceConfig = await detectDeviceType();
+  // Use default device config for static generation (no headers() call)
+  const deviceConfig = getDefaultDeviceConfig();
   const mobileCSSClasses = generateMobileCSSClasses(deviceConfig);
 
   // Fetch category data server-side

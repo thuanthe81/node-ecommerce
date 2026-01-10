@@ -1,4 +1,6 @@
 import apiClient from './api-client';
+// For build-time operations, consider using:
+// import { BuildApiClient, withBuildTimeout } from './build-api-client';
 
 export interface Product {
   id: string;

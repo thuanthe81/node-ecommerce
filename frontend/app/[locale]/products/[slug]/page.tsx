@@ -11,6 +11,7 @@ import {
 } from '@/lib/ssr-utils';
 import {
   detectDeviceType,
+  getDefaultDeviceConfig,
   generateMobileViewportMeta,
   generateMobileStructuredData,
   generateMobileCSSClasses
@@ -26,8 +27,8 @@ interface ProductPageProps {
  * Other products will be generated on-demand
  */
 export async function generateStaticParams() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${baseUrl}/products/popular-slugs?limit=50`, {
       next: { revalidate: 3600 } // Revalidate popular products list every hour
     });
@@ -40,6 +41,7 @@ export async function generateStaticParams() {
     const popularSlugs: string[] = await response.json();
     return popularSlugs.map(slug => ({ slug }));
   } catch (error) {
+    console.log('fetch url: ', `${baseUrl}/products/popular-slugs?limit=50`);
     console.warn('Error generating static params for products:', error);
     return [];
   }
@@ -47,14 +49,14 @@ export async function generateStaticParams() {
 
 /**
  * Generates comprehensive metadata for product pages with server-side data fetching
- * Includes mobile-specific optimizations
+ * Uses static device configuration to allow static generation
  */
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
   try {
-    // Detect device type for mobile-specific optimizations
-    const deviceConfig = await detectDeviceType();
+    // Use default device config for static generation (no headers() call)
+    const deviceConfig = getDefaultDeviceConfig();
 
     // Generate base metadata
     const baseMetadata = await generateProductMetadata(slug, locale);
@@ -91,8 +93,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug, locale } = await params;
 
-  // Detect device type for mobile optimizations
-  const deviceConfig = await detectDeviceType();
+  // Use default device config for static generation (no headers() call)
+  const deviceConfig = getDefaultDeviceConfig();
   const mobileCSSClasses = generateMobileCSSClasses(deviceConfig);
 
   // Fetch product data server-side with error handling and fallbacks

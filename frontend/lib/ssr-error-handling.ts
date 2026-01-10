@@ -3,6 +3,8 @@
  * Provides comprehensive error classification, timeout handling, and fallback mechanisms
  */
 
+import { getTimeoutConfig } from './build-timeout-wrapper';
+
 // Global type declaration for SSR metrics
 declare global {
   var __ssrMetrics: any[] | undefined;
@@ -56,11 +58,14 @@ export class SSRError extends Error {
   }
 }
 
+// Get timeout configuration from build timeout wrapper
+const buildTimeoutConfig = getTimeoutConfig();
+
 const DEFAULT_TIMEOUT_CONFIG: SSRTimeoutConfig = {
-  apiTimeout: 5000, // 5 seconds for individual API calls
-  totalTimeout: 10000, // 10 seconds total for SSR
-  retryAttempts: 2,
-  retryDelay: 1000, // 1 second between retries
+  apiTimeout: buildTimeoutConfig.apiTimeout, // Use build timeout config
+  totalTimeout: buildTimeoutConfig.buildTimeout, // Use build timeout config
+  retryAttempts: buildTimeoutConfig.retryAttempts,
+  retryDelay: buildTimeoutConfig.retryDelay,
 };
 
 /**
@@ -218,21 +223,9 @@ export function withSSRTimeout<T>(
   timeoutMs: number = DEFAULT_TIMEOUT_CONFIG.apiTimeout,
   context: string = 'API call'
 ): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      reject(new Error(`${context} timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-
-    promise
-      .then(result => {
-        clearTimeout(timeoutId);
-        resolve(result);
-      })
-      .catch(error => {
-        clearTimeout(timeoutId);
-        reject(error);
-      });
-  });
+  // Import the timeout wrapper here to avoid circular dependencies
+  const { withTimeout } = require('./build-timeout-wrapper');
+  return withTimeout(promise, timeoutMs, context);
 }
 
 /**
@@ -513,9 +506,9 @@ async function sendToPerformanceMonitoring(performanceData: any): Promise<void> 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(performanceData),
-    });
+    }).catch();
   } catch (error) {
-    console.error('Failed to send performance data:', error);
+    //console.error('Failed to send performance data:', error);
   }
 }
 

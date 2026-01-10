@@ -1,5 +1,22 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { config } from 'dotenv';
+
+// Initialize build timeout monitoring
+if (process.env.NODE_ENV === 'production') {
+  try {
+    require('./lib/build-timeout-init');
+    console.log('[BUILD] Timeout monitoring initialized');
+  } catch (error) {
+    console.warn('[BUILD] Failed to initialize timeout monitoring:', error);
+  }
+}
+
+// Load custom .env file if needed
+// config({ path: '.env.custom' });
+config({ path: '.env' })
+config({ path: '.env.local' })
+config({ path: '.env.production' })
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
@@ -17,13 +34,18 @@ const nextConfig: NextConfig = {
   // Performance optimizations - aggressive CPU reduction
   experimental: {
     // Disable all experimental features to reduce CPU load
-    ppr: false,
-    workerThreads: false,
+    parallelServerCompiles: false,
+    // workerThreads: false,
+    staticGenerationRetryCount: 1,
+    staticGenerationMaxConcurrency: 2, // Limit to 2 workers
+    staticGenerationMinPagesPerWorker: 9, // Increase pages per worker to reduce worker count
+    // Note: staticGenerationTimeout may not be available in all Next.js versions
+    // Use environment variables for timeout configuration instead
   },
 
   // Aggressive caching configuration for lower CPU usage
   cacheMaxMemorySize: 16 * 1024 * 1024, // Reduced to 16MB
-  cacheHandler: process.env.NODE_ENV === 'production' ? './cache-handler-minimal.js' : undefined,
+  // cacheHandler: './cache-handler-minimal.js', // Re-enable fixed minimal cache handler
 
   async rewrites() {
     return [
@@ -126,6 +148,11 @@ const nextConfig: NextConfig = {
 
   // Webpack optimizations - aggressive CPU reduction
   webpack: (config, { dev, isServer }) => {
+    // Fix for @alacraft/shared module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@alacraft/shared': require.resolve('@alacraft/shared'),
+    };
     // Aggressive optimizations for production builds
     if (!dev) {
       // Minimize bundle splitting to reduce processing overhead

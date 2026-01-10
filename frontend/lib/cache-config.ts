@@ -182,8 +182,9 @@ export const PERFORMANCE_CONFIG = {
   // Server-side rendering timeouts
   ssrTimeouts: {
     apiCall: 5000,     // 5 seconds for API calls
-    pageRender: 10000, // 10 seconds for complete page render
-    fallback: 2000     // 2 seconds before fallback to CSR
+    pageRender: 5000,  // 5 seconds for complete page render (aligned with test expectations)
+    fallback: 2000,    // 2 seconds before fallback to CSR
+    dataFetch: 8000    // 8 seconds for data fetching operations
   },
 
   // Cache performance metrics
