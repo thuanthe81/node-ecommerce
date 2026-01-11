@@ -23,7 +23,7 @@ export function Logo({ locale }: LogoProps) {
   return (
     <Link
       href={`/${locale}`}
-      className="flex items-center border-b-transparent touch-manipulation"
+      className="flex items-center border-b-transparent touch-manipulation w-[60px] h-[60px]"
       aria-label={t('nav.home') || 'Home'}
     >
       <Image
