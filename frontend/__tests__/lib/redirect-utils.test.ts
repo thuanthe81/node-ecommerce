@@ -21,6 +21,7 @@ jest.mock('next/server', () => ({
 import {
   matchesRedirectRule,
   detectUserLocale,
+  handleLocaleRedirect,
   generateMigrationRedirects,
   validateRedirectRules,
   COMMON_REDIRECT_RULES,
@@ -232,6 +233,69 @@ describe('Redirect Utils', () => {
 
       expect(result.isValid).toBe(true);
       expect(result.warnings).toContain('Wildcard source without wildcard destination at index 0: /old-site/* -> /new-site');
+    });
+  });
+
+  describe('handleLocaleRedirect', () => {
+    test('does not redirect when path already has locale', () => {
+      const request = createMockRequest('http://localhost:3000/en/products');
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
+    });
+
+    test('does not redirect for API routes', () => {
+      const request = createMockRequest('http://localhost:3000/sitemap-api/products');
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
+    });
+
+    test('does not redirect for static files', () => {
+      const request = createMockRequest('http://localhost:3000/favicon.ico');
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
+    });
+
+    test('redirects when user has explicit locale cookie preference', () => {
+      const request = createMockRequest(
+        'http://localhost:3000/products',
+        {},
+        { locale: 'en' }
+      );
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeTruthy();
+      expect(result?.status).toBe(302);
+    });
+
+    test('does not redirect based on Accept-Language header alone', () => {
+      const request = createMockRequest(
+        'http://localhost:3000/products',
+        { 'accept-language': 'en-US,en;q=0.9,vi;q=0.8' }
+      );
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
+    });
+
+    test('does not redirect when no locale preference is set', () => {
+      const request = createMockRequest('http://localhost:3000/products');
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
+    });
+
+    test('does not redirect when cookie locale is default locale', () => {
+      const request = createMockRequest(
+        'http://localhost:3000/products',
+        {},
+        { locale: 'vi' } // Default locale
+      );
+      const result = handleLocaleRedirect(request);
+
+      expect(result).toBeNull();
     });
   });
 

@@ -33,7 +33,7 @@ export default function proxy(request: NextRequest) {
   // Handle specific redirects first (before i18n processing)
   // Redirect /register to /login (with locale support)
   if (pathname === '/register' || pathname.match(/^\/(en|vi)\/register$/)) {
-    const locale = pathname === '/en' || pathname.startsWith('/en') ? 'en' : 'vi';
+    const locale = (pathname === '/en' || pathname.startsWith('/en/')) ? 'en' : 'vi';
     const loginPath = locale === 'en' ? '/en/login' : '/login';
     return NextResponse.redirect(new URL(loginPath, request.url));
   }
@@ -158,6 +158,6 @@ export const config = {
     // - _vercel (Vercel internals)
     // - favicon.ico (favicon file)
     // - files with extensions (static assets)
-    '/((?!api|sitemap-api|_next/static|_next/image|_vercel|favicon.ico|.*\\..*).*)',
+    '/((?!sitemap-api|_next/static|_next/image|_vercel|favicon.ico|.*\\..*).*)',
   ],
 };

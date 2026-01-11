@@ -113,17 +113,6 @@ async function bootstrap() {
     maxAge: 3600, // Cache preflight requests for 1 hour
   });
 
-  // HTTPS redirect middleware (only in production)
-  if (process.env.NODE_ENV === 'production') {
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      if (req.header('x-forwarded-proto') !== 'https') {
-        res.redirect(`https://${req.header('host')}${req.url}`);
-      } else {
-        next();
-      }
-    });
-  }
-
   // Serve static files
   const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
   const uploadDirPath = isAbsolute(uploadDirEnv)

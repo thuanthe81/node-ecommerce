@@ -247,9 +247,10 @@ export function detectUserLocale(
 ): string {
   // Check URL path for explicit locale
   const pathname = request.nextUrl.pathname;
-  const pathLocale = pathname.split('/')[1];
+  const pathLocale = (pathname === '/en' || pathname.startsWith('/en/')) ? 'en' : 'vi';
 
   if (config.supportedLocales.includes(pathLocale)) {
+    console.log(`Return locale: ${pathLocale}`)
     return pathLocale;
   }
 
@@ -257,6 +258,7 @@ export function detectUserLocale(
   if (config.detectFromCookie) {
     const cookieLocale = request.cookies.get('locale')?.value;
     if (cookieLocale && config.supportedLocales.includes(cookieLocale)) {
+      console.log(`Return locale: ${cookieLocale}`)
       return cookieLocale;
     }
   }
@@ -272,6 +274,7 @@ export function detectUserLocale(
 
       for (const locale of preferredLocales) {
         if (config.supportedLocales.includes(locale)) {
+          console.log(`Return locale: ${locale}`)
           return locale;
         }
       }
@@ -300,17 +303,21 @@ export function handleLocaleRedirect(
     return null;
   }
 
-  const detectedLocale = detectUserLocale(request, config);
-  const pathLocale = pathname.split('/')[1];
+  const pathLocale = (pathname === '/en' || pathname.startsWith('/en/')) ? 'en' : 'vi';
 
   // If path already has a supported locale, continue
   if (config.supportedLocales.includes(pathLocale)) {
     return null;
   }
 
-  // If detected locale is not default, redirect to localized path
-  if (detectedLocale !== config.defaultLocale) {
-    const localizedPath = `/${detectedLocale}${pathname}`;
+  // Only redirect if user has explicitly set a locale preference via cookie
+  // Don't redirect based on browser Accept-Language header alone
+  const cookieLocale = request.cookies.get('locale')?.value;
+
+  if (cookieLocale &&
+      config.supportedLocales.includes(cookieLocale) &&
+      cookieLocale !== config.defaultLocale) {
+    const localizedPath = `/${cookieLocale}${pathname}`;
     const redirectUrl = new URL(localizedPath, request.url);
 
     // Preserve query parameters
@@ -318,18 +325,11 @@ export function handleLocaleRedirect(
       redirectUrl.searchParams.set(key, value);
     });
 
-    const response = NextResponse.redirect(redirectUrl, 302);
-
-    // Set locale cookie for future visits
-    response.cookies.set('locale', detectedLocale, {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      path: '/',
-      sameSite: 'lax',
-    });
-
-    return response;
+    return NextResponse.redirect(redirectUrl, 302);
   }
 
+  // For paths without locale prefix and no explicit cookie preference,
+  // serve the default locale (Vietnamese) without redirect
   return null;
 }
 
