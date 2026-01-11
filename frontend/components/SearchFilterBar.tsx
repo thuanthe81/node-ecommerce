@@ -190,6 +190,7 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
 
       <div className="flex flex-col sm:flex-row items-stretch">
         {/* Category Dropdown */}
+        {categoryOptions.length > 0 && (
         <div className="w-46 min-h-[44px] mb-3 sm:mb-0">
           <label htmlFor="category-filter-select" className="sr-only">
             {t('category')}
@@ -210,6 +211,7 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
             {t('categoryFilterHint')}
           </span>
         </div>
+        )}
 
         {/* Search Input */}
         <div className="flex-1 relative min-h-[44px]">

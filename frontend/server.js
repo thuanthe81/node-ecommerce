@@ -1,13 +1,17 @@
 // Load environment variables in the same order as Next.js
-require('dotenv').config({ path: '.env' })
-require('dotenv').config({ path: '.env.local' })
-require('dotenv').config({ path: '.env.production' })
+let dev = true;
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: '.env' })
+  require('dotenv').config({ path: '.env.development' })
+} else {
+  require('dotenv').config({ path: '.env.production' })
+  dev = false;
+}
 
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
 
-const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
 const port = process.env.PORT || 3000
 

@@ -4,19 +4,17 @@ import { config } from 'dotenv';
 
 // Initialize build timeout monitoring
 if (process.env.NODE_ENV === 'production') {
+  config({ path: '.env.production' })
   try {
     require('./lib/build-timeout-init');
     console.log('[BUILD] Timeout monitoring initialized');
   } catch (error) {
     console.warn('[BUILD] Failed to initialize timeout monitoring:', error);
   }
+} else {
+  config({ path: '.env.development' })
 }
 
-// Load custom .env file if needed
-// config({ path: '.env.custom' });
-config({ path: '.env' })
-config({ path: '.env.local' })
-config({ path: '.env.production' })
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
