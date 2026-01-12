@@ -9,7 +9,9 @@ interface PublishingSectionProps {
   formData: BlogPostFormData;
   validationErrors: ValidationErrors;
   showImagePicker: boolean;
+  showBackgroundImagePicker: boolean;
   onToggleImagePicker: () => void;
+  onToggleBackgroundImagePicker: () => void;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -17,7 +19,9 @@ export function PublishingSection({
   formData,
   validationErrors,
   showImagePicker,
+  showBackgroundImagePicker,
   onToggleImagePicker,
+  onToggleBackgroundImagePicker,
   onChange,
 }: PublishingSectionProps) {
   const t = useTranslations('admin.blog');
@@ -50,6 +54,34 @@ export function PublishingSection({
         </div>
         {validationErrors.imageUrl && (
           <p className="text-sm text-red-600 mt-1">{validationErrors.imageUrl}</p>
+        )}
+      </div>
+
+      {/* Background Image */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {t('backgroundImage')}
+        </label>
+        <div className="flex items-start space-x-4">
+          {formData.imageBackground && (
+            <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+              <img
+                src={formData.imageBackground}
+                alt="Background"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onToggleBackgroundImagePicker}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+          >
+            {formData.imageBackground ? t('changeBackgroundImage') : t('selectBackgroundImage')}
+          </button>
+        </div>
+        {validationErrors.imageBackground && (
+          <p className="text-sm text-red-600 mt-1">{validationErrors.imageBackground}</p>
         )}
       </div>
 

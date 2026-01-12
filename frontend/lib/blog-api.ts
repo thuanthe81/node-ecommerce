@@ -21,6 +21,7 @@ export interface BlogPost {
   excerptVi: string;
   authorName: string;
   imageUrl?: string;
+  imageBackground?: string;
   displayOrder: number;
   isPublished: boolean;
   publishedAt?: string;
@@ -50,6 +51,7 @@ export interface CreateBlogPostData {
   excerptVi: string;
   authorName: string;
   imageUrl?: string;
+  imageBackground?: string;
   categoryIds: string[];
   displayOrder?: number;
   isPublished?: boolean;

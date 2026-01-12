@@ -360,26 +360,27 @@ enum PromotionType {
 
 // Content Management Models
 model Content {
-  id           String      @id @default(uuid())
-  slug         String      @unique
-  type         ContentType
-  titleEn      String
-  titleVi      String
-  contentEn    String
-  contentVi    String
-  imageUrl     String?
-  linkUrl      String?
-  displayOrder Int         @default(0)
-  isPublished  Boolean     @default(false)
-  publishedAt  DateTime?
-  buttonTextEn String?
-  buttonTextVi String?
-  layout       String?
-  authorName   String?
-  excerptEn    String?
-  excerptVi    String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id              String      @id @default(uuid())
+  slug            String      @unique
+  type            ContentType
+  titleEn         String
+  titleVi         String
+  contentEn       String
+  contentVi       String
+  imageUrl        String?
+  imageBackground String?
+  linkUrl         String?
+  displayOrder    Int         @default(0)
+  isPublished     Boolean     @default(false)
+  publishedAt     DateTime?
+  buttonTextEn    String?
+  buttonTextVi    String?
+  layout          String?
+  authorName      String?
+  excerptEn       String?
+  excerptVi       String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   blogCategories BlogCategoryAssociation[]
 

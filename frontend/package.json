@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack && ./copy-static-assets.sh",
+    "build": "NODE_ENV=production next build --webpack && ./copy-static-assets.sh",
     "build:prod": "NODE_ENV=production next build --webpack && ./copy-static-assets.sh",
     "build:staging": "NODE_ENV=staging next build --webpack && ./copy-static-assets.sh",
     "build:low-cpu": "NODE_OPTIONS='--max-old-space-size=1024 --max-semi-space-size=64' next build --webpack && ./copy-static-assets.sh",

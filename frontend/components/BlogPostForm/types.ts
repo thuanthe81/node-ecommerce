@@ -12,6 +12,7 @@ export interface BlogPostFormData {
   contentVi: string;
   authorName: string;
   imageUrl: string;
+  imageBackground: string;
   categoryIds: string[];
   displayOrder: number;
   isPublished: boolean;

@@ -1221,6 +1221,18 @@
         "en": "Change Image",
         "vi": "Thay đổi hình ảnh"
       },
+      "backgroundImage": {
+        "en": "Background Image",
+        "vi": "Hình nền"
+      },
+      "selectBackgroundImage": {
+        "en": "Select Background Image",
+        "vi": "Chọn hình nền"
+      },
+      "changeBackgroundImage": {
+        "en": "Change Background Image",
+        "vi": "Thay đổi hình nền"
+      },
       "categories": {
         "en": "Categories",
         "vi": "Danh mục"

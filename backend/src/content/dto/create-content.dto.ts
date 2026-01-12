@@ -40,6 +40,14 @@ export class CreateContentDto {
   imageUrl?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.imageBackground !== '' && o.imageBackground !== null)
+  @IsString()
+  @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {
+    message: 'imageBackground must be a valid URL or relative path',
+  })
+  imageBackground?: string;
+
+  @IsOptional()
   @ValidateIf((o) => o.linkUrl !== '' && o.linkUrl !== null)
   @IsString()
   @Matches(/^(https?:\/\/|\/|\.\/|\.\.\/)/i, {

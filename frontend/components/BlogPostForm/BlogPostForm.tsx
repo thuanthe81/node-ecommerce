@@ -41,6 +41,7 @@ export default function BlogPostForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showBackgroundImagePicker, setShowBackgroundImagePicker] = useState(false);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
@@ -55,6 +56,7 @@ export default function BlogPostForm({
     contentVi: blogPost?.contentVi || '',
     authorName: blogPost?.authorName || '',
     imageUrl: blogPost?.imageUrl || '',
+    imageBackground: blogPost?.imageBackground || '',
     categoryIds: blogPost?.blogCategories?.map((bc: any) => bc.category.id) || [],
     displayOrder: blogPost?.displayOrder || 0,
     isPublished: blogPost?.isPublished || false,
@@ -147,6 +149,20 @@ export default function BlogPostForm({
     }
   };
 
+  const handleBackgroundImageSelect = (imageUrl: string) => {
+    setFormData((prev) => ({ ...prev, imageBackground: imageUrl }));
+    setShowBackgroundImagePicker(false);
+
+    // Clear validation error
+    if (validationErrors.imageBackground) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.imageBackground;
+        return newErrors;
+      });
+    }
+  };
+
   const handleCategoryToggle = (categoryId: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -154,6 +170,23 @@ export default function BlogPostForm({
         ? prev.categoryIds.filter((id) => id !== categoryId)
         : [...prev.categoryIds, categoryId],
     }));
+  };
+
+  const validateUrl = (url: string): string | null => {
+    if (!url) return null; // URL fields are optional
+
+    // Check if it's a relative path (starts with / or ./)
+    if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) {
+      return null;
+    }
+
+    // Otherwise, validate as absolute URL
+    try {
+      new URL(url);
+      return null;
+    } catch {
+      return t('imageUrlError');
+    }
   };
 
   const validateForm = (): boolean => {
@@ -171,6 +204,17 @@ export default function BlogPostForm({
     // Validate slug format
     if (formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)) {
       errors.slug = t('slugFormatError');
+    }
+
+    // Validate image URLs (optional fields)
+    if (formData.imageUrl) {
+      const imageUrlError = validateUrl(formData.imageUrl);
+      if (imageUrlError) errors.imageUrl = imageUrlError;
+    }
+
+    if (formData.imageBackground) {
+      const backgroundImageError = validateUrl(formData.imageBackground);
+      if (backgroundImageError) errors.imageBackground = backgroundImageError;
     }
 
     setValidationErrors(errors);
@@ -235,7 +279,9 @@ export default function BlogPostForm({
         formData={formData}
         validationErrors={validationErrors}
         showImagePicker={showImagePicker}
+        showBackgroundImagePicker={showBackgroundImagePicker}
         onToggleImagePicker={() => setShowImagePicker(!showImagePicker)}
+        onToggleBackgroundImagePicker={() => setShowBackgroundImagePicker(!showBackgroundImagePicker)}
         onChange={handleChange}
       />
 
@@ -250,6 +296,14 @@ export default function BlogPostForm({
         isOpen={showImagePicker}
         onClose={() => setShowImagePicker(false)}
         onSelectImage={handleImageSelect}
+        locale={locale}
+      />
+
+      {/* Background Image Picker Modal */}
+      <ImagePickerModal
+        isOpen={showBackgroundImagePicker}
+        onClose={() => setShowBackgroundImagePicker(false)}
+        onSelectImage={handleBackgroundImageSelect}
         locale={locale}
       />
     </form>
