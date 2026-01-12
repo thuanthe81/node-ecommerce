@@ -49,7 +49,6 @@ export function TooltipExample() {
         <SvgCart
           className="w-6 h-6 text-gray-600 hover:text-gray-800 cursor-pointer"
           tooltip={{ en: "Shopping Cart", vi: "Giỏ hàng" }}
-          tooltipDelay={100}
         />
         <span>Cart with translation object and faster delay</span>
       </div>

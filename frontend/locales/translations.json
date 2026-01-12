@@ -497,8 +497,8 @@
       "vi": "Loại giảm giá"
     },
     "discountTypeFixed": {
-      "en": "Fixed Amount ($)",
-      "vi": "Số tiền cố định ($)"
+      "en": "Fixed Amount (đ)",
+      "vi": "Số tiền cố định (đ)"
     },
     "discountTypePercentage": {
       "en": "Percentage (%)",
@@ -785,16 +785,16 @@
       "vi": "Quản lý danh mục"
     },
     "maxDiscountAmount": {
-      "en": "Maximum Discount Amount ($)",
-      "vi": "Số tiền giảm tối đa ($)"
+      "en": "Maximum Discount Amount (đ)",
+      "vi": "Số tiền giảm tối đa (đ)"
     },
     "mediaLibrary": {
       "en": "Media Library",
       "vi": "Thư viện phương tiện"
     },
     "minOrderAmount": {
-      "en": "Minimum Order Amount ($)",
-      "vi": "Giá trị đơn hàng tối thiểu ($)"
+      "en": "Minimum Order Amount (đ)",
+      "vi": "Giá trị đơn hàng tối thiểu (đ)"
     },
     "noContentFound": {
       "en": "No content found. Create your first content item.",
@@ -877,12 +877,12 @@
       "vi": "Mã sẽ được chuyển thành chữ hoa"
     },
     "promotionMaxDiscount": {
-      "en": "Max: ${amount}",
-      "vi": "Tối đa: ${amount}"
+      "en": "Max: đ{amount}",
+      "vi": "Tối đa: đ{amount}"
     },
     "promotionMinOrder": {
-      "en": "Min: ${amount}",
-      "vi": "Tối thiểu: ${amount}"
+      "en": "Min: đ{amount}",
+      "vi": "Tối thiểu: đ{amount}"
     },
     "promotionNotFound": {
       "en": "Promotion not found",

@@ -201,8 +201,8 @@ describe('SVG Tooltip System - Integration Tests', () => {
     test('should support custom tooltip delays', () => {
       render(
         <div>
-          <SvgMenu tooltip="tooltips.menu" tooltipDelay={100} data-testid="fast-tooltip" />
-          <SvgCart tooltip="tooltips.cart" tooltipDelay={500} data-testid="slow-tooltip" />
+          <SvgMenu tooltip="tooltips.menu" data-testid="fast-tooltip" />
+          <SvgCart tooltip="tooltips.cart" data-testid="slow-tooltip" />
           <SvgClose tooltip="tooltips.close" data-testid="default-tooltip" />
         </div>
       );

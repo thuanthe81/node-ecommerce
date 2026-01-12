@@ -21,11 +21,11 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
   const [formData, setFormData] = useState<CreatePromotionData>({
     code: promotion?.code || '',
     type: promotion?.type || 'PERCENTAGE',
-    value: promotion?.value || 0,
-    minOrderAmount: promotion?.minOrderAmount || undefined,
-    maxDiscountAmount: promotion?.maxDiscountAmount || undefined,
-    usageLimit: promotion?.usageLimit || undefined,
-    perCustomerLimit: promotion?.perCustomerLimit || undefined,
+    value: promotion?.value ? Number(promotion.value) : 0,
+    minOrderAmount: promotion?.minOrderAmount ? Number(promotion.minOrderAmount) : undefined,
+    maxDiscountAmount: promotion?.maxDiscountAmount ? Number(promotion.maxDiscountAmount) : undefined,
+    usageLimit: promotion?.usageLimit ? Number(promotion.usageLimit) : undefined,
+    perCustomerLimit: promotion?.perCustomerLimit ? Number(promotion.perCustomerLimit) : undefined,
     startDate: promotion?.startDate ? new Date(promotion.startDate).toISOString().slice(0, 16) : '',
     endDate: promotion?.endDate ? new Date(promotion.endDate).toISOString().slice(0, 16) : '',
     isActive: promotion?.isActive ?? true,
@@ -37,10 +37,15 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
     setError('');
 
     try {
-      // Convert datetime-local to ISO string
+      // Convert datetime-local to ISO string and ensure all numeric fields are numbers
       const submitData = {
         ...formData,
         code: formData.code.toUpperCase(),
+        value: Number(formData.value),
+        minOrderAmount: formData.minOrderAmount ? Number(formData.minOrderAmount) : undefined,
+        maxDiscountAmount: formData.maxDiscountAmount ? Number(formData.maxDiscountAmount) : undefined,
+        usageLimit: formData.usageLimit ? Number(formData.usageLimit) : undefined,
+        perCustomerLimit: formData.perCustomerLimit ? Number(formData.perCustomerLimit) : undefined,
         startDate: new Date(formData.startDate).toISOString(),
         endDate: new Date(formData.endDate).toISOString(),
       };
@@ -63,9 +68,10 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         [name]: (e.target as HTMLInputElement).checked,
       }));
     } else if (type === 'number') {
+      const numericValue = value === '' ? undefined : Number(value);
       setFormData(prev => ({
         ...prev,
-        [name]: value === '' ? undefined : parseFloat(value),
+        [name]: numericValue,
       }));
     } else {
       setFormData(prev => ({
@@ -123,7 +129,7 @@ export default function PromotionForm({ promotion, onSubmit, locale }: Promotion
         {/* Discount Value */}
         <div>
           <label htmlFor="value" className="block text-sm font-medium text-gray-700 mb-2">
-            {t('discountValue')} * {formData.type === 'PERCENTAGE' ? '(%)' : '($)'}
+            {t('discountValue')} * {formData.type === 'PERCENTAGE' ? '(%)' : '(đ)'}
           </label>
           <input
             type="number"

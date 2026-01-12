@@ -76,13 +76,11 @@ export function TooltipUsageExamples() {
           <SvgHome
             tooltip={COMMON_TOOLTIP_KEYS.HOME}
             tooltipPlacement="top"
-            tooltipDelay={100}
             className="w-6 h-6 cursor-pointer hover:text-blue-600"
           />
           <SvgSearch
             tooltip={COMMON_TOOLTIP_KEYS.SEARCH}
             tooltipPlacement="bottom"
-            tooltipDelay={300}
             className="w-6 h-6 cursor-pointer hover:text-blue-600"
           />
           <SvgUser
@@ -126,7 +124,6 @@ export function TooltipUsageExamples() {
           <li><strong>Direct Strings:</strong> Use for custom content that doesn't need translation</li>
           <li><strong>Translation Objects:</strong> Use createTooltipContent() for custom bilingual content</li>
           <li><strong>Placement:</strong> Use tooltipPlacement prop to control tooltip position (auto, top, bottom, left, right)</li>
-          <li><strong>Timing:</strong> Use tooltipDelay prop to customize show delay (default: 200ms)</li>
           <li><strong>Accessibility:</strong> Tooltips automatically include ARIA attributes and keyboard support</li>
         </ul>
       </section>

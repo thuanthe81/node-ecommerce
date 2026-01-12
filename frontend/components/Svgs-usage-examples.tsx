@@ -227,9 +227,9 @@ export const AdvancedUsageExamples: React.FC = () => {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Custom Tooltip Delays</h3>
         <div className="flex space-x-4">
-          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} tooltipDelay={100} className="w-6 h-6" />
-          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} tooltipDelay={500} className="w-6 h-6" />
-          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} tooltipDelay={1000} className="w-6 h-6" />
+          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} className="w-6 h-6" />
+          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} className="w-6 h-6" />
+          <SvgRefresh tooltip={TOOLTIP_KEYS.REFRESH} className="w-6 h-6" />
         </div>
       </div>
 
@@ -341,7 +341,6 @@ export const CompleteUsageExample: React.FC = () => {
         <ul className="list-disc list-inside space-y-1 text-sm">
           <li>All tooltip text is automatically translated based on the current locale</li>
           <li>Use <code>tooltipPlacement="auto"</code> for intelligent positioning (recommended)</li>
-          <li>Tooltip delays can be customized with the <code>tooltipDelay</code> prop</li>
           <li>Tooltips are accessible and work with keyboard navigation</li>
           <li>All SVG components maintain backward compatibility when used without tooltip props</li>
         </ul>
