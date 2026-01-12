@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { SvgImagePlaceholder, SvgFolder } from '@/components/Svgs';
+import { SvgImagePlaceholderEEE, SvgFolderEEE } from '@/components/Svgs';
 
 interface ImageDropdownProps {
   /** Whether the dropdown is visible */
@@ -93,7 +93,7 @@ export function ImageDropdown({
         role="menuitem"
         aria-label={translations.fromProducts}
       >
-        <SvgImagePlaceholder
+        <SvgImagePlaceholderEEE
           aria-hidden="true"
         />
         <span>{translations.fromProducts}</span>
@@ -107,7 +107,7 @@ export function ImageDropdown({
         role="menuitem"
         aria-label={translations.fromMediaLibrary}
       >
-        <SvgFolder
+        <SvgFolderEEE
           aria-hidden="true"
         />
         <span>{translations.fromMediaLibrary}</span>

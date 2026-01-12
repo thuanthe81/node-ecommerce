@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldErrors, TouchedFields } from '../types';
 import { FormField } from './FormField';
-import { SvgXCircle, SvgCheckCircle } from '@/components/Svgs';
+import { SvgXCircleXXX, SvgCheckCircleXXX } from '@/components/Svgs';
 
 /**
  * Props for the NewAddressForm component
@@ -59,7 +59,7 @@ export function NewAddressForm({
           className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start"
           role="alert"
         >
-          <SvgXCircle
+          <SvgXCircleXXX
             className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"
           />
           <span>{error}</span>
@@ -68,7 +68,7 @@ export function NewAddressForm({
 
       {isValid && !error && (
         <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
-          <SvgCheckCircle
+          <SvgCheckCircleXXX
             className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"
           />
           <span>{t('form.addressReady')}</span>

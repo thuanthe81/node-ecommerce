@@ -4,14 +4,14 @@
  */
 
 import { useTranslations } from 'next-intl';
-import { SvgImagePlaceholder } from '../../Svgs';
+import { SvgImagePlaceholderEEE } from '../../Svgs';
 
 export function EmptyState() {
   const t = useTranslations('admin.contentMedia');
 
   return (
     <div className="text-center py-12">
-      <SvgImagePlaceholder className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
+      <SvgImagePlaceholderEEE className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
       <h3 className="mt-2 text-sm font-medium text-gray-900">
         {t('noMediaItems')}
       </h3>

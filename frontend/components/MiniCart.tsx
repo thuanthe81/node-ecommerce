@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
 import { SvgCart, SvgClose } from '@/components/Svgs';
 import { formatMoney } from '@/app/utils';
+import { COMMON_TOOLTIP_KEYS } from '@/components/Tooltip';
 
 export default function MiniCart() {
   const locale = useLocale();
@@ -85,7 +86,11 @@ export default function MiniCart() {
           <div className="max-h-96 overflow-y-auto">
             {itemCount === 0 ? (
               <div className="p-8 text-center text-gray-500" role="status">
-                <SvgCart className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
+                <SvgCart
+                  className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true"
+                  tooltip={COMMON_TOOLTIP_KEYS.CART}
+                  tooltipPlacement={"left"}
+                />
                 <p>{t('emptyCart')}</p>
               </div>
             ) : (

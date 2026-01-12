@@ -8,6 +8,7 @@
 import React from 'react';
 import { SvgMessage, SvgClose } from '@/components/Svgs';
 import { TriggerButtonProps } from '../types';
+import { COMMON_TOOLTIP_KEYS } from '@/components/Tooltip';
 
 /**
  * TriggerButton - Fixed floating button component
@@ -84,6 +85,7 @@ export function TriggerButton({ isOpen, onClick, ariaLabel }: TriggerButtonProps
               max-[374px]:w-4 max-[374px]:h-4
             "
             aria-hidden="true"
+            tooltip={COMMON_TOOLTIP_KEYS.MESSAGE}
           />
         )}
       </div>

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Breadcrumb from './Breadcrumb';
 import BlogCard from './BlogCard';
 import { BlogPost } from '@/lib/blog-api';
-import { SvgUser, SvgCalendar, SvgChevronLeft } from './Svgs';
+import { SvgUser, SvgCalendarXXX, SvgChevronLeft } from './Svgs';
 
 interface BlogPostPageProps {
   slug: string;
@@ -70,7 +70,7 @@ export default function BlogPostPage({ slug, post, relatedPosts }: BlogPostPageP
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <SvgCalendar
+              <SvgCalendarXXX
                 className="w-5 h-5"
                 aria-hidden="true"
               />

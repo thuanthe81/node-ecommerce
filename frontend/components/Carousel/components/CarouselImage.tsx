@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CarouselImageProps } from '../types';
-import { SvgSpinner, SvgImagePlaceholder } from '../../Svgs';
+import { SvgSpinner, SvgImagePlaceholderEEE } from '../../Svgs';
 
 /**
  * CarouselImage sub-component
@@ -59,7 +59,7 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
       {imageState === 'error' && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="flex flex-col items-center space-y-2 text-center px-4">
-            <SvgImagePlaceholder className="h-12 w-12 text-gray-400" />
+            <SvgImagePlaceholderEEE className="h-12 w-12 text-gray-400" />
             <span className="text-sm text-gray-500">
               {tCarousel('imageLoadError')}
             </span>

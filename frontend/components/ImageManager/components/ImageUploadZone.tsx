@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { ImageUploadZoneProps } from '../types';
-import { SvgImageUpload } from '@/components/Svgs';
+import { SvgImageUploadEEE } from '@/components/Svgs';
 
 /**
  * ImageUploadZone component for drag-and-drop file upload
@@ -39,7 +39,7 @@ export function ImageUploadZone({
         className="hidden"
       />
       <div className="space-y-2">
-        <SvgImageUpload
+        <SvgImageUploadEEE
           className="mx-auto h-12 w-12 text-gray-400"
         />
         <div className="text-sm text-gray-600">

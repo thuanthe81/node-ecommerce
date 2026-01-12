@@ -25,7 +25,7 @@ const customJestConfig = {
     '!**/__tests__/**',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(quill|react-quilljs|quill-image-resize-module-react)/)',
+    'node_modules/(?!(quill|react-quilljs|quill-image-resize-module-react|next-intl|use-intl)/)',
   ],
 }
 

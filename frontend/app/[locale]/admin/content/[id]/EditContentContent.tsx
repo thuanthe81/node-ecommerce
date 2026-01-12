@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ContentForm from '@/components/ContentForm';
-import { SvgX, SvgArrowLeft, SvgExclamationCircle } from '@/components/Svgs';
+import { SvgXEEE, SvgArrowLeftXXX, SvgExclamationCircle } from '@/components/Svgs';
 import {
   Content,
   CreateContentData,
@@ -80,7 +80,7 @@ export default function EditContentContent({
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
-              <SvgX
+              <SvgXEEE
                 className="h-5 w-5 text-red-400"
                 aria-hidden="true"
               />
@@ -97,7 +97,7 @@ export default function EditContentContent({
             onClick={() => router.push('/admin/content')}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <SvgArrowLeft
+            <SvgArrowLeftXXX
               className="mr-2 h-4 w-4"
               aria-hidden="true"
             />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getContents, deleteContent, updateContent, Content } from '@/lib/content-api';
-import { SvgDragHandle } from '@/components/Svgs';
+import { SvgDragHandleEEE } from '@/components/Svgs';
 import {
   DndContext,
   closestCenter,
@@ -61,7 +61,7 @@ function SortableRow({
             className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
             aria-label="Drag to reorder"
           >
-            <SvgDragHandle
+            <SvgDragHandleEEE
               className="w-5 h-5"
               aria-hidden="true"
             />

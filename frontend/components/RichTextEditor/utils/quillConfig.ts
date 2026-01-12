@@ -8,7 +8,7 @@ import type { QuillConfig, QuillToolbarConfig } from '../types';
 
 // Import and register ImageResize module
 let ImageResize: any = null;
-let Quill: any = null;
+const Quill: any = null;
 
 /**
  * Initialize and register the ImageResize module with Quill

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { orderApi, Order } from '@/lib/order-api';
 import { formatMoney, formatDateSafe } from '@/app/utils';
-import { SvgX, SvgCheck } from '@/components/Svgs';
+import { SvgXEEE, SvgCheck } from '@/components/Svgs';
 
 function SuccessContent() {
   const tCheckout = useTranslations('checkout');
@@ -57,7 +57,7 @@ function SuccessContent() {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="text-red-600 mb-4">
-          <SvgX
+          <SvgXEEE
             className="w-16 h-16 mx-auto"
           />
         </div>

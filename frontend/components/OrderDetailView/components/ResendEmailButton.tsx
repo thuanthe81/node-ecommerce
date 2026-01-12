@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { orderApi, ResendEmailResponse } from '@/lib/order-api';
-import { SvgRefresh, SvgMail, SvgCheck, SvgExclamationCircle } from '../../Svgs';
+import { SvgRefresh, SvgMailEEE, SvgCheck, SvgExclamationCircle } from '../../Svgs';
 
 interface ResendEmailButtonProps {
   orderNumber: string;
@@ -97,7 +97,7 @@ export function ResendEmailButton({
           </>
         ) : (
           <>
-            <SvgMail className="w-5 h-5" aria-hidden="true" />
+            <SvgMailEEE className="w-5 h-5" aria-hidden="true" />
             {tEmail('resendEmail')}
           </>
         )}

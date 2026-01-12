@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { SvgRefresh, SvgClipboard, SvgShoppingBag, SvgSpinner, SvgError } from '../../Svgs';
+import { SvgRefresh, SvgClipboard, SvgShoppingBag, SvgSpinner, SvgErrorEEE } from '../../Svgs';
 import { classifyError, shouldShowRetry, EnhancedError } from '@/lib/error-handling';
 
 interface EnhancedErrorStateProps {
@@ -150,7 +150,7 @@ export function EnhancedErrorState({
           role="alert"
           aria-live="assertive"
         >
-          <SvgError
+          <SvgErrorEEE
             className={`w-20 h-20 mx-auto mb-6 ${
               isServerError || isNetworkError ? 'text-yellow-500' : 'text-red-500'
             }`}

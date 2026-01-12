@@ -2006,3 +2006,333 @@ img {
     transform: none !important;
   }
 }
+/* ===== TOOLTIP SYSTEM STYLES ===== */
+
+/* CSS-based tooltip system for SVG components */
+.svg-tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.svg-tooltip-container .tooltip {
+  /* Hide tooltip by default */
+  visibility: hidden;
+  opacity: 0;
+
+  /* Positioning */
+  position: absolute;
+  z-index: 9999;
+
+  /* Smooth transitions */
+  transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+
+  /* Prevent interaction */
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Show tooltip on hover and focus */
+.svg-tooltip-container:hover .tooltip,
+.svg-tooltip-container:focus-visible .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Tooltip positioning variants */
+.tooltip--top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip--bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip--left {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tooltip--right {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tooltip--auto {
+  /* Default to top positioning, can be overridden with JavaScript for edge cases */
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Responsive positioning adjustments */
+@media (max-width: 640px) {
+  .tooltip--top,
+  .tooltip--bottom,
+  .tooltip--auto {
+    left: 0;
+    right: 0;
+    transform: none;
+    margin: 0 8px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .svg-tooltip-container .tooltip {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .svg-tooltip-container .tooltip {
+    @apply border-2 border-white;
+  }
+}
+
+/* Base tooltip styling - consistent with design system */
+.tooltip {
+  /* Enhanced visual depth with multiple shadows */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+
+  /* Improved typography for better readability */
+  letter-spacing: 0.025em;
+  word-spacing: 0.05em;
+
+  /* Ensure proper stacking context */
+  isolation: isolate;
+
+  /* Smooth backdrop blur for modern browsers */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Enhanced animation for tooltip appearance */
+.tooltip {
+  transform-origin: center bottom;
+  will-change: opacity, transform;
+}
+
+/* Responsive text sizing for different screen sizes */
+@media (max-width: 640px) {
+  .tooltip {
+    /* Smaller text on mobile for better fit */
+    @apply text-xs px-2 py-1.5;
+    /* Reduced max width on mobile */
+    max-width: 16rem; /* 256px */
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tooltip {
+    /* Medium text on tablets */
+    @apply text-sm px-3 py-2;
+    max-width: 20rem; /* 320px */
+  }
+}
+
+@media (min-width: 1025px) {
+  .tooltip {
+    /* Larger text on desktop */
+    @apply text-sm px-3 py-2;
+    max-width: 24rem; /* 384px */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tooltip {
+    @apply bg-black text-white border-2 border-white;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .tooltip {
+    /* Slightly lighter background in dark mode for better contrast */
+    @apply bg-gray-800 text-gray-100;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    /* Remove all animations and transitions */
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Focus-visible support for keyboard navigation */
+.tooltip:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Print styles - hide tooltips in print */
+@media print {
+  .tooltip {
+    display: none !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tooltip {
+    /* Larger touch targets and padding on touch devices */
+    @apply px-4 py-3 text-base;
+    min-height: 44px; /* Minimum touch target size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Hover device optimizations */
+@media (hover: hover) and (pointer: fine) {
+  .tooltip {
+    /* Enhanced hover effects on devices with precise pointing */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* RTL language support */
+[dir="rtl"] .tooltip {
+  text-align: right;
+}
+
+/* Accessibility improvements */
+.tooltip[role="tooltip"] {
+  /* Ensure proper ARIA role styling */
+  position: absolute;
+  z-index: 9999;
+}
+
+/* Loading state for dynamic tooltips */
+.tooltip--loading {
+  @apply opacity-75;
+}
+
+.tooltip--loading::after {
+  content: "...";
+  animation: tooltip-loading 1.5s infinite;
+}
+
+@keyframes tooltip-loading {
+  0%, 20% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Error state for tooltips */
+.tooltip--error {
+  @apply bg-red-600 text-white;
+}
+
+/* Success state for tooltips */
+.tooltip--success {
+  @apply bg-green-600 text-white;
+}
+
+/* Warning state for tooltips */
+.tooltip--warning {
+  @apply bg-yellow-600 text-white;
+}
+
+/* Info state for tooltips */
+.tooltip--info {
+  @apply bg-blue-600 text-white;
+}
+
+/* Tooltip arrow styling (for future enhancement) */
+.tooltip::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  pointer-events: none;
+}
+
+/* Arrow positioning based on tooltip placement */
+.tooltip[data-placement="top"]::before {
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: theme('colors.gray.900');
+}
+
+.tooltip[data-placement="bottom"]::before {
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: theme('colors.gray.900');
+}
+
+.tooltip[data-placement="left"]::before {
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: theme('colors.gray.900');
+}
+
+.tooltip[data-placement="right"]::before {
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: theme('colors.gray.900');
+}
+
+/* Dark mode arrow colors */
+@media (prefers-color-scheme: dark) {
+  .tooltip[data-placement="top"]::before {
+    border-top-color: theme('colors.gray.800');
+  }
+
+  .tooltip[data-placement="bottom"]::before {
+    border-bottom-color: theme('colors.gray.800');
+  }
+
+  .tooltip[data-placement="left"]::before {
+    border-left-color: theme('colors.gray.800');
+  }
+
+  .tooltip[data-placement="right"]::before {
+    border-right-color: theme('colors.gray.800');
+  }
+}
+
+/* High contrast arrow colors */
+@media (prefers-contrast: high) {
+  .tooltip[data-placement="top"]::before {
+    border-top-color: black;
+  }
+
+  .tooltip[data-placement="bottom"]::before {
+    border-bottom-color: black;
+  }
+
+  .tooltip[data-placement="left"]::before {
+    border-left-color: black;
+  }
+
+  .tooltip[data-placement="right"]::before {
+    border-right-color: black;
+  }
+}

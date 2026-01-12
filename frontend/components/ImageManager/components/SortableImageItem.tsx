@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { SvgClose, SvgDots } from '@/components/Svgs';
+import { SvgClose, SvgDotsEEE } from '@/components/Svgs';
 import { SortableImageItemProps } from '../types';
 
 /**
@@ -45,7 +45,7 @@ export function SortableImageItem({
         className="absolute top-2 left-2 bg-gray-800 bg-opacity-75 text-white p-1.5 rounded cursor-move opacity-0 group-hover:opacity-100 transition-opacity z-10"
         title={locale === 'vi' ? 'Kéo để sắp xếp' : 'Drag to reorder'}
       >
-        <SvgDots className="w-4 h-4" />
+        <SvgDotsEEE className="w-4 h-4" />
       </div>
 
       {/* Primary Badge */}

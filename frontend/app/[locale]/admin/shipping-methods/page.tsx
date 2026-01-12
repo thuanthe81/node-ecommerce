@@ -119,7 +119,7 @@ export default function AdminShippingMethodsPage() {
   // Run bulk validation
   const runBulkValidation = () => {
     const results: {[key: string]: any} = {};
-    let totalMethods = shippingMethods.length;
+    const totalMethods = shippingMethods.length;
     let completeCount = 0;
     let incompleteCount = 0;
 

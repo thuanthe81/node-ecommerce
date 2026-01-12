@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { BlogPost } from '@/lib/blog-api';
-import { SvgUser, SvgCalendar, SvgChevronRight } from './Svgs';
+import { SvgUser, SvgCalendarXXX, SvgChevronRight } from './Svgs';
 
 interface BlogCardProps {
   post: BlogPost;
@@ -80,7 +80,7 @@ export default function BlogCard({ post }: BlogCardProps) {
                 <span>{post.authorName}</span>
               </span>
               <span className="flex items-center gap-1">
-                <SvgCalendar className="w-4 h-4" aria-hidden="true" />
+                <SvgCalendarXXX className="w-4 h-4" aria-hidden="true" />
                 <time dateTime={post.publishedAt || ''}>{formattedDate}</time>
               </span>
             </div>

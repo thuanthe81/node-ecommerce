@@ -6,7 +6,7 @@
  */
 
 import { useTranslations } from 'next-intl';
-import { SvgCheckCircleLarge } from '../../Svgs';
+import { SvgCheckCircleLargeXXX } from '../../Svgs';
 
 interface SuccessBannerProps {
   orderNumber: string;
@@ -24,7 +24,7 @@ export function SuccessBanner({ orderNumber }: SuccessBannerProps) {
         className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-500 rounded-full mb-4 shadow-md"
         aria-hidden="true"
       >
-        <SvgCheckCircleLarge
+        <SvgCheckCircleLargeXXX
           className="w-10 h-10 sm:w-12 sm:h-12 text-white"
         />
       </div>

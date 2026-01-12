@@ -13,7 +13,7 @@ import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Order, orderApi, InvoiceEmailResponse } from '@/lib/order-api';
 import { hasQuoteItems, validateAllItemsPriced } from '@/lib/quote-item-utils';
-import { SvgRefresh, SvgMail, SvgCheck, SvgExclamationCircle } from '../../Svgs';
+import { SvgRefresh, SvgMailEEE, SvgCheck, SvgExclamationCircle } from '../../Svgs';
 
 interface AdminSendInvoiceButtonProps {
   order: Order;
@@ -186,7 +186,7 @@ export function AdminSendInvoiceButton({
               </>
             ) : (
               <>
-                <SvgMail className="w-5 h-5" aria-hidden="true" />
+                <SvgMailEEE className="w-5 h-5" aria-hidden="true" />
                 <div>
                   {locale === 'vi' ? 'Gửi Email Hóa Đơn' : 'Send Invoice Email'}
                 </div>

@@ -8,7 +8,7 @@
 import { useTranslations } from 'next-intl';
 import { ModalBodyProps } from '../types';
 import Image from 'next/image';
-import { SvgImagePlaceholder } from '@/components/Svgs';
+import { SvgImagePlaceholderEEE } from '@/components/Svgs';
 
 export function ModalBody({
   items,
@@ -30,7 +30,7 @@ export function ModalBody({
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-12">
-          <SvgImagePlaceholder
+          <SvgImagePlaceholderEEE
             className="mx-auto h-12 w-12 text-gray-400"
             aria-hidden="true"
           />

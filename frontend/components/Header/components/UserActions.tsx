@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import LocaleSwitcher from '@/components/LocaleSwitcher';
 import MiniCart from '@/components/MiniCart';
 import { SvgUser, SvgLogin, SvgLogout } from '@/components/Svgs';
+import { COMMON_TOOLTIP_KEYS } from '@/components/Tooltip';
 import { UserActionsProps } from '../types';
 
 /**
@@ -45,14 +46,22 @@ export function UserActions({ isAuthenticated, user, locale, onLogout, getLinkCl
             className={getLinkClasses(`/${locale}/account`, 'flex items-center')}
             aria-label={t('nav.account') || 'Account'}
           >
-            <SvgUser className="w-6 h-6" />
+            <SvgUser
+              className="w-6 h-6"
+              tooltip={COMMON_TOOLTIP_KEYS.USER}
+              tooltipPlacement={"left"}
+            />
           </Link>
           <button
             onClick={onLogout}
             className="text-gray-700 hover:text-blue-600 transition-colors touch-manipulation flex items-center"
             aria-label={t('auth.logout') || 'Logout'}
           >
-            <SvgLogout className="w-6 h-6" />
+            <SvgLogout
+              className="w-6 h-6"
+              tooltip={COMMON_TOOLTIP_KEYS.LOGOUT}
+              tooltipPlacement={"left"}
+            />
           </button>
         </>
       ) : (
@@ -61,7 +70,11 @@ export function UserActions({ isAuthenticated, user, locale, onLogout, getLinkCl
           className={getLinkClasses(`/${locale}/login`, 'flex items-center')}
           aria-label={t('auth.login') || 'Login'}
         >
-          <SvgLogin className="w-6 h-6" />
+          <SvgLogin
+            className="w-6 h-6"
+            tooltip={COMMON_TOOLTIP_KEYS.LOGIN}
+            tooltipPlacement={"left"}
+          />
         </Link>
       )}
     </div>

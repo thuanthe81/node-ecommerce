@@ -9,7 +9,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { SvgClose, SvgExclamationTriangle, SvgXCircle, SvgInformationCircle, SvgSpinner } from '../../Svgs';
+import { SvgClose, SvgExclamationTriangleXXX, SvgXCircleXXX, SvgInformationCircleXXX, SvgSpinner } from '../../Svgs';
 import { Order } from '@/lib/order-api';
 import { formatMoney } from '@/app/utils';
 import { Portal } from '@/components/Portal';
@@ -147,7 +147,7 @@ export function CancellationModal({
             {!error && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex">
-                  <SvgExclamationTriangle
+                  <SvgExclamationTriangleXXX
                     className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0"
                     aria-hidden="true"
                   />
@@ -162,7 +162,7 @@ export function CancellationModal({
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex">
-                  <SvgXCircle
+                  <SvgXCircleXXX
                     className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0"
                     aria-hidden="true"
                   />
@@ -182,7 +182,7 @@ export function CancellationModal({
             {error && isRetryable && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex">
-                  <SvgInformationCircle
+                  <SvgInformationCircleXXX
                     className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0"
                     aria-hidden="true"
                   />

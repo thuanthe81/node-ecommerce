@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminCategoryApi, ProductImage } from '@/lib/admin-category-api';
-import { SvgImagePlaceholder, SvgCheckCircle } from './Svgs';
+import { SvgImagePlaceholderEEE, SvgCheckCircleXXX } from './Svgs';
 
 interface ProductImageSelectorProps {
   selectedImageUrl: string | null;
@@ -85,7 +85,7 @@ export default function ProductImageSelector({
 
       {!loading && !error && images.length === 0 && (
         <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <SvgImagePlaceholder className="mx-auto h-12 w-12 text-gray-400" />
+          <SvgImagePlaceholderEEE className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-4 text-sm text-gray-600">
             {locale === 'vi'
               ? 'Không có hình ảnh sản phẩm nào. Vui lòng thêm hình ảnh vào sản phẩm trước.'
@@ -114,7 +114,7 @@ export default function ProductImageSelector({
                 />
                 {selectedImageUrl === image.url && (
                   <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
-                    <SvgCheckCircle className="w-8 h-8 text-blue-600" />
+                    <SvgCheckCircleXXX className="w-8 h-8 text-blue-600" />
                   </div>
                 )}
               </div>

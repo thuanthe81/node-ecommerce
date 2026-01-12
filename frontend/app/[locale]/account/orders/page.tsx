@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { orderApi, Order } from '@/lib/order-api';
 import { compareDates } from '@/app/utils';
 import OrderCard from '@/components/OrderCard';
-import { SvgError, SvgShoppingBag } from '@/components/Svgs';
+import { SvgErrorEEE, SvgShoppingBag } from '@/components/Svgs';
 
 export default function OrdersPage() {
   const params = useParams();
@@ -105,7 +105,7 @@ export default function OrdersPage() {
           {/* Error State */}
           {!isLoadingOrders && error && (
             <div className="text-center py-12">
-              <SvgError
+              <SvgErrorEEE
                 className="mx-auto h-12 w-12 text-red-400"
               />
               <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading orders</h3>

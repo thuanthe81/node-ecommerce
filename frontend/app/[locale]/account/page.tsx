@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { SvgUser, SvgLocation, SvgShoppingBag, SvgLock } from '@/components/Svgs';
+import { SvgUser, SvgLocation, SvgShoppingBag, SvgLockEEE } from '@/components/Svgs';
 
 export default function AccountPage() {
   const { user, isLoading } = useAuth();
@@ -106,7 +106,7 @@ export default function AccountPage() {
           >
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                <SvgLock
+                <SvgLockEEE
                   className="w-6 h-6 text-yellow-600"
                 />
               </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { SvgXCircle, SvgCheckCircle, SvgExclamationCircle } from './Svgs';
+import { SvgXCircleXXX, SvgCheckCircleXXX, SvgExclamationCircle } from './Svgs';
 import { userApi } from '@/lib/user-api';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -325,14 +325,14 @@ export default function ShippingAddressForm({
 
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start" role="alert">
-              <SvgXCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+              <SvgXCircleXXX className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {isFormValid() && !error && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start">
-              <SvgCheckCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+              <SvgCheckCircleXXX className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
               <span>{t('form.addressReady')}</span>
             </div>
           )}
@@ -361,7 +361,7 @@ export default function ShippingAddressForm({
               )}
               {touchedFields.fullName && !fieldErrors.fullName && formData.fullName.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <SvgCheckCircle className="w-4 h-4 mr-1" />
+                  <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -390,7 +390,7 @@ export default function ShippingAddressForm({
               )}
               {touchedFields.phone && !fieldErrors.phone && formData.phone.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <SvgCheckCircle className="w-4 h-4 mr-1" />
+                  <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -420,7 +420,7 @@ export default function ShippingAddressForm({
             )}
             {touchedFields.addressLine1 && !fieldErrors.addressLine1 && formData.addressLine1.trim() && (
               <p className="mt-1 text-sm text-green-600 flex items-center">
-                <SvgCheckCircle className="w-4 h-4 mr-1" />
+                <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                 {t('validation.valid')}
               </p>
             )}
@@ -464,7 +464,7 @@ export default function ShippingAddressForm({
               )}
               {touchedFields.city && !fieldErrors.city && formData.city.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <SvgCheckCircle className="w-4 h-4 mr-1" />
+                  <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -493,7 +493,7 @@ export default function ShippingAddressForm({
               )}
               {touchedFields.state && !fieldErrors.state && formData.state.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <SvgCheckCircle className="w-4 h-4 mr-1" />
+                  <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -522,7 +522,7 @@ export default function ShippingAddressForm({
               )}
               {touchedFields.postalCode && !fieldErrors.postalCode && formData.postalCode.trim() && (
                 <p className="mt-1 text-sm text-green-600 flex items-center">
-                  <SvgCheckCircle className="w-4 h-4 mr-1" />
+                  <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                   {t('validation.valid')}
                 </p>
               )}
@@ -558,7 +558,7 @@ export default function ShippingAddressForm({
             )}
             {touchedFields.country && !fieldErrors.country && formData.country.trim() && (
               <p className="mt-1 text-sm text-green-600 flex items-center">
-                <SvgCheckCircle className="w-4 h-4 mr-1" />
+                <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
                 {t('validation.valid')}
               </p>
             )}

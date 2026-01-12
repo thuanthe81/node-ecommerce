@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
-import { SvgCheckCircle, SvgPrint, SvgClipboard, SvgShoppingBag } from '../Svgs';
+import { SvgCheckCircleXXX, SvgPrintXXX, SvgClipboard, SvgShoppingBag } from '../Svgs';
 import { OrderDetailViewProps } from './types';
 import { useOrderData } from './hooks/useOrderData';
 import { useBankSettings } from './hooks/useBankSettings';
@@ -147,7 +147,7 @@ export default function OrderDetailView({
           {successMessage && (
             <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex">
-                <SvgCheckCircle
+                <SvgCheckCircleXXX
                   className="w-5 h-5 text-green-400 mt-0.5 mr-3 flex-shrink-0"
                   aria-hidden="true"
                 />
@@ -204,7 +204,7 @@ export default function OrderDetailView({
               className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 focus:bg-gray-800 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium"
               aria-label="Print order details"
             >
-              <SvgPrint
+              <SvgPrintXXX
                 className="w-5 h-5"
                 aria-hidden="true"
               />

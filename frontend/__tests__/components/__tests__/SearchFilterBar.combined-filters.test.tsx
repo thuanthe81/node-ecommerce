@@ -204,7 +204,7 @@ describe('SearchFilterBar - Combined Filter Functionality', () => {
 
       // Second: Add category
       await user.click(categoryButton);
-      let jewelryOption = await screen.findByRole('option', { name: 'Jewelry' });
+      const jewelryOption = await screen.findByRole('option', { name: 'Jewelry' });
       await user.click(jewelryOption);
       await waitFor(() => expect(mockPush.mock.calls.length).toBeGreaterThan(1), { timeout: 500 });
 

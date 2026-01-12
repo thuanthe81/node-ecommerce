@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import AdminProtectedRoute from '@/components/AdminProtectedRoute';
 import AdminLayout from '@/components/AdminLayout';
-import { SvgCheck, SvgX, SvgInfo } from '@/components/Svgs';
+import { SvgCheck, SvgXEEE, SvgInfo } from '@/components/Svgs';
 import {
   paymentSettingsApi,
   BankTransferSettings,
@@ -229,7 +229,7 @@ export default function PaymentSettingsContent() {
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <SvgX
+                  <SvgXEEE
                     className="h-5 w-5 text-red-400"
                     aria-hidden="true"
                   />
@@ -351,7 +351,7 @@ export default function PaymentSettingsContent() {
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                         aria-label="Remove QR code"
                       >
-                        <SvgX
+                        <SvgXEEE
                           className="w-4 h-4"
                           aria-hidden="true"
                         />

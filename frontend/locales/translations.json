@@ -5424,5 +5424,319 @@
         "vi": "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi."
       }
     }
+  },
+  "tooltips": {
+    "menu": {
+      "en": "Menu",
+      "vi": "Menu"
+    },
+    "close": {
+      "en": "Close",
+      "vi": "Đóng"
+    },
+    "cart": {
+      "en": "Shopping Cart",
+      "vi": "Giỏ hàng"
+    },
+    "home": {
+      "en": "Home",
+      "vi": "Trang chủ"
+    },
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "categories": {
+      "en": "Categories",
+      "vi": "Danh mục"
+    },
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
+    "users": {
+      "en": "Users",
+      "vi": "Người dùng"
+    },
+    "settings": {
+      "en": "Settings",
+      "vi": "Cài đặt"
+    },
+    "search": {
+      "en": "Search",
+      "vi": "Tìm kiếm"
+    },
+    "language": {
+      "en": "Change Language",
+      "vi": "Đổi ngôn ngữ"
+    },
+    "user": {
+      "en": "User Profile",
+      "vi": "Hồ sơ người dùng"
+    },
+    "login": {
+      "en": "Login",
+      "vi": "Đăng nhập"
+    },
+    "logout": {
+      "en": "Logout",
+      "vi": "Đăng xuất"
+    },
+    "check": {
+      "en": "Check",
+      "vi": "Kiểm tra"
+    },
+    "chevronRight": {
+      "en": "Next",
+      "vi": "Tiếp theo"
+    },
+    "chevronLeft": {
+      "en": "Previous",
+      "vi": "Trước đó"
+    },
+    "chevronDown": {
+      "en": "Expand",
+      "vi": "Mở rộng"
+    },
+    "plus": {
+      "en": "Add",
+      "vi": "Thêm"
+    },
+    "info": {
+      "en": "Information",
+      "vi": "Thông tin"
+    },
+    "boxes": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "grid": {
+      "en": "Grid View",
+      "vi": "Xem dạng lưới"
+    },
+    "clipboard": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
+    "tag": {
+      "en": "Tags",
+      "vi": "Thẻ"
+    },
+    "document": {
+      "en": "Documents",
+      "vi": "Tài liệu"
+    },
+    "chart": {
+      "en": "Analytics",
+      "vi": "Phân tích"
+    },
+    "currency": {
+      "en": "Currency",
+      "vi": "Tiền tệ"
+    },
+    "window": {
+      "en": "Window",
+      "vi": "Cửa sổ"
+    },
+    "globe": {
+      "en": "Website",
+      "vi": "Trang web"
+    },
+    "file": {
+      "en": "File",
+      "vi": "Tệp"
+    },
+    "facebook": {
+      "en": "Facebook",
+      "vi": "Facebook"
+    },
+    "twitter": {
+      "en": "Twitter",
+      "vi": "Twitter"
+    },
+    "tiktok": {
+      "en": "TikTok",
+      "vi": "TikTok"
+    },
+    "whatsapp": {
+      "en": "WhatsApp",
+      "vi": "WhatsApp"
+    },
+    "zalo": {
+      "en": "Zalo",
+      "vi": "Zalo"
+    },
+    "play": {
+      "en": "Play",
+      "vi": "Phát"
+    },
+    "pause": {
+      "en": "Pause",
+      "vi": "Tạm dừng"
+    },
+    "alertTriangle": {
+      "en": "Warning",
+      "vi": "Cảnh báo"
+    },
+    "spinner": {
+      "en": "Loading",
+      "vi": "Đang tải"
+    },
+    "refresh": {
+      "en": "Refresh",
+      "vi": "Làm mới"
+    },
+    "shoppingBag": {
+      "en": "Shopping Bag",
+      "vi": "Túi mua sắm"
+    },
+    "image": {
+      "en": "Image",
+      "vi": "Hình ảnh"
+    },
+    "email": {
+      "en": "Email",
+      "vi": "Email"
+    },
+    "phone": {
+      "en": "Phone",
+      "vi": "Điện thoại"
+    },
+    "location": {
+      "en": "Location",
+      "vi": "Vị trí"
+    },
+    "message": {
+      "en": "Message",
+      "vi": "Tin nhắn"
+    },
+    "truck": {
+      "en": "Shipping",
+      "vi": "Vận chuyển"
+    },
+    "creditCard": {
+      "en": "Credit Card",
+      "vi": "Thẻ tín dụng"
+    },
+    "warning": {
+      "en": "Warning",
+      "vi": "Cảnh báo"
+    },
+    "bankCard": {
+      "en": "Bank Card",
+      "vi": "Thẻ ngân hàng"
+    },
+    "qrCode": {
+      "en": "QR Code",
+      "vi": "Mã QR"
+    },
+    "exclamationCircle": {
+      "en": "Alert",
+      "vi": "Cảnh báo"
+    },
+    "checkCircle": {
+      "en": "Success",
+      "vi": "Thành công"
+    },
+    "xCircle": {
+      "en": "Error",
+      "vi": "Lỗi"
+    },
+    "exclamationTriangle": {
+      "en": "Warning",
+      "vi": "Cảnh báo"
+    },
+    "informationCircle": {
+      "en": "Information",
+      "vi": "Thông tin"
+    },
+    "print": {
+      "en": "Print",
+      "vi": "In"
+    },
+    "viewList": {
+      "en": "List View",
+      "vi": "Xem dạng danh sách"
+    },
+    "calendar": {
+      "en": "Calendar",
+      "vi": "Lịch"
+    },
+    "clock": {
+      "en": "Time",
+      "vi": "Thời gian"
+    },
+    "arrowLeft": {
+      "en": "Go Back",
+      "vi": "Quay lại"
+    },
+    "arrowRight": {
+      "en": "Go Forward",
+      "vi": "Tiến tới"
+    },
+    "x": {
+      "en": "Close",
+      "vi": "Đóng"
+    },
+    "mail": {
+      "en": "Mail",
+      "vi": "Thư"
+    },
+    "dots": {
+      "en": "More Options",
+      "vi": "Tùy chọn khác"
+    },
+    "imagePlaceholder": {
+      "en": "Image Placeholder",
+      "vi": "Hình ảnh tạm thời"
+    },
+    "upload": {
+      "en": "Upload",
+      "vi": "Tải lên"
+    },
+    "error": {
+      "en": "Error",
+      "vi": "Lỗi"
+    },
+    "trash": {
+      "en": "Delete",
+      "vi": "Xóa"
+    },
+    "folder": {
+      "en": "Folder",
+      "vi": "Thư mục"
+    },
+    "imageUpload": {
+      "en": "Upload Image",
+      "vi": "Tải lên hình ảnh"
+    },
+    "google": {
+      "en": "Google",
+      "vi": "Google"
+    },
+    "dragHandle": {
+      "en": "Drag Handle",
+      "vi": "Kéo thả"
+    },
+    "lock": {
+      "en": "Lock",
+      "vi": "Khóa"
+    },
+    "next": {
+      "en": "Next.js",
+      "vi": "Next.js"
+    },
+    "vercel": {
+      "en": "Vercel",
+      "vi": "Vercel"
+    },
+    "checkCircleLarge": {
+      "en": "Success",
+      "vi": "Thành công"
+    },
+    "exclamationCircleLarge": {
+      "en": "Alert",
+      "vi": "Cảnh báo"
+    }
   }
 }

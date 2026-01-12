@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { SvgGoogle, SvgFacebook } from '@/components/Svgs';
+import { SvgGoogleEEE, SvgFacebook } from '@/components/Svgs';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
-          <SvgGoogle className="w-5 h-5" />
+          <SvgGoogleEEE className="w-5 h-5" />
           <span className="text-sm font-medium">{tAuth('signInWithGoogle')}</span>
         </button>
 

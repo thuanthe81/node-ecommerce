@@ -1,5 +1,5 @@
 import React from 'react';
-import { SvgExclamationCircle, SvgCheckCircle } from '../../Svgs';
+import { SvgExclamationCircle, SvgCheckCircleXXX } from '../../Svgs';
 
 /**
  * Props for the FormField component
@@ -107,7 +107,7 @@ export function FormField({
       )}
       {touched && !error && value?.trim() && (
         <p className="mt-1 text-sm text-green-600 flex items-center">
-          <SvgCheckCircle className="w-4 h-4 mr-1" />
+          <SvgCheckCircleXXX className="w-4 h-4 mr-1" />
           {/* Translation key would be passed as prop in real usage */}
           Valid
         </p>

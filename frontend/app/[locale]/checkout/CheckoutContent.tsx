@@ -11,7 +11,7 @@ import { promotionApi } from '@/lib/promotion-api';
 import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
-import { SvgCheck, SvgWarning, SvgCheckCircleLarge, SvgInfo } from '@/components/Svgs';
+import { SvgCheck, SvgWarning, SvgCheckCircleLargeXXX, SvgInfo } from '@/components/Svgs';
 import { formatMoney, isContactForPrice, getPriceTBDText, getCartQuoteMessage } from '@/app/utils';
 
 export default function CheckoutContent() {
@@ -464,7 +464,7 @@ export default function CheckoutContent() {
           ) : (
             <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-start">
-                <SvgCheckCircleLarge
+                <SvgCheckCircleLargeXXX
                   className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0"
                 />
                 <p className="text-sm text-green-800">{tCart('syncSuccess')}</p>

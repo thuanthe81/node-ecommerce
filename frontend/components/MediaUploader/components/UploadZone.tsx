@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { UploadZoneProps } from '../types';
-import { SvgUpload } from '../../Svgs';
+import { SvgUploadEEE } from '../../Svgs';
 
 /**
  * UploadZone component for drag-and-drop file upload
@@ -33,7 +33,7 @@ export function UploadZone({
       } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
     >
       <div className="space-y-2">
-        <SvgUpload className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
+        <SvgUploadEEE className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
         <div className="text-sm text-gray-600">
           <button
             type="button"
