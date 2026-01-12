@@ -100,6 +100,7 @@ export const COMMON_TOOLTIP_KEYS = {
   TWITTER: 'twitter',
   ZALO: 'zalo',
   WHATSAPP: 'whatsapp',
+  TIKTOK: 'tiktok',
 } as const;
 
 export type CommonTooltipKey = typeof COMMON_TOOLTIP_KEYS[keyof typeof COMMON_TOOLTIP_KEYS];

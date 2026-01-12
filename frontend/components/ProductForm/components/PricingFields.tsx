@@ -41,7 +41,7 @@ export function PricingFields({
             {locale === 'vi' ? 'Giá' : 'Price'} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-2 text-gray-500">$</span>
+            <span className="absolute left-3 top-2 text-gray-500">đ</span>
             <input
               type="number"
               name="price"
@@ -69,7 +69,7 @@ export function PricingFields({
             {locale === 'vi' ? 'Giá so sánh' : 'Compare at Price'}
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-2 text-gray-500">$</span>
+            <span className="absolute left-3 top-2 text-gray-500">đ</span>
             <input
               type="number"
               name="compareAtPrice"
