@@ -18,12 +18,12 @@ interface BasicInfoFieldsProps {
 }
 
 /**
- * BasicInfoFields component for SKU, name, and description fields
+ * BasicInfoFieldsHead component for SKU, name, and description fields
  *
  * Displays slug, SKU, category selector, and bilingual name/description fields
  * based on the active language tab.
  */
-export function BasicInfoFields({
+export function BasicInfoFieldsHead({
   formData,
   categories,
   activeTab,
@@ -96,7 +96,25 @@ export function BasicInfoFields({
           </div>
         </div>
       </div>
+    </>
+  );
+}
 
+/**
+ * BasicInfoFieldsContent component for SKU, name, and description fields
+ *
+ * Displays slug, SKU, category selector, and bilingual name/description fields
+ * based on the active language tab.
+ */
+export function BasicInfoFieldsContent({
+  formData,
+  categories,
+  activeTab,
+  onChange,
+  locale,
+}: BasicInfoFieldsProps) {
+  return (
+    <>
       {/* Bilingual Content */}
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">

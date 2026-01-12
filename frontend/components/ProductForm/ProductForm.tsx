@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import ImageManager from '@/components/ImageManager';
 import { ProductFormProps } from './types';
 import { useProductForm } from './hooks/useProductForm';
-import { BasicInfoFields } from './components/BasicInfoFields';
+import { BasicInfoFieldsContent, BasicInfoFieldsHead } from './components/BasicInfoFields';
 import { PricingFields } from './components/PricingFields';
 import { ProductOptions } from './components/ProductOptions';
 
@@ -40,6 +40,15 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Basic Information and Content */}
+      <BasicInfoFieldsHead
+        formData={formData}
+        categories={categories}
+        activeTab={activeTab}
+        onChange={handleInputChange}
+        locale={locale}
+      />
+
       {/* Language Tab Switcher */}
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex justify-end space-x-2">
@@ -69,7 +78,7 @@ export default function ProductForm({ locale, product, isEdit = false }: Product
       </div>
 
       {/* Basic Information and Content */}
-      <BasicInfoFields
+      <BasicInfoFieldsContent
         formData={formData}
         categories={categories}
         activeTab={activeTab}

@@ -153,7 +153,7 @@ export default function PromotionListContent({ locale }: { locale: string }) {
                       <div className="text-sm font-medium text-gray-900">{promotion.code}</div>
                       {promotion.minOrderAmount && (
                         <div className="text-xs text-gray-500">
-                          Min: ${promotion.minOrderAmount}
+                          Min: đ{promotion.minOrderAmount}
                         </div>
                       )}
                     </td>
@@ -168,7 +168,7 @@ export default function PromotionListContent({ locale }: { locale: string }) {
                       </div>
                       {promotion.maxDiscountAmount && (
                         <div className="text-xs text-gray-500">
-                          Max: ${promotion.maxDiscountAmount}
+                          Max: đ{promotion.maxDiscountAmount}
                         </div>
                       )}
                     </td>
