@@ -35,6 +35,7 @@ export default function NewBlogPostContent({ locale }: { locale: string }) {
       excerptVi: data.excerptVi,
       authorName: data.authorName,
       imageUrl: data.imageUrl,
+      imageBackground: data.imageBackground,
       categoryIds: data.categoryIds,
       displayOrder: data.displayOrder,
       isPublished: data.isPublished,

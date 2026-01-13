@@ -792,6 +792,62 @@
       "en": "Media Library",
       "vi": "Thư viện phương tiện"
     },
+    "products": {
+      "en": "Products",
+      "vi": "Sản phẩm"
+    },
+    "selectImage": {
+      "en": "Select Image",
+      "vi": "Chọn hình ảnh"
+    },
+    "searchProducts": {
+      "en": "Search products by name or SKU...",
+      "vi": "Tìm kiếm sản phẩm theo tên hoặc SKU..."
+    },
+    "searchMedia": {
+      "en": "Search by filename...",
+      "vi": "Tìm kiếm theo tên tệp..."
+    },
+    "search": {
+      "en": "Search",
+      "vi": "Tìm kiếm"
+    },
+    "loadingProducts": {
+      "en": "Loading products...",
+      "vi": "Đang tải sản phẩm..."
+    },
+    "loadingMedia": {
+      "en": "Loading media...",
+      "vi": "Đang tải phương tiện..."
+    },
+    "noProductsAvailable": {
+      "en": "No products available",
+      "vi": "Không có sản phẩm nào"
+    },
+    "noMediaAvailable": {
+      "en": "No media available",
+      "vi": "Không có phương tiện nào"
+    },
+    "noProductsFound": {
+      "en": "No products found matching your search",
+      "vi": "Không tìm thấy sản phẩm phù hợp"
+    },
+    "noMediaFound": {
+      "en": "No media found matching your search",
+      "vi": "Không tìm thấy phương tiện phù hợp"
+    },
+    "imageAvailable": {
+      "en": "image available",
+      "vi": "hình ảnh có sẵn"
+    },
+    "imagesAvailable": {
+      "en": "images available",
+      "vi": "hình ảnh có sẵn"
+    },
+    "close": {
+      "en": "Close",
+      "vi": "Đóng"
+    },
     "minOrderAmount": {
       "en": "Minimum Order Amount (đ)",
       "vi": "Giá trị đơn hàng tối thiểu (đ)"

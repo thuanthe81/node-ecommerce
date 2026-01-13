@@ -56,8 +56,10 @@ export default function ContentForm({
     getTypeLabel,
   } = useContentForm(content, onSubmit, defaultType);
 
-  const handleImagePickerSelect = (imageUrl: string, product?: any) => {
-    handleImageSelect(imageUrl, product?.slug);
+  const handleImagePickerSelect = (imageUrl: string, source?: any) => {
+    // Only products have slugs, media items don't
+    const slug = source && 'slug' in source ? source.slug : undefined;
+    handleImageSelect(imageUrl, slug);
     setShowImagePicker(false);
   };
 

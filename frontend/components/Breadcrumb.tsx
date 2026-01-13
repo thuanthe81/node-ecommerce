@@ -18,7 +18,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
   const t = useTranslations('common');
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+    <nav className="flex items-center space-x-2 text-sm mb-4">
       <Link
         href={`/${locale}`}
         className="hover:text-blue-600 transition-colors"
@@ -28,7 +28,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
 
       {items.map((item, index) => (
         <div key={index} className="flex items-center space-x-2">
-          <SvgChevronRight className="w-4 h-4 text-gray-400" />
+          <SvgChevronRight className="w-4 h-4" />
 
           {item.href ? (
             <Link
@@ -38,7 +38,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
               {item.label}
             </Link>
           ) : (
-            <span className="text-gray-900 font-medium">{item.label}</span>
+            <span className="font-medium">{item.label}</span>
           )}
         </div>
       ))}

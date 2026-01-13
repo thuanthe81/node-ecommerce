@@ -81,6 +81,7 @@ export default function EditBlogPostContent({ locale, postId }: EditBlogPostCont
         excerptVi: data.excerptVi,
         authorName: data.authorName,
         imageUrl: data.imageUrl,
+        imageBackground: data.imageBackground,
         categoryIds: data.categoryIds,
         displayOrder: data.displayOrder,
         isPublished: data.isPublished,

@@ -71,13 +71,10 @@ export default function BlogPostPage({ slug, post, relatedPosts }: BlogPostPageP
   }).format(publishedDate);
 
   return (
-    <div className="min-h-screen" style={backgroundImageStyle}>
-      {/* Background overlay for text readability when background image is present */}
-      {shouldShowBackgroundImage && (
-        <div className="absolute inset-0 bg-black bg-opacity-30 pointer-events-none" />
-      )}
-
-      <div className="container mx-auto px-4 py-8 relative z-10">
+    <div className="min-h-screen" style={{ ...backgroundImageStyle }}>
+      <div className={`container mx-auto px-4 py-8 relative z-10 ${
+        shouldShowBackgroundImage ? 'text-gray-200' : 'text-gray-600'
+      }`}>
         {/* Breadcrumb */}
         <Breadcrumb
           items={[
@@ -90,11 +87,11 @@ export default function BlogPostPage({ slug, post, relatedPosts }: BlogPostPageP
         <article className="max-w-4xl mx-auto">
           {/* Header */}
           <header className="mb-8">
-            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${
-              shouldShowBackgroundImage ? 'text-white drop-shadow-lg' : 'text-gray-900'
-            }`}>
-              {title}
-            </h1>
+            {/*<h1 className={`text-4xl md:text-5xl font-bold mb-4 ${*/}
+            {/*  shouldShowBackgroundImage ? 'text-white drop-shadow-lg' : 'text-gray-900'*/}
+            {/*}`}>*/}
+            {/*  {title}*/}
+            {/*</h1>*/}
 
             {/* Meta Information */}
             <div className={`flex flex-wrap items-center gap-4 mb-6 ${
@@ -136,25 +133,25 @@ export default function BlogPostPage({ slug, post, relatedPosts }: BlogPostPageP
             )}
           </header>
 
-          {/* Featured Image */}
-          <div className="relative aspect-[16/9] mb-8 rounded-lg overflow-hidden bg-gray-100">
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              style={{ opacity: 1 }}
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 1024px"
-              priority
-              unoptimized
-            />
-          </div>
+          {/*/!* Featured Image *!/*/}
+          {/*<div className="relative aspect-[16/9] mb-8 rounded-lg overflow-hidden bg-gray-100">*/}
+          {/*  <Image*/}
+          {/*    src={imageUrl}*/}
+          {/*    alt={title}*/}
+          {/*    fill*/}
+          {/*    style={{ opacity: 1 }}*/}
+          {/*    className="object-cover object-center"*/}
+          {/*    sizes="(max-width: 1024px) 100vw, 1024px"*/}
+          {/*    priority*/}
+          {/*    unoptimized*/}
+          {/*  />*/}
+          {/*</div>*/}
 
           {/* Content */}
           <div
             className={`prose prose-lg max-w-none mb-12 ${
               shouldShowBackgroundImage
-                ? 'prose-invert bg-black bg-opacity-50 p-8 rounded-lg backdrop-blur-sm'
+                ? '' // 'prose-invert bg-black bg-opacity-50 p-8 rounded-lg backdrop-blur-sm'
                 : ''
             }`}
             dangerouslySetInnerHTML={{ __html: content }}
