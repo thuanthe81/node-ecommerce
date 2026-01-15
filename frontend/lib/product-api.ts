@@ -113,6 +113,11 @@ export const productApi = {
     return response.data;
   },
 
+  getProductById: async (slug: string): Promise<EnhancedProduct> => {
+    const response = await apiClient.get(`/products/id/${slug}`);
+    return response.data;
+  },
+
   getProductBySlug: async (slug: string): Promise<EnhancedProduct> => {
     const response = await apiClient.get(`/products/${slug}`);
     return response.data;

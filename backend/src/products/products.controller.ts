@@ -108,6 +108,13 @@ export class ProductsController {
     return this.productsService.search(searchTerm, limit);
   }
 
+  @Get('id/:id')
+  @Public()
+  @Roles(CONSTANTS.STATUS.USER_ROLES.ADMIN)
+  findById(@Param('id') id: string) {
+    return this.productsService.findOne(id);
+  }
+
   @Get(':slug')
   @Public()
   findBySlug(@Param('slug') slug: string) {
