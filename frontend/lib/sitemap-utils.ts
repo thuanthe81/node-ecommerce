@@ -97,7 +97,7 @@ export async function getCategoryUrls(): Promise<SitemapEntry[]> {
  */
 export async function getBlogUrls(): Promise<SitemapEntry[]> {
   try {
-    const response = await fetch(`${API_URL}/content/blog?limit=1000`, {
+    const response = await fetch(`${API_URL}/content/blog?limit=1000&published=true`, {
       ...getFetchOptions('sitemaps'),
     });
 
