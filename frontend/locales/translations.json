@@ -1289,6 +1289,10 @@
         "en": "Change Background Image",
         "vi": "Thay đổi hình nền"
       },
+      "clearBackgroundImage": {
+        "en": "Clear Background Image",
+        "vi": "Xóa hình nền"
+      },
       "categories": {
         "en": "Categories",
         "vi": "Danh mục"

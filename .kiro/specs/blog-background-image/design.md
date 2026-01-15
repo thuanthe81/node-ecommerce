@@ -22,9 +22,10 @@ The feature follows the existing blog system architecture with enhancements to t
 
 **Changes**:
 - Add `imageBackground` field to `BlogPostFormData` interface in `types.ts`
-- Extend `PublishingSection` component to include background image field
+- Extend `PublishingSection` component to include background image field with clear functionality
 - Add background image state management to main `BlogPostForm` component
 - Implement background image selection using existing `ImagePickerModal`
+- Add clear button to remove selected background images
 
 **New State Variables**:
 ```typescript
@@ -35,8 +36,22 @@ const [showBackgroundImagePicker, setShowBackgroundImagePicker] = useState(false
 The background image field will follow the same pattern as the existing featured image field:
 - Image preview when selected
 - Button to open image picker modal
+- Clear button to remove the selected image (displayed when image is present)
 - Validation error display
 - Consistent styling with other form fields
+
+**Clear Functionality**:
+```typescript
+const handleClearBackgroundImage = () => {
+  setFormData((prev) => ({ ...prev, imageBackground: '' }));
+};
+```
+
+The clear button will:
+- Only be visible when a background image is selected
+- Remove the image URL from the form data
+- Hide the image preview
+- Maintain all other form field values
 
 ### BlogPostPage Enhancement
 
@@ -223,6 +238,14 @@ Property 12: Empty state handling
 *For any* tab with no available images, the ImagePickerModal should display an appropriate empty state message specific to that tab
 **Validates: Requirements 4.8**
 
+Property 13: Background image clear functionality
+*For any* blog post form with a selected background image, clicking the clear button should remove the imageBackground value, hide the preview and clear button, while maintaining all other form field values unchanged
+**Validates: Requirements 5.1, 5.2, 5.3, 5.5**
+
+Property 14: Cleared background image persistence
+*For any* blog post form where the background image has been cleared, submitting the form should persist an empty or null value for the imageBackground field
+**Validates: Requirements 5.4**
+
 <function_calls>
 <invoke name="prework">
 <parameter name="featureName">blog-background-image
@@ -267,6 +290,8 @@ Property-based tests will verify universal properties across all inputs using a 
 - **Feature: blog-background-image, Property 10**: Image selection across tabs
 - **Feature: blog-background-image, Property 11**: Consistent grid layout
 - **Feature: blog-background-image, Property 12**: Empty state handling
+- **Feature: blog-background-image, Property 13**: Background image clear functionality
+- **Feature: blog-background-image, Property 14**: Cleared background image persistence
 
 ### Integration Tests
 - End-to-end form submission with background images

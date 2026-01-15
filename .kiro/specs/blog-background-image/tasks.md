@@ -145,46 +145,86 @@ This implementation adds background image functionality to the existing blog sys
   - Update `frontend/locales/translations.json` with new keys under admin section
   - _Requirements: 4.1, 4.2, 4.3, 4.8_
 
-- [ ] 8. Update property tests for enhanced form functionality
-  - [ ]* 8.1 Update property test for background image preview and form population
+- [x] 8. Add clear button functionality for background image
+  - [x] 8.1 Add clear button to PublishingSection component
+    - Add clear button UI next to background image preview
+    - Only display clear button when background image is selected
+    - Style clear button consistently with other form buttons
+    - _Requirements: 5.1_
+
+  - [ ]* 8.2 Write property test for clear button visibility
+    - **Property 13: Background image clear functionality (visibility)**
+    - **Validates: Requirements 5.1**
+
+  - [x] 8.3 Implement clear button handler in BlogPostForm
+    - Add `handleClearBackgroundImage` function to clear imageBackground field
+    - Ensure clear action maintains all other form field values
+    - Update form state to remove background image URL
+    - _Requirements: 5.2, 5.5_
+
+  - [ ]* 8.4 Write property test for clear functionality
+    - **Property 13: Background image clear functionality**
+    - **Validates: Requirements 5.1, 5.2, 5.3, 5.5**
+
+  - [x] 8.5 Update PublishingSection to hide preview after clear
+    - Ensure image preview is hidden when imageBackground is empty
+    - Ensure clear button is hidden when imageBackground is empty
+    - Maintain consistent UI state after clearing
+    - _Requirements: 5.3_
+
+  - [ ]* 8.6 Write property test for cleared background image persistence
+    - **Property 14: Cleared background image persistence**
+    - **Validates: Requirements 5.4**
+
+- [x] 9. Add translations for clear button
+  - Add English and Vietnamese translations for clear button
+  - Add translations for "Clear Background Image", "Remove"
+  - Update `frontend/locales/translations.json` with new keys under admin.blog section
+  - _Requirements: 5.1_
+
+- [ ] 10. Update property tests for enhanced form functionality
+  - [ ]* 10.1 Update property test for background image preview and form population
     - **Property 2: Background image preview and form population**
     - **Validates: Requirements 1.5, 3.5**
 
-  - [ ]* 8.2 Update property test for form data handling
+  - [ ]* 10.2 Update property test for form data handling
     - **Property 1: Background image form data handling**
     - **Validates: Requirements 1.2, 1.3, 1.4, 3.4**
 
-- [x] 9. Checkpoint - Ensure all tests pass
+- [x] 11. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Integration testing and final verification
-  - [x] 10.1 Test complete form workflow with enhanced image picker
+- [ ] 12. Integration testing and final verification
+  - [x] 12.1 Test complete form workflow with enhanced image picker
     - Verify form submission includes imageBackground field
     - Test form initialization with existing background images
     - Validate enhanced image picker modal integration with both tabs
     - Test image selection from both product and media library sources
-    - _Requirements: 1.2, 1.3, 3.4, 3.5, 4.5_
+    - Test clear button functionality for background images
+    - _Requirements: 1.2, 1.3, 3.4, 3.5, 4.5, 5.1, 5.2, 5.3_
 
-  - [ ]* 10.2 Write integration tests for enhanced image picker workflow
+  - [ ]* 12.2 Write integration tests for enhanced image picker workflow
     - Test end-to-end form submission with background images from both sources
     - Test blog post page rendering with background images
     - Test enhanced image picker modal workflow with tab switching
     - Test search functionality across both tabs
+    - Test clear button workflow and form submission with cleared images
 
-  - [ ] 10.3 Verify visual consistency and accessibility
+  - [ ] 12.3 Verify visual consistency and accessibility
     - Ensure background image field matches existing form field styling
     - Verify text readability with background images
     - Test responsive behavior on different screen sizes
     - Verify tab interface accessibility and keyboard navigation
-    - _Requirements: 2.3, 3.1, 4.1_
+    - Verify clear button accessibility and keyboard interaction
+    - _Requirements: 2.3, 3.1, 4.1, 5.1_
 
-  - [ ] 10.4 Test backward compatibility
+  - [ ] 12.4 Test backward compatibility
     - Verify existing components using ImagePickerModal still work correctly
     - Test that CategoryForm, ContentForm, and RichTextEditor work with enhanced modal
     - Ensure default "Products" tab maintains existing behavior
     - _Requirements: 4.6_
 
-- [ ] 11. Final checkpoint - Ensure all tests pass
+- [ ] 13. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
@@ -192,6 +232,7 @@ This implementation adds background image functionality to the existing blog sys
 - Tasks marked with `*` are optional and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Background image field follows existing featured image patterns for consistency
+- Clear button functionality follows the same pattern as other clearable image fields
 - ImagePickerModal enhancement maintains backward compatibility by defaulting to "Products" tab
 - Enhanced modal affects multiple components (BlogPostForm, CategoryForm, ContentForm, RichTextEditor)
 - Property tests validate universal correctness properties for both blog background images and modal functionality

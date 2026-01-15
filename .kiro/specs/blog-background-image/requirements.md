@@ -69,3 +69,15 @@ This feature adds background image functionality to the existing blog system, al
 6. WHEN the ImagePickerModal loads, THE ImagePickerModal SHALL default to the "Products" tab to maintain backward compatibility
 7. WHEN displaying images in either tab, THE ImagePickerModal SHALL show image previews in a consistent grid layout
 8. WHEN no images are available in a tab, THE ImagePickerModal SHALL display an appropriate empty state message
+
+### Requirement 5
+
+**User Story:** As an administrator, I want to clear a previously selected background image, so that I can remove the background image from a blog post without having to select a different image.
+
+#### Acceptance Criteria
+
+1. WHEN a background image is selected, THE BlogPostForm SHALL display a clear button next to the background image preview
+2. WHEN an administrator clicks the clear button, THE BlogPostForm SHALL remove the background image and clear the imageBackground field
+3. WHEN the background image is cleared, THE BlogPostForm SHALL hide the image preview and clear button
+4. WHEN the form is submitted with a cleared background image, THE Blog_System SHALL persist an empty or null value for the imageBackground field
+5. WHEN a background image is cleared, THE BlogPostForm SHALL maintain all other form field values unchanged

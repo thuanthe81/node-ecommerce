@@ -163,6 +163,10 @@ export default function BlogPostForm({
     }
   };
 
+  const handleClearBackgroundImage = () => {
+    setFormData((prev) => ({ ...prev, imageBackground: '' }));
+  };
+
   const handleCategoryToggle = (categoryId: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -282,6 +286,7 @@ export default function BlogPostForm({
         showBackgroundImagePicker={showBackgroundImagePicker}
         onToggleImagePicker={() => setShowImagePicker(!showImagePicker)}
         onToggleBackgroundImagePicker={() => setShowBackgroundImagePicker(!showBackgroundImagePicker)}
+        onClearBackgroundImage={handleClearBackgroundImage}
         onChange={handleChange}
       />
 

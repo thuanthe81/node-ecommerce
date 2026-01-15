@@ -4,6 +4,7 @@
 
 import { useTranslations } from 'next-intl';
 import { BlogPostFormData, ValidationErrors } from '../types';
+import { SvgClose } from '../../Svgs';
 
 interface PublishingSectionProps {
   formData: BlogPostFormData;
@@ -12,6 +13,7 @@ interface PublishingSectionProps {
   showBackgroundImagePicker: boolean;
   onToggleImagePicker: () => void;
   onToggleBackgroundImagePicker: () => void;
+  onClearBackgroundImage: () => void;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -22,6 +24,7 @@ export function PublishingSection({
   showBackgroundImagePicker,
   onToggleImagePicker,
   onToggleBackgroundImagePicker,
+  onClearBackgroundImage,
   onChange,
 }: PublishingSectionProps) {
   const t = useTranslations('admin.blog');
@@ -64,12 +67,20 @@ export function PublishingSection({
         </label>
         <div className="flex items-start space-x-4">
           {formData.imageBackground && (
-            <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+            <div className="relative inline-block">
               <img
                 src={formData.imageBackground}
                 alt="Background"
-                className="w-full h-full object-cover"
+                className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
               />
+              <button
+                type="button"
+                onClick={onClearBackgroundImage}
+                className="absolute -top-2 -right-2 bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-colors"
+                title={t('clearBackgroundImage')}
+              >
+                <SvgClose className="w-4 h-4" />
+              </button>
             </div>
           )}
           <button
