@@ -10,7 +10,7 @@ import { Product, productApi } from '@/lib/product-api';
 export default function EditProductPage() {
   const params = useParams();
   const locale = params.locale as string;
-  const productId = params.id as string;
+  const slug = params.slug as string;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,16 +18,15 @@ export default function EditProductPage() {
 
   useEffect(() => {
     loadProduct();
-  }, [productId]);
+  }, [slug]);
 
   const loadProduct = async () => {
     try {
       setLoading(true);
       // We need to fetch by ID, but the API uses slug. Let's assume we can get by ID
       // For now, we'll need to modify this based on actual API
-      const response = await productApi.getProducts({ limit: 1000 });
-      const foundProduct = response.data.find((p) => p.id === productId);
-      
+      const foundProduct = await productApi.getProductBySlug(slug);
+
       if (foundProduct) {
         setProduct(foundProduct);
       } else {

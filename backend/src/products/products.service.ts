@@ -267,6 +267,12 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
+    // Try to get from cache
+    const cacheKey = CONSTANTS.CACHE_KEYS.PRODUCTS.BY_ID(id);
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
@@ -309,10 +315,15 @@ export class ProductsService {
       },
     });
 
-    return {
+    const result = {
       ...product,
       averageRating: avgRating._avg.rating || 0,
     };
+
+    // Cache for 10 minutes
+    await this.cacheManager.set(cacheKey, result, 600000);
+
+    return result;
   }
 
   async findBySlug(slug: string) {
@@ -610,8 +621,9 @@ export class ProductsService {
   // - Cache tags for better invalidation
   // - A separate cache namespace for products
   // - Redis SCAN command for pattern-based deletion
-  private async invalidateProductCache() {
+  private async invalidateProductCache(key?: string) {
     // For now, we rely on TTL expiration for list caches
     // Individual product caches are deleted explicitly in update/delete methods
+    await this.cacheManager.del(CONSTANTS.CACHE_KEYS.PRODUCTS.LIST);
   }
 }

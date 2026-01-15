@@ -261,7 +261,7 @@ export default function AdminProductsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Link
-                            href={`/${locale}/admin/products/${product.id}/edit`}
+                            href={`/${locale}/admin/products/${product.slug}/edit`}
                             className="text-blue-600 hover:text-blue-900 mr-4"
                           >
                             {locale === 'vi' ? 'Sửa' : 'Edit'}
