@@ -67,13 +67,14 @@ export class ContentController {
   getBlogPosts(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('published') published?: string,
     @Query('categorySlug') categorySlug?: string,
   ) {
     return this.contentService.findBlogPosts({
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 10,
+      published: published === 'true' ? true : published === 'false' ? false : undefined,
       categorySlug,
-      published: true,
     });
   }
 
