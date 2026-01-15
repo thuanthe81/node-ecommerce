@@ -67,6 +67,7 @@ export default function AdminBlogList({ locale, token }: AdminBlogListProps) {
       const response = await blogApi.getBlogPosts(
         currentPage,
         postsPerPage,
+        statusFilter === 'all' ? undefined : statusFilter === 'published',
         categoryFilter || undefined,
         locale
       );

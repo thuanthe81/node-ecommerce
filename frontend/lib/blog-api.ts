@@ -62,12 +62,14 @@ export const blogApi = {
    * Get paginated blog posts with optional category filtering
    * @param page - Page number (default: 1)
    * @param limit - Number of posts per page (default: 10)
+   * @param published - blog published or not or both (undefined: both)
    * @param categorySlug - Optional category slug to filter by
    * @param locale - Locale for content (not used in API call, for frontend filtering)
    */
   getBlogPosts: async (
     page: number = 1,
     limit: number = 10,
+    published?: boolean,
     categorySlug?: string,
     locale?: string
   ): Promise<PaginatedBlogPosts> => {
@@ -75,6 +77,10 @@ export const blogApi = {
       page: page.toString(),
       limit: limit.toString(),
     });
+
+    if (published !== undefined) {
+      params.append('published', published.toString());
+    }
 
     if (categorySlug) {
       params.append('categorySlug', categorySlug);
@@ -142,9 +148,10 @@ export const blogApi = {
 export const getBlogPosts = (
   page?: number,
   limit?: number,
+  published?: boolean,
   categorySlug?: string,
   locale?: string
-) => blogApi.getBlogPosts(page, limit, categorySlug, locale);
+) => blogApi.getBlogPosts(page, limit, published, categorySlug, locale);
 
 export const getBlogPost = (slug: string, locale?: string) =>
   blogApi.getBlogPost(slug, locale);

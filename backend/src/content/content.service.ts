@@ -399,7 +399,6 @@ export class ContentService {
   }> {
     const page = options.page || 1;
     const limit = options.limit || 10;
-    const published = options.published !== undefined ? options.published : true;
     const skip = (page - 1) * limit;
 
     // Generate cache key
@@ -418,8 +417,11 @@ export class ContentService {
     // Build where clause
     const where: any = {
       type: ContentType.BLOG,
-      isPublished: published,
     };
+
+    if (options.published !== undefined) {
+      where.isPublished = options.published;
+    }
 
     // Add category filter if provided
     if (options.categorySlug) {

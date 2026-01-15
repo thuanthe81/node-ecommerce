@@ -44,7 +44,7 @@ export default async function BlogPage({
 
   // Fetch data server-side with ISR caching
   const [postsData, categories] = await Promise.all([
-    getBlogPosts(currentPage, 10, category, locale).catch(() => ({
+    getBlogPosts(currentPage, 10, true, category, locale).catch(() => ({
       posts: [],
       total: 0,
       page: 1,
