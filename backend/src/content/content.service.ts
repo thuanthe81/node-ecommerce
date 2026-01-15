@@ -405,6 +405,7 @@ export class ContentService {
     const cacheKey = this.getBlogListCacheKey(
       page,
       limit,
+      options.published,
       options.categorySlug,
     );
 
@@ -628,9 +629,10 @@ export class ContentService {
   private getBlogListCacheKey(
     page: number,
     limit: number,
+    published?: boolean,
     categorySlug?: string,
   ): string {
-    return CONSTANTS.CACHE_KEYS.CONTENT.BLOG_LIST(page, limit, categorySlug);
+    return CONSTANTS.CACHE_KEYS.CONTENT.BLOG_LIST(page, limit, published, categorySlug);
   }
 
   /**
@@ -656,12 +658,26 @@ export class ContentService {
     // Since we can't use pattern matching with the cache manager, we'll delete known patterns
     // In a production environment, you might want to use Redis SCAN or maintain a list of cache keys
 
-    // For now, we'll delete common pagination combinations
+    // For now, we'll delete common pagination combinations with all published states
     for (let page = 1; page <= 10; page++) {
       for (const limit of [10, 20, 50]) {
+        // Invalidate for all published states: undefined, true, false
         await this.cacheManager.del(this.getBlogListCacheKey(page, limit));
         await this.cacheManager.del(
-          this.getBlogListCacheKey(page, limit, 'all'),
+          this.getBlogListCacheKey(page, limit, true),
+        );
+        await this.cacheManager.del(
+          this.getBlogListCacheKey(page, limit, false),
+        );
+        // Also invalidate with category slug 'all'
+        await this.cacheManager.del(
+          this.getBlogListCacheKey(page, limit, undefined, 'all'),
+        );
+        await this.cacheManager.del(
+          this.getBlogListCacheKey(page, limit, true, 'all'),
+        );
+        await this.cacheManager.del(
+          this.getBlogListCacheKey(page, limit, false, 'all'),
         );
       }
     }

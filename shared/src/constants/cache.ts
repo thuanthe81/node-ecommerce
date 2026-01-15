@@ -64,7 +64,7 @@ export interface ContentCacheKeys {
   /** Cache key for homepage sections */
   HOMEPAGE_SECTIONS: string;
   /** Generate cache key for blog post list */
-  BLOG_LIST: (page: number, limit: number, categorySlug?: string) => string;
+  BLOG_LIST: (page: number, limit: number, published?: boolean, categorySlug?: string) => string;
   /** Generate cache key for blog post by slug */
   BLOG_POST: (slug: string) => string;
   /** Generate cache key for related blog posts */
@@ -163,8 +163,8 @@ export const CACHE_KEYS = {
     /** Cache key for homepage sections */
     HOMEPAGE_SECTIONS: 'homepage:sections',
     /** Generate cache key for blog post list */
-    BLOG_LIST: (page: number, limit: number, categorySlug?: string) =>
-      `blog:list:${page}:${limit}:${categorySlug || 'all'}`,
+    BLOG_LIST: (page: number, limit: number, published?: boolean, categorySlug?: string) =>
+      `blog:list:${page}:${limit}:${published !== undefined ? published : 'all'}:${categorySlug || 'all'}`,
     /** Generate cache key for blog post by slug */
     BLOG_POST: (slug: string) => `blog:post:${slug}`,
     /** Generate cache key for related blog posts */
