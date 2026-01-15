@@ -53,7 +53,7 @@ export default function BlogListingPage({
       setError(null);
 
       try {
-        const postsData = await getBlogPosts(currentPage, 10, categorySlug, locale);
+        const postsData = await getBlogPosts(currentPage, 10, true, categorySlug, locale);
         setPosts(postsData.posts);
         setTotalPages(postsData.totalPages);
       } catch (err) {
