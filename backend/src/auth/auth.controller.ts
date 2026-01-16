@@ -146,6 +146,19 @@ export class AuthController {
   }
 
   /**
+   * Facebook delete callback
+   * Handles the callback from Facebook after user deletion
+   */
+  @Public()
+  @Get('facebook/delete')
+  @UseGuards(FacebookOAuthGuard)
+  async facebookDeleteCallback(
+    @Req() req: Request & { user: AuthResponse & { redirect?: string } },
+    @Res() res: Response,
+  ) {
+  }
+
+  /**
    * Handle OAuth errors by redirecting to login page with error message
    */
   private handleOAuthError(res: Response, error: any) {
