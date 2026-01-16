@@ -1369,6 +1369,182 @@ img {
   @apply border-l-4 border-gray-300 pl-4 italic my-2;
 }
 
+/* ============================================================================
+   Rich Text Content Viewer Styles (for displaying Quill content)
+   ============================================================================ */
+
+/* Ensure lists display correctly when rendered with dangerouslySetInnerHTML */
+.prose ul,
+.prose ol {
+  @apply pl-6 mb-4;
+}
+
+.prose ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.prose li {
+  @apply mb-2;
+  display: list-item;
+}
+
+.prose ul ul,
+.prose ol ul {
+  list-style-type: circle;
+  @apply mt-2;
+}
+
+.prose ul ol,
+.prose ol ol {
+  list-style-type: lower-alpha;
+  @apply mt-2;
+}
+
+/* Ensure nested lists have proper indentation */
+.prose ul ul,
+.prose ul ol,
+.prose ol ul,
+.prose ol ol {
+  @apply pl-6 mb-2;
+}
+
+/* Quill-specific list classes with data attributes */
+.prose li[data-list="bullet"] {
+  list-style-type: disc;
+  list-style-position: outside;
+  display: list-item;
+  @apply ml-6;
+}
+
+.prose li[data-list="ordered"] {
+  list-style-type: decimal;
+  list-style-position: outside;
+  display: list-item;
+  @apply ml-6;
+}
+
+/* Quill indent levels for bullet lists */
+.prose li[data-list="bullet"].ql-indent-1 {
+  @apply ml-12;
+}
+
+.prose li[data-list="bullet"].ql-indent-2 {
+  @apply ml-18;
+}
+
+.prose li[data-list="bullet"].ql-indent-3 {
+  @apply ml-24;
+}
+
+.prose li[data-list="bullet"].ql-indent-4 {
+  @apply ml-30;
+}
+
+.prose li[data-list="bullet"].ql-indent-5 {
+  @apply ml-36;
+}
+
+.prose li[data-list="bullet"].ql-indent-6 {
+  @apply ml-42;
+}
+
+.prose li[data-list="bullet"].ql-indent-7 {
+  @apply ml-48;
+}
+
+.prose li[data-list="bullet"].ql-indent-8 {
+  @apply ml-54;
+}
+
+/* Quill indent levels for ordered lists */
+.prose li[data-list="ordered"].ql-indent-1 {
+  @apply ml-12;
+}
+
+.prose li[data-list="ordered"].ql-indent-2 {
+  @apply ml-18;
+}
+
+.prose li[data-list="ordered"].ql-indent-3 {
+  @apply ml-24;
+}
+
+.prose li[data-list="ordered"].ql-indent-4 {
+  @apply ml-30;
+}
+
+.prose li[data-list="ordered"].ql-indent-5 {
+  @apply ml-36;
+}
+
+.prose li[data-list="ordered"].ql-indent-6 {
+  @apply ml-42;
+}
+
+.prose li[data-list="ordered"].ql-indent-7 {
+  @apply ml-48;
+}
+
+.prose li[data-list="ordered"].ql-indent-8 {
+  @apply ml-54;
+}
+
+/* Nested list styling based on indent level */
+.prose li[data-list="bullet"].ql-indent-1 {
+  list-style-type: circle;
+}
+
+.prose li[data-list="bullet"].ql-indent-2 {
+  list-style-type: square;
+}
+
+.prose li[data-list="ordered"].ql-indent-1 {
+  list-style-type: lower-alpha;
+}
+
+.prose li[data-list="ordered"].ql-indent-2 {
+  list-style-type: lower-roman;
+}
+
+/* General Quill-specific indent classes (fallback) */
+.prose .ql-indent-1 {
+  @apply pl-6;
+}
+
+.prose .ql-indent-2 {
+  @apply pl-12;
+}
+
+.prose .ql-indent-3 {
+  @apply pl-18;
+}
+
+.prose .ql-indent-4 {
+  @apply pl-24;
+}
+
+.prose .ql-indent-5 {
+  @apply pl-30;
+}
+
+.prose .ql-indent-6 {
+  @apply pl-36;
+}
+
+.prose .ql-indent-7 {
+  @apply pl-42;
+}
+
+.prose .ql-indent-8 {
+  @apply pl-48;
+}
+
 /* Loading state */
 .rich-text-editor--loading {
   @apply opacity-50 pointer-events-none;

@@ -77,6 +77,7 @@ export function LinkModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (!validateUrl(url)) {
       setError(locale === 'vi' ? 'Vui lòng nhập URL hợp lệ' : 'Please enter a valid URL');
