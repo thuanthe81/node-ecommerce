@@ -45,6 +45,7 @@ export function useQuillEditor(
     placeholder: options.placeholder,
     readOnly: options.readOnly,
     imageHandler: options.imageHandler,
+    linkHandler: options.linkHandler,
   });
 
   // Initialize Quill editor using react-quilljs hook

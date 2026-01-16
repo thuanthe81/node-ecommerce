@@ -97,17 +97,19 @@ export function createQuillConfig(options: {
   placeholder?: string;
   readOnly?: boolean;
   imageHandler?: () => void;
+  linkHandler?: () => void;
 }): QuillConfig {
-  const { showToolbar = true, placeholder = '', readOnly = false, imageHandler } = options;
+  const { showToolbar = true, placeholder = '', readOnly = false, imageHandler, linkHandler } = options;
 
   const toolbarConfig: QuillToolbarConfig = {
     ...DEFAULT_TOOLBAR_CONFIG,
   };
 
-  // Add custom image handler if provided
-  if (imageHandler) {
+  // Add custom handlers if provided
+  if (imageHandler || linkHandler) {
     toolbarConfig.handlers = {
-      image: imageHandler,
+      ...(imageHandler && { image: imageHandler }),
+      ...(linkHandler && { link: linkHandler }),
     };
   }
 

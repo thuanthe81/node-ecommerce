@@ -11,6 +11,7 @@ import React, { useCallback, useState } from 'react';
 import type { RichTextEditorProps } from './types';
 import { useQuillEditor } from './hooks/useQuillEditor';
 import ImagePickerModal from '../ImagePickerModal';
+import { LinkModal } from './components/LinkModal';
 
 /**
  * Main RichTextEditor component
@@ -30,10 +31,21 @@ export function RichTextEditor({
   hasError = false,
 }: RichTextEditorProps) {
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkModalData, setLinkModalData] = useState<{
+    url: string;
+    text: string;
+  }>({ url: '', text: '' });
 
   // Custom image handler for Quill toolbar - directly opens ImagePickerModal
   const handleImageButtonClick = useCallback(() => {
     setShowImagePicker(true);
+  }, []);
+
+  // Custom link handler for Quill toolbar - opens LinkModal
+  // Note: This will be called by Quill, and editor will be available at that time
+  const handleLinkButtonClick = useCallback(() => {
+    setShowLinkModal(true);
   }, []);
 
   const { quillRef, editor, isReady } = useQuillEditor(
@@ -44,8 +56,32 @@ export function RichTextEditor({
       placeholder,
       readOnly,
       imageHandler: handleImageButtonClick,
+      linkHandler: handleLinkButtonClick,
     }
   );
+
+  // Effect to populate link modal data when it opens
+  React.useEffect(() => {
+    if (showLinkModal && editor) {
+      // Get current selection
+      const range = editor.getSelection();
+      if (!range) return;
+
+      // Check if cursor is within a link
+      const format = editor.getFormat(range);
+      const existingLink = typeof format.link === 'string' ? format.link : '';
+
+      // Get selected text
+      const selectedText = range.length > 0
+        ? editor.getText(range.index, range.length)
+        : '';
+
+      setLinkModalData({
+        url: existingLink,
+        text: selectedText,
+      });
+    }
+  }, [showLinkModal, editor]);
 
   // Handle image selection from either products or media library
   const handleImageSelect = useCallback(
@@ -123,6 +159,47 @@ export function RichTextEditor({
     [editor, locale, onImageInsert, setShowImagePicker]
   );
 
+  // Handle link insertion/update from LinkModal
+  const handleInsertLink = useCallback(
+    (url: string, text?: string) => {
+      if (!editor) return;
+
+      const range = editor.getSelection(true);
+      if (!range) return;
+
+      // If URL is empty, remove the link
+      if (!url) {
+        editor.format('link', false);
+        setShowLinkModal(false);
+        return;
+      }
+
+      // If there's selected text, just apply the link format
+      if (range.length > 0) {
+        editor.format('link', url);
+      } else {
+        // No selection - insert new link with text
+        const linkText = text || url;
+        const index = range.index;
+
+        // Insert the text
+        editor.insertText(index, linkText);
+
+        // Select the inserted text
+        editor.setSelection(index, linkText.length);
+
+        // Apply link format
+        editor.format('link', url);
+
+        // Move cursor after the link
+        editor.setSelection(index + linkText.length, 0);
+      }
+
+      setShowLinkModal(false);
+    },
+    [editor]
+  );
+
   // Determine CSS classes based on state
   const containerClasses = [
     'rich-text-editor',
@@ -144,6 +221,16 @@ export function RichTextEditor({
         isOpen={showImagePicker}
         onClose={() => setShowImagePicker(false)}
         onSelectImage={handleImageSelect}
+        locale={locale}
+      />
+
+      {/* Link Modal for inserting/editing links */}
+      <LinkModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onInsertLink={handleInsertLink}
+        initialUrl={linkModalData.url}
+        initialText={linkModalData.text}
         locale={locale}
       />
     </div>

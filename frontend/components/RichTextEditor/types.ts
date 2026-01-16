@@ -68,6 +68,9 @@ export interface QuillEditorOptions {
 
   /** Custom image button handler */
   imageHandler?: () => void;
+
+  /** Custom link button handler */
+  linkHandler?: () => void;
 }
 
 /**
@@ -150,6 +153,7 @@ export interface QuillToolbarConfig {
   container: Array<string | Array<string | { [key: string]: any }>>;
   handlers?: {
     image?: () => void;
+    link?: () => void;
     [key: string]: (() => void) | undefined;
   };
 }
