@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProductsImageService } from './products-image.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 
 export interface MigrationResult {
   totalImages: number;
@@ -320,7 +321,11 @@ export class ImageMigrationService {
       for (const image of allImages) {
         // Extract filename from URL
         const urlPath = image.url.replace(/^\//, ''); // Remove leading slash
-        const fullPath = path.join(process.cwd(), urlPath);
+        const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+        const baseUploadPath = path.isAbsolute(uploadDirEnv)
+          ? uploadDirEnv
+          : path.join(process.cwd(), uploadDirEnv);
+        const fullPath = path.join(baseUploadPath, urlPath.replace('uploads/', ''));
 
         // Check if file exists
         try {

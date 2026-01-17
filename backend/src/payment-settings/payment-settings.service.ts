@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 
 export interface BankTransferSettings {
   accountName: string;
@@ -134,7 +135,11 @@ export class PaymentSettingsService {
       const filename = `qr-${Date.now()}.${fileExtension}`;
 
       // Define upload directory and file path
-      const uploadDir = path.join(process.cwd(), 'uploads', 'payment-qr');
+      const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+      const baseUploadPath = isAbsolute(uploadDirEnv)
+        ? uploadDirEnv
+        : path.join(process.cwd(), uploadDirEnv);
+      const uploadDir = path.join(baseUploadPath, 'payment-qr');
       const filepath = path.join(uploadDir, filename);
 
       // Create directory if it doesn't exist

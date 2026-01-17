@@ -1,6 +1,7 @@
 import { Injectable, Logger, Inject, forwardRef, OnModuleInit } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 import * as fs from 'fs';
 import { PDFGenerationResult, OrderPDFData } from './types/pdf.types';
 import { PDFTemplateEngine } from './pdf-template.engine';
@@ -48,6 +49,17 @@ export class PDFGeneratorService implements OnModuleInit {
       this.logger.error('Failed to initialize PDFGeneratorService', error);
       throw error;
     }
+  }
+
+  /**
+   * Get the base upload directory path from environment variable
+   * @returns The absolute path to the upload directory
+   */
+  private getUploadPath(): string {
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    return isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
   }
 
   /**
@@ -274,7 +286,7 @@ export class PDFGeneratorService implements OnModuleInit {
       // Generate unique filename
       const timestamp = Date.now();
       const fileName = `order-${orderData.orderNumber}-${timestamp}.pdf`;
-      const filePath = path.join(process.cwd(), 'uploads', 'pdfs', fileName);
+      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
       // Ensure directory exists
       const uploadDir = path.dirname(filePath);
@@ -473,7 +485,7 @@ export class PDFGeneratorService implements OnModuleInit {
       // Generate unique filename for invoice
       const timestamp = Date.now();
       const fileName = `invoice-${orderData.orderNumber}-${timestamp}.pdf`;
-      const filePath = path.join(process.cwd(), 'uploads', 'pdfs', fileName);
+      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
       // Ensure directory exists
       const uploadDir = path.dirname(filePath);
@@ -682,7 +694,7 @@ export class PDFGeneratorService implements OnModuleInit {
       // Generate unique filename with compression level
       const timestamp = Date.now();
       const fileName = `order-${orderData.orderNumber}-${compressionLevel}-${timestamp}.pdf`;
-      const filePath = path.join(process.cwd(), 'uploads', 'pdfs', fileName);
+      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
       // Ensure directory exists
       const uploadDir = path.dirname(filePath);
@@ -815,7 +827,7 @@ export class PDFGeneratorService implements OnModuleInit {
       // Generate unique filename with device type
       const timestamp = Date.now();
       const fileName = `order-${orderData.orderNumber}-${deviceType}-${timestamp}.pdf`;
-      const filePath = path.join(process.cwd(), 'uploads', 'pdfs', fileName);
+      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
       // Ensure directory exists
       const uploadDir = path.dirname(filePath);

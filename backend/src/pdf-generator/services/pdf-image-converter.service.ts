@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 import * as https from 'https';
 import * as http from 'http';
 import { CONSTANTS } from '@alacraft/shared';
@@ -16,6 +17,17 @@ export class PDFImageConverterService {
   private readonly logger = new Logger(PDFImageConverterService.name);
   private readonly imageCache = new Map<string, string>();
   private readonly maxCacheSize = 100;
+
+  /**
+   * Get the base upload directory path from environment variable
+   * @returns The absolute path to the upload directory
+   */
+  private getUploadPath(): string {
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    return isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
+  }
 
   /**
    * Convert image to base64 data URL
@@ -156,14 +168,19 @@ export class PDFImageConverterService {
 
     // Handle web-style paths that start with /uploads, /public, etc.
     if (filePath.startsWith('/uploads/') || filePath.startsWith('/public/') || filePath.startsWith('/assets/')) {
-      // Remove leading slash and treat as relative to process.cwd()
-      fullPath = path.join(process.cwd(), filePath.substring(1));
+      // Remove leading slash and resolve based on UPLOAD_DIR for uploads, or process.cwd() for others
+      if (filePath.startsWith('/uploads/')) {
+        const relativePath = filePath.substring('/uploads/'.length);
+        fullPath = path.join(this.getUploadPath(), relativePath);
+      } else {
+        fullPath = path.join(process.cwd(), filePath.substring(1));
+      }
       this.logger.debug(`Converted web-style path: ${filePath} -> ${fullPath}`);
     } else if (!path.isAbsolute(filePath)) {
       // Try different base paths for relative paths
       const basePaths = [
         process.cwd(),
-        path.join(process.cwd(), 'uploads'),
+        this.getUploadPath(),
         path.join(process.cwd(), 'public'),
         path.join(process.cwd(), 'assets'),
       ];

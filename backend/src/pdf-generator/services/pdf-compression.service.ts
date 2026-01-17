@@ -175,8 +175,12 @@ export class PDFCompressionService {
         // Absolute path - use as is
         imagePath = imageUrl;
       } else {
-        // Relative path - resolve relative to current working directory
-        imagePath = path.join(process.cwd(), imageUrl);
+        // Relative path - resolve relative to upload directory
+        const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+        const baseUploadPath = path.isAbsolute(uploadDirEnv)
+          ? uploadDirEnv
+          : path.join(process.cwd(), uploadDirEnv);
+        imagePath = path.join(baseUploadPath, imageUrl);
       }
 
       this.logger.log(`Resolving image path: ${imageUrl} -> ${imagePath}`);

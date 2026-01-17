@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { CompressedImageConfigService } from './compressed-image-config.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 
 /**
  * Storage metrics interface
@@ -649,7 +650,27 @@ export class CompressedImageStorageMonitoringService {
    * Helper methods
    */
   private getFullPath(relativePath: string): string {
-    return path.isAbsolute(relativePath) ? relativePath : path.join(process.cwd(), relativePath);
+    if (path.isAbsolute(relativePath)) {
+      return relativePath;
+    }
+
+    // If it's an upload-related path, use UPLOAD_DIR
+    if (relativePath.startsWith('uploads/') || relativePath.includes('/uploads/')) {
+      const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+      const baseUploadPath = isAbsolute(uploadDirEnv)
+        ? uploadDirEnv
+        : path.join(process.cwd(), uploadDirEnv);
+
+      // Remove 'uploads/' prefix if present
+      const cleanPath = relativePath.startsWith('uploads/')
+        ? relativePath.substring('uploads/'.length)
+        : relativePath;
+
+      return path.join(baseUploadPath, cleanPath);
+    }
+
+    // For non-upload paths, use process.cwd()
+    return path.join(process.cwd(), relativePath);
   }
 
   private getMetadataPath(imagePath: string): string {

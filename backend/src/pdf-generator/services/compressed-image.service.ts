@@ -4,6 +4,7 @@ import { CompressedImageConfigService } from './compressed-image-config.service'
 // import { CompressedImageStorageMonitoringService } from './compressed-image-storage-monitoring.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 import * as crypto from 'crypto';
 
 /**
@@ -266,9 +267,27 @@ export class CompressedImageService {
    * @returns Full filesystem path
    */
   private getFullPath(relativePath: string): string {
-    return path.isAbsolute(relativePath)
-      ? relativePath
-      : path.join(process.cwd(), relativePath);
+    if (path.isAbsolute(relativePath)) {
+      return relativePath;
+    }
+
+    // If it's an upload-related path, use UPLOAD_DIR
+    if (relativePath.startsWith('uploads/') || relativePath.includes('/uploads/')) {
+      const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+      const baseUploadPath = isAbsolute(uploadDirEnv)
+        ? uploadDirEnv
+        : path.join(process.cwd(), uploadDirEnv);
+
+      // Remove 'uploads/' prefix if present
+      const cleanPath = relativePath.startsWith('uploads/')
+        ? relativePath.substring('uploads/'.length)
+        : relativePath;
+
+      return path.join(baseUploadPath, cleanPath);
+    }
+
+    // For non-upload paths, use process.cwd()
+    return path.join(process.cwd(), relativePath);
   }
 
   /**

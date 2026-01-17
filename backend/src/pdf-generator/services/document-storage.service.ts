@@ -1,6 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 import { StorageResult, CleanupResult, StorageCapacityResult } from '../types/pdf.types';
 import { StorageErrorHandlerService } from './storage-error-handler.service';
 
@@ -14,11 +15,18 @@ import { StorageErrorHandlerService } from './storage-error-handler.service';
 @Injectable()
 export class DocumentStorageService {
   private readonly logger = new Logger(DocumentStorageService.name);
-  private readonly uploadDir = path.join(process.cwd(), 'uploads', 'pdfs');
+  private readonly uploadDir: string;
   private readonly maxStorageSize = 1024 * 1024 * 1024; // 1GB default limit
   private readonly cleanupSchedule = new Map<string, NodeJS.Timeout>();
 
   constructor(private readonly errorHandler: StorageErrorHandlerService) {
+    // Initialize upload directory from environment variable
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    const baseUploadPath = isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
+    this.uploadDir = path.join(baseUploadPath, 'pdfs');
+
     this.ensureUploadDirectory();
   }
 

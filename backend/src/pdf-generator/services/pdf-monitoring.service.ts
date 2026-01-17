@@ -6,6 +6,7 @@ import { PDFErrorHandlerService } from './pdf-error-handler.service';
 import { PDFImageOptimizationMetricsService } from './pdf-image-optimization-metrics.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isAbsolute } from 'path';
 import * as os from 'os';
 import { CONSTANTS } from '@alacraft/shared';
 
@@ -129,6 +130,18 @@ export class PDFMonitoringService {
   ) {
     // Initialize performance tracking
     this.initializePerformanceTracking();
+  }
+
+  /**
+   * Get the uploads path for PDFs from environment variable
+   * @returns The absolute path to the PDF uploads directory
+   */
+  private getUploadsPath(): string {
+    const uploadDirEnv = process.env.UPLOAD_DIR || 'uploads';
+    const baseUploadPath = isAbsolute(uploadDirEnv)
+      ? uploadDirEnv
+      : path.join(process.cwd(), uploadDirEnv);
+    return path.join(baseUploadPath, 'pdfs');
   }
 
   /**
@@ -512,7 +525,7 @@ export class PDFMonitoringService {
     const usedMem = totalMem - freeMem;
 
     // Get disk usage for uploads directory
-    const uploadsPath = path.join(process.cwd(), 'uploads', 'pdfs');
+    const uploadsPath = this.getUploadsPath();
     let diskInfo = { used: 0, free: 0, total: 0, usage: 0 };
 
     try {
@@ -639,7 +652,7 @@ export class PDFMonitoringService {
    */
   private async calculateStorageMetrics(): Promise<PerformanceMetrics['storage']> {
     try {
-      const uploadsPath = path.join(process.cwd(), 'uploads', 'pdfs');
+      const uploadsPath = this.getUploadsPath();
 
       if (!fs.existsSync(uploadsPath)) {
         return {
