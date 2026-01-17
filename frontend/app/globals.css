@@ -1422,11 +1422,23 @@ img {
   @apply ml-6;
 }
 
+/* Ordered lists with CSS counter for proper numbering */
+.prose {
+  counter-reset: list-0 list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8;
+}
+
 .prose li[data-list="ordered"] {
-  list-style-type: decimal;
-  list-style-position: outside;
+  list-style-type: none;
   display: list-item;
   @apply ml-6;
+  position: relative;
+  counter-increment: list-0;
+}
+
+.prose li[data-list="ordered"]::before {
+  content: counter(list-0) ". ";
+  position: absolute;
+  left: -1.5rem;
 }
 
 /* Quill indent levels for bullet lists */
@@ -1462,37 +1474,85 @@ img {
   @apply ml-54;
 }
 
-/* Quill indent levels for ordered lists */
+/* Quill indent levels for ordered lists with independent counters */
 .prose li[data-list="ordered"].ql-indent-1 {
   @apply ml-12;
+  counter-increment: list-1;
+}
+
+.prose li[data-list="ordered"].ql-indent-1::before {
+  content: counter(list-1, lower-alpha) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-2 {
   @apply ml-18;
+  counter-increment: list-2;
+}
+
+.prose li[data-list="ordered"].ql-indent-2::before {
+  content: counter(list-2, lower-roman) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-3 {
   @apply ml-24;
+  counter-increment: list-3;
+}
+
+.prose li[data-list="ordered"].ql-indent-3::before {
+  content: counter(list-3) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-4 {
   @apply ml-30;
+  counter-increment: list-4;
+}
+
+.prose li[data-list="ordered"].ql-indent-4::before {
+  content: counter(list-4, lower-alpha) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-5 {
   @apply ml-36;
+  counter-increment: list-5;
+}
+
+.prose li[data-list="ordered"].ql-indent-5::before {
+  content: counter(list-5, lower-roman) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-6 {
   @apply ml-42;
+  counter-increment: list-6;
+}
+
+.prose li[data-list="ordered"].ql-indent-6::before {
+  content: counter(list-6) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-7 {
   @apply ml-48;
+  counter-increment: list-7;
+}
+
+.prose li[data-list="ordered"].ql-indent-7::before {
+  content: counter(list-7, lower-alpha) ". ";
+  left: -1.5rem;
 }
 
 .prose li[data-list="ordered"].ql-indent-8 {
   @apply ml-54;
+  counter-increment: list-8;
+}
+
+.prose li[data-list="ordered"].ql-indent-8::before {
+  content: counter(list-8, lower-roman) ". ";
+  left: -1.5rem;
 }
 
 /* Nested list styling based on indent level */
@@ -1502,14 +1562,6 @@ img {
 
 .prose li[data-list="bullet"].ql-indent-2 {
   list-style-type: square;
-}
-
-.prose li[data-list="ordered"].ql-indent-1 {
-  list-style-type: lower-alpha;
-}
-
-.prose li[data-list="ordered"].ql-indent-2 {
-  list-style-type: lower-roman;
 }
 
 /* General Quill-specific indent classes (fallback) */
