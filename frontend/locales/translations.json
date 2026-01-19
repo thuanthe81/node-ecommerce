@@ -3129,6 +3129,24 @@
       "vi": "Yêu thích"
     }
   },
+  "notFound": {
+    "title": {
+      "en": "Page Not Found",
+      "vi": "Không Tìm Thấy Trang"
+    },
+    "description": {
+      "en": "The page you're looking for doesn't exist or has been moved.",
+      "vi": "Trang bạn đang tìm không tồn tại hoặc đã được di chuyển."
+    },
+    "goHome": {
+      "en": "Go to Home Page",
+      "vi": "Về Trang Chủ"
+    },
+    "statusCode": {
+      "en": "404",
+      "vi": "404"
+    }
+  },
   "orders": {
     "accountName": {
       "en": "Account Name",
