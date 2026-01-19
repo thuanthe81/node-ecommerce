@@ -80,10 +80,10 @@ export default function HomeContent({ locale, initialData }: HomeContentProps) {
   }, [initialData]);
 
   return (
-    <div className="flex flex-col items-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex flex-col items-center bg-zinc-50 font-sans">
       {/* Carousel Section */}
       {!isLoadingCarousel && !carouselError && carouselImages.length >= 3 && (
-        <section className="w-full pb-12 bg-gradient-to-b from-zinc-100 to-zinc-50 dark:from-zinc-900 dark:to-black">
+        <section className="w-full pb-12 bg-gradient-to-b from-zinc-100 to-zinc-50">
           <div className="w-full">
             <Carousel
               images={carouselImages}
@@ -98,12 +98,12 @@ export default function HomeContent({ locale, initialData }: HomeContentProps) {
 
       {/* Loading state for carousel */}
       {isLoadingCarousel && (
-        <section className="w-full py-12 bg-gradient-to-b from-zinc-100 to-zinc-50 dark:from-zinc-900 dark:to-black">
+        <section className="w-full py-12 bg-gradient-to-b from-zinc-100 to-zinc-50">
           <div className="px-4">
             <div className="flex items-center justify-center" style={{ height: '450px' }}>
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mb-4"></div>
-                <p className="text-zinc-600 dark:text-zinc-400">Loading featured items...</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black mb-4"></div>
+                <p className="text-zinc-600">Loading featured items...</p>
               </div>
             </div>
           </div>
@@ -121,12 +121,12 @@ export default function HomeContent({ locale, initialData }: HomeContentProps) {
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">
                 <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                  <div className="w-full md:w-1/2 bg-gray-200 dark:bg-gray-700 rounded-lg aspect-square md:aspect-[4/3]"></div>
+                  <div className="w-full md:w-1/2 bg-gray-200rounded-lg aspect-square md:aspect-[4/3]"></div>
                   <div className="w-full md:w-1/2 space-y-4">
-                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-                    <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-32 mt-6"></div>
+                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-12 bg-gray-200 rounded w-32 mt-6"></div>
                   </div>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function HomeContent({ locale, initialData }: HomeContentProps) {
       {!isLoadingSections && sectionsError && (
         <div className="w-full py-16 px-4">
           <div className="max-w-7xl mx-auto text-center">
-            <p className="text-red-600 dark:text-red-400">
+            <p className="text-red-600">
               {sectionsError}
             </p>
           </div>

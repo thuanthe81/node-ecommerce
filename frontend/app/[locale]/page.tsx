@@ -139,13 +139,13 @@ export default async function Home({
 
       {/* Critical above-the-fold content that renders without JavaScript */}
       <noscript>
-        <div className={`w-full bg-zinc-50 dark:bg-black min-h-screen ${mobileCSSClasses.join(' ')}`}>
+        <div className={`w-full bg-zinc-50 min-h-screen ${mobileCSSClasses.join(' ')}`}>
           <div className="max-w-7xl mx-auto px-4 py-16">
             <header className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
+              <h1 className="text-4xl font-bold text-black mb-4">
                 {locale === 'vi' ? 'Handmade E-commerce - Sản phẩm thủ công độc đáo' : 'Handmade E-commerce - Unique Artisan Products'}
               </h1>
-              <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
+              <p className="text-lg text-zinc-600 max-w-2xl mx-auto">
                 {locale === 'vi'
                   ? 'Khám phá bộ sưu tập các sản phẩm thủ công chất lượng cao được làm bởi nghệ nhân tài ba.'
                   : 'Discover our collection of high-quality handmade products crafted by talented artisans.'
@@ -161,8 +161,8 @@ export default async function Home({
                 </h2>
                 <div className={`grid gap-6 ${deviceConfig.isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
                   {homepageData.featuredProducts.slice(0, deviceConfig.isMobile ? 3 : 6).map((product: any) => (
-                    <div key={product.id} className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-4">
-                      <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg mb-4">
+                    <div key={product.id} className="bg-white rounded-lg shadow-md p-4">
+                      <div className="aspect-square bg-gray-200 rounded-lg mb-4">
                         {product.images?.[0]?.url && (
                           <img
                             src={product.images[0].url}
@@ -175,7 +175,7 @@ export default async function Home({
                       <h3 className="font-semibold text-lg mb-2">
                         {locale === 'vi' ? product.nameVi : product.nameEn}
                       </h3>
-                      <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-3">
+                      <p className="text-zinc-600 text-sm mb-3">
                         {(locale === 'vi' ? product.descriptionVi : product.descriptionEn)?.substring(0, 100)}...
                       </p>
                       <div className="flex justify-between items-center">
@@ -200,13 +200,13 @@ export default async function Home({
               <div className="flex flex-wrap justify-center gap-4">
                 <a
                   href={`/${locale === 'vi' ? '' : 'en/'}products`}
-                  className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                  className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
                 >
                   {locale === 'vi' ? 'Xem tất cả sản phẩm' : 'View All Products'}
                 </a>
                 <a
                   href={`/${locale === 'vi' ? '' : 'en/'}categories`}
-                  className="border border-black dark:border-white text-black dark:text-white px-6 py-3 rounded-lg hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                  className="border border-black text-black px-6 py-3 rounded-lg hover:bg-black hover:text-white transition-colors"
                 >
                   {locale === 'vi' ? 'Danh mục sản phẩm' : 'Product Categories'}
                 </a>

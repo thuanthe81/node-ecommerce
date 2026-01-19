@@ -33,10 +33,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
-  ],
+  // themeColor: [
+  //   { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  //   { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  // ],
 };
 
 // Metadata is now generated per page
