@@ -36,6 +36,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const isZeroPrice = isContactForPrice(product.price);
 
+  const categoryUrl = `/${locale}/products?categoryId=${product.category.id}`;
   const handleQuantityChange = (value: number) => {
     // For pre-order products (zero stock), allow up to 99 items
     // For in-stock products, limit to available stock quantity
@@ -87,7 +88,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         </Link>
         <span className="mx-2">/</span>
         <Link
-          href={`/${locale}/categories/${product.category.slug}`}
+          href={categoryUrl}
           className="hover:text-gray-700"
         >
           {categoryName}
@@ -259,7 +260,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             {t('common.category')}
           </span>
           <Link
-            href={`/${locale}/products?categoryId=${product.category.id}`}
+            href={categoryUrl}
             className="font-medium text-blue-600 hover:underline"
           >
             {categoryName}
