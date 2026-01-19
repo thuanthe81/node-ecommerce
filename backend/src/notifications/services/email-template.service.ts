@@ -28,9 +28,12 @@ export interface OrderEmailData {
   customerName: string;
   orderDate: string;
   items: Array<{
-    name: string;
+    name?: string; // Deprecated, use productName instead
+    productName?: string;
+    productNameVi?: string;
     quantity: number;
     price: number;
+    total?: number;
   }>;
   subtotal: number;
   shippingCost: number;
@@ -48,6 +51,7 @@ export interface OrderEmailData {
   };
   trackingNumber?: string;
   status?: string;
+  hasQuoteItems?: boolean;
 }
 
 export interface OrderCancellationEmailData {

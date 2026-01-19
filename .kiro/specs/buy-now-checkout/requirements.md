@@ -90,6 +90,8 @@ The Buy Now Checkout feature enables customers to purchase a single product imme
 3. IF the product already exists in the cart, THE system SHALL increase the quantity by the Buy Now amount
 4. WHEN a customer completes the order successfully, THE system SHALL not add the product to the cart
 5. THE system SHALL detect navigation away from checkout through browser events or route changes
+6. WHEN a customer with an empty cart clicks Buy Now, THE system SHALL NOT redirect to the cart page
+7. THE Direct_Checkout_Flow SHALL proceed normally even when the cart is empty
 
 **Note**: This requirement is OPTIONAL and may be removed to simplify the Buy Now flow. The core Buy Now functionality works without abandoned checkout handling.
 

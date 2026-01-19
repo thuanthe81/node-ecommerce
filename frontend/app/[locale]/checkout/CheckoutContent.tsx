@@ -32,8 +32,10 @@ export default function CheckoutContent() {
   const [error, setError] = useState<string | null>(null);
   const [orderCompleted, setOrderCompleted] = useState(false);
 
+  // Get checkout session
+  const session = getSession();
   // Buy Now state management
-  const [checkoutSource, setCheckoutSource] = useState<'buy-now' | 'cart'>('cart');
+  const [checkoutSource, setCheckoutSource] = useState<'buy-now' | 'cart'>(session?.source || 'cart');
   const [buyNowProduct, setBuyNowProduct] = useState<{
     product: EnhancedProduct;
     quantity: number;
@@ -72,10 +74,6 @@ export default function CheckoutContent() {
   // Detect checkout source and load Buy Now product data
   useEffect(() => {
     const initializeCheckout = async () => {
-      console.log('[CheckoutContent] Initializing checkout...');
-
-      // Get checkout session
-      const session = getSession();
       console.log('[CheckoutContent] Checkout session:', session);
 
       if (session && session.source === 'buy-now' && session.product) {
@@ -123,10 +121,17 @@ export default function CheckoutContent() {
   useEffect(() => {
     // Don't redirect if order was just completed
     // Don't redirect if Buy Now checkout (doesn't use cart)
+    // For Buy Now, wait until product loading is complete before checking
     if (!orderCompleted && checkoutSource === 'cart' && (!cart || cart.items.length === 0)) {
       router.push(`/${locale}/cart`);
     }
-  }, [cart, router, locale, orderCompleted, checkoutSource]);
+    // For Buy Now checkout with empty cart, only redirect if product loading failed
+    if (!orderCompleted && checkoutSource === 'buy-now' && !loadingBuyNowProduct && !buyNowProduct && (!cart || cart.items.length === 0)) {
+      // Product loading is complete but no product was loaded, and cart is empty
+      // This means the Buy Now session was invalid or expired
+      // The error handling in the initialization effect will handle the redirect
+    }
+  }, [cart, router, locale, orderCompleted, checkoutSource, loadingBuyNowProduct, buyNowProduct]);
 
   useEffect(() => {
     if (user) {

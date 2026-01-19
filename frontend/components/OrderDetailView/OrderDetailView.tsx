@@ -173,9 +173,6 @@ export default function OrderDetailView({
           {/* Order Summary Section */}
           <OrderSummary order={order} locale={locale} />
 
-          {/* Order Items */}
-          <OrderItems items={order.items} locale={locale} />
-
           {/* Shipping Information Section */}
           <ShippingInfo
             shippingAddress={order.shippingAddress}

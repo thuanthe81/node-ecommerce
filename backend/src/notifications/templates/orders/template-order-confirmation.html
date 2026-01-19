@@ -86,7 +86,13 @@
               <tbody>
               {{#each data.items}}
               <tr style="border-bottom: 1px solid #dee2e6;">
-                <td style="padding: 12px; color: #2c3e50;">{{#if (eq ../locale 'vi')}}{{this.nameVi}}{{else}}{{this.nameEn}}{{/if}}</td>
+                <td style="padding: 12px; color: #2c3e50;">
+                  {{#if (eq ../locale 'vi')}}
+                    {{#if this.productNameVi}}{{this.productNameVi}}{{else}}{{this.name}}{{/if}}
+                  {{else}}
+                    {{#if this.productName}}{{this.productName}}{{else}}{{this.name}}{{/if}}
+                  {{/if}}
+                </td>
                 <td style="padding: 12px; text-align: center; color: #2c3e50;">{{this.quantity}}</td>
                 <td style="padding: 12px; text-align: right; color: #2c3e50;">{{formatCurrency this.price ../locale}} ₫</td>
               </tr>

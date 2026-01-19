@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { formatMoney, formatDateSafe } from '@/app/utils';
 import { Order } from '@/lib/order-api';
 import { getOrderStatusText, getPaymentStatusText, getPaymentMethodText } from '../utils/statusTranslations';
+import { OrderItems } from '@/components/OrderDetailView/components/OrderItems';
 
 interface OrderSummaryProps {
   order: Order;
@@ -53,15 +54,18 @@ export function OrderSummary({ order, locale }: OrderSummaryProps) {
         </div>
       </dl>
 
+      <hr className="border-t-2 border-gray-300"/>
+      <br/>
+      {/* Order Items */}
+      <OrderItems items={order.items} locale={locale} />
+      <hr className="border-t-2 border-gray-300"/>
+
       {/* Order Totals */}
       <div
         className="bg-gray-50 rounded-lg p-4 sm:p-6 mt-6 print:bg-white print:border print:border-gray-300"
         role="region"
         aria-labelledby="order-totals-heading"
       >
-        <h3 id="order-totals-heading" className="sr-only">
-          Order Totals
-        </h3>
         <dl className="space-y-3">
           <div className="flex justify-between text-sm sm:text-base">
             <dt className="text-gray-700 font-medium">{t('subtotal')}</dt>

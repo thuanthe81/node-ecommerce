@@ -17,6 +17,8 @@ export const EMAIL_TRANSLATIONS = {
   // Order Confirmation Email
   orderConfirmation: {
     subject: { en: 'Order Confirmation', vi: 'Xác nhận đơn hàng' },
+    title: { en: 'Order Confirmation', vi: 'Xác nhận đơn hàng' },
+    tagline: { en: 'Handmade with Love', vi: 'Làm thủ công với tình yêu' },
     greeting: { en: 'Hello', vi: 'Xin chào' },
     thankYou: {
       en: 'Thank you for your order!',
@@ -29,7 +31,9 @@ export const EMAIL_TRANSLATIONS = {
     orderDetails: { en: 'Order Details', vi: 'Chi tiết đơn hàng' },
     orderNumber: { en: 'Order Number', vi: 'Mã đơn hàng' },
     orderDate: { en: 'Order Date', vi: 'Ngày đặt hàng' },
+    orderItems: { en: 'Order Items', vi: 'Sản phẩm đặt hàng' },
     items: { en: 'Items', vi: 'Sản phẩm' },
+    product: { en: 'Product', vi: 'Sản phẩm' },
     quantity: { en: 'Quantity', vi: 'Số lượng' },
     price: { en: 'Price', vi: 'Giá' },
     total: { en: 'Total', vi: 'Tổng' },
@@ -45,6 +49,10 @@ export const EMAIL_TRANSLATIONS = {
       vi: 'Liên hệ với chúng tôi nếu bạn có bất kỳ câu hỏi nào.',
     },
     trackOrder: { en: 'Track Order', vi: 'Theo dõi đơn hàng' },
+    disclaimer: {
+      en: 'This is an automated message. Please do not reply to this email.',
+      vi: 'Đây là tin nhắn tự động. Vui lòng không trả lời email này.',
+    },
   },
 
   // Order Invoice Email

@@ -288,6 +288,19 @@ This implementation plan breaks down the Buy Now Checkout feature into discrete,
     - Test that authenticated users can complete Buy Now checkout
     - _Requirements: 2.5, 2.6, 2.7_
 
+- [ ] 14. Fix empty cart redirect for Buy Now checkout
+  - [x] 14.1 Fix empty cart redirect logic
+    - Modify CheckoutContent to prevent redirect to cart page when Buy Now checkout is active
+    - Ensure the empty cart check only applies to cart-based checkout
+    - Wait for Buy Now product to load before checking cart status
+    - _Requirements: 6.6, 6.7_
+
+  - [ ]* 14.2 Test empty cart redirect fix
+    - Test that Buy Now checkout proceeds when cart is empty
+    - Test that cart-based checkout still redirects when cart is empty
+    - Test that Buy Now product loads correctly with empty cart
+    - _Requirements: 6.6, 6.7_
+
 ## Notes
 
 - Tasks marked with `*` are optional and can be skipped for faster MVP

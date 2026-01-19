@@ -36,7 +36,7 @@ export function OrderItems({ items, locale }: OrderItemsProps) {
   };
 
   return (
-    <div className="mb-6 p-6 sm:p-8">
+    <div className="mb-6">
       <h3 id="order-items-heading" className="font-semibold text-lg sm:text-xl mb-4 text-gray-900">
         {t('items')}
       </h3>
@@ -61,7 +61,7 @@ export function OrderItems({ items, locale }: OrderItemsProps) {
                 >
                   {getProductName(item)}
                 </Link>
-                <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                <dl className="flex flex-col flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
                   <div>
                     <dt className="inline font-medium">{t('quantity')}:</dt>
                     <dd className="inline ml-1">{item.quantity}</dd>
