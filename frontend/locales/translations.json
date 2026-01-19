@@ -58,7 +58,7 @@
     },
     "editProfile": {
       "en": "Edit Profile",
-      "vi": "Sửa hồ sơ"
+      "vi": "Sửa thông tin"
     },
     "email": {
       "en": "Email",
@@ -82,7 +82,7 @@
     },
     "failedUpdateProfile": {
       "en": "Failed to update profile",
-      "vi": "Cập nhật hồ sơ thất bại"
+      "vi": "Cập nhật thông tin thất bại"
     },
     "firstName": {
       "en": "First Name",
@@ -142,11 +142,11 @@
     },
     "profile": {
       "en": "Profile",
-      "vi": "Hồ sơ"
+      "vi": "Thông tin"
     },
     "profileUpdatedSuccess": {
       "en": "Profile updated successfully",
-      "vi": "Cập nhật hồ sơ thành công"
+      "vi": "Cập nhật thông tin thành công"
     },
     "saveAddress": {
       "en": "Save Address",
@@ -2232,6 +2232,10 @@
       "en": "Add New Address",
       "vi": "Thêm địa chỉ mới"
     },
+    "addedToCartOnAbandon": {
+      "en": "Product added to your cart",
+      "vi": "Sản phẩm đã được thêm vào giỏ hàng"
+    },
     "address": {
       "en": "Address",
       "vi": "Địa chỉ"
@@ -2263,6 +2267,10 @@
     "billingAddress": {
       "en": "Billing Address",
       "vi": "Địa chỉ thanh toán"
+    },
+    "buyNowCheckout": {
+      "en": "Buy Now Checkout",
+      "vi": "Thanh toán Mua Ngay"
     },
     "city": {
       "en": "City",
@@ -2315,6 +2323,10 @@
     "selectShippingAddress": {
       "en": "Select shipping address",
       "vi": "Chọn địa chỉ giao hàng"
+    },
+    "sessionExpired": {
+      "en": "Your checkout session has expired. Please try again.",
+      "vi": "Phiên thanh toán của bạn đã hết hạn. Vui lòng thử lại."
     },
     "shippingAddress": {
       "en": "Shipping Address",
@@ -3680,6 +3692,14 @@
       "en": "Add to Wishlist",
       "vi": "Thêm vào yêu thích"
     },
+    "buyNow": {
+      "en": "Buy Now",
+      "vi": "Mua Ngay"
+    },
+    "buyingNow": {
+      "en": "Processing...",
+      "vi": "Đang xử lý..."
+    },
     "description": {
       "en": "Description",
       "vi": "Mô tả"
@@ -3715,6 +3735,14 @@
     "quantity": {
       "en": "Quantity",
       "vi": "Số lượng"
+    },
+    "increaseQuantity": {
+      "en": "Increase quantity",
+      "vi": "Tăng số lượng"
+    },
+    "decreaseQuantity": {
+      "en": "Decrease quantity",
+      "vi": "Giảm số lượng"
     },
     "related": {
       "en": "Related products",
@@ -4653,7 +4681,7 @@
       },
       "updateProfile": {
         "en": "Update Profile",
-        "vi": "Cập nhật hồ sơ"
+        "vi": "Cập nhật thông tin"
       },
       "resetPassword": {
         "en": "Reset Password",
@@ -5543,8 +5571,8 @@
       "vi": "Đổi ngôn ngữ"
     },
     "user": {
-      "en": "User Profile",
-      "vi": "Hồ sơ người dùng"
+      "en": "Account",
+      "vi": "Tài khoản"
     },
     "login": {
       "en": "Login",

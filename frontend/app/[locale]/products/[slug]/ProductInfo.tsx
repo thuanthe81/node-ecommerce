@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { Product } from '@/lib/product-api';
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
-import { formatMoney, isContactForPrice, getContactForPriceText, getPricingGuidanceText } from '@/app/utils';
+import {
+  formatMoney,
+  isContactForPrice,
+  getContactForPriceText,
+  getPricingGuidanceText,
+} from '@/app/utils';
+import { createBuyNowSession } from '@/lib/checkout-session';
 
 interface ProductInfoProps {
   product: Product;
@@ -13,9 +20,11 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product }: ProductInfoProps) {
   const locale = useLocale();
+  const router = useRouter();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
   const [addedMessage, setAddedMessage] = useState(false);
   const t = useTranslations();
 
@@ -48,6 +57,26 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       setAdding(false);
     }
   };
+
+  const handleBuyNow = useCallback(async () => {
+    // Validate quantity (should already be validated by button disabled state)
+    if (quantity <= 0 || isNaN(quantity)) {
+      return;
+    }
+
+    setBuyingNow(true);
+    try {
+      // Create checkout session with product slug (not ID)
+      createBuyNowSession(product.slug, quantity);
+
+      // Navigate to checkout
+      router.push(`/${locale}/checkout`);
+    } catch (error) {
+      console.error('Failed to initiate Buy Now:', error);
+      alert(t('cart.failedAddToCart'));
+      setBuyingNow(false);
+    }
+  }, [product.slug, quantity, locale, router, t]);
 
   return (
     <div className="space-y-6">
@@ -151,7 +180,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Quantity Selector and Add to Cart */}
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4" id="quantity-selector">
           <label className="font-semibold">
             {t('product.quantity')}
           </label>
@@ -160,6 +189,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
               onClick={() => handleQuantityChange(quantity - 1)}
               className="px-4 py-2 hover:bg-gray-100"
               disabled={quantity <= 1}
+              aria-label={t('product.decreaseQuantity')}
             >
               -
             </button>
@@ -170,11 +200,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
               className="w-16 text-center border-x border-gray-300 py-2"
               min="1"
               max={isOutOfStock ? 99 : product.stockQuantity}
+              aria-label={t('product.quantity')}
             />
             <button
               onClick={() => handleQuantityChange(quantity + 1)}
               className="px-4 py-2 hover:bg-gray-100"
               disabled={quantity >= (isOutOfStock ? 99 : product.stockQuantity)}
+              aria-label={t('product.increaseQuantity')}
             >
               +
             </button>
@@ -191,6 +223,17 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             : addedMessage
             ? t('cart.added')
             : t('cart.addToCart')}
+        </button>
+
+        <button
+          onClick={handleBuyNow}
+          disabled={buyingNow || quantity <= 0 || isNaN(quantity)}
+          aria-label={buyingNow ? t('product.buyingNow') : t('product.buyNow')}
+          aria-busy={buyingNow}
+          aria-describedby="quantity-selector"
+          className="w-full bg-green-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {buyingNow ? t('product.buyingNow') : t('product.buyNow')}
         </button>
 
         {/* Zero-price product messaging */}

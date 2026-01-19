@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useCart } from '@/contexts/CartContext';
@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { orderApi, CreateOrderData } from '@/lib/order-api';
 import { userApi } from '@/lib/user-api';
 import { promotionApi } from '@/lib/promotion-api';
+import { productApi, EnhancedProduct } from '@/lib/product-api';
+import { getSession } from '@/lib/checkout-session';
 import CheckoutStepper from '@/components/CheckoutStepper';
 import ShippingAddressForm from '@/components/ShippingAddressForm';
 import ShippingMethodSelector from '@/components/ShippingMethodSelector';
@@ -22,13 +24,21 @@ export default function CheckoutContent() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const { cart, clearCart, syncing, syncResults, guestCartItems } = useCart();
+  const { cart, clearCart, syncing, syncResults, guestCartItems, addToCart } = useCart();
   const { user, isAuthenticated, isLoading } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [orderCompleted, setOrderCompleted] = useState(false);
+
+  // Buy Now state management
+  const [checkoutSource, setCheckoutSource] = useState<'buy-now' | 'cart'>('cart');
+  const [buyNowProduct, setBuyNowProduct] = useState<{
+    product: EnhancedProduct;
+    quantity: number;
+  } | null>(null);
+  const [loadingBuyNowProduct, setLoadingBuyNowProduct] = useState(false);
 
   // Form state
   const [email, setEmail] = useState('');
@@ -41,6 +51,15 @@ export default function CheckoutContent() {
   const [newBillingAddress, setNewBillingAddress] = useState<any>(null);
   const [useSameAddress, setUseSameAddress] = useState(true);
 
+  // Focus management - set focus to main heading when page loads
+  useEffect(() => {
+    const heading = document.querySelector('h1');
+    if (heading && heading instanceof HTMLElement) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus();
+    }
+  }, []);
+
   // Authentication check - redirect unauthenticated users to login
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -50,12 +69,64 @@ export default function CheckoutContent() {
     }
   }, [isAuthenticated, isLoading, router, locale, pathname]);
 
+  // Detect checkout source and load Buy Now product data
+  useEffect(() => {
+    const initializeCheckout = async () => {
+      console.log('[CheckoutContent] Initializing checkout...');
+
+      // Get checkout session
+      const session = getSession();
+      console.log('[CheckoutContent] Checkout session:', session);
+
+      if (session && session.source === 'buy-now' && session.product) {
+        console.log('[CheckoutContent] Buy Now checkout detected');
+        setCheckoutSource('buy-now');
+        setLoadingBuyNowProduct(true);
+
+        try {
+          // Load product data using slug
+          console.log('[CheckoutContent] Attempting to load product with slug:', session.product.id);
+          const product = await productApi.getProductBySlug(session.product.id);
+          console.log('[CheckoutContent] Buy Now product loaded:', product);
+
+          setBuyNowProduct({
+            product,
+            quantity: session.product.quantity,
+          });
+        } catch (err) {
+          console.error('[CheckoutContent] Failed to load Buy Now product:', err);
+          console.error('[CheckoutContent] Product slug that failed:', session.product.id);
+          console.error('[CheckoutContent] Error details:', err);
+          setError(tCheckout('sessionExpired'));
+          // Only redirect to home if user is authenticated
+          // If not authenticated, the authentication redirect will handle it
+          if (isAuthenticated) {
+            setTimeout(() => {
+              router.push(`/${locale}`);
+            }, 2000);
+          }
+        } finally {
+          setLoadingBuyNowProduct(false);
+        }
+      } else {
+        console.log('[CheckoutContent] Cart checkout detected');
+        setCheckoutSource('cart');
+      }
+    };
+
+    // Only initialize after authentication check is complete AND user is authenticated
+    if (!isLoading && isAuthenticated) {
+      initializeCheckout();
+    }
+  }, [isLoading, isAuthenticated, locale, router, tCheckout]);
+
   useEffect(() => {
     // Don't redirect if order was just completed
-    if (!orderCompleted && (!cart || cart.items.length === 0)) {
+    // Don't redirect if Buy Now checkout (doesn't use cart)
+    if (!orderCompleted && checkoutSource === 'cart' && (!cart || cart.items.length === 0)) {
       router.push(`/${locale}/cart`);
     }
-  }, [cart, router, locale, orderCompleted]);
+  }, [cart, router, locale, orderCompleted, checkoutSource]);
 
   useEffect(() => {
     if (user) {
@@ -222,10 +293,12 @@ export default function CheckoutContent() {
   };
 
   const handlePlaceOrder = async () => {
-    if (!cart) return;
+    // For Buy Now checkout, we don't need cart
+    if (checkoutSource === 'cart' && !cart) return;
 
     console.log('[CheckoutContent] handlePlaceOrder called');
     console.log('[CheckoutContent] Current state:', {
+      checkoutSource,
       user: !!user,
       shippingAddressId,
       billingAddressId,
@@ -315,7 +388,7 @@ export default function CheckoutContent() {
         shippingMethod,
         shippingCost: calculatedShippingCost,
         paymentMethod,
-        items: cart.items.map((item) => ({
+        items: checkoutItems.map((item) => ({
           productId: item.product.id,
           quantity: item.quantity,
         })),
@@ -331,9 +404,10 @@ export default function CheckoutContent() {
         const order = await orderApi.createOrder(orderData);
         console.log('[CheckoutContent] Order created successfully:', order.id);
 
-        // Use window.location for immediate redirect to prevent useEffect interference
-        // This causes a full page navigation which bypasses React's routing and useEffect hooks
-        // window.location.href = `/${locale}/orders/${order.id}/confirmation`;
+        // Don't clear session here - let the confirmation page handle it
+        // This allows the confirmation page to know if it was a Buy Now or Cart checkout
+
+        // Navigate to confirmation page
         router.push(`/${locale}/orders/${order.id}/confirmation`);
       } catch (err: any) {
         console.error('[CheckoutContent] Failed to create order:', err);
@@ -379,8 +453,46 @@ export default function CheckoutContent() {
     country: string;
   } | null>(null);
 
-  // Show loading state during authentication check or cart sync
-  if (isLoading || syncing) {
+  // Get items based on checkout source (memoized for performance)
+  const checkoutItems = useMemo(() => {
+    return checkoutSource === 'buy-now' && buyNowProduct
+      ? [{
+          id: `buy-now-${buyNowProduct.product.id}`,
+          product: buyNowProduct.product,
+          quantity: buyNowProduct.quantity,
+        }]
+      : (cart?.items || []);
+  }, [checkoutSource, buyNowProduct, cart?.items]);
+
+  // Check if cart contains zero-price products
+  const hasZeroPriceItems = useMemo(() => {
+    return checkoutItems.some(item => isContactForPrice(Number(item.product.price)));
+  }, [checkoutItems]);
+
+  // Calculate order totals (memoized for performance)
+  const orderTotals = useMemo(() => {
+    // Calculate subtotal only from non-zero price items
+    const subtotal = checkoutItems.reduce(
+      (sum, item) => {
+        const price = Number(item.product.price);
+        return sum + (price > 0 ? price * item.quantity : 0);
+      },
+      0,
+    );
+
+    // Use calculated shipping cost or default to 0
+    const shippingCost = calculatedShippingCost;
+    const tax = subtotal * 0.1;
+    const discountAmount = appliedPromo?.discountAmount || 0;
+    const total = Math.max(0, subtotal + shippingCost + tax - discountAmount);
+
+    return { subtotal, shippingCost, tax, discountAmount, total };
+  }, [checkoutItems, calculatedShippingCost, appliedPromo]);
+
+  const { subtotal, shippingCost, tax, discountAmount, total } = orderTotals;
+
+  // Show loading state during authentication check, cart sync, or Buy Now product loading
+  if (isLoading || syncing || loadingBuyNowProduct) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -400,27 +512,15 @@ export default function CheckoutContent() {
     return null;
   }
 
-  if (!cart || cart.items.length === 0) {
+  // For cart checkout, ensure cart has items
+  if (checkoutSource === 'cart' && (!cart || cart.items.length === 0)) {
     return null;
   }
 
-  // Check if cart contains zero-price products
-  const hasZeroPriceItems = cart.items.some(item => isContactForPrice(Number(item.product.price)));
-
-  // Calculate subtotal only from non-zero price items
-  const subtotal = cart.items.reduce(
-    (sum, item) => {
-      const price = Number(item.product.price);
-      return sum + (price > 0 ? price * item.quantity : 0);
-    },
-    0,
-  );
-
-  // Use calculated shipping cost or default to 0
-  const shippingCost = calculatedShippingCost;
-  const tax = subtotal * 0.1;
-  const discountAmount = appliedPromo?.discountAmount || 0;
-  const total = Math.max(0, subtotal + shippingCost + tax - discountAmount);
+  // For Buy Now checkout, ensure product is loaded
+  if (checkoutSource === 'buy-now' && !buyNowProduct) {
+    return null;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -475,16 +575,53 @@ export default function CheckoutContent() {
       )}
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div
+          className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+          role="alert"
+          aria-live="assertive"
+          tabIndex={-1}
+          ref={(el) => {
+            if (el && error) {
+              el.focus();
+            }
+          }}
+        >
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold mb-4">{tCheckout('orderSummary')}</h3>
+            <div className="space-y-4 mb-6">
+              {checkoutItems.map((item) => (
+                <div key={item.id} className="flex items-center space-x-4">
+                  <img
+                    src={item.product.images[0]?.url || '/placeholder.png'}
+                    alt={locale == 'vi' ? item.product.nameVi : item.product.nameEn}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {locale == 'vi' ? item.product.nameVi : item.product.nameEn}
+                    </div>
+                    <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
+                  </div>
+                  <div className="font-semibold">
+                    {isContactForPrice(Number(item.product.price)) ? (
+                      <span className="text-blue-600">{getPriceTBDText(locale)}</span>
+                    ) : (
+                      formatMoney(Number(item.product.price) * item.quantity)
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
           {/* Step 1: Shipping */}
           {currentStep === 1 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <>
               {!user && (
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
@@ -528,18 +665,18 @@ export default function CheckoutContent() {
                   {tCommon('next')}
                 </button>
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 2: Shipping Method */}
           {currentStep === 2 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <>
               <ShippingMethodSelector
                 selectedMethod={shippingMethod}
                 onMethodSelect={handleShippingMethodSelect}
                 onRatesCalculated={handleRatesCalculated}
                 shippingAddress={currentShippingAddress || undefined}
-                cartItems={cart.items}
+                cartItems={checkoutItems}
                 orderValue={subtotal}
                 locale={locale}
               />
@@ -559,39 +696,12 @@ export default function CheckoutContent() {
                   {tCommon('next')}
                 </button>
               </div>
-            </div>
+            </>
           )}
 
           {/* Step 3: Review */}
           {currentStep === 3 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">{tCheckout('orderSummary')}</h3>
-
-              <div className="space-y-4 mb-6">
-                {cart.items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4">
-                    <img
-                      src={item.product.images[0]?.url || '/placeholder.png'}
-                      alt={locale == 'vi' ? item.product.nameVi : item.product.nameEn}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        {locale == 'vi' ? item.product.nameVi : item.product.nameEn}
-                      </div>
-                      <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
-                    </div>
-                    <div className="font-semibold">
-                      {isContactForPrice(Number(item.product.price)) ? (
-                        <span className="text-blue-600">{getPriceTBDText(locale)}</span>
-                      ) : (
-                        formatMoney(Number(item.product.price) * item.quantity)
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
+            <>
               {/* Message for zero-price items */}
               {hasZeroPriceItems && (
                 <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -650,14 +760,15 @@ export default function CheckoutContent() {
                   {loading ? tCheckout('processing') : tCheckout('placeOrder')}
                 </button>
               </div>
-            </div>
+            </>
           )}
+          </div>
         </div>
 
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-            <h3 className="text-lg font-semibold mb-4">{tCart('orderSummary')}</h3>
+            {/*<h3 className="text-lg font-semibold mb-4">{tCart('orderSummary')}</h3>*/}
 
             {/* Promotion Code Input */}
             <div className="mb-4">

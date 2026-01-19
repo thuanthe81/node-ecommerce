@@ -389,7 +389,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
 
     handleLogin();
-  }, [isAuthenticated, previousAuthState, syncGuestCartToBackend]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, previousAuthState]);
 
   const addToCart = async (productId: string, quantity: number) => {
     try {
