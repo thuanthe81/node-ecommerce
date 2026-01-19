@@ -44,6 +44,7 @@ export default function HomeContent({ locale, initialData }: HomeContentProps) {
         if (initialData.featuredProducts && initialData.featuredProducts.length >= 3) {
           const images: CarouselImage[] = initialData.featuredProducts.map((product: any) => ({
             id: product.id,
+            link: location.origin + '/' + locale + '/products/' + product.slug,
             url: product.images?.[0]?.url || '/placeholder-product.jpg',
             altTextEn: product.images?.[0]?.altTextEn || product.nameEn,
             altTextVi: product.images?.[0]?.altTextVi || product.nameVi || product.nameEn,

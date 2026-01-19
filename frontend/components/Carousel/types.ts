@@ -9,6 +9,8 @@
 export interface CarouselImage {
   id: string;
   url: string;
+  /** Optional link to navigate to when image is clicked */
+  link?: string;
   altTextEn: string;
   altTextVi: string;
 }
@@ -19,7 +21,6 @@ export interface CarouselImage {
 export interface CarouselProps {
   /** Array of images to display in the carousel */
   images: CarouselImage[];
-
   // Display options
   /** Whether to show thumbnail strip below main image */
   showThumbnails?: boolean;

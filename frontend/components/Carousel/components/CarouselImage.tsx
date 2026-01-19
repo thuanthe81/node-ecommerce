@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CarouselImageProps } from '../types';
 import { SvgSpinner, SvgImagePlaceholderEEE } from '../../Svgs';
+import Link from 'next/link';
 
 /**
  * CarouselImage sub-component
@@ -68,15 +69,17 @@ const CarouselImage: React.FC<CarouselImageProps> = ({
       )}
 
       {/* Actual image */}
-      <img
-        src={image.url}
-        alt={altText}
-        className={`w-full h-full object-contain object-center bg-black`}
-        style={{opacity: 1}}
-        onLoad={handleLoad}
-        onError={handleError}
-        loading={isActive ? 'eager' : 'lazy'}
-      />
+      <Link href={image.link || '#'}>
+        <img
+          src={image.url}
+          alt={altText}
+          className={`w-full h-full object-contain object-center bg-black`}
+          style={{opacity: 1}}
+          onLoad={handleLoad}
+          onError={handleError}
+          loading={isActive ? 'eager' : 'lazy'}
+        />
+      </Link>
     </div>
   );
 };
