@@ -151,7 +151,7 @@ export default function SearchFilterBar({ className = '' }: SearchFilterBarProps
       const displayName = categoryName ? (locale === 'vi' ? categoryName.nameVi : categoryName.nameEn) : '';
       message = t('filteringBySearchAndCategory', { search: searchQuery, category: displayName });
     } else if (hasSearch) {
-      message = t('searchingProducts', { search: searchQuery });
+      message = t('searchingProducts');
     } else if (hasCategory) {
       const categoryName = categories.find(c => c.id === selectedCategoryId);
       const displayName = categoryName ? (locale === 'vi' ? categoryName.nameVi : categoryName.nameEn) : '';

@@ -2632,10 +2632,6 @@
       "en": "Products",
       "vi": "Sản phẩm"
     },
-    "noProductsFound": {
-      "en": "No products found",
-      "vi": "Không tìm thấy sản phẩm"
-    },
     "register": {
       "en": "Register",
       "vi": "Đăng ký"
@@ -2661,8 +2657,12 @@
       "vi": "Tìm kiếm sản phẩm..."
     },
     "searchingProducts": {
-      "en": "Searching products for \"{search}\"",
-      "vi": "Đang tìm kiếm sản phẩm với từ khóa \"{search}\""
+      "en": "Searching products...",
+      "vi": "Đang tìm kiếm sản phẩm..."
+    },
+    "noProductsFound": {
+      "en": "No products found",
+      "vi": "Không tìm thấy sản phẩm"
     },
     "selectCategory": {
       "en": "Select Category",

@@ -10,7 +10,7 @@ const fetcher = async (url: string, params: ProductQueryParams): Promise<Product
 export function useProducts(params: ProductQueryParams, initialData?: ProductsResponse | null) {
   const key = ['products', params];
 
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
     key,
     () => fetcher('products', params),
     {
@@ -21,8 +21,10 @@ export function useProducts(params: ProductQueryParams, initialData?: ProductsRe
     }
   );
 
-  // If we have initial data or actual data, we should not be in loading state
-  const actuallyLoading = isLoading && !initialData && !data;
+  // isLoading is true only on initial mount
+  // isValidating is true whenever data is being fetched (including revalidations)
+  // We want to show loading state when fetching new data, even if old data exists
+  const actuallyLoading = isValidating;
 
   return {
     products: data?.data || [],

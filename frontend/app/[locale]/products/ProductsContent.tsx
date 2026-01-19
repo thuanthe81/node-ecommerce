@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { ProductQueryParams, ProductsResponse } from '@/lib/product-api';
 import { useProducts } from '@/hooks/useProducts';
@@ -15,6 +16,7 @@ interface ProductsContentProps {
 
 export default function ProductsContent({ initialData, initialParams }: ProductsContentProps) {
   const searchParams = useSearchParams();
+  const t = useTranslations('common');
 
   const params: ProductQueryParams = useMemo(() => ({
     page: parseInt(searchParams.get('page') || '1'),
@@ -35,8 +37,20 @@ export default function ProductsContent({ initialData, initialParams }: Products
   const { products, meta, isLoading } = useProducts(params, initialData);
 
   // Show loading only if we don't have any data (neither initial nor from SWR)
-  if (isLoading && products.length === 0) {
-    return <ProductGridSkeleton count={12} />;
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">{t('searchingProducts')}</p>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">{t('noProductsFound')}</p>
+      </div>
+    );
   }
 
   return (
