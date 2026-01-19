@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 
-export default function NotFoundPage() {
+export default function NotFound() {
   const locale = useLocale();
   const t = useTranslations('notFound');
 
