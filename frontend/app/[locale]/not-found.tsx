@@ -1,9 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 export default function NotFoundPage() {
+  const locale = useLocale();
   const t = useTranslations('notFound');
 
   return (
@@ -28,7 +29,7 @@ export default function NotFoundPage() {
 
         {/* Home Page Button */}
         <Link
-          href="/"
+          href={`/${locale}`}
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px] min-w-[44px]"
           aria-label={t('goHome')}
         >
