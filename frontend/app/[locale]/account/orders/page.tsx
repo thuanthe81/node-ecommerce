@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { orderApi, Order } from '@/lib/order-api';
@@ -12,6 +13,8 @@ import { SvgErrorEEE, SvgShoppingBag } from '@/components/Svgs';
 export default function OrdersPage() {
   const params = useParams();
   const locale = (params?.locale as string) || 'en';
+  const t = useTranslations('account');
+  const tCommon = useTranslations('common');
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,7 +40,7 @@ export default function OrdersPage() {
         setOrders(sortedOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
-        setError('Unable to load orders. Please try again.');
+        setError(t('unableToLoadOrders'));
       } finally {
         setIsLoadingOrders(false);
       }
@@ -59,7 +62,7 @@ export default function OrdersPage() {
         })
         .catch(err => {
           console.error('Error fetching orders:', err);
-          setError('Unable to load orders. Please try again.');
+          setError(t('unableToLoadOrders'));
         })
         .finally(() => {
           setIsLoadingOrders(false);
@@ -72,7 +75,7 @@ export default function OrdersPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -87,18 +90,18 @@ export default function OrdersPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
           <Link href={`/${locale}/account`} className="text-blue-600 hover:text-blue-800">
-            ← Back to Account
+            {t('backToAccount')}
           </Link>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('orderHistory')}</h1>
 
         <div className="bg-white rounded-lg shadow p-6">
           {/* Loading State */}
           {isLoadingOrders && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading your orders...</p>
+              <p className="mt-4 text-gray-600">{t('loadingYourOrders')}</p>
             </div>
           )}
 
@@ -108,14 +111,14 @@ export default function OrdersPage() {
               <SvgErrorEEE
                 className="mx-auto h-12 w-12 text-red-400"
               />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">Error loading orders</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">{t('errorLoadingOrders')}</h3>
               <p className="mt-1 text-sm text-gray-500">{error}</p>
               <div className="mt-6">
                 <button
                   onClick={handleRetry}
                   className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Retry
+                  {tCommon('retry')}
                 </button>
               </div>
             </div>
@@ -127,16 +130,16 @@ export default function OrdersPage() {
               <SvgShoppingBag
                 className="mx-auto h-12 w-12 text-gray-400"
               />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No orders yet</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">{t('noOrders')}</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Start shopping to see your orders here
+                {t('startShoppingToSeeOrders')}
               </p>
               <div className="mt-6">
                 <Link
                   href={`/${locale}`}
                   className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  Start Shopping
+                  {t('startShopping')}
                 </Link>
               </div>
             </div>

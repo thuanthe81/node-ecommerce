@@ -259,7 +259,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             {t('common.category')}
           </span>
           <Link
-            href={`/${locale}/categories/${product.category.slug}`}
+            href={`/${locale}/products?categoryId=${product.category.id}`}
             className="font-medium text-blue-600 hover:underline"
           >
             {categoryName}

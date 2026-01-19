@@ -32,9 +32,17 @@
       "en": "← Back to Account",
       "vi": "← Quay lại Tài khoản"
     },
+    "changeYourPassword": {
+      "en": "Change your password",
+      "vi": "Thay đổi mật khẩu của bạn"
+    },
     "city": {
       "en": "City",
       "vi": "Thành phố"
+    },
+    "confirmNewPassword": {
+      "en": "Confirm New Password",
+      "vi": "Xác nhận mật khẩu mới"
     },
     "confirmDeleteAddress": {
       "en": "Are you sure you want to delete this address?",
@@ -43,6 +51,10 @@
     "country": {
       "en": "Country",
       "vi": "Quốc gia"
+    },
+    "currentPassword": {
+      "en": "Current Password",
+      "vi": "Mật khẩu hiện tại"
     },
     "dashboard": {
       "en": "Dashboard",
@@ -68,6 +80,10 @@
       "en": "Email cannot be changed",
       "vi": "Email không thể thay đổi"
     },
+    "errorLoadingOrders": {
+      "en": "Error loading orders",
+      "vi": "Lỗi khi tải đơn hàng"
+    },
     "failedDeleteAddress": {
       "en": "Failed to delete address",
       "vi": "Xóa địa chỉ thất bại"
@@ -79,6 +95,10 @@
     "failedSaveAddress": {
       "en": "Failed to save address",
       "vi": "Lưu địa chỉ thất bại"
+    },
+    "failedUpdatePassword": {
+      "en": "Failed to update password",
+      "vi": "Cập nhật mật khẩu thất bại"
     },
     "failedUpdateProfile": {
       "en": "Failed to update profile",
@@ -100,9 +120,33 @@
       "en": "Loading...",
       "vi": "Đang tải..."
     },
+    "loadingYourOrders": {
+      "en": "Loading your orders...",
+      "vi": "Đang tải đơn hàng của bạn..."
+    },
+    "managePersonalInfo": {
+      "en": "Manage your personal information",
+      "vi": "Quản lý thông tin cá nhân của bạn"
+    },
+    "manageShippingAddresses": {
+      "en": "Manage your shipping addresses",
+      "vi": "Quản lý địa chỉ giao hàng của bạn"
+    },
+    "myAccount": {
+      "en": "My Account",
+      "vi": "Tài khoản của tôi"
+    },
     "myAddresses": {
       "en": "My Addresses",
       "vi": "Địa chỉ của tôi"
+    },
+    "newPassword": {
+      "en": "New Password",
+      "vi": "Mật khẩu mới"
+    },
+    "newPasswordsDoNotMatch": {
+      "en": "New passwords do not match",
+      "vi": "Mật khẩu mới không khớp"
     },
     "noAddresses": {
       "en": "No addresses saved yet",
@@ -124,6 +168,10 @@
       "en": "Order Number",
       "vi": "Mã đơn hàng"
     },
+    "orders": {
+      "en": "Orders",
+      "vi": "Đơn hàng"
+    },
     "orderStatus": {
       "en": "Status",
       "vi": "Trạng thái"
@@ -131,6 +179,22 @@
     "orderTotal": {
       "en": "Total",
       "vi": "Tổng tiền"
+    },
+    "password": {
+      "en": "Password",
+      "vi": "Mật khẩu"
+    },
+    "passwordMinLength": {
+      "en": "Must be at least 8 characters long",
+      "vi": "Phải có ít nhất 8 ký tự"
+    },
+    "passwordMinLengthError": {
+      "en": "Password must be at least 8 characters long",
+      "vi": "Mật khẩu phải có ít nhất 8 ký tự"
+    },
+    "passwordUpdatedSuccess": {
+      "en": "Password updated successfully",
+      "vi": "Cập nhật mật khẩu thành công"
     },
     "phone": {
       "en": "Phone",
@@ -168,13 +232,37 @@
       "en": "Settings",
       "vi": "Cài đặt"
     },
+    "startShopping": {
+      "en": "Start Shopping",
+      "vi": "Bắt đầu mua sắm"
+    },
+    "startShoppingToSeeOrders": {
+      "en": "Start shopping to see your orders here",
+      "vi": "Bắt đầu mua sắm để xem đơn hàng của bạn tại đây"
+    },
     "state": {
       "en": "State/Province",
       "vi": "Tiểu bang/Tỉnh"
     },
+    "unableToLoadOrders": {
+      "en": "Unable to load orders. Please try again.",
+      "vi": "Không thể tải đơn hàng. Vui lòng thử lại."
+    },
+    "updatePassword": {
+      "en": "Update Password",
+      "vi": "Cập nhật mật khẩu"
+    },
+    "updating": {
+      "en": "Updating...",
+      "vi": "Đang cập nhật..."
+    },
     "viewOrder": {
       "en": "View Order",
       "vi": "Xem đơn hàng"
+    },
+    "viewOrderHistory": {
+      "en": "View your order history",
+      "vi": "Xem lịch sử đơn hàng của bạn"
     },
     "wishlist": {
       "en": "Wishlist",
@@ -2611,6 +2699,10 @@
     "previousPage": {
       "en": "Previous page",
       "vi": "Trang trước"
+    },
+    "retry": {
+      "en": "Retry",
+      "vi": "Thử lại"
     },
     "priceHighToLow": {
       "en": "Price: High to low",

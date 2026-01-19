@@ -10,7 +10,7 @@ import { SvgUser, SvgLocation, SvgShoppingBag, SvgLockEEE } from '@/components/S
 export default function AccountPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const t = useTranslations();
+  const t = useTranslations('account');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -23,7 +23,7 @@ export default function AccountPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Account</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('myAccount')}</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
@@ -51,8 +51,8 @@ export default function AccountPage() {
                 />
               </div>
               <div className="ml-4">
-                <h2 className="text-lg font-semibold text-gray-900">Profile</h2>
-                <p className="text-sm text-gray-500">Manage your personal information</p>
+                <h2 className="text-lg font-semibold text-gray-900">{t('profile')}</h2>
+                <p className="text-sm text-gray-500">{t('managePersonalInfo')}</p>
               </div>
             </div>
             <div className="text-sm text-gray-600">
@@ -75,8 +75,8 @@ export default function AccountPage() {
                 />
               </div>
               <div className="ml-4">
-                <h2 className="text-lg font-semibold text-gray-900">Addresses</h2>
-                <p className="text-sm text-gray-500">Manage your shipping addresses</p>
+                <h2 className="text-lg font-semibold text-gray-900">{t('addresses')}</h2>
+                <p className="text-sm text-gray-500">{t('manageShippingAddresses')}</p>
               </div>
             </div>
           </Link>
@@ -93,8 +93,8 @@ export default function AccountPage() {
                 />
               </div>
               <div className="ml-4">
-                <h2 className="text-lg font-semibold text-gray-900">Orders</h2>
-                <p className="text-sm text-gray-500">View your order history</p>
+                <h2 className="text-lg font-semibold text-gray-900">{t('orders')}</h2>
+                <p className="text-sm text-gray-500">{t('viewOrderHistory')}</p>
               </div>
             </div>
           </Link>
@@ -111,8 +111,8 @@ export default function AccountPage() {
                 />
               </div>
               <div className="ml-4">
-                <h2 className="text-lg font-semibold text-gray-900">Password</h2>
-                <p className="text-sm text-gray-500">Change your password</p>
+                <h2 className="text-lg font-semibold text-gray-900">{t('password')}</h2>
+                <p className="text-sm text-gray-500">{t('changeYourPassword')}</p>
               </div>
             </div>
           </Link>
