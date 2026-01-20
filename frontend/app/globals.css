@@ -1357,8 +1357,16 @@ img {
   @apply pl-6 mb-2;
 }
 
-.rich-text-editor .ql-editor li {
+.rich-text-editor .ql-editor li[data-list='ordered'] {
   @apply mb-1;
+  padding-left: 0;
+  font-weight: bold;
+  font-size: 22px;
+  margin-top: 14px;
+}
+
+.rich-text-editor .ql-editor li[data-list='bullet'] {
+  @apply pl-2 mb-1;
 }
 
 .rich-text-editor .ql-editor a {
