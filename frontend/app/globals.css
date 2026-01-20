@@ -1387,7 +1387,7 @@ img {
 /* Ensure lists display correctly when rendered with dangerouslySetInnerHTML */
 .prose ul,
 .prose ol {
-  @apply pl-6 mb-4;
+  @apply pl-6 mb-2;
 }
 
 .prose ul {
@@ -1403,6 +1403,7 @@ img {
 .prose li {
   @apply mb-2;
   display: list-item;
+  position: relative;
 }
 
 .prose ul ul,
@@ -1430,7 +1431,7 @@ img {
   list-style-type: disc;
   list-style-position: outside;
   display: list-item;
-  @apply ml-6;
+  @apply ml-4;
 }
 
 /* Ordered lists with CSS counter for proper numbering */
@@ -1441,15 +1442,25 @@ img {
 .prose li[data-list="ordered"] {
   list-style-type: none;
   display: list-item;
-  @apply ml-6;
+  @apply ml-0;
   position: relative;
   counter-increment: list-0;
+  font-size: 22px;
+  margin-top: 14px;
 }
 
-.prose li[data-list="ordered"]::before {
-  content: counter(list-0) ". ";
+.prose li[data-list="ordered"] > .ql-ui {
+}
+
+.prose li[data-list="ordered"] > .ql-ui::before {
+  content: counter(list-0) ".";
   position: absolute;
-  left: -1.5rem;
+  width: 28px;
+  left: -2.1rem;
+  margin-right: .3em;
+  text-align: right;
+  font-weight: bold;
+  display: inline-block;
 }
 
 /* Quill indent levels for bullet lists */
