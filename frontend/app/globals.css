@@ -1360,9 +1360,12 @@ img {
 .rich-text-editor .ql-editor li[data-list='ordered'] {
   @apply mb-1;
   padding-left: 0;
-  font-weight: bold;
   font-size: 22px;
   margin-top: 14px;
+}
+
+.rich-text-editor .ql-editor li[data-list='ordered'] > .ql-ui:before {
+  font-weight: bold;
 }
 
 .rich-text-editor .ql-editor li[data-list='bullet'] {
