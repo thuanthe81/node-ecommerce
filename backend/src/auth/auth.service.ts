@@ -4,6 +4,8 @@ import {
   UnauthorizedException,
   BadRequestException,
   Logger,
+  OnModuleInit,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,8 +23,9 @@ import { EmailValidationErrorHandler } from '../common/utils/email-validation-er
 import { OAuthUserData, AuthResponse } from './dto/oauth-user.dto';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AuthService.name);
+  private tokenCleanupInterval: NodeJS.Timeout;
 
   constructor(
     private prisma: PrismaService,
@@ -30,6 +33,18 @@ export class AuthService {
     private configService: ConfigService,
     private emailEventPublisher: EmailEventPublisher,
   ) {}
+
+  onModuleInit() {
+    // Run cleanup every hour (tokens have 7-day TTL)
+    this.tokenCleanupInterval = setInterval(
+      () => RefreshTokenStore.cleanup(),
+      60 * 60 * 1000,
+    );
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.tokenCleanupInterval);
+  }
 
   async register(registerDto: RegisterDto) {
     const { email, password, firstName, lastName } = registerDto;

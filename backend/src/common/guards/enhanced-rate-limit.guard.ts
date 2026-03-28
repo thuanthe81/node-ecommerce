@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ENHANCED_RATE_LIMIT_KEY, EnhancedRateLimitOptions } from '../decorators/enhanced-rate-limit.decorator';
@@ -11,16 +11,21 @@ interface RateLimitEntry {
 }
 
 @Injectable()
-export class EnhancedRateLimitGuard implements CanActivate {
+export class EnhancedRateLimitGuard implements CanActivate, OnModuleDestroy {
   private readonly logger = new Logger(EnhancedRateLimitGuard.name);
   private readonly store: Map<string, RateLimitEntry> = new Map();
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(
     private reflector: Reflector,
     private configService: ConfigService,
   ) {
     // Clean up expired entries every 5 minutes
-    setInterval(() => this.cleanupExpiredEntries(), 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(() => this.cleanupExpiredEntries(), 5 * 60 * 1000);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.cleanupInterval);
   }
 
   canActivate(context: ExecutionContext): boolean {

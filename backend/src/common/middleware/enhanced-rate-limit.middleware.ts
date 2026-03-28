@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, NestMiddleware, HttpException, HttpStatus, Logger, OnModuleDestroy } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
 
@@ -19,10 +19,11 @@ interface RateLimitStore {
 }
 
 @Injectable()
-export class EnhancedRateLimitMiddleware implements NestMiddleware {
+export class EnhancedRateLimitMiddleware implements NestMiddleware, OnModuleDestroy {
   private readonly logger = new Logger(EnhancedRateLimitMiddleware.name);
   private readonly store: RateLimitStore = {};
   private readonly config: RateLimitConfig;
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(private configService: ConfigService) {
     this.config = {
@@ -47,7 +48,11 @@ export class EnhancedRateLimitMiddleware implements NestMiddleware {
     };
 
     // Clean up expired entries every 5 minutes
-    setInterval(() => this.cleanupExpiredEntries(), 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(() => this.cleanupExpiredEntries(), 5 * 60 * 1000);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.cleanupInterval);
   }
 
   use(req: Request, res: Response, next: NextFunction) {

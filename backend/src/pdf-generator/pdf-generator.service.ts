@@ -239,105 +239,108 @@ export class PDFGeneratorService implements OnModuleInit {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const page = await this.createPageWithRetry();
+      let page: puppeteer.Page | undefined;
+      try {
+        page = await this.createPageWithRetry();
 
-      // Set page format for A4 printing
-      await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
+        // Set page format for A4 printing
+        await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
-      // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
+        // Generate HTML content using template engine with document structure
+        let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
-      // Enhance HTML with accessibility features
-      htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
-      htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
+        // Enhance HTML with accessibility features
+        htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
+        htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
 
-      // Add device optimization features
-      htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
+        // Add device optimization features
+        htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
 
-      // Set HTML content
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        // Set HTML content
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-      // Generate accessibility metadata
-      const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
+        // Generate accessibility metadata
+        const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
 
-      // Generate PDF with print-optimized settings and accessibility features
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20mm',
-          right: '15mm',
-          bottom: '20mm',
-          left: '15mm',
-        },
-        displayHeaderFooter: true,
-        headerTemplate: '<div></div>', // Empty header
-        footerTemplate: `
-          <div style="font-size: 10px; width: 100%; text-align: center; color: #666;" role="contentinfo" aria-label="Page information">
-            <span class="pageNumber"></span> / <span class="totalPages"></span>
-          </div>
-        `,
-        // Add accessibility metadata to PDF
-        tagged: true, // Enable tagged PDF for screen readers
-      });
-
-      await this.closeBrowser();
-
-      // Generate unique filename
-      const timestamp = Date.now();
-      const fileName = `order-${orderData.orderNumber}-${timestamp}.pdf`;
-      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
-
-      // Ensure directory exists
-      const uploadDir = path.dirname(filePath);
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      const duration = Date.now() - startTime;
-
-      // Log successful completion
-      if (auditId) {
-        await this.auditService.logPDFGeneration(
-          orderData.orderNumber,
-          orderData.customerInfo.email,
-          locale,
-          'order',
-          'completed',
-          {
-            fileSize: pdfBuffer.length,
-            filePath,
-            itemCount: orderData.items.length,
-            totalAmount: orderData.pricing.total,
-            paymentMethod: orderData.paymentMethod.type,
+        // Generate PDF with print-optimized settings and accessibility features
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: {
+            top: '20mm',
+            right: '15mm',
+            bottom: '20mm',
+            left: '15mm',
           },
-          duration
-        );
-      }
+          displayHeaderFooter: true,
+          headerTemplate: '<div></div>', // Empty header
+          footerTemplate: `
+            <div style="font-size: 10px; width: 100%; text-align: center; color: #666;" role="contentinfo" aria-label="Page information">
+              <span class="pageNumber"></span> / <span class="totalPages"></span>
+            </div>
+          `,
+          // Add accessibility metadata to PDF
+          tagged: true, // Enable tagged PDF for screen readers
+        });
 
-      // Record performance metric
-      this.monitoringService.recordPerformanceMetric('pdf_generation', duration, true, {
-        orderNumber: orderData.orderNumber,
-        fileSize: pdfBuffer.length,
-        locale,
-      });
+        // Generate unique filename
+        const timestamp = Date.now();
+        const fileName = `order-${orderData.orderNumber}-${timestamp}.pdf`;
+        const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
-      this.logger.log(`PDF generated successfully: ${filePath} (${duration}ms)`);
+        // Ensure directory exists
+        const uploadDir = path.dirname(filePath);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
 
-      return {
-        success: true,
-        filePath,
-        fileName,
-        fileSize: pdfBuffer.length,
-        metadata: {
-          generatedAt: new Date(),
-          locale,
+        // Save PDF to file
+        fs.writeFileSync(filePath, pdfBuffer);
+
+        const duration = Date.now() - startTime;
+
+        // Log successful completion
+        if (auditId) {
+          await this.auditService.logPDFGeneration(
+            orderData.orderNumber,
+            orderData.customerInfo.email,
+            locale,
+            'order',
+            'completed',
+            {
+              fileSize: pdfBuffer.length,
+              filePath,
+              itemCount: orderData.items.length,
+              totalAmount: orderData.pricing.total,
+              paymentMethod: orderData.paymentMethod.type,
+            },
+            duration
+          );
+        }
+
+        // Record performance metric
+        this.monitoringService.recordPerformanceMetric('pdf_generation', duration, true, {
           orderNumber: orderData.orderNumber,
-        },
-      };
+          fileSize: pdfBuffer.length,
+          locale,
+        });
+
+        this.logger.log(`PDF generated successfully: ${filePath} (${duration}ms)`);
+
+        return {
+          success: true,
+          filePath,
+          fileName,
+          fileSize: pdfBuffer.length,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      } finally {
+        await page?.close();
+      }
     } catch (error) {
       const duration = Date.now() - startTime;
 
@@ -438,77 +441,80 @@ export class PDFGeneratorService implements OnModuleInit {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const page = await this.createPageWithRetry();
+      let page: puppeteer.Page | undefined;
+      try {
+        page = await this.createPageWithRetry();
 
-      // Set page format for A4 printing
-      await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
+        // Set page format for A4 printing
+        await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
-      // Generate HTML content using template engine for invoice with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'invoice');
+        // Generate HTML content using template engine for invoice with document structure
+        let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'invoice');
 
-      // Enhance HTML with accessibility features
-      htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
-      htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
+        // Enhance HTML with accessibility features
+        htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
+        htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
 
-      // Add device optimization features
-      htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
+        // Add device optimization features
+        htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
 
-      // Set HTML content
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        // Set HTML content
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-      // Generate accessibility metadata
-      const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
+        // Generate accessibility metadata
+        const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
 
-      // Generate PDF with print-optimized settings and accessibility features
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20mm',
-          right: '15mm',
-          bottom: '20mm',
-          left: '15mm',
-        },
-        displayHeaderFooter: true,
-        headerTemplate: '<div></div>', // Empty header
-        footerTemplate: `
-          <div style="font-size: 10px; width: 100%; text-align: center; color: #666;" role="contentinfo" aria-label="Page information">
-            <span class="pageNumber"></span> / <span class="totalPages"></span>
-          </div>
-        `,
-        // Add accessibility metadata to PDF
-        tagged: true, // Enable tagged PDF for screen readers
-      });
+        // Generate PDF with print-optimized settings and accessibility features
+        const pdfBuffer = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          margin: {
+            top: '20mm',
+            right: '15mm',
+            bottom: '20mm',
+            left: '15mm',
+          },
+          displayHeaderFooter: true,
+          headerTemplate: '<div></div>', // Empty header
+          footerTemplate: `
+            <div style="font-size: 10px; width: 100%; text-align: center; color: #666;" role="contentinfo" aria-label="Page information">
+              <span class="pageNumber"></span> / <span class="totalPages"></span>
+            </div>
+          `,
+          // Add accessibility metadata to PDF
+          tagged: true, // Enable tagged PDF for screen readers
+        });
 
-      await this.closeBrowser();
+        // Generate unique filename for invoice
+        const timestamp = Date.now();
+        const fileName = `invoice-${orderData.orderNumber}-${timestamp}.pdf`;
+        const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
-      // Generate unique filename for invoice
-      const timestamp = Date.now();
-      const fileName = `invoice-${orderData.orderNumber}-${timestamp}.pdf`;
-      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
+        // Ensure directory exists
+        const uploadDir = path.dirname(filePath);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
 
-      // Ensure directory exists
-      const uploadDir = path.dirname(filePath);
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+        // Save PDF to file
+        fs.writeFileSync(filePath, pdfBuffer);
+
+        this.logger.log(`Invoice PDF generated successfully: ${filePath}`);
+
+        return {
+          success: true,
+          filePath,
+          fileName,
+          fileSize: pdfBuffer.length,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      } finally {
+        await page?.close();
       }
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      this.logger.log(`Invoice PDF generated successfully: ${filePath}`);
-
-      return {
-        success: true,
-        filePath,
-        fileName,
-        fileSize: pdfBuffer.length,
-        metadata: {
-          generatedAt: new Date(),
-          locale,
-          orderNumber: orderData.orderNumber,
-        },
-      };
     } catch (error) {
       this.logger.error(`Failed to generate invoice PDF for order ${orderData.orderNumber}:`, error);
       return {
@@ -664,71 +670,74 @@ export class PDFGeneratorService implements OnModuleInit {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const page = await this.createPageWithRetry();
+      let page: puppeteer.Page | undefined;
+      try {
+        page = await this.createPageWithRetry();
 
-      // Set page format for A4 printing
-      await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
+        // Set page format for A4 printing
+        await page.setViewport({ width: 794, height: 1123 }); // A4 dimensions in pixels at 96 DPI
 
-      // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
+        // Generate HTML content using template engine with document structure
+        let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
-      // Enhance HTML with accessibility features
-      htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
-      htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
+        // Enhance HTML with accessibility features
+        htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
+        htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
 
-      // Add device optimization features
-      htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
+        // Add device optimization features
+        htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
 
-      // Set HTML content
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        // Set HTML content
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-      // Generate accessibility metadata
-      const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
+        // Generate accessibility metadata
+        const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
 
-      // Generate PDF with compression-optimized settings
-      const pdfOptions = this.compressionService.getCompressionOptimizedPDFOptions(compressionLevel);
-      const pdfBuffer = await page.pdf(pdfOptions);
+        // Generate PDF with compression-optimized settings
+        const pdfOptions = this.compressionService.getCompressionOptimizedPDFOptions(compressionLevel);
+        const pdfBuffer = await page.pdf(pdfOptions);
 
-      await this.closeBrowser();
+        // Generate unique filename with compression level
+        const timestamp = Date.now();
+        const fileName = `order-${orderData.orderNumber}-${compressionLevel}-${timestamp}.pdf`;
+        const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
-      // Generate unique filename with compression level
-      const timestamp = Date.now();
-      const fileName = `order-${orderData.orderNumber}-${compressionLevel}-${timestamp}.pdf`;
-      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
+        // Ensure directory exists
+        const uploadDir = path.dirname(filePath);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
 
-      // Ensure directory exists
-      const uploadDir = path.dirname(filePath);
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+        // Save PDF to file
+        fs.writeFileSync(filePath, pdfBuffer);
+
+        // Validate PDF size and provide warnings if necessary
+        const sizeValidation = this.compressionService.validatePDFSize(filePath);
+
+        if (!sizeValidation.isValid) {
+          this.logger.warn(`Generated PDF exceeds size limits: ${sizeValidation.warnings.join(', ')}`);
+
+          // Generate alternative delivery methods for oversized files
+          const alternatives = this.compressionService.generateAlternativeDeliveryMethods(filePath, enhancedOrderData);
+          this.logger.log(`Alternative delivery methods available: ${alternatives.methods.length}`);
+        }
+
+        this.logger.log(`Compressed PDF generated successfully: ${filePath} (${this.formatFileSize(pdfBuffer.length)})`);
+
+        return {
+          success: true,
+          filePath,
+          fileName,
+          fileSize: pdfBuffer.length,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      } finally {
+        await page?.close();
       }
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      // Validate PDF size and provide warnings if necessary
-      const sizeValidation = this.compressionService.validatePDFSize(filePath);
-
-      if (!sizeValidation.isValid) {
-        this.logger.warn(`Generated PDF exceeds size limits: ${sizeValidation.warnings.join(', ')}`);
-
-        // Generate alternative delivery methods for oversized files
-        const alternatives = this.compressionService.generateAlternativeDeliveryMethods(filePath, enhancedOrderData);
-        this.logger.log(`Alternative delivery methods available: ${alternatives.methods.length}`);
-      }
-
-      this.logger.log(`Compressed PDF generated successfully: ${filePath} (${this.formatFileSize(pdfBuffer.length)})`);
-
-      return {
-        success: true,
-        filePath,
-        fileName,
-        fileSize: pdfBuffer.length,
-        metadata: {
-          generatedAt: new Date(),
-          locale,
-          orderNumber: orderData.orderNumber,
-        },
-      };
     } catch (error) {
       this.logger.error(`Failed to generate compressed PDF for order ${orderData.orderNumber}:`, error);
       return {
@@ -796,61 +805,64 @@ export class PDFGeneratorService implements OnModuleInit {
       // Enhance payment method data with actual settings
       const enhancedOrderData = await this.enhancePaymentMethodData(optimizedData);
 
-      const page = await this.createPageWithRetry();
+      let page: puppeteer.Page | undefined;
+      try {
+        page = await this.createPageWithRetry();
 
-      // Set viewport based on device type
-      const viewportSettings = this.getDeviceViewport(deviceType);
-      await page.setViewport(viewportSettings);
+        // Set viewport based on device type
+        const viewportSettings = this.getDeviceViewport(deviceType);
+        await page.setViewport(viewportSettings);
 
-      // Generate HTML content using template engine with document structure
-      let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
+        // Generate HTML content using template engine with document structure
+        let htmlContent = await this.templateEngine.generateHTMLFromOrderData(enhancedOrderData, locale, 'order-confirmation');
 
-      // Enhance HTML with accessibility features
-      htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
-      htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
+        // Enhance HTML with accessibility features
+        htmlContent = this.accessibilityService.enhanceHTMLAccessibility(htmlContent, locale);
+        htmlContent = this.accessibilityService.enhanceImageAltText(htmlContent, enhancedOrderData, locale);
 
-      // Add device optimization features
-      htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
+        // Add device optimization features
+        htmlContent = this.deviceOptimization.addNavigationAnchors(htmlContent);
 
-      // Set HTML content
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+        // Set HTML content
+        await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-      // Generate accessibility metadata
-      const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
+        // Generate accessibility metadata
+        const accessibilityMetadata = this.accessibilityService.generateAccessibilityMetadata(enhancedOrderData, locale);
 
-      // Generate PDF with device-optimized settings and accessibility features
-      const pdfOptions = this.deviceOptimization.getDeviceOptimizedPDFOptions(deviceType);
-      const pdfBuffer = await page.pdf(pdfOptions);
+        // Generate PDF with device-optimized settings and accessibility features
+        const pdfOptions = this.deviceOptimization.getDeviceOptimizedPDFOptions(deviceType);
+        const pdfBuffer = await page.pdf(pdfOptions);
 
-      await this.closeBrowser();
+        // Generate unique filename with device type
+        const timestamp = Date.now();
+        const fileName = `order-${orderData.orderNumber}-${deviceType}-${timestamp}.pdf`;
+        const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
 
-      // Generate unique filename with device type
-      const timestamp = Date.now();
-      const fileName = `order-${orderData.orderNumber}-${deviceType}-${timestamp}.pdf`;
-      const filePath = path.join(this.getUploadPath(), 'pdfs', fileName);
+        // Ensure directory exists
+        const uploadDir = path.dirname(filePath);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
 
-      // Ensure directory exists
-      const uploadDir = path.dirname(filePath);
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+        // Save PDF to file
+        fs.writeFileSync(filePath, pdfBuffer);
+
+        this.logger.log(`${deviceType}-optimized PDF generated successfully: ${filePath}`);
+
+        return {
+          success: true,
+          filePath,
+          fileName,
+          fileSize: pdfBuffer.length,
+          metadata: {
+            generatedAt: new Date(),
+            locale,
+            orderNumber: orderData.orderNumber,
+          },
+        };
+      } finally {
+        await page?.close();
       }
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
-
-      this.logger.log(`${deviceType}-optimized PDF generated successfully: ${filePath}`);
-
-      return {
-        success: true,
-        filePath,
-        fileName,
-        fileSize: pdfBuffer.length,
-        metadata: {
-          generatedAt: new Date(),
-          locale,
-          orderNumber: orderData.orderNumber,
-        },
-      };
     } catch (error) {
       this.logger.error(`Failed to generate ${deviceType}-optimized PDF for order ${orderData.orderNumber}:`, error);
       return {
