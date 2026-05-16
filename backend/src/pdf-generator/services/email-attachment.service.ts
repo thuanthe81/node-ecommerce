@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, OnModuleDestroy } from '@nestjs/common';
 import { EmailService } from '../../notifications/services/email.service';
 import { EmailTemplateService } from '../../notifications/services/email-template.service';
 import { PDFGeneratorService } from '../pdf-generator.service';
@@ -36,7 +36,7 @@ interface EmailDeliveryLog {
 }
 
 @Injectable()
-export class EmailAttachmentService {
+export class EmailAttachmentService implements OnModuleDestroy {
   private readonly logger = new Logger(EmailAttachmentService.name);
   private readonly rateLimitMap = new Map<
     string,
@@ -47,6 +47,7 @@ export class EmailAttachmentService {
   private readonly RATE_LIMIT_WINDOW_HOURS = 1;
   private readonly MAX_RETRY_ATTEMPTS = 3;
   private readonly RETRY_DELAY_MS = 5000; // 5 seconds
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(
     private emailService: EmailService,
@@ -61,7 +62,44 @@ export class EmailAttachmentService {
     private ordersService: OrdersService,
     private footerSettingsService: FooterSettingsService,
     private businessInfoService: BusinessInfoService,
-  ) {}
+  ) {
+    // Clean up expired rate limit entries and old delivery logs every hour
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredRateLimits();
+      this.cleanupOldDeliveryLogs();
+    }, 60 * 60 * 1000);
+  }
+
+  /**
+   * Clear the cleanup interval when the module is destroyed.
+   */
+  onModuleDestroy(): void {
+    clearInterval(this.cleanupInterval);
+  }
+
+  /**
+   * Remove expired rate limit entries to prevent unbounded Map growth.
+   */
+  private cleanupExpiredRateLimits(): void {
+    const now = new Date();
+    for (const [email, data] of this.rateLimitMap.entries()) {
+      if (now > data.resetTime) {
+        this.rateLimitMap.delete(email);
+      }
+    }
+  }
+
+  /**
+   * Remove delivery log entries older than maxAgeHours to prevent unbounded Map growth.
+   */
+  private cleanupOldDeliveryLogs(maxAgeHours = 24): void {
+    const cutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
+    for (const [key, log] of this.deliveryLogs.entries()) {
+      if (log.lastAttempt < cutoff) {
+        this.deliveryLogs.delete(key);
+      }
+    }
+  }
 
   /**
    * Send order confirmation email with PDF attachment

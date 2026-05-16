@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -127,12 +127,13 @@ export interface AuditStatistics {
  * Requirements: 3.6, 4.5 - Comprehensive logging and audit trails
  */
 @Injectable()
-export class PDFAuditService {
+export class PDFAuditService implements OnModuleDestroy {
   private readonly logger = new Logger(PDFAuditService.name);
   private readonly auditLogs = new Map<string, AuditLogEntry>();
   private readonly auditLogFile: string;
   private readonly maxInMemoryLogs = 10000;
   private readonly logRotationSize = 100 * 1024 * 1024; // 100MB
+  private logRotationInterval: NodeJS.Timeout;
 
   constructor() {
     // Initialize audit log file path
@@ -143,6 +144,13 @@ export class PDFAuditService {
 
     this.auditLogFile = path.join(logsDir, 'pdf-system-audit.log');
     this.initializeAuditLogging();
+  }
+
+  /**
+   * Clear the log-rotation interval when the module is destroyed.
+   */
+  onModuleDestroy(): void {
+    clearInterval(this.logRotationInterval);
   }
 
   /**
@@ -546,7 +554,7 @@ export class PDFAuditService {
     }
 
     // Set up periodic log rotation
-    setInterval(() => {
+    this.logRotationInterval = setInterval(() => {
       this.rotateLogFileIfNeeded();
     }, 60 * 60 * 1000); // Check every hour
   }

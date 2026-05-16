@@ -40,6 +40,7 @@ export class TemplateLoaderService implements ITemplateLoader, OnModuleDestroy {
    */
   onModuleDestroy(): void {
     this.stopFileWatching();
+    this.reloadCallbacks = [];
   }
 
   /**

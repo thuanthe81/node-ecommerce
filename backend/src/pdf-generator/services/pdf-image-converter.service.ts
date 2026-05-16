@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isAbsolute } from 'path';
@@ -13,7 +13,7 @@ import { CONSTANTS } from '@alacraft/shared';
  * Handles both local file paths and remote URLs.
  */
 @Injectable()
-export class PDFImageConverterService {
+export class PDFImageConverterService implements OnModuleDestroy {
   private readonly logger = new Logger(PDFImageConverterService.name);
   private readonly imageCache = new Map<string, string>();
   private readonly maxCacheSize = 100;
@@ -284,6 +284,13 @@ export class PDFImageConverterService {
   clearCache(): void {
     this.imageCache.clear();
     this.logger.debug('Image cache cleared');
+  }
+
+  /**
+   * Release all cached image data when the module is destroyed.
+   */
+  onModuleDestroy(): void {
+    this.imageCache.clear();
   }
 
   /**
