@@ -40,16 +40,16 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
   }
 
   /**
-   * Clean up file watchers on module destroy
+   * Clean up file watchers on module destroy.
+   * Uses fs.unwatchFile() — the correct API for StatWatcher objects returned by fs.watchFile().
    */
   async onModuleDestroy(): Promise<void> {
-    for (const [filePath, watcher] of this.fileWatchers) {
+    const fsSync = require('fs');
+    for (const [filePath] of this.fileWatchers) {
       try {
-        if (watcher && typeof watcher.close === 'function') {
-          await watcher.close();
-        }
+        fsSync.unwatchFile(filePath);
       } catch (error) {
-        this.logger.warn(`Failed to close file watcher for ${filePath}: ${error.message}`);
+        this.logger.warn(`Failed to unwatch file ${filePath}: ${error.message}`);
       }
     }
     this.fileWatchers.clear();
@@ -171,14 +171,13 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
     // Clear cache
     this.cssCache.clear();
 
-    // Close existing file watchers
-    for (const [filePath, watcher] of this.fileWatchers) {
+    // Stop existing file watchers using the correct fs.unwatchFile() API
+    const fsSync = require('fs');
+    for (const [filePath] of this.fileWatchers) {
       try {
-        if (watcher && typeof watcher.close === 'function') {
-          await watcher.close();
-        }
+        fsSync.unwatchFile(filePath);
       } catch (error) {
-        this.logger.warn(`Failed to close file watcher for ${filePath}: ${error.message}`);
+        this.logger.warn(`Failed to unwatch file ${filePath}: ${error.message}`);
       }
     }
     this.fileWatchers.clear();
@@ -533,9 +532,9 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
   }
 
   /**
-   * Set up file watcher for CSS file in development mode with hot-reloading
-   * @param cssFileName - Name of the CSS file to watch
-   * @param filePath - Full path to the CSS file
+   * Set up file watcher for CSS file in development mode with hot-reloading.
+   * Uses fs.watchFile() (polling). The Map stores the file path so that
+   * onModuleDestroy can call fs.unwatchFile(filePath) — the correct cleanup API.
    */
   private setupFileWatcher(cssFileName: string, filePath: string): void {
     if (this.fileWatchers.has(filePath)) {
@@ -543,8 +542,8 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
     }
 
     try {
-      const fs = require('fs');
-      const watcher = fs.watchFile(filePath, { interval: 500 }, (curr: any, prev: any) => {
+      const fsSync = require('fs');
+      fsSync.watchFile(filePath, { interval: 500 }, (curr: any, prev: any) => {
         // Check if file was actually modified (not just accessed)
         if (curr.mtime !== prev.mtime) {
           this.logger.debug(`CSS file changed: ${cssFileName} (modified: ${curr.mtime})`);
@@ -557,7 +556,8 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
         }
       });
 
-      this.fileWatchers.set(filePath, watcher);
+      // Store the filePath as the value so onModuleDestroy can call fs.unwatchFile(filePath)
+      this.fileWatchers.set(filePath, filePath);
       this.logger.debug(`File watcher set up for: ${cssFileName} (hot-reload enabled)`);
     } catch (error) {
       this.logger.warn(`Failed to set up file watcher for ${cssFileName}: ${error.message}`);
@@ -608,14 +608,13 @@ export class CSSInjectorService implements ICSSInjector, OnModuleDestroy {
   async disableHotReloading(): Promise<void> {
     this.logger.log('Disabling hot-reloading for all CSS files...');
 
-    // Close all file watchers
-    for (const [filePath, watcher] of this.fileWatchers) {
+    // Stop all file watchers using the correct fs.unwatchFile() API
+    const fsSync = require('fs');
+    for (const [filePath] of this.fileWatchers) {
       try {
-        if (watcher && typeof watcher.close === 'function') {
-          await watcher.close();
-        }
+        fsSync.unwatchFile(filePath);
       } catch (error) {
-        this.logger.warn(`Failed to close file watcher for ${filePath}: ${error.message}`);
+        this.logger.warn(`Failed to unwatch file ${filePath}: ${error.message}`);
       }
     }
 

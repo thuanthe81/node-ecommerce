@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { EmailAttachmentService } from './email-attachment.service';
 import { DocumentStorageService } from './document-storage.service';
 import { OrderPDFData } from '../types/pdf.types';
@@ -40,9 +40,10 @@ export interface SystemFailure {
  * Requirements: 4.5, 3.5 - Comprehensive error handling and fallback notifications
  */
 @Injectable()
-export class PDFErrorHandlerService {
+export class PDFErrorHandlerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PDFErrorHandlerService.name);
   private readonly systemFailures = new Map<string, SystemFailure>();
+  private readonly MAX_ACTIVE_FAILURES = 500;
   private readonly errorStats = {
     totalErrors: 0,
     errorsByType: new Map<string, number>(),
@@ -50,12 +51,30 @@ export class PDFErrorHandlerService {
     recoveredErrors: 0,
     unrecoveredErrors: 0,
   };
+  private cleanupInterval: NodeJS.Timeout;
 
   constructor(
     @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
     private documentStorageService: DocumentStorageService,
   ) {}
+
+  /**
+   * Schedule periodic cleanup of resolved system failures every 6 hours.
+   */
+  onModuleInit(): void {
+    this.cleanupInterval = setInterval(
+      () => this.cleanupOldFailures(),
+      6 * 60 * 60 * 1000,
+    );
+  }
+
+  /**
+   * Clear the cleanup interval on module destroy.
+   */
+  onModuleDestroy(): void {
+    clearInterval(this.cleanupInterval);
+  }
 
   /**
    * Handle PDF generation failures with comprehensive error logging and fallback
@@ -506,7 +525,8 @@ export class PDFErrorHandlerService {
   }
 
   /**
-   * Create system failure record for monitoring
+   * Create system failure record for monitoring.
+   * Evicts the oldest unresolved failure when the active cap is reached.
    */
   private createSystemFailure(
     type: SystemFailure['type'],
@@ -515,6 +535,14 @@ export class PDFErrorHandlerService {
     severity: SystemFailure['severity']
   ): SystemFailure {
     const id = `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Evict oldest unresolved failure if we're at the cap
+    const activeFailures = Array.from(this.systemFailures.values()).filter(f => !f.resolved);
+    if (activeFailures.length >= this.MAX_ACTIVE_FAILURES) {
+      const oldest = activeFailures.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())[0];
+      this.systemFailures.delete(oldest.id);
+      this.logger.warn(`Active failure cap (${this.MAX_ACTIVE_FAILURES}) reached — evicted oldest failure: ${oldest.id}`);
+    }
 
     return {
       id,

@@ -17,6 +17,8 @@ export class EmailTestingUtils {
   private static emailCountTracker = new Map<string, number>();
   private static testModeEnabled = false;
   private static testModeOrderIds = new Set<string>();
+  /** Maximum number of order IDs tracked simultaneously to prevent unbounded growth. */
+  private static readonly MAX_TRACKED_ORDERS = 10_000;
 
   /**
    * Verify email content formatting
@@ -104,6 +106,12 @@ export class EmailTestingUtils {
    * Called when an email is sent for an order
    */
   static incrementEmailCount(orderId: string, emailType: string = 'order_confirmation'): void {
+    // Evict the oldest entry when the cap is reached to prevent unbounded growth
+    if (!this.emailCountTracker.has(orderId) && this.emailCountTracker.size >= this.MAX_TRACKED_ORDERS) {
+      const firstKey = this.emailCountTracker.keys().next().value;
+      this.emailCountTracker.delete(firstKey);
+    }
+
     const currentCount = this.emailCountTracker.get(orderId) || 0;
     const newCount = currentCount + 1;
     this.emailCountTracker.set(orderId, newCount);

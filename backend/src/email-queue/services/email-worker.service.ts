@@ -36,6 +36,7 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   private processingJobs = new Set<string>(); // Track jobs being processed for exactly-once guarantee
   private deliveredEmails = new Map<string, { timestamp: Date; messageId?: string }>(); // Track delivered emails to prevent duplicates
   private readonly deliveryTrackingTTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  private deliveryCleanupInterval: NodeJS.Timeout;
 
   constructor(
     private queueConfigService: EmailQueueConfigService,
@@ -70,6 +71,11 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
    */
   onModuleInit() {
     this.initializeWorkerWithResilience();
+    // Proactively clean up expired delivery records every 30 minutes
+    this.deliveryCleanupInterval = setInterval(
+      () => this.cleanupExpiredDeliveryRecords(),
+      30 * 60 * 1000,
+    );
   }
 
   /**
@@ -1657,6 +1663,9 @@ export class EmailWorker implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     this.logger.log('Initiating graceful email worker shutdown...');
     this.isShuttingDown = true;
+
+    // Clear the proactive delivery-record cleanup interval
+    clearInterval(this.deliveryCleanupInterval);
 
     const startTime = Date.now();
     let shutdownSuccess = false;
