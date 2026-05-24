@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailEventPublisher } from '../../email-queue/services/email-event-publisher.service';
 import { RateLimitResult } from '../types/pdf.types';
@@ -23,18 +23,32 @@ interface InvoiceResult {
 }
 
 @Injectable()
-export class InvoiceEmailHandlerService {
+export class InvoiceEmailHandlerService implements OnModuleDestroy {
   private readonly logger = new Logger(InvoiceEmailHandlerService.name);
   private readonly rateLimitMap = new Map<string, { count: number; resetTime: Date }>();
   private readonly invoiceLogs: InvoiceRequestLog[] = [];
   private readonly MAX_INVOICE_ATTEMPTS = 5;
   private readonly RATE_LIMIT_WINDOW_HOURS = 1;
+  private rateLimitCleanupInterval: NodeJS.Timeout;
 
   constructor(
     private prisma: PrismaService,
     @Inject(forwardRef(() => EmailEventPublisher))
     private emailEventPublisher: EmailEventPublisher,
-  ) {}
+  ) {
+    // Proactively evict expired rate-limit entries every 10 minutes
+    this.rateLimitCleanupInterval = setInterval(() => {
+      const now = new Date();
+      for (const [email, data] of this.rateLimitMap.entries()) {
+        if (now > data.resetTime) this.rateLimitMap.delete(email);
+      }
+    }, 10 * 60 * 1000);
+  }
+
+  onModuleDestroy(): void {
+    clearInterval(this.rateLimitCleanupInterval);
+    this.rateLimitMap.clear();
+  }
 
   /**
    * Handle invoice email request with comprehensive validation and rate limiting

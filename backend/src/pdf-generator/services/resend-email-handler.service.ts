@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, Inject, forwardRef, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EmailAttachmentService } from './email-attachment.service';
 import { ResendResult, RateLimitResult, ValidationResult } from '../types/pdf.types';
@@ -13,18 +13,32 @@ interface ResendRequestLog {
 }
 
 @Injectable()
-export class ResendEmailHandlerService {
+export class ResendEmailHandlerService implements OnModuleDestroy {
   private readonly logger = new Logger(ResendEmailHandlerService.name);
   private readonly rateLimitMap = new Map<string, { count: number; resetTime: Date }>();
   private readonly resendLogs: ResendRequestLog[] = [];
   private readonly MAX_RESEND_ATTEMPTS = 3;
   private readonly RATE_LIMIT_WINDOW_HOURS = 1;
+  private rateLimitCleanupInterval: NodeJS.Timeout;
 
   constructor(
     private prisma: PrismaService,
     @Inject(forwardRef(() => EmailAttachmentService))
     private emailAttachmentService: EmailAttachmentService,
-  ) {}
+  ) {
+    // Proactively evict expired rate-limit entries every 10 minutes
+    this.rateLimitCleanupInterval = setInterval(() => {
+      const now = new Date();
+      for (const [email, data] of this.rateLimitMap.entries()) {
+        if (now > data.resetTime) this.rateLimitMap.delete(email);
+      }
+    }, 10 * 60 * 1000);
+  }
+
+  onModuleDestroy(): void {
+    clearInterval(this.rateLimitCleanupInterval);
+    this.rateLimitMap.clear();
+  }
 
   /**
    * Handle resend email request with comprehensive validation and rate limiting

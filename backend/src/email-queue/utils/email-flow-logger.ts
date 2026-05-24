@@ -430,9 +430,13 @@ export class EmailFlowLogger {
   }
 
   /**
-   * Get simplified call stack for debugging
+   * Get simplified call stack for debugging.
+   * Returns an empty array in production to avoid the GC pressure of
+   * allocating a new Error() on every log call.
    */
   private static getCallStack(): string[] {
+    if (process.env.NODE_ENV === 'production') return [];
+
     const stack = new Error().stack;
     if (!stack) return [];
 

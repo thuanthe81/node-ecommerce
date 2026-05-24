@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { isAbsolute } from 'path';
@@ -13,7 +13,7 @@ import { StorageErrorHandlerService } from './storage-error-handler.service';
  * and automatic cleanup scheduling.
  */
 @Injectable()
-export class DocumentStorageService {
+export class DocumentStorageService implements OnModuleDestroy {
   private readonly logger = new Logger(DocumentStorageService.name);
   private readonly uploadDir: string;
   private readonly maxStorageSize = 1024 * 1024 * 1024; // 1GB default limit
